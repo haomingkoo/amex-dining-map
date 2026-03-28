@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Japan Dining Map MVP</title>
+    <meta
+      name="description"
+      content="Japan-first MVP for mapping Pocket Concierge restaurants with search, filters, and KML downloads."
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Japan MVP</p>
+          <h1>Dining Map</h1>
+          <p class="lede">
+            Search public Pocket Concierge venues by place, district, cuisine,
+            price band, child policy, and reservation style. Export KML for
+            Google My Maps.
+          </p>
+        </div>
+        <div class="hero-note">
+          <div class="note-card">
+            <div class="note-title">Accuracy and price guide</div>
+            <p>
+              Restaurant facts are source-backed. Coordinates are approximate
+              until stronger place matching is added.
+            </p>
+            <p>
+              Lunch bands: Under JPY 5k, JPY 5k-10k, JPY 10k-20k, JPY 20k+.
+              Dinner bands: Under JPY 10k, JPY 10k-20k, JPY 20k-30k, JPY 30k+.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <section class="toolbar">
+        <label class="search-wrap">
+          <span class="label">Search</span>
+          <input
+            id="search-input"
+            type="search"
+            placeholder="Venue, district, cuisine, price band..."
+          />
+        </label>
+
+        <label class="filter-wrap">
+          <span class="label">City</span>
+          <select id="city-filter">
+            <option value="">All cities</option>
+          </select>
+        </label>
+
+        <label class="filter-wrap">
+          <span class="label">District</span>
+          <select id="district-filter">
+            <option value="">All districts</option>
+          </select>
+        </label>
+
+        <label class="filter-wrap">
+          <span class="label">Cuisine</span>
+          <select id="cuisine-filter">
+            <option value="">All cuisines</option>
+          </select>
+        </label>
+
+        <label class="filter-wrap">
+          <span class="label">Lunch Band</span>
+          <select id="lunch-filter">
+            <option value="">All lunch bands</option>
+          </select>
+        </label>
+
+        <label class="filter-wrap">
+          <span class="label">Dinner Band</span>
+          <select id="dinner-filter">
+            <option value="">All dinner bands</option>
+          </select>
+        </label>
+
+        <label class="filter-wrap">
+          <span class="label">Kids</span>
+          <select id="kids-filter">
+            <option value="">All</option>
+            <option value="kid_friendly">Kid friendly</option>
+            <option value="older_children_only">Older children only</option>
+            <option value="teens_only">Teens only</option>
+            <option value="policy_available">Policy available</option>
+            <option value="unknown">Unknown</option>
+          </select>
+        </label>
+
+        <label class="filter-wrap">
+          <span class="label">English Menu</span>
+          <select id="menu-filter">
+            <option value="">All</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </label>
+
+        <label class="filter-wrap">
+          <span class="label">Reservation</span>
+          <select id="reservation-filter">
+            <option value="">All</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Venues</div>
+          <div class="stat-value" id="venue-count">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Mapped</div>
+          <div class="stat-value" id="mapped-count">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Cities</div>
+          <div class="stat-value" id="city-count">0</div>
+        </div>
+        <div class="downloads">
+          <a class="download-btn" href="../data/kml/japan-all.kml" download>All Japan KML</a>
+          <a class="download-btn" href="../data/kml/tokyo.kml" download>Tokyo KML</a>
+          <a class="download-btn" href="../data/kml/kyoto.kml" download>Kyoto KML</a>
+          <a class="download-btn" href="../data/kml/osaka.kml" download>Osaka KML</a>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <aside class="panel">
+          <div class="panel-head">
+            <h2>Venues</h2>
+            <span id="results-text">Loading...</span>
+          </div>
+          <div class="venue-list" id="venue-list"></div>
+        </aside>
+
+        <section class="map-panel">
+          <div class="map-head">
+            <h2>Map</h2>
+            <p>
+              Pins are approximate when they come from public geocoding rather
+              than a verified place match.
+            </p>
+          </div>
+          <div id="map"></div>
+        </section>
+      </section>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
