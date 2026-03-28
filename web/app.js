@@ -1211,6 +1211,26 @@ function stayAvailabilityBadgeClass(status) {
   return "blue";
 }
 
+function stayFocusSummary(record, status) {
+  const raw = (record.blackout_raw || "").trim();
+  if (!raw) {
+    return record.breakfast_note || "";
+  }
+
+  if (raw.toLowerCase() === "subject to availability") {
+    return record.breakfast_note || "";
+  }
+
+  if (status.detail && raw === status.detail) {
+    return "";
+  }
+
+  const prefix = (record.blackout_exact_ranges || []).length
+    ? "Official blackout dates: "
+    : "Official blackout notes: ";
+  return `${prefix}${raw}`;
+}
+
 function activeStayFilterCount() {
   let count = 0;
   if (staysSearchInput.value.trim()) count += 1;
@@ -1414,7 +1434,6 @@ function renderStayFocusCard() {
   const tags = [
     record.country ? `<span class="badge gold">${escapeHtml(record.country)}</span>` : "",
     record.city ? `<span class="badge">${escapeHtml(record.city)}</span>` : "",
-    `<span class="badge ${stayAvailabilityBadgeClass(status)}">${escapeHtml(status.label)}</span>`,
     record.breakfast_included
       ? '<span class="badge green">Breakfast for 2</span>'
       : '<span class="badge blue">Room only</span>',
@@ -1424,6 +1443,7 @@ function renderStayFocusCard() {
   ]
     .filter(Boolean)
     .join("");
+  const summary = stayFocusSummary(record, status);
 
   staysFocusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(record.city || "City unknown")} / ${escapeHtml(record.country || "Country unknown")}</div>
@@ -1443,11 +1463,7 @@ function renderStayFocusCard() {
         <div class="price-raw">${escapeHtml(record.reservation_raw || "See official source")}</div>
       </div>
     </div>
-    ${
-      record.blackout_raw
-        ? `<p class="focus-summary">${escapeHtml(`Official blackout notes: ${record.blackout_raw}`)}</p>`
-        : `<p class="focus-summary">${escapeHtml(record.breakfast_note || "")}</p>`
-    }
+    ${summary ? `<p class="focus-summary">${escapeHtml(summary)}</p>` : ""}
     <div class="focus-note">${escapeHtml(record.map_pin_note)}</div>
     <div class="focus-actions">
       <a class="inline-link" href="${escapeHtml(stayGoogleMapsUrl(record))}" target="_blank" rel="noopener">Open in Google Maps</a>
