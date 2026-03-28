@@ -215,9 +215,9 @@ h3 {
 
 .toolbar {
   display: grid;
-  grid-template-columns: minmax(260px, 1.8fr) repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  padding: 16px;
+  grid-template-columns: minmax(240px, 1.55fr) repeat(4, minmax(140px, 1fr));
+  gap: 10px;
+  padding: 14px;
   border-radius: var(--radius-lg);
   margin-bottom: 16px;
 }
@@ -238,7 +238,8 @@ h3 {
 
 .search-wrap input,
 .filter-wrap select {
-  padding: 12px 14px;
+  padding: 10px 12px;
+  font-size: 14px;
 }
 
 .search-wrap input:focus,
@@ -256,7 +257,7 @@ h3 {
 }
 
 .ghost-btn {
-  padding: 12px 14px;
+  padding: 10px 12px;
   cursor: pointer;
   transition:
     transform 0.18s ease,
@@ -512,45 +513,6 @@ h3 {
   align-items: center;
 }
 
-.verification-panel {
-  margin-top: 16px;
-}
-
-.verification-body {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding: 18px;
-}
-
-.verify-card {
-  padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: var(--radius-md);
-  background: var(--surface-soft);
-}
-
-.verify-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.verify-top h3 {
-  font-size: 20px;
-}
-
-.verify-top p,
-.verify-copy {
-  margin: 6px 0 0;
-  color: var(--text-secondary);
-}
-
-.verify-copy {
-  margin-bottom: 14px;
-}
-
 .table-scroll {
   overflow: auto;
 }
@@ -643,10 +605,6 @@ tbody tr.active {
 
   .stats-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .verification-body {
-    grid-template-columns: 1fr;
   }
 }
 

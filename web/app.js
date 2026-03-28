@@ -160,15 +160,12 @@ const scopeCount = document.getElementById("scope-count");
 const showingCount = document.getElementById("showing-count");
 const mappedCount = document.getElementById("mapped-count");
 const cityCount = document.getElementById("city-count");
-const unmappedCount = document.getElementById("unmapped-count");
 const downloadStack = document.getElementById("download-stack");
 const mapSummary = document.getElementById("map-summary");
 const resultsText = document.getElementById("results-text");
 const focusCard = document.getElementById("focus-card");
 const tableSummary = document.getElementById("table-summary");
 const resultsTableBody = document.getElementById("results-table-body");
-const verificationSummary = document.getElementById("verification-summary");
-const unmappedList = document.getElementById("unmapped-list");
 
 function escapeHtml(value) {
   return String(value)
@@ -226,14 +223,20 @@ function priceMarkup(min, max, tier, label) {
   return blocks.join("");
 }
 
-function needsVerification(record) {
-  if (record.lat == null || record.lng == null) return true;
-  return record.coordinate_confidence !== "source";
+function hasSourceCoordinates(record) {
+  return record.lat != null && record.lng != null && record.coordinate_confidence === "source";
 }
 
-function verificationBadge(record) {
-  if (record.lat == null || record.lng == null) return "Unmapped";
-  return "Approximate";
+function focusLocationNote(record) {
+  if (record.lat == null || record.lng == null) {
+    return "This venue does not have a plotted pin yet. Use the official Pocket Concierge listing for location confirmation.";
+  }
+
+  if (hasSourceCoordinates(record)) {
+    return "Pin comes from Pocket Concierge venue data. Still confirm the official listing before relying on it for dining-credit use.";
+  }
+
+  return "Pin uses approximate fallback mapping. Confirm the official Pocket Concierge listing before travelling to the venue.";
 }
 
 function createMarker(record) {
@@ -444,26 +447,22 @@ function filterRestaurants() {
   renderMarkers();
   renderFocusCard();
   renderTable();
-  renderUnmappedList();
 }
 
 function renderStats() {
   const route = currentRoute();
   const filteredMapped = state.filtered.filter((record) => record.lat != null && record.lng != null).length;
-  const filteredNeedsVerification = state.filtered.filter(needsVerification).length;
   const scopeCities = uniqueValues(state.scopeRecords.map((record) => record.city));
 
   scopeCount.textContent = state.scopeRecords.length;
   showingCount.textContent = state.filtered.length;
   mappedCount.textContent = filteredMapped;
   cityCount.textContent = scopeCities.length;
-  unmappedCount.textContent = filteredNeedsVerification;
 
   const resultLine = `${state.filtered.length} result${state.filtered.length === 1 ? "" : "s"} in ${route.label}`;
   resultsText.textContent = resultLine;
   tableSummary.textContent = `Showing ${state.filtered.length} of ${state.scopeRecords.length} venues in the current route.`;
   mapSummary.textContent = `${route.mapSummary} ${filteredMapped} mapped pin${filteredMapped === 1 ? "" : "s"} in the current filtered view.`;
-  verificationSummary.textContent = `${filteredNeedsVerification} venue${filteredNeedsVerification === 1 ? "" : "s"} in the current view still need stronger location verification before they can be trusted on the map.`;
 }
 
 function renderMarkers() {
@@ -496,6 +495,11 @@ function renderFocusCard() {
 
   const tags = [
     `<span class="badge gold">${escapeHtml(record.city)}</span>`,
+    record.lat != null && record.lng != null
+      ? `<span class="badge ${hasSourceCoordinates(record) ? "green" : "amber"}">${escapeHtml(
+          hasSourceCoordinates(record) ? "Source-backed pin" : "Approximate pin"
+        )}</span>`
+      : "",
     record.price_dinner_band_tier && record.price_dinner_band_label
       ? `<span class="badge amber">${escapeHtml(priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label))}</span>`
       : "",
@@ -545,8 +549,13 @@ function renderFocusCard() {
         )}
       </div>
     </div>
-    <div class="focus-note">${escapeHtml(record.map_pin_note || "")} Verify the exact venue address on the official source before relying on this pin for dining-credit use.</div>
+    <div class="focus-note">${escapeHtml(focusLocationNote(record))}</div>
     <div class="focus-actions">
+      ${
+        record.source_google_map_url
+          ? `<a class="inline-link" href="${escapeHtml(record.source_google_map_url)}" target="_blank" rel="noopener">Open source map</a>`
+          : ""
+      }
       ${
         record.source_url
           ? `<a class="inline-link" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Open Pocket Concierge</a>`
@@ -587,7 +596,11 @@ function renderTable() {
     row.innerHTML = `
       <td>
         <div class="table-title">${escapeHtml(record.name)}</div>
-        <div class="table-sub">${needsVerification(record) ? verificationBadge(record) : "Source mapped"}</div>
+        ${
+          record.nearest_stations && record.nearest_stations.length
+            ? `<div class="table-sub">${escapeHtml(record.nearest_stations[0])}</div>`
+            : ""
+        }
       </td>
       <td>
         <div>${escapeHtml(record.city)}</div>
@@ -611,48 +624,6 @@ function renderTable() {
       <td>${escapeHtml(record.reservation_type || "N/A")}</td>
     `;
     resultsTableBody.appendChild(row);
-  });
-}
-
-function renderUnmappedList() {
-  const flagged = state.filtered.filter(needsVerification);
-  if (!flagged.length) {
-    unmappedList.innerHTML =
-      '<div class="empty-state">Everything in the current view is using source venue coordinates. Address-level verification is still separate from pin presence.</div>';
-    return;
-  }
-
-  unmappedList.innerHTML = "";
-  flagged.forEach((record) => {
-    const badge = verificationBadge(record);
-    const isApproximate = badge === "Approximate";
-    const item = document.createElement("article");
-    item.className = "verify-card";
-    item.innerHTML = `
-      <div class="verify-top">
-        <div>
-          <h3>${escapeHtml(record.name)}</h3>
-          <p>${escapeHtml(record.city)} / ${escapeHtml(record.district || record.area_title)}</p>
-        </div>
-        <span class="badge">${escapeHtml(badge)}</span>
-      </div>
-      ${
-        record.source_localized_address
-          ? `<p class="verify-copy">${escapeHtml(record.source_localized_address)}</p>`
-          : ""
-      }
-      <p class="verify-copy">${
-        isApproximate
-          ? "Pinned using fallback location logic instead of source venue coordinates. This venue should be manually checked before being treated as navigation-safe."
-          : "Not plotted because the current source and fallback steps did not produce a dependable coordinate. This venue should be manually verified before being treated as navigation-safe."
-      }</p>
-      ${
-        record.source_url
-          ? `<a class="inline-link" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Open source page</a>`
-          : ""
-      }
-    `;
-    unmappedList.appendChild(item);
   });
 }
 
@@ -733,6 +704,4 @@ init().catch((error) => {
   tableSummary.textContent = "Load failed";
   resultsTableBody.innerHTML =
     '<tr><td colspan="8" class="empty-table">The dataset failed to load.</td></tr>';
-  verificationSummary.textContent = "Load failed";
-  unmappedList.innerHTML = '<div class="empty-state">Verification list unavailable because the dataset failed to load.</div>';
 });

@@ -34,20 +34,20 @@
         </div>
         <div class="hero-note">
           <div class="note-card">
-          <div class="note-title">Data Policy</div>
-          <p>
-            Restaurant facts are source-backed from public Pocket Concierge
-            pages. Coordinates are approximate until stronger place matching
-            is added.
-          </p>
-          <p>
-            Price shorthand is visual only. The source of truth remains the
-            JPY lunch and dinner range shown on each venue. Exact venue address
-            should still be verified on the official source before relying on a
-            map pin for benefit redemption.
-          </p>
+            <div class="note-title">Data Policy</div>
+            <p>
+              Restaurant facts come from public Pocket Concierge venue pages.
+              Most pins use source-backed venue coordinates, while a small
+              number still rely on approximate fallback mapping.
+            </p>
+            <p>
+              Price shorthand is visual only. The source of truth remains the
+              JPY lunch and dinner range shown on each venue. Always confirm
+              the official listing before relying on a map pin for benefit
+              redemption.
+            </p>
+          </div>
         </div>
-      </div>
       </header>
 
       <section class="route-strip panel-surface">
@@ -66,6 +66,54 @@
           <a class="route-link" href="#/kyoto" data-route="kyoto">Kyoto</a>
           <a class="route-link" href="#/osaka" data-route="osaka">Osaka</a>
         </nav>
+      </section>
+
+      <section class="stats-row">
+        <div class="stat-card panel-surface">
+          <div class="stat-label">Scope Venues</div>
+          <div class="stat-value" id="scope-count">0</div>
+        </div>
+        <div class="stat-card panel-surface">
+          <div class="stat-label">Showing</div>
+          <div class="stat-value" id="showing-count">0</div>
+        </div>
+        <div class="stat-card panel-surface">
+          <div class="stat-label">Mapped</div>
+          <div class="stat-value" id="mapped-count">0</div>
+        </div>
+        <div class="stat-card panel-surface">
+          <div class="stat-label">Cities</div>
+          <div class="stat-value" id="city-count">0</div>
+        </div>
+      </section>
+
+      <section class="explorer-grid">
+        <section class="map-panel panel-surface">
+          <div class="panel-head">
+            <div>
+              <h2>Map</h2>
+              <p id="map-summary">
+                Browse the current route on the map, then use the selected
+                venue panel for the most precise source link.
+              </p>
+            </div>
+          </div>
+          <div id="map"></div>
+          <div class="map-downloads">
+            <div class="stat-label">KML Downloads</div>
+            <div class="download-stack" id="download-stack"></div>
+          </div>
+        </section>
+
+        <aside class="focus-panel panel-surface">
+          <div class="panel-head">
+            <div>
+              <h2>Selected Venue</h2>
+              <p id="results-text">Loading...</p>
+            </div>
+          </div>
+          <div class="focus-body" id="focus-card"></div>
+        </aside>
       </section>
 
       <section class="toolbar panel-surface">
@@ -149,58 +197,6 @@
         </div>
       </section>
 
-      <section class="stats-row">
-        <div class="stat-card panel-surface">
-          <div class="stat-label">Scope Venues</div>
-          <div class="stat-value" id="scope-count">0</div>
-        </div>
-        <div class="stat-card panel-surface">
-          <div class="stat-label">Showing</div>
-          <div class="stat-value" id="showing-count">0</div>
-        </div>
-        <div class="stat-card panel-surface">
-          <div class="stat-label">Mapped</div>
-          <div class="stat-value" id="mapped-count">0</div>
-        </div>
-        <div class="stat-card panel-surface">
-          <div class="stat-label">Cities</div>
-          <div class="stat-value" id="city-count">0</div>
-        </div>
-        <div class="stat-card panel-surface">
-          <div class="stat-label">Needs Verification</div>
-          <div class="stat-value" id="unmapped-count">0</div>
-        </div>
-      </section>
-
-      <section class="explorer-grid">
-        <section class="map-panel panel-surface">
-          <div class="panel-head">
-            <div>
-              <h2>Map</h2>
-              <p id="map-summary">
-                Map pins use approximate public geocoding unless replaced by a
-                stronger source.
-              </p>
-            </div>
-          </div>
-          <div id="map"></div>
-          <div class="map-downloads">
-            <div class="stat-label">KML Downloads</div>
-            <div class="download-stack" id="download-stack"></div>
-          </div>
-        </section>
-
-        <aside class="focus-panel panel-surface">
-          <div class="panel-head">
-            <div>
-              <h2>Selected Venue</h2>
-              <p id="results-text">Loading...</p>
-            </div>
-          </div>
-          <div class="focus-body" id="focus-card"></div>
-        </aside>
-      </section>
-
       <section class="table-panel panel-surface">
         <div class="panel-head table-head">
           <div>
@@ -225,18 +221,6 @@
             <tbody id="results-table-body"></tbody>
           </table>
         </div>
-      </section>
-
-      <section class="verification-panel panel-surface">
-        <div class="panel-head">
-          <div>
-            <h2>Needs Verification</h2>
-            <p id="verification-summary">
-              Places with approximate or missing location data will be listed here.
-            </p>
-          </div>
-        </div>
-        <div class="verification-body" id="unmapped-list"></div>
       </section>
     </div>
 
