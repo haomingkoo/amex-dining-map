@@ -1,10 +1,12 @@
 const DATA_URL = "../data/japan-restaurants.json";
+
 const LUNCH_BANDS = [
   { key: "under-5k", label: "Under JPY 5k", tier: "$" },
   { key: "5k-10k", label: "JPY 5k-10k", tier: "$$" },
   { key: "10k-20k", label: "JPY 10k-20k", tier: "$$$" },
   { key: "20k-plus", label: "JPY 20k+", tier: "$$$$" },
 ];
+
 const DINNER_BANDS = [
   { key: "under-10k", label: "Under JPY 10k", tier: "$$" },
   { key: "10k-20k", label: "JPY 10k-20k", tier: "$$$" },
@@ -12,11 +14,118 @@ const DINNER_BANDS = [
   { key: "30k-plus", label: "JPY 30k+", tier: "$$$$$" },
 ];
 
+const ROUTES = {
+  all: {
+    id: "all",
+    label: "All",
+    eyebrow: "Portfolio App",
+    title: "All Destinations",
+    description:
+      "Global app shell for Amex dining discovery. The live dataset is Japan-first for now, so this route currently surfaces Japan while future markets are added.",
+    note:
+      "Use this as the combined explorer. Right now it shows the Japan MVP while the broader country dataset is still being built.",
+    mapSummary:
+      "This is the future combined route. The current live pins are the Japan MVP.",
+    matcher: () => true,
+    defaultView: [35.676, 137.5],
+    defaultZoom: 5,
+    downloads: [
+      { label: "All Japan KML", href: "../data/kml/japan-all.kml", primary: true },
+      { label: "Tokyo KML", href: "../data/kml/tokyo.kml" },
+      { label: "Kyoto KML", href: "../data/kml/kyoto.kml" },
+      { label: "Osaka KML", href: "../data/kml/osaka.kml" },
+    ],
+  },
+  japan: {
+    id: "japan",
+    label: "Japan",
+    eyebrow: "Japan MVP",
+    title: "Japan Dining Explorer",
+    description:
+      "Map-first dining explorer for the current Japan restaurant set. Search by place, cuisine, price range, child policy, menu support, and reservation style.",
+    note:
+      "Japan is the first live market. The same app shell can expand later into Hong Kong, Australia, the UK, and a true all-country view.",
+    mapSummary:
+      "Japan-wide view across Tokyo, Kyoto, and Osaka. Pins stay on top and the full table sits below.",
+    matcher: (record) => record.country === "Japan",
+    defaultView: [35.676, 137.5],
+    defaultZoom: 5,
+    downloads: [
+      { label: "All Japan KML", href: "../data/kml/japan-all.kml", primary: true },
+      { label: "Tokyo KML", href: "../data/kml/tokyo.kml" },
+      { label: "Kyoto KML", href: "../data/kml/kyoto.kml" },
+      { label: "Osaka KML", href: "../data/kml/osaka.kml" },
+    ],
+  },
+  tokyo: {
+    id: "tokyo",
+    label: "Tokyo",
+    eyebrow: "City Route",
+    title: "Tokyo Dining",
+    description:
+      "Focused route for Tokyo venues. Better when you already know the city and want to narrow by district, cuisine, price band, or family constraints.",
+    note:
+      "Tokyo is the densest part of the current Japan MVP, so this route is the clearest way to browse without being overwhelmed.",
+    mapSummary:
+      "Tokyo-only route. Use this when you want to stay inside one city and explore districts instead of the full Japan view.",
+    matcher: (record) => record.country === "Japan" && record.city === "Tokyo",
+    fixedCity: "Tokyo",
+    defaultView: [35.6762, 139.6503],
+    defaultZoom: 11,
+    downloads: [
+      { label: "Tokyo KML", href: "../data/kml/tokyo.kml", primary: true },
+      { label: "All Japan KML", href: "../data/kml/japan-all.kml" },
+    ],
+  },
+  kyoto: {
+    id: "kyoto",
+    label: "Kyoto",
+    eyebrow: "City Route",
+    title: "Kyoto Dining",
+    description:
+      "Focused Kyoto route for areas like Gion, Higashiyama, and Kodaiji or Kiyomizu. Useful when you want the map and table to stay calmer.",
+    note:
+      "Kyoto is smaller than Tokyo in count, so the table and map work well as a paired browse view here.",
+    mapSummary:
+      "Kyoto-only route centered on the live Pocket Concierge areas in the current dataset.",
+    matcher: (record) => record.country === "Japan" && record.city === "Kyoto",
+    fixedCity: "Kyoto",
+    defaultView: [35.0116, 135.7681],
+    defaultZoom: 12,
+    downloads: [
+      { label: "Kyoto KML", href: "../data/kml/kyoto.kml", primary: true },
+      { label: "All Japan KML", href: "../data/kml/japan-all.kml" },
+    ],
+  },
+  osaka: {
+    id: "osaka",
+    label: "Osaka",
+    eyebrow: "City Route",
+    title: "Osaka Dining",
+    description:
+      "Focused Osaka route for a cleaner city-level browse. Filter by cuisine, price tier, or reservation style without the wider Japan noise.",
+    note:
+      "Osaka is smaller than Tokyo but still benefits from city-level routing because it keeps both the map and the table easy to scan.",
+    mapSummary:
+      "Osaka-only route for the current Japan MVP city split.",
+    matcher: (record) => record.country === "Japan" && record.city === "Osaka",
+    fixedCity: "Osaka",
+    defaultView: [34.6937, 135.5023],
+    defaultZoom: 12,
+    downloads: [
+      { label: "Osaka KML", href: "../data/kml/osaka.kml", primary: true },
+      { label: "All Japan KML", href: "../data/kml/japan-all.kml" },
+    ],
+  },
+};
+
 const state = {
   restaurants: [],
+  scopeRecords: [],
   filtered: [],
   markers: new Map(),
   activeId: null,
+  routeId: "japan",
 };
 
 const map = L.map("map", {
@@ -31,6 +140,13 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
   maxZoom: 20,
 }).addTo(map);
 
+const routeEyebrow = document.getElementById("route-eyebrow");
+const routeTitle = document.getElementById("route-title");
+const routeDescription = document.getElementById("route-description");
+const scopeNote = document.getElementById("scope-note");
+const scopeNav = document.getElementById("scope-nav");
+const routeLinks = [...scopeNav.querySelectorAll("[data-route]")];
+const searchInput = document.getElementById("search-input");
 const cityFilter = document.getElementById("city-filter");
 const districtFilter = document.getElementById("district-filter");
 const cuisineFilter = document.getElementById("cuisine-filter");
@@ -39,12 +155,20 @@ const dinnerFilter = document.getElementById("dinner-filter");
 const kidsFilter = document.getElementById("kids-filter");
 const menuFilter = document.getElementById("menu-filter");
 const reservationFilter = document.getElementById("reservation-filter");
-const searchInput = document.getElementById("search-input");
-const venueList = document.getElementById("venue-list");
-const resultsText = document.getElementById("results-text");
-const venueCount = document.getElementById("venue-count");
+const resetFiltersButton = document.getElementById("reset-filters");
+const scopeCount = document.getElementById("scope-count");
+const showingCount = document.getElementById("showing-count");
 const mappedCount = document.getElementById("mapped-count");
 const cityCount = document.getElementById("city-count");
+const unmappedCount = document.getElementById("unmapped-count");
+const downloadStack = document.getElementById("download-stack");
+const mapSummary = document.getElementById("map-summary");
+const resultsText = document.getElementById("results-text");
+const focusCard = document.getElementById("focus-card");
+const tableSummary = document.getElementById("table-summary");
+const resultsTableBody = document.getElementById("results-table-body");
+const verificationSummary = document.getElementById("verification-summary");
+const unmappedList = document.getElementById("unmapped-list");
 
 function escapeHtml(value) {
   return String(value)
@@ -54,14 +178,19 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
+function uniqueValues(values) {
+  return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+}
+
 function yens(min, max) {
   if (!min && !max) return null;
   if (min && max && min !== max) return `JPY ${min.toLocaleString()} - ${max.toLocaleString()}`;
   return `JPY ${(max || min).toLocaleString()}`;
 }
 
-function bandBadgeLabel(meal, tier, label) {
-  return tier && label ? `${meal} ${tier} | ${label}` : "";
+function priceBandLabel(tier, label) {
+  if (!tier && !label) return null;
+  return [tier, label].filter(Boolean).join(" | ");
 }
 
 function kidLabel(value) {
@@ -76,43 +205,49 @@ function kidLabel(value) {
 }
 
 function markerColor(city) {
-  if (city === "Tokyo") return "#d2b16f";
-  if (city === "Kyoto") return "#a78bfa";
-  if (city === "Osaka") return "#4ade80";
-  return "#60a5fa";
+  if (city === "Tokyo") return "#d6a44c";
+  if (city === "Kyoto") return "#d38f5d";
+  if (city === "Osaka") return "#5fb9a6";
+  return "#78a8ff";
+}
+
+function priceMarkup(min, max, tier, label) {
+  const range = yens(min, max);
+  const band = priceBandLabel(tier, label);
+  if (!range && !band) return '<span class="cell-muted">N/A</span>';
+
+  const blocks = [];
+  if (band) {
+    blocks.push(`<div class="price-tier">${escapeHtml(band)}</div>`);
+  }
+  if (range) {
+    blocks.push(`<div class="price-raw">${escapeHtml(range)}</div>`);
+  }
+  return blocks.join("");
 }
 
 function createMarker(record) {
   if (record.lat == null || record.lng == null) return null;
 
-  const dinner = yens(record.price_dinner_min_jpy, record.price_dinner_max_jpy);
-  const lunch = yens(record.price_lunch_min_jpy, record.price_lunch_max_jpy);
-
+  const dinnerBand = priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label);
+  const lunchBand = priceBandLabel(record.price_lunch_band_tier, record.price_lunch_band_label);
   const marker = L.circleMarker([record.lat, record.lng], {
     radius: 8,
     fillColor: markerColor(record.city),
     fillOpacity: 0.92,
-    color: "#0d0d10",
+    color: "#091018",
     weight: 2,
   });
 
   marker.bindPopup(`
-    <div>
+    <div class="popup-card">
       <div class="popup-name">${escapeHtml(record.name)}</div>
       <div>${escapeHtml(record.city)} / ${escapeHtml(record.district || record.area_title)}</div>
       <div>${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
-      ${
-        record.price_dinner_band_label
-          ? `<div>${escapeHtml(`Dinner range: ${(record.price_dinner_band_tier || "").trim()} ${record.price_dinner_band_label}`.trim())}</div>`
-          : ""
-      }
-      ${dinner ? `<div>${escapeHtml(`Dinner spend: ${dinner}`)}</div>` : ""}
-      ${
-        record.price_lunch_band_label
-          ? `<div>${escapeHtml(`Lunch range: ${(record.price_lunch_band_tier || "").trim()} ${record.price_lunch_band_label}`.trim())}</div>`
-          : ""
-      }
-      ${lunch ? `<div>${escapeHtml(`Lunch spend: ${lunch}`)}</div>` : ""}
+      ${dinnerBand ? `<div>${escapeHtml(`Dinner band: ${dinnerBand}`)}</div>` : ""}
+      ${yens(record.price_dinner_min_jpy, record.price_dinner_max_jpy) ? `<div>${escapeHtml(`Dinner: ${yens(record.price_dinner_min_jpy, record.price_dinner_max_jpy)}`)}</div>` : ""}
+      ${lunchBand ? `<div>${escapeHtml(`Lunch band: ${lunchBand}`)}</div>` : ""}
+      ${yens(record.price_lunch_min_jpy, record.price_lunch_max_jpy) ? `<div>${escapeHtml(`Lunch: ${yens(record.price_lunch_min_jpy, record.price_lunch_max_jpy)}`)}</div>` : ""}
       ${record.summary_official ? `<p>${escapeHtml(record.summary_official)}</p>` : ""}
       <div>${escapeHtml(record.map_pin_note || "")}</div>
       ${
@@ -122,12 +257,10 @@ function createMarker(record) {
       }
     </div>
   `);
-  marker.on("click", () => setActiveRecord(record.id));
+  marker.on("click", () => {
+    setActiveRecord(record.id);
+  });
   return marker;
-}
-
-function uniqueValues(values) {
-  return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
 }
 
 function fillSelect(select, values, placeholder) {
@@ -160,40 +293,119 @@ function fillBandSelect(select, bands, presentKeys, placeholder) {
   }
 }
 
-function refreshFilterOptions(records) {
-  fillSelect(cityFilter, uniqueValues(records.map((r) => r.city)), "All cities");
+function currentRoute() {
+  return ROUTES[state.routeId] || ROUTES.japan;
+}
+
+function activeRecord() {
+  return state.filtered.find((record) => record.id === state.activeId) || null;
+}
+
+function resolveRouteFromHash() {
+  const hash = window.location.hash.replace(/^#\/?/, "").trim().toLowerCase();
+  if (ROUTES[hash]) {
+    return hash;
+  }
+  return "japan";
+}
+
+function renderRouteShell(route) {
+  routeEyebrow.textContent = route.eyebrow;
+  routeTitle.textContent = route.title;
+  routeDescription.textContent = route.description;
+  scopeNote.textContent = route.note;
+  mapSummary.textContent = route.mapSummary;
+
+  routeLinks.forEach((link) => {
+    link.classList.toggle("active", link.dataset.route === route.id);
+  });
+
+  downloadStack.innerHTML = "";
+  route.downloads.forEach((item) => {
+    const link = document.createElement("a");
+    link.className = `download-btn${item.primary ? " primary" : ""}`;
+    link.href = item.href;
+    link.download = "";
+    link.textContent = item.label;
+    downloadStack.appendChild(link);
+  });
+}
+
+function resetFilterControls() {
+  const route = currentRoute();
+  searchInput.value = "";
+  districtFilter.value = "";
+  cuisineFilter.value = "";
+  lunchFilter.value = "";
+  dinnerFilter.value = "";
+  kidsFilter.value = "";
+  menuFilter.value = "";
+  reservationFilter.value = "";
+  cityFilter.value = route.fixedCity || "";
+}
+
+function refreshFilterOptions() {
+  const route = currentRoute();
+  const scopeRecords = state.scopeRecords;
+  const selectedCity = route.fixedCity || cityFilter.value;
+
+  if (route.fixedCity) {
+    cityFilter.innerHTML = `<option value="${route.fixedCity}">${route.fixedCity}</option>`;
+    cityFilter.value = route.fixedCity;
+    cityFilter.disabled = true;
+  } else {
+    cityFilter.disabled = false;
+    fillSelect(cityFilter, uniqueValues(scopeRecords.map((record) => record.city)), "All cities");
+  }
+
+  const districtPool = scopeRecords.filter((record) => {
+    if (!selectedCity) return true;
+    return record.city === selectedCity;
+  });
+
   fillSelect(
     districtFilter,
-    uniqueValues(records.map((r) => r.district || r.area_title)),
+    uniqueValues(districtPool.map((record) => record.district || record.area_title)),
     "All districts"
   );
   fillSelect(
     cuisineFilter,
-    uniqueValues(records.flatMap((r) => r.cuisines || [])),
+    uniqueValues(scopeRecords.flatMap((record) => record.cuisines || [])),
     "All cuisines"
   );
   fillBandSelect(
     lunchFilter,
     LUNCH_BANDS,
-    new Set(records.map((r) => r.price_lunch_band_key).filter(Boolean)),
+    new Set(scopeRecords.map((record) => record.price_lunch_band_key).filter(Boolean)),
     "All lunch bands"
   );
   fillBandSelect(
     dinnerFilter,
     DINNER_BANDS,
-    new Set(records.map((r) => r.price_dinner_band_key).filter(Boolean)),
+    new Set(scopeRecords.map((record) => record.price_dinner_band_key).filter(Boolean)),
     "All dinner bands"
   );
   fillSelect(
     reservationFilter,
-    uniqueValues(records.map((r) => r.reservation_type)),
-    "All"
+    uniqueValues(scopeRecords.map((record) => record.reservation_type)),
+    "All reservation styles"
   );
+}
+
+function ensureActiveRecord() {
+  if (!state.filtered.length) {
+    state.activeId = null;
+    return;
+  }
+  if (!state.filtered.some((record) => record.id === state.activeId)) {
+    state.activeId = state.filtered[0].id;
+  }
 }
 
 function filterRestaurants() {
   const search = searchInput.value.trim().toLowerCase();
-  const city = cityFilter.value;
+  const route = currentRoute();
+  const city = route.fixedCity || cityFilter.value;
   const district = districtFilter.value;
   const cuisine = cuisineFilter.value;
   const lunchBand = lunchFilter.value;
@@ -202,7 +414,7 @@ function filterRestaurants() {
   const menu = menuFilter.value;
   const reservation = reservationFilter.value;
 
-  state.filtered = state.restaurants.filter((record) => {
+  state.filtered = state.scopeRecords.filter((record) => {
     if (city && record.city !== city) return false;
     if (district && (record.district || record.area_title) !== district) return false;
     if (cuisine && !(record.cuisines || []).includes(cuisine)) return false;
@@ -212,94 +424,39 @@ function filterRestaurants() {
     if (menu === "yes" && !record.english_menu) return false;
     if (menu === "no" && record.english_menu) return false;
     if (reservation && record.reservation_type !== reservation) return false;
-    if (search && !record.search_text.includes(search)) return false;
+    if (search && !(record.search_text || "").includes(search)) return false;
     return true;
   });
 
-  renderList();
-  renderMarkers();
+  ensureActiveRecord();
   renderStats();
+  renderMarkers();
+  renderFocusCard();
+  renderTable();
+  renderUnmappedList();
 }
 
 function renderStats() {
-  venueCount.textContent = state.restaurants.length;
-  mappedCount.textContent = state.restaurants.filter((r) => r.lat != null && r.lng != null).length;
-  cityCount.textContent = uniqueValues(state.restaurants.map((r) => r.city)).length;
-  resultsText.textContent = `${state.filtered.length} result${state.filtered.length === 1 ? "" : "s"}`;
-}
+  const route = currentRoute();
+  const filteredMapped = state.filtered.filter((record) => record.lat != null && record.lng != null).length;
+  const filteredUnmapped = state.filtered.filter((record) => record.lat == null || record.lng == null).length;
+  const scopeCities = uniqueValues(state.scopeRecords.map((record) => record.city));
 
-function setActiveRecord(id) {
-  state.activeId = id;
-  renderList();
-}
+  scopeCount.textContent = state.scopeRecords.length;
+  showingCount.textContent = state.filtered.length;
+  mappedCount.textContent = filteredMapped;
+  cityCount.textContent = scopeCities.length;
+  unmappedCount.textContent = filteredUnmapped;
 
-function renderList() {
-  if (!state.filtered.length) {
-    venueList.innerHTML = '<div class="empty-state">No venues match the current filters.</div>';
-    return;
-  }
-
-  venueList.innerHTML = "";
-  state.filtered.forEach((record) => {
-    const card = document.createElement("article");
-    card.className = `venue-card${record.id === state.activeId ? " active" : ""}`;
-    card.addEventListener("click", () => {
-      setActiveRecord(record.id);
-      const marker = state.markers.get(record.id);
-      if (marker) {
-        map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 13), { duration: 0.6 });
-        marker.openPopup();
-      }
-    });
-
-    const dinner = yens(record.price_dinner_min_jpy, record.price_dinner_max_jpy);
-    const lunch = yens(record.price_lunch_min_jpy, record.price_lunch_max_jpy);
-    const tags = [
-      `<span class="badge gold">${escapeHtml(record.city)}</span>`,
-      record.price_dinner_band_label && record.price_dinner_band_tier
-        ? `<span class="badge amber">${escapeHtml(
-            bandBadgeLabel("Dinner", record.price_dinner_band_tier, record.price_dinner_band_label)
-          )}</span>`
-        : "",
-      record.price_lunch_band_label && record.price_lunch_band_tier
-        ? `<span class="badge blue">${escapeHtml(
-            bandBadgeLabel("Lunch", record.price_lunch_band_tier, record.price_lunch_band_label)
-          )}</span>`
-        : "",
-      `<span class="badge">${escapeHtml(kidLabel(record.child_policy_norm))}</span>`,
-      record.english_menu ? '<span class="badge green">English menu</span>' : "",
-      record.reservation_type ? `<span class="badge purple">${escapeHtml(record.reservation_type)}</span>` : "",
-    ]
-      .filter(Boolean)
-      .join("");
-
-    card.innerHTML = `
-      <div class="venue-top">
-        <h3 class="venue-name">${escapeHtml(record.name)}</h3>
-        ${record.lat != null && record.lng != null ? '<span class="badge green">Mapped</span>' : '<span class="badge">Unmapped</span>'}
-      </div>
-      <div class="venue-meta">
-        <span>${escapeHtml(record.city)} / ${escapeHtml(record.district || record.area_title)}</span>
-        <span>${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</span>
-      </div>
-      <p class="venue-summary">${escapeHtml(record.summary_official || "No official summary available.")}</p>
-      <div class="venue-tags">${tags}</div>
-      <div class="venue-meta">
-        ${dinner ? `<span>Dinner: ${escapeHtml(dinner)}</span>` : ""}
-        ${lunch ? `<span>Lunch: ${escapeHtml(lunch)}</span>` : ""}
-      </div>
-      <div class="venue-meta">
-        <span>${escapeHtml(record.map_pin_note || "")}</span>
-      </div>
-      <div class="venue-links">
-        ${record.source_url ? `<a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Pocket Concierge</a>` : ""}
-      </div>
-    `;
-    venueList.appendChild(card);
-  });
+  const resultLine = `${state.filtered.length} result${state.filtered.length === 1 ? "" : "s"} in ${route.label}`;
+  resultsText.textContent = resultLine;
+  tableSummary.textContent = `Showing ${state.filtered.length} of ${state.scopeRecords.length} venues in the current route.`;
+  mapSummary.textContent = `${route.mapSummary} ${filteredMapped} mapped pin${filteredMapped === 1 ? "" : "s"} in the current filtered view.`;
+  verificationSummary.textContent = `${filteredUnmapped} venue${filteredUnmapped === 1 ? "" : "s"} in the current view still need stronger location verification before they can be trusted on the map.`;
 }
 
 function renderMarkers() {
+  const route = currentRoute();
   state.markers.forEach((marker) => map.removeLayer(marker));
   state.markers.clear();
 
@@ -313,10 +470,188 @@ function renderMarkers() {
   });
 
   if (bounds.length) {
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
+    map.fitBounds(bounds, { padding: [34, 34], maxZoom: 12 });
   } else {
-    map.setView([35.676, 137.5], 5);
+    map.setView(route.defaultView, route.defaultZoom);
   }
+}
+
+function renderFocusCard() {
+  const record = activeRecord();
+  if (!record) {
+    focusCard.innerHTML = '<div class="empty-state">No venue matches the current route and filters.</div>';
+    return;
+  }
+
+  const tags = [
+    `<span class="badge gold">${escapeHtml(record.city)}</span>`,
+    record.price_dinner_band_tier && record.price_dinner_band_label
+      ? `<span class="badge amber">${escapeHtml(priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label))}</span>`
+      : "",
+    record.price_lunch_band_tier && record.price_lunch_band_label
+      ? `<span class="badge blue">${escapeHtml(priceBandLabel(record.price_lunch_band_tier, record.price_lunch_band_label))}</span>`
+      : "",
+    `<span class="badge">${escapeHtml(kidLabel(record.child_policy_norm))}</span>`,
+    record.english_menu ? '<span class="badge green">English menu</span>' : "",
+    record.reservation_type ? `<span class="badge purple">${escapeHtml(record.reservation_type)}</span>` : "",
+  ]
+    .filter(Boolean)
+    .join("");
+
+  focusCard.innerHTML = `
+    <div class="focus-kicker">${escapeHtml(record.city)} / ${escapeHtml(record.district || record.area_title)}</div>
+    <h3 class="focus-title">${escapeHtml(record.name)}</h3>
+    <div class="focus-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
+    <div class="focus-tags">${tags}</div>
+    <p class="focus-summary">${escapeHtml(record.summary_official || "No official summary available.")}</p>
+    <div class="price-grid">
+      <div class="price-card">
+        <span class="price-label">Dinner</span>
+        ${priceMarkup(
+          record.price_dinner_min_jpy,
+          record.price_dinner_max_jpy,
+          record.price_dinner_band_tier,
+          record.price_dinner_band_label
+        )}
+      </div>
+      <div class="price-card">
+        <span class="price-label">Lunch</span>
+        ${priceMarkup(
+          record.price_lunch_min_jpy,
+          record.price_lunch_max_jpy,
+          record.price_lunch_band_tier,
+          record.price_lunch_band_label
+        )}
+      </div>
+    </div>
+    <div class="focus-note">${escapeHtml(record.map_pin_note || "")} Verify the exact venue address on the official source before relying on this pin for dining-credit use.</div>
+    <div class="focus-actions">
+      ${
+        record.source_url
+          ? `<a class="inline-link" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Open Pocket Concierge</a>`
+          : ""
+      }
+      ${
+        record.lat != null && record.lng != null
+          ? `<button type="button" class="ghost-btn secondary" data-focus-map="true">Center on map</button>`
+          : ""
+      }
+    </div>
+  `;
+
+  const centerButton = focusCard.querySelector("[data-focus-map='true']");
+  if (centerButton) {
+    centerButton.addEventListener("click", () => {
+      focusActiveRecordOnMap();
+    });
+  }
+}
+
+function renderTable() {
+  if (!state.filtered.length) {
+    resultsTableBody.innerHTML =
+      '<tr><td colspan="8" class="empty-table">No venues match the current route and filters.</td></tr>';
+    return;
+  }
+
+  resultsTableBody.innerHTML = "";
+  state.filtered.forEach((record) => {
+    const row = document.createElement("tr");
+    row.className = record.id === state.activeId ? "active" : "";
+    row.addEventListener("click", () => {
+      setActiveRecord(record.id);
+      focusActiveRecordOnMap();
+    });
+
+    row.innerHTML = `
+      <td>
+        <div class="table-title">${escapeHtml(record.name)}</div>
+        <div class="table-sub">${record.lat != null && record.lng != null ? "Mapped" : "Unmapped"}</div>
+      </td>
+      <td>
+        <div>${escapeHtml(record.city)}</div>
+        <div class="table-sub">${escapeHtml(record.district || record.area_title)}</div>
+      </td>
+      <td>${escapeHtml((record.cuisines || []).join(", ") || "Unknown")}</td>
+      <td>${priceMarkup(
+        record.price_dinner_min_jpy,
+        record.price_dinner_max_jpy,
+        record.price_dinner_band_tier,
+        record.price_dinner_band_label
+      )}</td>
+      <td>${priceMarkup(
+        record.price_lunch_min_jpy,
+        record.price_lunch_max_jpy,
+        record.price_lunch_band_tier,
+        record.price_lunch_band_label
+      )}</td>
+      <td>${escapeHtml(kidLabel(record.child_policy_norm))}</td>
+      <td>${record.english_menu ? "Yes" : "No"}</td>
+      <td>${escapeHtml(record.reservation_type || "N/A")}</td>
+    `;
+    resultsTableBody.appendChild(row);
+  });
+}
+
+function renderUnmappedList() {
+  const unmapped = state.filtered.filter((record) => record.lat == null || record.lng == null);
+  if (!unmapped.length) {
+    unmappedList.innerHTML =
+      '<div class="empty-state">Everything in the current view has a map pin. Address-level verification is still separate from pin presence.</div>';
+    return;
+  }
+
+  unmappedList.innerHTML = "";
+  unmapped.forEach((record) => {
+    const item = document.createElement("article");
+    item.className = "verify-card";
+    item.innerHTML = `
+      <div class="verify-top">
+        <div>
+          <h3>${escapeHtml(record.name)}</h3>
+          <p>${escapeHtml(record.city)} / ${escapeHtml(record.district || record.area_title)}</p>
+        </div>
+        <span class="badge">Unmapped</span>
+      </div>
+      <p class="verify-copy">Not plotted because the current public geocoding step did not return a dependable match. This venue should be manually verified before being treated as navigation-safe.</p>
+      ${
+        record.source_url
+          ? `<a class="inline-link" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Open source page</a>`
+          : ""
+      }
+    `;
+    unmappedList.appendChild(item);
+  });
+}
+
+function setActiveRecord(id) {
+  state.activeId = id;
+  renderFocusCard();
+  renderTable();
+}
+
+function focusActiveRecordOnMap() {
+  const record = activeRecord();
+  if (!record) return;
+  const marker = state.markers.get(record.id);
+  if (!marker) return;
+  map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 13), { duration: 0.6 });
+  marker.openPopup();
+}
+
+function applyRoute(routeId) {
+  state.routeId = ROUTES[routeId] ? routeId : "japan";
+  const route = currentRoute();
+  state.scopeRecords = state.restaurants.filter((record) => route.matcher(record));
+  state.activeId = null;
+  renderRouteShell(route);
+  resetFilterControls();
+  refreshFilterOptions();
+  filterRestaurants();
+}
+
+function handleHashRoute() {
+  applyRoute(resolveRouteFromHash());
 }
 
 async function init() {
@@ -325,13 +660,20 @@ async function init() {
   state.restaurants.forEach((record) => {
     record.search_text = (record.search_text || "").toLowerCase();
   });
-  refreshFilterOptions(state.restaurants);
-  filterRestaurants();
+
+  handleHashRoute();
+  if (!window.location.hash) {
+    window.location.hash = "#/japan";
+  }
 }
 
+searchInput.addEventListener("input", filterRestaurants);
+cityFilter.addEventListener("change", () => {
+  refreshFilterOptions();
+  filterRestaurants();
+});
+
 [
-  searchInput,
-  cityFilter,
   districtFilter,
   cuisineFilter,
   lunchFilter,
@@ -339,11 +681,26 @@ async function init() {
   kidsFilter,
   menuFilter,
   reservationFilter,
-].forEach((element) => element.addEventListener("input", filterRestaurants));
+].forEach((element) => {
+  element.addEventListener("change", filterRestaurants);
+});
+
+resetFiltersButton.addEventListener("click", () => {
+  resetFilterControls();
+  refreshFilterOptions();
+  filterRestaurants();
+});
+
+window.addEventListener("hashchange", handleHashRoute);
 
 init().catch((error) => {
   console.error(error);
-  venueList.innerHTML =
+  focusCard.innerHTML =
     '<div class="empty-state">Data failed to load. Run the sync script and serve this folder over HTTP.</div>';
   resultsText.textContent = "Load failed";
+  tableSummary.textContent = "Load failed";
+  resultsTableBody.innerHTML =
+    '<tr><td colspan="8" class="empty-table">The dataset failed to load.</td></tr>';
+  verificationSummary.textContent = "Load failed";
+  unmappedList.innerHTML = '<div class="empty-state">Verification list unavailable because the dataset failed to load.</div>';
 });
