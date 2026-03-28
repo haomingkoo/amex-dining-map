@@ -27,11 +27,14 @@ KML_PATH = KML_DIR / "plat-stays-all.kml"
 SOURCE_META_PATH = DATA_DIR / "plat-stay-source.json"
 GEOCODE_CACHE_PATH = DATA_DIR / "plat_stay_geocode_cache.json"
 GEOAPIFY_CACHE_PATH = DATA_DIR / "plat_stay_geoapify_cache.json"
+TOMTOM_CACHE_PATH = DATA_DIR / "plat_stay_tomtom_cache.json"
+MANUAL_OVERRIDE_PATH = DATA_DIR / "plat_stay_manual_overrides.json"
 
 CANONICAL_SOURCE_URL = "https://go.amex/platstay"
 USER_AGENT = "AmexBenefitsExplorer/0.1 (+https://kooexperience.com/amex-dining-map/)"
 DEFAULT_BLACKOUT_YEAR = 2026
 GEOAPIFY_API_KEY = os.environ.get("GEOAPIFY_API_KEY")
+TOMTOM_API_KEY = os.environ.get("TOMTOM_API_KEY")
 
 COUNTRY_ALIASES = {
     "singapore": "Singapore",
@@ -236,6 +239,14 @@ def normalize_match_text(value: str | None) -> str:
     if not value:
         return ""
     return re.sub(r"[^a-z0-9]+", "", value.lower())
+
+
+def contains_normalized_text(haystack: str | None, needle: str | None) -> bool:
+    haystack_normalized = normalize_match_text(haystack)
+    needle_normalized = normalize_match_text(needle)
+    if not haystack_normalized or not needle_normalized:
+        return False
+    return needle_normalized in haystack_normalized
 
 
 def collapse_multiline(parts: list[str]) -> str:
@@ -638,6 +649,133 @@ def apply_geoapify_hit(record: dict, label: str, hit: dict, confidence: str, not
     record["map_pin_note"] = note
 
 
+def tomtom_search(query: str, country_code: str | None, cache: dict) -> list[dict]:
+    if not TOMTOM_API_KEY:
+        return []
+
+    cache_key = f"{query}::{country_code or ''}"
+    if cache_key in cache:
+        return cache[cache_key] or []
+
+    params = {
+        "key": TOMTOM_API_KEY,
+        "limit": "5",
+        "idxSet": "POI",
+        "language": "en-GB",
+    }
+    if country_code:
+        params["countrySet"] = country_code
+
+    url = f"https://api.tomtom.com/search/2/search/{urllib.parse.quote(query)}.json?{urllib.parse.urlencode(params)}"
+    request = urllib.request.Request(url, headers={"Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except Exception:
+        cache[cache_key] = []
+        save_json(TOMTOM_CACHE_PATH, cache)
+        return []
+
+    results = payload.get("results") or []
+    cache[cache_key] = results
+    save_json(TOMTOM_CACHE_PATH, cache)
+    time.sleep(0.25)
+    return results
+
+
+def tomtom_name_match(record: dict, result: dict) -> bool:
+    poi = result.get("poi") or {}
+    name = normalize_match_text(poi.get("name"))
+    record_name = normalize_match_text(normalize_name_for_query(record["name"]))
+    if not name or not record_name:
+        return False
+    return name == record_name or name in record_name or record_name in name
+
+
+def tomtom_hotel_categories(result: dict) -> bool:
+    poi = result.get("poi") or {}
+    categories = [value.lower() for value in (poi.get("categories") or [])]
+    return any(category in {"hotel", "hotel/motel", "motel", "resort", "guest house"} for category in categories)
+
+
+def tomtom_address_match(record: dict, result: dict) -> bool:
+    address = normalize_match_text((result.get("address") or {}).get("freeformAddress"))
+    record_address = normalize_match_text(record["address"])
+    if not address or not record_address:
+        return False
+    return address in record_address or record_address in address
+
+
+def refine_with_tomtom(record: dict, cache: dict) -> None:
+    if not TOMTOM_API_KEY:
+        return
+
+    country_code = country_code_for_name(record.get("country"))
+    query = clean_whitespace(
+        f"{normalize_name_for_query(record['name'])}, {infer_city_from_address(record['address'], record.get('country')) or ''}, {record.get('country') or ''}"
+    )
+    for result in tomtom_search(query, country_code, cache):
+        if not tomtom_hotel_categories(result):
+            continue
+        if not tomtom_name_match(record, result):
+            continue
+
+        position = result.get("position") or {}
+        if position.get("lat") is None or position.get("lon") is None:
+            continue
+
+        record["lat"] = float(position["lat"])
+        record["lng"] = float(position["lon"])
+        record["coordinate_source"] = "tomtom_poi_match"
+        record["coordinate_confidence"] = "poi_matched"
+        record["city"] = (
+            (result.get("address") or {}).get("municipality")
+            or (result.get("address") or {}).get("countrySecondarySubdivision")
+            or record.get("city")
+        )
+        record["map_pin_note"] = "Pin is based on an exact hotel-name POI match from TomTom. Verify the official property address before booking or arrival."
+        if tomtom_address_match(record, result):
+            record["coordinate_confidence"] = "poi_address_matched"
+            record["map_pin_note"] = "Pin is based on a matched hotel POI and matching address from TomTom. Verify booking terms with the official Plat Stay source before reserving."
+        return
+
+
+def apply_manual_override(record: dict, overrides: dict[str, dict]) -> None:
+    override = overrides.get(record["id"])
+    if not override:
+        return
+
+    expected_name = override.get("expected_name")
+    if expected_name and not contains_normalized_text(record["name"], expected_name):
+        return
+
+    expected_address_fragment = override.get("expected_address_fragment")
+    if expected_address_fragment and not contains_normalized_text(record["address"], expected_address_fragment):
+        return
+
+    lat = override.get("lat")
+    lng = override.get("lng")
+    if lat is None or lng is None:
+        return
+
+    record["lat"] = float(lat)
+    record["lng"] = float(lng)
+    record["coordinate_source"] = "manual_override"
+    record["coordinate_confidence"] = "manual_verified"
+    record["verification_source_label"] = override.get("source_label")
+    record["verification_source_url"] = override.get("source_url")
+    record["verification_date"] = override.get("verified_at")
+    record["verification_notes"] = override.get("notes")
+    record["map_pin_note"] = (
+        "Pin is manually verified and stored as an override for this property. "
+        "Confirm booking terms with the official Plat Stay source before reserving."
+    )
+    if override.get("city"):
+        record["city"] = override.get("city")
+    if override.get("country"):
+        record["country"] = override.get("country")
+
+
 def refine_with_geoapify(record: dict, cache: dict) -> None:
     if not GEOAPIFY_API_KEY:
         return
@@ -665,6 +803,9 @@ def refine_with_geoapify(record: dict, cache: dict) -> None:
 
 
 def geocode_record(record: dict, cache: dict) -> None:
+    if record.get("lat") is not None and record.get("lng") is not None:
+        return
+
     normalized_address = normalize_address_for_query(record["address"])
     normalized_name = normalize_name_for_query(record["name"])
     country = record.get("country")
@@ -717,6 +858,9 @@ def geocode_record(record: dict, cache: dict) -> None:
             record["breakfast_note"] = "Room only. Breakfast is not included for Singapore properties."
         elif record.get("country"):
             record["breakfast_note"] = "Breakfast for 2 is available at overseas properties only."
+        break
+
+    if record.get("coordinate_confidence") in {"manual_verified", "poi_matched", "poi_address_matched"}:
         return
 
 
@@ -945,9 +1089,19 @@ def main() -> None:
 
     records = build_records(pdf_bytes, resolved_url, fetched_at, page_count)
 
+    manual_overrides = load_json(MANUAL_OVERRIDE_PATH, {})
+    for record in records:
+        apply_manual_override(record, manual_overrides)
+
     geocode_cache = load_json(GEOCODE_CACHE_PATH, {})
+    geoapify_cache = load_json(GEOAPIFY_CACHE_PATH, {})
+    tomtom_cache = load_json(TOMTOM_CACHE_PATH, {})
     for record in records:
         geocode_record(record, geocode_cache)
+        if record.get("coordinate_confidence") not in {"manual_verified"}:
+            refine_with_geoapify(record, geoapify_cache)
+        if record.get("coordinate_confidence") not in {"manual_verified", "poi_address_matched"}:
+            refine_with_tomtom(record, tomtom_cache)
         record["search_text"] = build_search_text(record)
 
     save_json(JSON_PATH, records)
