@@ -1,5 +1,7 @@
 const DATA_URL = "../data/japan-restaurants.json";
 const STAYS_DATA_URL = "../data/plat-stays.json";
+const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
+const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
 
 const LUNCH_BANDS = [
   { key: "under-5k", label: "Under JPY 5k", tier: "$" },
@@ -843,24 +845,15 @@ function renderStats() {
 }
 
 function renderMarkers() {
-  const route = currentRoute();
   state.markers.forEach((marker) => map.removeLayer(marker));
   state.markers.clear();
 
-  const bounds = [];
   state.filtered.forEach((record) => {
     const marker = createMarker(record);
     if (!marker) return;
     marker.addTo(map);
     state.markers.set(record.id, marker);
-    bounds.push(marker.getLatLng());
   });
-
-  if (bounds.length) {
-    map.fitBounds(bounds, { padding: [34, 34], maxZoom: 12 });
-  } else {
-    map.setView(route.defaultView, route.defaultZoom);
-  }
 }
 
 function renderFocusCard() {
@@ -1114,6 +1107,21 @@ function stayGoogleMapsUrl(record) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(record.address)}`;
 }
 
+function stayReservationActions(record) {
+  const links = [];
+  if (record.reservation_primary_url && record.reservation_primary_label) {
+    links.push(
+      `<a class="inline-link" href="${escapeHtml(record.reservation_primary_url)}" target="_blank" rel="noopener">${escapeHtml(record.reservation_primary_label)}</a>`
+    );
+  }
+  if (record.reservation_secondary_url && record.reservation_secondary_label) {
+    links.push(
+      `<a class="inline-link" href="${escapeHtml(record.reservation_secondary_url)}" target="_blank" rel="noopener">${escapeHtml(record.reservation_secondary_label)}</a>`
+    );
+  }
+  return links.join("");
+}
+
 function stayDateRange() {
   if (!staysCheckinInput.value || !staysCheckoutInput.value) {
     return null;
@@ -1361,23 +1369,14 @@ function renderStayDownloads(route) {
 }
 
 function renderStayMarkers() {
-  const route = currentRoute();
   clearStayMarkers();
 
-  const bounds = [];
   state.stayFiltered.forEach((record) => {
     const marker = createStayMarker(record);
     if (!marker) return;
     marker.addTo(staysMap);
     state.stayMarkers.set(record.id, marker);
-    bounds.push(marker.getLatLng());
   });
-
-  if (bounds.length) {
-    staysMap.fitBounds(bounds, { padding: [34, 34], maxZoom: 10 });
-  } else {
-    staysMap.setView(route.defaultView, route.defaultZoom);
-  }
 }
 
 function renderStayFocusCard() {
@@ -1429,6 +1428,7 @@ function renderStayFocusCard() {
     <div class="focus-actions">
       <a class="inline-link" href="${escapeHtml(stayGoogleMapsUrl(record))}" target="_blank" rel="noopener">Open in Google Maps</a>
       <a class="inline-link" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Open official source</a>
+      ${stayReservationActions(record)}
       ${
         record.lat != null && record.lng != null
           ? `<button type="button" class="ghost-btn secondary" data-focus-stay-map="true">Center on map</button>`
@@ -1511,6 +1511,7 @@ function renderStayMobileCards() {
           Show on map
         </button>
         <a class="inline-link" href="${escapeHtml(stayGoogleMapsUrl(record))}" target="_blank" rel="noopener">Google Maps</a>
+        ${stayReservationActions(record)}
       </div>
     `;
     const focusButton = card.querySelector("[data-mobile-stay-focus]");
@@ -1542,6 +1543,44 @@ function focusActiveStayOnMap() {
   if (!marker) return;
   staysMap.flyTo(marker.getLatLng(), Math.max(staysMap.getZoom(), 8), { duration: 0.6 });
   marker.openPopup();
+}
+
+function fitDiningMapToVisibleMarkers() {
+  const route = currentRoute();
+  const latLngs = state.filtered
+    .filter((record) => record.lat != null && record.lng != null)
+    .map((record) => L.latLng(record.lat, record.lng));
+
+  if (!latLngs.length) {
+    map.setView(route.defaultView, route.defaultZoom);
+    return;
+  }
+
+  if (latLngs.length === 1) {
+    map.setView(latLngs[0], Math.min(route.defaultZoom, 13));
+    return;
+  }
+
+  map.fitBounds(L.latLngBounds(latLngs), DINING_FIT_OPTIONS);
+}
+
+function fitStayMapToVisibleMarkers() {
+  const route = currentRoute();
+  const latLngs = state.stayFiltered
+    .filter((record) => record.lat != null && record.lng != null)
+    .map((record) => L.latLng(record.lat, record.lng));
+
+  if (!latLngs.length) {
+    staysMap.setView(route.defaultView, route.defaultZoom);
+    return;
+  }
+
+  if (latLngs.length === 1) {
+    staysMap.setView(latLngs[0], Math.min(route.defaultZoom, 8));
+    return;
+  }
+
+  staysMap.fitBounds(L.latLngBounds(latLngs), STAYS_FIT_OPTIONS);
 }
 
 function stayPresetRange(kind) {

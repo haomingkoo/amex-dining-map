@@ -140,6 +140,28 @@ def pdf_to_text(pdf_path: Path) -> str:
     return result.stdout.decode("utf-8", errors="replace")
 
 
+def extract_pdf_contact_links(pdf_path: Path) -> tuple[list[str], str | None]:
+    result = subprocess.run(
+        ["pdftohtml", "-stdout", "-i", "-noframes", str(pdf_path)],
+        capture_output=True,
+        check=True,
+    )
+    html_text = result.stdout.decode("utf-8", errors="replace")
+    hrefs = re.findall(r'href="([^"]+)"', html_text)
+
+    collapsed: list[str] = []
+    for href in hrefs:
+        if not collapsed or collapsed[-1] != href:
+            collapsed.append(href)
+
+    mailto_links = [href for href in collapsed if href.startswith("mailto:")]
+    booking_url = next(
+        (href for href in collapsed if "reservations.frasershospitality.com" in href),
+        None,
+    )
+    return mailto_links, booking_url
+
+
 def split_property_blocks(text: str) -> list[list[str]]:
     lines = text.splitlines()
     start_index = next((i for i, line in enumerate(lines) if "The Fullerton" in line), None)
@@ -599,6 +621,7 @@ def build_records(pdf_bytes: bytes, resolved_url: str, fetched_at: str, page_cou
 
     try:
         text = pdf_to_text(pdf_path)
+        mailto_links, booking_url = extract_pdf_contact_links(pdf_path)
     finally:
         pdf_path.unlink(missing_ok=True)
 
@@ -644,6 +667,10 @@ def build_records(pdf_bytes: bytes, resolved_url: str, fetched_at: str, page_cou
             "reservation_phone": parsed.reservation_phone,
             "reservation_email": parsed.reservation_email,
             "reservation_mode": parsed.reservation_mode,
+            "reservation_primary_url": None,
+            "reservation_primary_label": None,
+            "reservation_secondary_url": None,
+            "reservation_secondary_label": None,
             "lat": None,
             "lng": None,
             "coordinate_source": None,
@@ -657,8 +684,51 @@ def build_records(pdf_bytes: bytes, resolved_url: str, fetched_at: str, page_cou
         record["search_text"] = build_search_text(record)
         records.append(record)
 
-    deduped = {record["id"]: record for record in records}
-    return sorted(deduped.values(), key=lambda item: ((item.get("country") or ""), item["name"]))
+    deduped = {}
+    for record in records:
+        deduped.setdefault(record["id"], record)
+
+    ordered_records = list(deduped.values())
+    attach_reservation_links(ordered_records, mailto_links, booking_url)
+    return sorted(ordered_records, key=lambda item: ((item.get("country") or ""), item["name"]))
+
+
+def attach_reservation_links(records: list[dict], mailto_links: list[str], booking_url: str | None) -> None:
+    mailto_index = 0
+    for record in records:
+        is_fraser_family = re.match(r"^(Fraser|Capri|Modena)\b", record["name"]) is not None
+        if record["reservation_mode"] == "booking_link_prompt":
+            if booking_url:
+                record["reservation_primary_url"] = booking_url
+                record["reservation_primary_label"] = "Open booking portal"
+            continue
+
+        if mailto_index < len(mailto_links):
+            mailto_link = mailto_links[mailto_index]
+            mailto_index += 1
+            email = mailto_link.removeprefix("mailto:")
+            record["reservation_email"] = email
+            if record.get("reservation_phone"):
+                record["reservation_raw"] = f"{record['reservation_phone']} | {email}"
+            else:
+                record["reservation_raw"] = email
+
+        if record.get("reservation_email"):
+            record["reservation_primary_url"] = f"mailto:{record['reservation_email']}"
+            record["reservation_primary_label"] = "Email reservations"
+        if record.get("reservation_phone"):
+            target = f"tel:{re.sub(r'[^\d+]+', '', record['reservation_phone'])}"
+            if record.get("reservation_primary_url"):
+                record["reservation_secondary_url"] = target
+                record["reservation_secondary_label"] = "Call reservations"
+            else:
+                record["reservation_primary_url"] = target
+                record["reservation_primary_label"] = "Call reservations"
+
+        if not record.get("reservation_primary_url") and booking_url and is_fraser_family:
+            record["reservation_raw"] = record.get("reservation_raw") or "Reserve your room here"
+            record["reservation_primary_url"] = booking_url
+            record["reservation_primary_label"] = "Open booking portal"
 
 
 def main() -> None:
