@@ -126,6 +126,8 @@ const state = {
   markers: new Map(),
   activeId: null,
   routeId: "japan",
+  mobileToolbarOpen: false,
+  tableOpen: false,
 };
 
 const map = L.map("map", {
@@ -146,6 +148,12 @@ const routeDescription = document.getElementById("route-description");
 const scopeNote = document.getElementById("scope-note");
 const scopeNav = document.getElementById("scope-nav");
 const routeLinks = [...scopeNav.querySelectorAll("[data-route]")];
+const toolbar = document.getElementById("filter-toolbar");
+const toolbarToggle = document.getElementById("toolbar-toggle");
+const toolbarToggleMeta = document.getElementById("toolbar-toggle-meta");
+const tablePanel = document.getElementById("results-table-panel");
+const tableToggle = document.getElementById("table-toggle");
+const tableToggleMeta = document.getElementById("table-toggle-meta");
 const searchInput = document.getElementById("search-input");
 const cityFilter = document.getElementById("city-filter");
 const districtFilter = document.getElementById("district-filter");
@@ -165,7 +173,9 @@ const mapSummary = document.getElementById("map-summary");
 const resultsText = document.getElementById("results-text");
 const focusCard = document.getElementById("focus-card");
 const tableSummary = document.getElementById("table-summary");
+const mobileSummary = document.getElementById("mobile-summary");
 const resultsTableBody = document.getElementById("results-table-body");
+const mobileResultsList = document.getElementById("mobile-results-list");
 
 function escapeHtml(value) {
   return String(value)
@@ -195,10 +205,10 @@ function kidLabel(value) {
     kid_friendly: "Kid friendly",
     older_children_only: "Older children only",
     teens_only: "Teens only",
-    policy_available: "Policy available",
-    unknown: "Not stated",
+    policy_available: "Child rules listed",
+    unknown: "No child policy listed",
   };
-  return labels[value] || "Not stated";
+  return labels[value] || "No child policy listed";
 }
 
 function markerColor(city) {
@@ -309,6 +319,54 @@ function fillBandSelect(select, bands, presentKeys, placeholder) {
 
 function currentRoute() {
   return ROUTES[state.routeId] || ROUTES.japan;
+}
+
+function activeFilterCount() {
+  const route = currentRoute();
+  let count = 0;
+  if (searchInput.value.trim()) count += 1;
+  if (!route.fixedCity && cityFilter.value) count += 1;
+  if (districtFilter.value) count += 1;
+  if (cuisineFilter.value) count += 1;
+  if (lunchFilter.value) count += 1;
+  if (dinnerFilter.value) count += 1;
+  if (kidsFilter.value) count += 1;
+  if (menuFilter.value) count += 1;
+  if (reservationFilter.value) count += 1;
+  return count;
+}
+
+function setToolbarOpen(isOpen) {
+  state.mobileToolbarOpen = isOpen;
+  toolbar.classList.toggle("is-open", isOpen);
+  toolbarToggle.setAttribute("aria-expanded", String(isOpen));
+  const icon = toolbarToggle.querySelector(".toolbar-toggle-icon");
+  if (icon) {
+    icon.textContent = isOpen ? "-" : "+";
+  }
+}
+
+function renderToolbarToggle() {
+  const count = activeFilterCount();
+  toolbarToggleMeta.textContent =
+    count > 0 ? `${count} active filter${count === 1 ? "" : "s"}` : "All filters off";
+}
+
+function setTableOpen(isOpen) {
+  state.tableOpen = isOpen;
+  tablePanel.classList.toggle("is-open", isOpen);
+  tableToggle.setAttribute("aria-expanded", String(isOpen));
+  const icon = tableToggle.querySelector(".toolbar-toggle-icon");
+  if (icon) {
+    icon.textContent = isOpen ? "-" : "+";
+  }
+}
+
+function renderTableToggle() {
+  const count = state.filtered.length;
+  tableToggleMeta.textContent = state.tableOpen
+    ? `Showing ${count} detailed row${count === 1 ? "" : "s"}`
+    : `${count} row${count === 1 ? "" : "s"} available for deeper scanning`;
 }
 
 function activeRecord() {
@@ -447,6 +505,7 @@ function filterRestaurants() {
   renderMarkers();
   renderFocusCard();
   renderTable();
+  renderMobileCards();
 }
 
 function renderStats() {
@@ -462,7 +521,10 @@ function renderStats() {
   const resultLine = `${state.filtered.length} result${state.filtered.length === 1 ? "" : "s"} in ${route.label}`;
   resultsText.textContent = resultLine;
   tableSummary.textContent = `Showing ${state.filtered.length} of ${state.scopeRecords.length} venues in the current route.`;
+  mobileSummary.textContent = tableSummary.textContent;
   mapSummary.textContent = `${route.mapSummary} ${filteredMapped} mapped pin${filteredMapped === 1 ? "" : "s"} in the current filtered view.`;
+  renderToolbarToggle();
+  renderTableToggle();
 }
 
 function renderMarkers() {
@@ -627,12 +689,98 @@ function renderTable() {
   });
 }
 
+function renderMobileCards() {
+  if (!state.filtered.length) {
+    mobileResultsList.innerHTML =
+      '<div class="empty-state">No venues match the current route and filters.</div>';
+    return;
+  }
+
+  mobileResultsList.innerHTML = "";
+  state.filtered.forEach((record) => {
+    const card = document.createElement("article");
+    card.className = `mobile-card${record.id === state.activeId ? " active" : ""}`;
+    const dinnerBand = priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label);
+    const lunchBand = priceBandLabel(record.price_lunch_band_tier, record.price_lunch_band_label);
+
+    card.innerHTML = `
+      <div class="mobile-card-top">
+        <div>
+          <div class="focus-kicker">${escapeHtml(record.city)} / ${escapeHtml(record.district || record.area_title)}</div>
+          <h3 class="mobile-card-title">${escapeHtml(record.name)}</h3>
+          <div class="mobile-card-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
+        </div>
+      </div>
+      ${
+        record.source_localized_address
+          ? `<div class="mobile-card-address">${escapeHtml(record.source_localized_address)}</div>`
+          : ""
+      }
+      ${
+        record.nearest_stations && record.nearest_stations.length
+          ? `<div class="mobile-card-transit">${escapeHtml(record.nearest_stations.join(" | "))}</div>`
+          : ""
+      }
+      <div class="venue-tags">
+        ${dinnerBand ? `<span class="badge amber">${escapeHtml(dinnerBand)}</span>` : ""}
+        ${lunchBand ? `<span class="badge blue">${escapeHtml(lunchBand)}</span>` : ""}
+        <span class="badge">${escapeHtml(kidLabel(record.child_policy_norm))}</span>
+        ${record.english_menu ? '<span class="badge green">English menu</span>' : ""}
+      </div>
+      <div class="mobile-price-grid">
+        <div class="mobile-price-card">
+          <span class="price-label">Dinner</span>
+          ${priceMarkup(
+            record.price_dinner_min_jpy,
+            record.price_dinner_max_jpy,
+            record.price_dinner_band_tier,
+            record.price_dinner_band_label
+          )}
+        </div>
+        <div class="mobile-price-card">
+          <span class="price-label">Lunch</span>
+          ${priceMarkup(
+            record.price_lunch_min_jpy,
+            record.price_lunch_max_jpy,
+            record.price_lunch_band_tier,
+            record.price_lunch_band_label
+          )}
+        </div>
+      </div>
+      <div class="mobile-card-actions">
+        <button type="button" class="ghost-btn secondary" data-mobile-focus="${escapeHtml(record.id)}">
+          Show on map
+        </button>
+        ${
+          record.source_google_map_url
+            ? `<a class="inline-link" href="${escapeHtml(record.source_google_map_url)}" target="_blank" rel="noopener">Source map</a>`
+            : ""
+        }
+      </div>
+    `;
+
+    const focusButton = card.querySelector("[data-mobile-focus]");
+    if (focusButton) {
+      focusButton.addEventListener("click", () => {
+        setActiveRecord(record.id);
+        focusActiveRecordOnMap();
+        if (window.innerWidth <= 820) {
+          const mapTop = map.getContainer().getBoundingClientRect().top + window.scrollY - 16;
+          window.scrollTo({ top: Math.max(mapTop, 0), behavior: "smooth" });
+        }
+      });
+    }
+
+    mobileResultsList.appendChild(card);
+  });
+}
+
 function setActiveRecord(id) {
   state.activeId = id;
   renderFocusCard();
   renderTable();
+  renderMobileCards();
 }
-
 function focusActiveRecordOnMap() {
   const record = activeRecord();
   if (!record) return;
@@ -664,6 +812,8 @@ async function init() {
     record.search_text = (record.search_text || "").toLowerCase();
   });
 
+  setToolbarOpen(false);
+  setTableOpen(false);
   handleHashRoute();
   if (!window.location.hash) {
     window.location.hash = "#/japan";
@@ -694,6 +844,15 @@ resetFiltersButton.addEventListener("click", () => {
   filterRestaurants();
 });
 
+toolbarToggle.addEventListener("click", () => {
+  setToolbarOpen(!state.mobileToolbarOpen);
+});
+
+tableToggle.addEventListener("click", () => {
+  setTableOpen(!state.tableOpen);
+  renderTableToggle();
+});
+
 window.addEventListener("hashchange", handleHashRoute);
 
 init().catch((error) => {
@@ -702,6 +861,9 @@ init().catch((error) => {
     '<div class="empty-state">Data failed to load. Run the sync script and serve this folder over HTTP.</div>';
   resultsText.textContent = "Load failed";
   tableSummary.textContent = "Load failed";
+  mobileSummary.textContent = "Load failed";
   resultsTableBody.innerHTML =
     '<tr><td colspan="8" class="empty-table">The dataset failed to load.</td></tr>';
+  mobileResultsList.innerHTML =
+    '<div class="empty-state">The dataset failed to load.</div>';
 });

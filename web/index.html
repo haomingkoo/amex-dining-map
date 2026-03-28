@@ -116,111 +116,157 @@
         </aside>
       </section>
 
-      <section class="toolbar panel-surface">
-        <label class="search-wrap">
-          <span class="label">Search</span>
-          <input
-            id="search-input"
-            type="search"
-            placeholder="Venue, district, cuisine, price range..."
-          />
-        </label>
+      <section class="filter-shell">
+        <button
+          id="toolbar-toggle"
+          type="button"
+          class="toolbar-toggle panel-surface"
+          aria-expanded="false"
+          aria-controls="filter-toolbar"
+        >
+          <span>
+            <span class="toolbar-toggle-title">Search and Filters</span>
+            <span class="toolbar-toggle-meta" id="toolbar-toggle-meta">
+              All filters off
+            </span>
+          </span>
+          <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
+        </button>
 
-        <label class="filter-wrap">
-          <span class="label">City</span>
-          <select id="city-filter">
-            <option value="">All cities</option>
-          </select>
-        </label>
+        <section class="toolbar panel-surface" id="filter-toolbar">
+          <label class="search-wrap">
+            <span class="label">Search</span>
+            <input
+              id="search-input"
+              type="search"
+              placeholder="Venue, district, cuisine, price range..."
+            />
+          </label>
 
-        <label class="filter-wrap">
-          <span class="label">District</span>
-          <select id="district-filter">
-            <option value="">All districts</option>
-          </select>
-        </label>
+          <label class="filter-wrap">
+            <span class="label">City</span>
+            <select id="city-filter">
+              <option value="">All cities</option>
+            </select>
+          </label>
 
-        <label class="filter-wrap">
-          <span class="label">Cuisine</span>
-          <select id="cuisine-filter">
-            <option value="">All cuisines</option>
-          </select>
-        </label>
+          <label class="filter-wrap">
+            <span class="label">District</span>
+            <select id="district-filter">
+              <option value="">All districts</option>
+            </select>
+          </label>
 
-        <label class="filter-wrap">
-          <span class="label">Lunch Band</span>
-          <select id="lunch-filter">
-            <option value="">All lunch bands</option>
-          </select>
-        </label>
+          <label class="filter-wrap">
+            <span class="label">Cuisine</span>
+            <select id="cuisine-filter">
+              <option value="">All cuisines</option>
+            </select>
+          </label>
 
-        <label class="filter-wrap">
-          <span class="label">Dinner Band</span>
-          <select id="dinner-filter">
-            <option value="">All dinner bands</option>
-          </select>
-        </label>
+          <label class="filter-wrap">
+            <span class="label">Lunch Band</span>
+            <select id="lunch-filter">
+              <option value="">All lunch bands</option>
+            </select>
+          </label>
 
-        <label class="filter-wrap">
-          <span class="label">Kids</span>
-          <select id="kids-filter">
-            <option value="">All</option>
-            <option value="kid_friendly">Kid friendly</option>
-            <option value="older_children_only">Older children only</option>
-            <option value="teens_only">Teens only</option>
-            <option value="policy_available">Policy available</option>
-            <option value="unknown">Not stated</option>
-          </select>
-        </label>
+          <label class="filter-wrap">
+            <span class="label">Dinner Band</span>
+            <select id="dinner-filter">
+              <option value="">All dinner bands</option>
+            </select>
+          </label>
 
-        <label class="filter-wrap">
-          <span class="label">English Menu</span>
-          <select id="menu-filter">
-            <option value="">All</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-        </label>
+          <label class="filter-wrap">
+            <span class="label">Kids</span>
+            <select id="kids-filter">
+              <option value="">All</option>
+              <option value="kid_friendly">Kid friendly</option>
+              <option value="older_children_only">Older children only</option>
+              <option value="teens_only">Teens only</option>
+              <option value="policy_available">Child rules listed</option>
+              <option value="unknown">No child policy listed</option>
+            </select>
+          </label>
 
-        <label class="filter-wrap">
-          <span class="label">Reservation</span>
-          <select id="reservation-filter">
-            <option value="">All</option>
-          </select>
-        </label>
+          <label class="filter-wrap">
+            <span class="label">English Menu</span>
+            <select id="menu-filter">
+              <option value="">All</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
 
-        <div class="filter-actions">
-          <span class="label">Reset</span>
-          <button id="reset-filters" type="button" class="ghost-btn">
-            Clear filters
-          </button>
-        </div>
+          <label class="filter-wrap">
+            <span class="label">Reservation</span>
+            <select id="reservation-filter">
+              <option value="">All</option>
+            </select>
+          </label>
+
+          <div class="filter-actions">
+            <span class="label">Reset</span>
+            <button id="reset-filters" type="button" class="ghost-btn">
+              Clear filters
+            </button>
+          </div>
+        </section>
       </section>
 
-      <section class="table-panel panel-surface">
+      <section class="table-shell">
+        <button
+          id="table-toggle"
+          type="button"
+          class="toolbar-toggle panel-surface"
+          aria-expanded="false"
+          aria-controls="results-table-panel"
+        >
+          <span>
+            <span class="toolbar-toggle-title">Detailed Table</span>
+            <span class="toolbar-toggle-meta" id="table-toggle-meta">
+              Open for side-by-side scanning and extra detail
+            </span>
+          </span>
+          <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
+        </button>
+
+        <section class="table-panel panel-surface" id="results-table-panel">
+          <div class="panel-head table-head">
+            <div>
+              <h2>Results Table</h2>
+              <p id="table-summary">Loading...</p>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Venue</th>
+                  <th>Place</th>
+                  <th>Cuisine</th>
+                  <th>Dinner</th>
+                  <th>Lunch</th>
+                  <th>Kids</th>
+                  <th>Menu</th>
+                  <th>Reservation</th>
+                </tr>
+              </thead>
+              <tbody id="results-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="mobile-results-panel panel-surface">
         <div class="panel-head table-head">
           <div>
-            <h2>Results Table</h2>
-            <p id="table-summary">Loading...</p>
+            <h2>Mobile Results</h2>
+            <p id="mobile-summary">Loading...</p>
           </div>
         </div>
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Venue</th>
-                <th>Place</th>
-                <th>Cuisine</th>
-                <th>Dinner</th>
-                <th>Lunch</th>
-                <th>Kids</th>
-                <th>Menu</th>
-                <th>Reservation</th>
-              </tr>
-            </thead>
-            <tbody id="results-table-body"></tbody>
-          </table>
-        </div>
+        <div class="mobile-results-list" id="mobile-results-list"></div>
       </section>
     </div>
 
