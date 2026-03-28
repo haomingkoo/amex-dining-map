@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import html
 import json
+import os
 import re
 import subprocess
 import tempfile
@@ -25,10 +26,12 @@ GEOJSON_PATH = DATA_DIR / "plat-stays.geojson"
 KML_PATH = KML_DIR / "plat-stays-all.kml"
 SOURCE_META_PATH = DATA_DIR / "plat-stay-source.json"
 GEOCODE_CACHE_PATH = DATA_DIR / "plat_stay_geocode_cache.json"
+GEOAPIFY_CACHE_PATH = DATA_DIR / "plat_stay_geoapify_cache.json"
 
 CANONICAL_SOURCE_URL = "https://go.amex/platstay"
 USER_AGENT = "AmexBenefitsExplorer/0.1 (+https://kooexperience.com/amex-dining-map/)"
 DEFAULT_BLACKOUT_YEAR = 2026
+GEOAPIFY_API_KEY = os.environ.get("GEOAPIFY_API_KEY")
 
 COUNTRY_ALIASES = {
     "singapore": "Singapore",
@@ -56,6 +59,25 @@ COUNTRY_ALIASES = {
 }
 
 COUNTRY_PRIORITY = sorted(COUNTRY_ALIASES, key=len, reverse=True)
+COUNTRY_CODES = {
+    "Australia": "au",
+    "Bahrain": "bh",
+    "China": "cn",
+    "Germany": "de",
+    "Greece": "gr",
+    "Indonesia": "id",
+    "Japan": "jp",
+    "Malaysia": "my",
+    "Maldives": "mv",
+    "Mexico": "mx",
+    "Qatar": "qa",
+    "Singapore": "sg",
+    "South Korea": "kr",
+    "Thailand": "th",
+    "Turkey": "tr",
+    "United Arab Emirates": "ae",
+    "Vietnam": "vn",
+}
 
 MONTHS = {
     "january": 1,
@@ -208,6 +230,12 @@ def segment_bucket(start: int) -> str:
 
 def clean_whitespace(value: str) -> str:
     return re.sub(r"\s+", " ", value).strip()
+
+
+def normalize_match_text(value: str | None) -> str:
+    if not value:
+        return ""
+    return re.sub(r"[^a-z0-9]+", "", value.lower())
 
 
 def collapse_multiline(parts: list[str]) -> str:
@@ -466,6 +494,174 @@ def geocode_query(query: str) -> dict | None:
     with urllib.request.urlopen(request, timeout=30) as response:
         payload = json.loads(response.read().decode("utf-8"))
     return payload[0] if payload else None
+
+
+def country_code_for_name(country: str | None) -> str | None:
+    if not country:
+        return None
+    return COUNTRY_CODES.get(country)
+
+
+def split_address_components(address: str) -> tuple[str | None, str | None]:
+    parts = [part.strip() for part in normalize_address_for_query(address).split(",") if part.strip()]
+    if not parts:
+        return None, None
+
+    first = parts[0]
+    second = parts[1] if len(parts) > 1 else None
+
+    no_match = re.fullmatch(r"(?i)no\.?\s*(\d+[A-Za-z/-]*)", first)
+    if no_match:
+        return no_match.group(1), second
+
+    prefix_match = re.match(r"(?P<number>\d+[A-Za-z/-]*)\s+(?P<street>.+)", first)
+    if prefix_match:
+        return prefix_match.group("number"), prefix_match.group("street")
+
+    suffix_match = re.match(r"(?P<street>.+?)\s+#?(?P<number>\d+[A-Za-z/-]*)$", first)
+    if suffix_match:
+        return suffix_match.group("number"), suffix_match.group("street")
+
+    return None, first
+
+
+def geoapify_search(params: dict[str, str], cache_key: str, cache: dict) -> list[dict]:
+    if not GEOAPIFY_API_KEY:
+        return []
+    if cache_key in cache:
+        return cache[cache_key] or []
+
+    final_params = {
+        **params,
+        "format": "json",
+        "limit": "3",
+        "apiKey": GEOAPIFY_API_KEY,
+    }
+    url = f"https://api.geoapify.com/v1/geocode/search?{urllib.parse.urlencode(final_params)}"
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except Exception:
+        cache[cache_key] = []
+        save_json(GEOAPIFY_CACHE_PATH, cache)
+        return []
+
+    results = payload.get("results") or []
+    cache[cache_key] = results
+    save_json(GEOAPIFY_CACHE_PATH, cache)
+    time.sleep(0.25)
+    return results
+
+
+def geoapify_candidates(record: dict, cache: dict) -> list[tuple[str, dict]]:
+    country_code = country_code_for_name(record.get("country"))
+    address = normalize_address_for_query(record["address"])
+    name = normalize_name_for_query(record["name"])
+    city = infer_city_from_address(address, record.get("country"))
+    housenumber, street = split_address_components(address)
+    candidates: list[tuple[str, dict]] = []
+
+    filter_value = f"countrycode:{country_code}" if country_code else None
+
+    freeform_params = {"text": clean_whitespace(f"{name}, {address}, {record.get('country') or ''}")}
+    if filter_value:
+        freeform_params["filter"] = filter_value
+    for hit in geoapify_search(freeform_params, f"freeform::{freeform_params['text']}::{filter_value}", cache):
+        candidates.append(("geoapify_freeform", hit))
+
+    amenity_params = {"text": freeform_params["text"], "type": "amenity"}
+    if filter_value:
+        amenity_params["filter"] = filter_value
+    for hit in geoapify_search(amenity_params, f"amenity::{amenity_params['text']}::{filter_value}", cache):
+        candidates.append(("geoapify_amenity", hit))
+
+    structured_params = {
+        "name": name,
+        "country": record.get("country") or "",
+        "type": "amenity",
+    }
+    if street:
+        structured_params["street"] = street
+    if housenumber:
+        structured_params["housenumber"] = housenumber
+    if city:
+        structured_params["city"] = city
+    if filter_value:
+        structured_params["filter"] = filter_value
+    if structured_params.get("name") and (street or city):
+        cache_key = "::".join(
+            [
+                "structured",
+                structured_params.get("name", ""),
+                structured_params.get("housenumber", ""),
+                structured_params.get("street", ""),
+                structured_params.get("city", ""),
+                structured_params.get("country", ""),
+                structured_params.get("filter", ""),
+            ]
+        )
+        for hit in geoapify_search(structured_params, cache_key, cache):
+            candidates.append(("geoapify_structured", hit))
+
+    return candidates
+
+
+def geoapify_name_match(record: dict, hit: dict) -> bool:
+    record_name = normalize_match_text(normalize_name_for_query(record["name"]))
+    hit_name = normalize_match_text(hit.get("name"))
+    if not record_name or not hit_name:
+        return False
+    return record_name == hit_name or record_name in hit_name or hit_name in record_name
+
+
+def geoapify_address_match(record: dict, hit: dict) -> bool:
+    address_norm = normalize_match_text(record["address"])
+    street_norm = normalize_match_text(hit.get("street"))
+    housenumber_norm = normalize_match_text(hit.get("housenumber"))
+    if not street_norm or street_norm not in address_norm:
+        return False
+    if housenumber_norm and housenumber_norm not in address_norm:
+        return False
+    if (hit.get("rank") or {}).get("confidence_city_level", 0) < 0.9:
+        return False
+    return True
+
+
+def apply_geoapify_hit(record: dict, label: str, hit: dict, confidence: str, note: str) -> None:
+    record["lat"] = hit.get("lat")
+    record["lng"] = hit.get("lon")
+    record["coordinate_source"] = label
+    record["coordinate_confidence"] = confidence
+    record["city"] = hit.get("city") or record.get("city")
+    record["country"] = hit.get("country") or record.get("country")
+    record["map_pin_note"] = note
+
+
+def refine_with_geoapify(record: dict, cache: dict) -> None:
+    if not GEOAPIFY_API_KEY:
+        return
+
+    for label, hit in geoapify_candidates(record, cache):
+        result_type = hit.get("result_type")
+        if result_type == "amenity" and geoapify_name_match(record, hit):
+            apply_geoapify_hit(
+                record,
+                label,
+                hit,
+                "poi_matched",
+                "Pin is based on an exact hotel-name match from Geoapify. Verify booking terms with the official Plat Stay source before reserving.",
+            )
+            return
+        if result_type in {"building", "amenity"} and geoapify_address_match(record, hit):
+            apply_geoapify_hit(
+                record,
+                label,
+                hit,
+                "address_matched",
+                "Pin is based on a matched street address from Geoapify. Verify the official property address before booking or arrival.",
+            )
+            return
 
 
 def geocode_record(record: dict, cache: dict) -> None:

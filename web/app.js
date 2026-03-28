@@ -820,6 +820,7 @@ function filterRestaurants() {
   ensureActiveRecord();
   renderStats();
   renderMarkers();
+  fitDiningMapToVisibleMarkers();
   renderFocusCard();
   renderTable();
   renderMobileCards();
@@ -1099,12 +1100,8 @@ function focusActiveRecordOnMap() {
 }
 
 function stayGoogleMapsUrl(record) {
-  if (record.lat != null && record.lng != null) {
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-      `${record.lat},${record.lng}`
-    )}`;
-  }
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(record.address)}`;
+  const query = [record.name, record.address, record.country].filter(Boolean).join(", ");
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
 function stayReservationActions(record) {
@@ -1120,6 +1117,21 @@ function stayReservationActions(record) {
     );
   }
   return links.join("");
+}
+
+function stayReservationModeLabel(mode) {
+  switch (mode) {
+    case "booking_link_prompt":
+      return "Booking link";
+    case "email_or_phone":
+      return "Email / phone";
+    case "phone":
+      return "Phone";
+    case "unknown":
+      return "See official source";
+    default:
+      return (mode || "See official source").replaceAll("_", " ");
+  }
 }
 
 function stayDateRange() {
@@ -1144,16 +1156,28 @@ function stayRangeOverlaps(range, selected) {
 
 function stayAvailability(record) {
   const selected = stayDateRange();
+  const exactRanges = record.blackout_exact_ranges || [];
+  const notes = record.blackout_notes || [];
   if (!selected) {
+    if (exactRanges.length) {
+      return {
+        key: "not_evaluated",
+        label: "Listed blackout dates available",
+        detail: "Pick check-in and check-out dates to test conflicts against the listed blackout ranges.",
+        blocked: false,
+      };
+    }
     return {
       key: "not_evaluated",
-      label: "Set dates to check blackout conflicts",
-      detail: "Add check-in and check-out dates to remove exact blackout conflicts.",
+      label: "No listed blackout dates",
+      detail:
+        record.availability_mode === "subject_to_availability"
+          ? "This property is still subject to hotel availability."
+          : "Pick check-in and check-out dates to evaluate this property.",
       blocked: false,
     };
   }
 
-  const exactRanges = record.blackout_exact_ranges || [];
   const conflicts = exactRanges.filter((range) => stayRangeOverlaps(range, selected));
   if (conflicts.length) {
     return {
@@ -1164,7 +1188,6 @@ function stayAvailability(record) {
     };
   }
 
-  const notes = record.blackout_notes || [];
   if (notes.length) {
     return {
       key: "not_blocked_with_notes",
@@ -1331,6 +1354,7 @@ function filterStays() {
   ensureActiveStayRecord();
   renderStayStats();
   renderStayMarkers();
+  fitStayMapToVisibleMarkers();
   renderStayFocusCard();
   renderStayTable();
   renderStayMobileCards();
@@ -1395,7 +1419,7 @@ function renderStayFocusCard() {
       ? '<span class="badge green">Breakfast for 2</span>'
       : '<span class="badge blue">Room only</span>',
     record.coordinate_confidence === "approximate"
-      ? '<span class="badge amber">Geocoded pin</span>'
+      ? '<span class="badge amber">Approximate pin</span>'
       : "",
   ]
     .filter(Boolean)
@@ -1409,13 +1433,13 @@ function renderStayFocusCard() {
     <div class="focus-tags">${tags}</div>
     <div class="price-grid">
       <div class="price-card">
-        <span class="price-label">Travel Match</span>
+        <span class="price-label">Stay Availability</span>
         <div class="price-tier">${escapeHtml(status.label)}</div>
         <div class="price-raw">${escapeHtml(status.detail)}</div>
       </div>
       <div class="price-card">
         <span class="price-label">Reservation</span>
-        <div class="price-tier">${escapeHtml(record.reservation_mode.replaceAll("_", " "))}</div>
+        <div class="price-tier">${escapeHtml(stayReservationModeLabel(record.reservation_mode))}</div>
         <div class="price-raw">${escapeHtml(record.reservation_raw || "See official source")}</div>
       </div>
     </div>
@@ -1585,11 +1609,12 @@ function fitStayMapToVisibleMarkers() {
 
 function stayPresetRange(kind) {
   const today = new Date();
-  const utcToday = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
-  const day = utcToday.getUTCDay();
+  const baseMonthOffset = kind === "two-months-weekend" ? 2 : 1;
+  const monthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + baseMonthOffset, 1));
+  const day = monthStart.getUTCDay();
   const daysUntilSaturday = (6 - day + 7) % 7;
-  const saturday = new Date(utcToday);
-  saturday.setUTCDate(utcToday.getUTCDate() + daysUntilSaturday + (kind === "next-weekend" ? 7 : 0));
+  const saturday = new Date(monthStart);
+  saturday.setUTCDate(monthStart.getUTCDate() + daysUntilSaturday);
   const monday = new Date(saturday);
   monday.setUTCDate(saturday.getUTCDate() + 2);
   return {
@@ -1614,7 +1639,10 @@ function applyRoute(routeId) {
     renderStayDownloads(route);
     refreshStayFilterOptions();
     filterStays();
-    setTimeout(() => staysMap.invalidateSize(), 0);
+    setTimeout(() => {
+      staysMap.invalidateSize();
+      fitStayMapToVisibleMarkers();
+    }, 0);
     return;
   }
 
@@ -1642,7 +1670,10 @@ function applyRoute(routeId) {
   resetFilterControls();
   refreshFilterOptions();
   filterRestaurants();
-  setTimeout(() => map.invalidateSize(), 0);
+  setTimeout(() => {
+    map.invalidateSize();
+    fitDiningMapToVisibleMarkers();
+  }, 0);
 }
 
 function handleHashRoute() {
@@ -1744,6 +1775,18 @@ stayPresetButtons.forEach((button) => {
 });
 
 window.addEventListener("hashchange", handleHashRoute);
+window.addEventListener("resize", () => {
+  if (isStayRoute()) {
+    staysMap.invalidateSize();
+    fitStayMapToVisibleMarkers();
+    return;
+  }
+
+  if (isDiningRoute()) {
+    map.invalidateSize();
+    fitDiningMapToVisibleMarkers();
+  }
+});
 
 init().catch((error) => {
   console.error(error);
