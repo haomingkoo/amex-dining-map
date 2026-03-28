@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Amex Dining Map App</title>
+    <title>Amex Benefits Explorer</title>
     <meta
       name="description"
-      content="Portfolio-style dining map app for Amex restaurant benefits, with route-based browsing, search, filters, and KML exports."
+      content="Map-first benefits explorer for American Express dining, stay, and partner programs, with route-based browsing and source-backed planning."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,35 +24,51 @@
     <div class="page-shell">
       <header class="hero">
         <div class="hero-copy">
-          <p class="eyebrow" id="route-eyebrow">Portfolio App</p>
-          <h1>Amex Dining Map</h1>
+          <p class="eyebrow" id="route-eyebrow">Dining / Live Now</p>
+          <h1>Amex Benefits Explorer</h1>
           <p class="lede" id="route-description">
-            Search Amex dining partner venues by place, cuisine, price band,
-            child policy, and reservation style. Download KML and keep the map
-            view on top with a table below.
+            Map-first planning for American Express dining, stay, and partner
+            benefits, with source-backed data and room for a grounded planning
+            assistant later.
           </p>
         </div>
         <div class="hero-note">
           <div class="note-card">
             <div class="note-title">Data Policy</div>
             <p>
-              Restaurant facts come from public Pocket Concierge venue pages.
-              Most pins use source-backed venue coordinates, while a small
-              number still rely on approximate fallback mapping.
+              This explorer combines official Amex pages, PDFs, and partner
+              sources when available. Location confidence and benefit
+              eligibility can vary by program and market.
             </p>
             <p>
-              Price shorthand is visual only. The source of truth remains the
-              JPY lunch and dinner range shown on each venue. Always confirm
-              the official listing before relying on a map pin for benefit
-              redemption.
+              Use the app for planning, not final confirmation. Always verify
+              current eligibility, blackout dates, reservation rules, and venue
+              details on the official source before booking or payment.
             </p>
           </div>
         </div>
       </header>
 
-      <section class="route-strip panel-surface">
+      <section class="program-strip panel-surface">
         <div class="route-copy">
-          <p class="eyebrow">Explore</p>
+          <p class="eyebrow">Programs</p>
+          <h2 id="program-title">Dining</h2>
+          <p id="program-description">
+            Start with dining, then expand into stays, Love Dining, and
+            10Xcelerator as the next datasets ship.
+          </p>
+        </div>
+        <nav class="program-nav" id="program-nav" aria-label="Program navigation">
+          <a class="program-link" href="#/dining/japan" data-program="dining">Dining</a>
+          <a class="program-link" href="#/stays" data-program="stays">Plat Stay</a>
+          <a class="program-link" href="#/love-dining" data-program="love-dining">Love Dining</a>
+          <a class="program-link" href="#/10xcelerator" data-program="10xcelerator">10Xcelerator</a>
+        </nav>
+      </section>
+
+      <section class="route-strip panel-surface" id="scope-strip">
+        <div class="route-copy">
+          <p class="eyebrow">Scope</p>
           <h2 id="route-title">Japan</h2>
           <p id="scope-note">
             Japan is the first live market. The global route is the shell for
@@ -60,213 +76,227 @@
           </p>
         </div>
         <nav class="route-nav" id="scope-nav" aria-label="Route navigation">
-          <a class="route-link" href="#/all" data-route="all">All</a>
-          <a class="route-link" href="#/japan" data-route="japan">Japan</a>
-          <a class="route-link" href="#/tokyo" data-route="tokyo">Tokyo</a>
-          <a class="route-link" href="#/kyoto" data-route="kyoto">Kyoto</a>
-          <a class="route-link" href="#/osaka" data-route="osaka">Osaka</a>
+          <a class="route-link" href="#/dining/world" data-route="dining/world">World</a>
+          <a class="route-link" href="#/dining/japan" data-route="dining/japan">Japan</a>
+          <a class="route-link" href="#/dining/tokyo" data-route="dining/tokyo">Tokyo</a>
+          <a class="route-link" href="#/dining/kyoto" data-route="dining/kyoto">Kyoto</a>
+          <a class="route-link" href="#/dining/osaka" data-route="dining/osaka">Osaka</a>
         </nav>
       </section>
 
-      <section class="stats-row">
-        <div class="stat-card panel-surface">
-          <div class="stat-label">Scope Venues</div>
-          <div class="stat-value" id="scope-count">0</div>
-        </div>
-        <div class="stat-card panel-surface">
-          <div class="stat-label">Showing</div>
-          <div class="stat-value" id="showing-count">0</div>
-        </div>
-        <div class="stat-card panel-surface">
-          <div class="stat-label">Mapped</div>
-          <div class="stat-value" id="mapped-count">0</div>
-        </div>
-        <div class="stat-card panel-surface">
-          <div class="stat-label">Cities</div>
-          <div class="stat-value" id="city-count">0</div>
-        </div>
-      </section>
-
-      <section class="explorer-grid">
-        <section class="map-panel panel-surface">
-          <div class="panel-head">
-            <div>
-              <h2>Map</h2>
-              <p id="map-summary">
-                Browse the current route on the map, then use the selected
-                venue panel for the most precise source link.
-              </p>
-            </div>
-          </div>
-          <div id="map"></div>
-          <div class="map-downloads">
-            <div class="stat-label">KML Downloads</div>
-            <div class="download-stack" id="download-stack"></div>
-          </div>
-        </section>
-
-        <aside class="focus-panel panel-surface">
-          <div class="panel-head">
-            <div>
-              <h2>Selected Venue</h2>
-              <p id="results-text">Loading...</p>
-            </div>
-          </div>
-          <div class="focus-body" id="focus-card"></div>
-        </aside>
-      </section>
-
-      <section class="filter-shell">
-        <button
-          id="toolbar-toggle"
-          type="button"
-          class="toolbar-toggle panel-surface"
-          aria-expanded="false"
-          aria-controls="filter-toolbar"
-        >
-          <span>
-            <span class="toolbar-toggle-title">Search and Filters</span>
-            <span class="toolbar-toggle-meta" id="toolbar-toggle-meta">
-              All filters off
-            </span>
-          </span>
-          <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
-        </button>
-
-        <section class="toolbar panel-surface" id="filter-toolbar">
-          <label class="search-wrap">
-            <span class="label">Search</span>
-            <input
-              id="search-input"
-              type="search"
-              placeholder="Venue, district, cuisine, price range..."
-            />
-          </label>
-
-          <label class="filter-wrap">
-            <span class="label">City</span>
-            <select id="city-filter">
-              <option value="">All cities</option>
-            </select>
-          </label>
-
-          <label class="filter-wrap">
-            <span class="label">District</span>
-            <select id="district-filter">
-              <option value="">All districts</option>
-            </select>
-          </label>
-
-          <label class="filter-wrap">
-            <span class="label">Cuisine</span>
-            <select id="cuisine-filter">
-              <option value="">All cuisines</option>
-            </select>
-          </label>
-
-          <label class="filter-wrap">
-            <span class="label">Lunch Band</span>
-            <select id="lunch-filter">
-              <option value="">All lunch bands</option>
-            </select>
-          </label>
-
-          <label class="filter-wrap">
-            <span class="label">Dinner Band</span>
-            <select id="dinner-filter">
-              <option value="">All dinner bands</option>
-            </select>
-          </label>
-
-          <label class="filter-wrap">
-            <span class="label">Kids</span>
-            <select id="kids-filter">
-              <option value="">All</option>
-              <option value="kid_friendly">Kid friendly</option>
-              <option value="older_kids_only">Older kids only</option>
-              <option value="policy_available">Child rules listed</option>
-              <option value="unknown">No child policy listed</option>
-            </select>
-          </label>
-
-          <label class="filter-wrap">
-            <span class="label">English Menu</span>
-            <select id="menu-filter">
-              <option value="">All</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </label>
-
-          <label class="filter-wrap">
-            <span class="label">Reservation</span>
-            <select id="reservation-filter">
-              <option value="">All</option>
-            </select>
-          </label>
-
-          <div class="filter-actions">
-            <span class="label">Reset</span>
-            <button id="reset-filters" type="button" class="ghost-btn">
-              Clear filters
-            </button>
-          </div>
-        </section>
-      </section>
-
-      <section class="table-shell">
-        <button
-          id="table-toggle"
-          type="button"
-          class="toolbar-toggle panel-surface"
-          aria-expanded="false"
-          aria-controls="results-table-panel"
-        >
-          <span>
-            <span class="toolbar-toggle-title">Detailed Table</span>
-            <span class="toolbar-toggle-meta" id="table-toggle-meta">
-              Open for side-by-side scanning and extra detail
-            </span>
-          </span>
-          <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
-        </button>
-
-        <section class="table-panel panel-surface" id="results-table-panel">
-          <div class="panel-head table-head">
-            <div>
-              <h2>Results Table</h2>
-              <p id="table-summary">Loading...</p>
-            </div>
-          </div>
-          <div class="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Venue</th>
-                  <th>Place</th>
-                  <th>Cuisine</th>
-                  <th>Dinner</th>
-                  <th>Lunch</th>
-                  <th>Kids</th>
-                  <th>Menu</th>
-                  <th>Reservation</th>
-                </tr>
-              </thead>
-              <tbody id="results-table-body"></tbody>
-            </table>
-          </div>
-        </section>
-      </section>
-
-      <section class="mobile-results-panel panel-surface">
-        <div class="panel-head table-head">
+      <section class="program-brief panel-surface" id="program-brief" hidden>
+        <div class="panel-head">
           <div>
-            <h2>Mobile Results</h2>
-            <p id="mobile-summary">Loading...</p>
+            <h2 id="program-brief-title">Program Buildout</h2>
+            <p id="program-brief-summary">
+              This dataset is being prepared as the next phase of the explorer.
+            </p>
           </div>
         </div>
-        <div class="mobile-results-list" id="mobile-results-list"></div>
+        <div class="program-brief-grid" id="program-brief-grid"></div>
       </section>
+
+      <div id="data-explorer">
+        <section class="stats-row">
+          <div class="stat-card panel-surface">
+            <div class="stat-label">Scope Venues</div>
+            <div class="stat-value" id="scope-count">0</div>
+          </div>
+          <div class="stat-card panel-surface">
+            <div class="stat-label">Showing</div>
+            <div class="stat-value" id="showing-count">0</div>
+          </div>
+          <div class="stat-card panel-surface">
+            <div class="stat-label">Mapped</div>
+            <div class="stat-value" id="mapped-count">0</div>
+          </div>
+          <div class="stat-card panel-surface">
+            <div class="stat-label">Cities</div>
+            <div class="stat-value" id="city-count">0</div>
+          </div>
+        </section>
+
+        <section class="explorer-grid">
+          <section class="map-panel panel-surface">
+            <div class="panel-head">
+              <div>
+                <h2>Map</h2>
+                <p id="map-summary">
+                  Browse the current route on the map, then use the selected
+                  venue panel for the most precise source link.
+                </p>
+              </div>
+            </div>
+            <div id="map"></div>
+            <div class="map-downloads">
+              <div class="stat-label">KML Downloads</div>
+              <div class="download-stack" id="download-stack"></div>
+            </div>
+          </section>
+
+          <aside class="focus-panel panel-surface">
+            <div class="panel-head">
+              <div>
+                <h2>Selected Venue</h2>
+                <p id="results-text">Loading...</p>
+              </div>
+            </div>
+            <div class="focus-body" id="focus-card"></div>
+          </aside>
+        </section>
+
+        <section class="filter-shell">
+          <button
+            id="toolbar-toggle"
+            type="button"
+            class="toolbar-toggle panel-surface"
+            aria-expanded="false"
+            aria-controls="filter-toolbar"
+          >
+            <span>
+              <span class="toolbar-toggle-title">Search and Filters</span>
+              <span class="toolbar-toggle-meta" id="toolbar-toggle-meta">
+                All filters off
+              </span>
+            </span>
+            <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
+          </button>
+
+          <section class="toolbar panel-surface" id="filter-toolbar">
+            <label class="search-wrap">
+              <span class="label">Search</span>
+              <input
+                id="search-input"
+                type="search"
+                placeholder="Venue, district, cuisine, price range..."
+              />
+            </label>
+
+            <label class="filter-wrap">
+              <span class="label">City</span>
+              <select id="city-filter">
+                <option value="">All cities</option>
+              </select>
+            </label>
+
+            <label class="filter-wrap">
+              <span class="label">District</span>
+              <select id="district-filter">
+                <option value="">All districts</option>
+              </select>
+            </label>
+
+            <label class="filter-wrap">
+              <span class="label">Cuisine</span>
+              <select id="cuisine-filter">
+                <option value="">All cuisines</option>
+              </select>
+            </label>
+
+            <label class="filter-wrap">
+              <span class="label">Lunch Band</span>
+              <select id="lunch-filter">
+                <option value="">All lunch bands</option>
+              </select>
+            </label>
+
+            <label class="filter-wrap">
+              <span class="label">Dinner Band</span>
+              <select id="dinner-filter">
+                <option value="">All dinner bands</option>
+              </select>
+            </label>
+
+            <label class="filter-wrap">
+              <span class="label">Kids</span>
+              <select id="kids-filter">
+                <option value="">All</option>
+                <option value="kid_friendly">Kid friendly</option>
+                <option value="older_kids_only">Older kids only</option>
+                <option value="policy_available">Child rules listed</option>
+                <option value="unknown">No child policy listed</option>
+              </select>
+            </label>
+
+            <label class="filter-wrap">
+              <span class="label">English Menu</span>
+              <select id="menu-filter">
+                <option value="">All</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </label>
+
+            <label class="filter-wrap">
+              <span class="label">Reservation</span>
+              <select id="reservation-filter">
+                <option value="">All</option>
+              </select>
+            </label>
+
+            <div class="filter-actions">
+              <span class="label">Reset</span>
+              <button id="reset-filters" type="button" class="ghost-btn">
+                Clear filters
+              </button>
+            </div>
+          </section>
+        </section>
+
+        <section class="table-shell">
+          <button
+            id="table-toggle"
+            type="button"
+            class="toolbar-toggle panel-surface"
+            aria-expanded="false"
+            aria-controls="results-table-panel"
+          >
+            <span>
+              <span class="toolbar-toggle-title">Detailed Table</span>
+              <span class="toolbar-toggle-meta" id="table-toggle-meta">
+                Open for side-by-side scanning and extra detail
+              </span>
+            </span>
+            <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
+          </button>
+
+          <section class="table-panel panel-surface" id="results-table-panel">
+            <div class="panel-head table-head">
+              <div>
+                <h2>Results Table</h2>
+                <p id="table-summary">Loading...</p>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Venue</th>
+                    <th>Place</th>
+                    <th>Cuisine</th>
+                    <th>Dinner</th>
+                    <th>Lunch</th>
+                    <th>Kids</th>
+                    <th>Menu</th>
+                    <th>Reservation</th>
+                  </tr>
+                </thead>
+                <tbody id="results-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="mobile-results-panel panel-surface">
+          <div class="panel-head">
+            <div>
+              <h2>Mobile Results</h2>
+              <p id="mobile-summary">Loading...</p>
+            </div>
+          </div>
+          <div class="mobile-results-list" id="mobile-results-list"></div>
+        </section>
+      </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

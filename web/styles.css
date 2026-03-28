@@ -27,6 +27,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -163,6 +167,7 @@ h3 {
   margin-top: 12px;
 }
 
+.program-strip,
 .route-strip {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
@@ -181,13 +186,22 @@ h3 {
   margin: 0;
 }
 
+.program-nav,
 .route-nav {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
   align-self: center;
 }
 
+.program-nav {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.route-nav {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.program-link,
 .route-link {
   display: inline-flex;
   align-items: center;
@@ -207,6 +221,8 @@ h3 {
     color 0.18s ease;
 }
 
+.program-link:hover,
+.program-link.active,
 .route-link:hover,
 .route-link.active {
   transform: translateY(-1px);
@@ -215,12 +231,62 @@ h3 {
   color: var(--text);
 }
 
+.program-link.active {
+  border-color: rgba(95, 197, 178, 0.35);
+  background: linear-gradient(135deg, rgba(95, 197, 178, 0.16), rgba(142, 190, 255, 0.08));
+}
+
 .filter-shell {
   margin-bottom: 16px;
 }
 
 .table-shell {
   margin-bottom: 16px;
+}
+
+.program-brief {
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.program-brief-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 18px;
+}
+
+.brief-card {
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+}
+
+.brief-kicker {
+  margin-bottom: 10px;
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.brief-card h3 {
+  font-size: 24px;
+  line-height: 1.05;
+}
+
+.brief-copy {
+  margin: 12px 0 0;
+  color: var(--text-secondary);
+}
+
+.brief-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .toolbar-toggle {
@@ -721,6 +787,7 @@ tbody tr.active {
 }
 
 @media (max-width: 1260px) {
+  .program-strip,
   .route-strip,
   .hero,
   .explorer-grid {
@@ -738,6 +805,10 @@ tbody tr.active {
   .stats-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .program-brief-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (max-width: 820px) {
@@ -750,6 +821,7 @@ tbody tr.active {
     grid-template-columns: 1fr 1fr;
   }
 
+  .program-nav,
   .route-nav {
     display: flex;
     overflow-x: auto;
@@ -758,10 +830,12 @@ tbody tr.active {
     scrollbar-width: none;
   }
 
+  .program-nav::-webkit-scrollbar,
   .route-nav::-webkit-scrollbar {
     display: none;
   }
 
+  .program-link,
   .route-link {
     flex: 0 0 auto;
     min-width: 118px;
@@ -788,6 +862,10 @@ tbody tr.active {
     display: block;
   }
 
+  .program-brief-grid {
+    grid-template-columns: 1fr;
+  }
+
   .focus-title {
     font-size: 28px;
   }
@@ -809,6 +887,10 @@ tbody tr.active {
 
   .mobile-price-grid {
     grid-template-columns: 1fr;
+  }
+
+  .program-brief-grid {
+    padding: 16px;
   }
 
   .hero-copy,

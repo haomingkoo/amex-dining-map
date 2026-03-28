@@ -14,21 +14,57 @@ const DINNER_BANDS = [
   { key: "30k-plus", label: "JPY 30k+", tier: "$$$$$" },
 ];
 
-const ROUTES = {
-  all: {
-    id: "all",
-    label: "All",
-    eyebrow: "Portfolio App",
-    title: "All Destinations",
+const PROGRAMS = {
+  dining: {
+    id: "dining",
+    label: "Dining",
+    title: "Dining",
     description:
-      "Global app shell for Amex dining discovery. The live dataset is Japan-first for now, so this route currently surfaces Japan while future markets are added.",
+      "Map-first planning for Amex dining benefits, with Japan live now and broader country coverage added over time.",
+    defaultRoute: "dining/japan",
+  },
+  stays: {
+    id: "stays",
+    label: "Plat Stay",
+    title: "Plat Stay",
+    description:
+      "Hotel and resort planner with travel-date checks, blackout-date filtering, and property mapping from official Plat Stay sources.",
+    defaultRoute: "stays",
+  },
+  "love-dining": {
+    id: "love-dining",
+    label: "Love Dining",
+    title: "Love Dining",
+    description:
+      "Singapore dining explorer for restaurant and hotel partners, with savings rules, outlet details, and direct links into the official terms.",
+    defaultRoute: "love-dining",
+  },
+  "10xcelerator": {
+    id: "10xcelerator",
+    label: "10Xcelerator",
+    title: "10Xcelerator",
+    description:
+      "Partner and points-earning planner for bonus categories and merchants, with outlet mapping only where location data can be verified.",
+    defaultRoute: "10xcelerator",
+  },
+};
+
+const ROUTES = {
+  "dining/world": {
+    id: "dining/world",
+    programId: "dining",
+    label: "World",
+    eyebrow: "Dining / World Shell",
+    title: "World Dining Explorer",
+    description:
+      "Top-level dining shell for planning across countries. Japan is live now while broader market coverage is still being built and verified.",
     note:
-      "Use this as the combined explorer. Right now it shows the Japan MVP while the broader country dataset is still being built.",
+      "Start here, then narrow into Japan and city routes. As more markets ship, this becomes the true global dining overview.",
     mapSummary:
-      "This is the future combined route. The current live pins are the Japan MVP.",
+      "World dining shell. The current live pins are the Japan dataset while broader country ingestion is being built.",
     matcher: () => true,
-    defaultView: [35.676, 137.5],
-    defaultZoom: 5,
+    defaultView: [24.5, 132],
+    defaultZoom: 3,
     downloads: [
       { label: "All Japan KML", href: "../data/kml/japan-all.kml", primary: true },
       { label: "Tokyo KML", href: "../data/kml/tokyo.kml" },
@@ -36,10 +72,11 @@ const ROUTES = {
       { label: "Osaka KML", href: "../data/kml/osaka.kml" },
     ],
   },
-  japan: {
-    id: "japan",
+  "dining/japan": {
+    id: "dining/japan",
+    programId: "dining",
     label: "Japan",
-    eyebrow: "Japan MVP",
+    eyebrow: "Dining / Japan",
     title: "Japan Dining Explorer",
     description:
       "Map-first dining explorer for the current Japan restaurant set. Search by place, cuisine, price range, child policy, menu support, and reservation style.",
@@ -57,10 +94,11 @@ const ROUTES = {
       { label: "Osaka KML", href: "../data/kml/osaka.kml" },
     ],
   },
-  tokyo: {
-    id: "tokyo",
+  "dining/tokyo": {
+    id: "dining/tokyo",
+    programId: "dining",
     label: "Tokyo",
-    eyebrow: "City Route",
+    eyebrow: "Dining / Tokyo",
     title: "Tokyo Dining",
     description:
       "Focused route for Tokyo venues. Better when you already know the city and want to narrow by district, cuisine, price band, or family constraints.",
@@ -77,10 +115,11 @@ const ROUTES = {
       { label: "All Japan KML", href: "../data/kml/japan-all.kml" },
     ],
   },
-  kyoto: {
-    id: "kyoto",
+  "dining/kyoto": {
+    id: "dining/kyoto",
+    programId: "dining",
     label: "Kyoto",
-    eyebrow: "City Route",
+    eyebrow: "Dining / Kyoto",
     title: "Kyoto Dining",
     description:
       "Focused Kyoto route for areas like Gion, Higashiyama, and Kodaiji or Kiyomizu. Useful when you want the map and table to stay calmer.",
@@ -97,10 +136,11 @@ const ROUTES = {
       { label: "All Japan KML", href: "../data/kml/japan-all.kml" },
     ],
   },
-  osaka: {
-    id: "osaka",
+  "dining/osaka": {
+    id: "dining/osaka",
+    programId: "dining",
     label: "Osaka",
-    eyebrow: "City Route",
+    eyebrow: "Dining / Osaka",
     title: "Osaka Dining",
     description:
       "Focused Osaka route for a cleaner city-level browse. Filter by cuisine, price tier, or reservation style without the wider Japan noise.",
@@ -117,6 +157,151 @@ const ROUTES = {
       { label: "All Japan KML", href: "../data/kml/japan-all.kml" },
     ],
   },
+  stays: {
+    id: "stays",
+    programId: "stays",
+    label: "Overview",
+    eyebrow: "Plat Stay / Sprint 2",
+    title: "Plat Stay Explorer",
+    description:
+      "Date-aware stay planner for Platinum Stay properties. The first version will let people key in travel dates, knock out blackout conflicts, and keep only the remaining properties on the map.",
+    briefTitle: "Plat Stay Buildout",
+    briefSummary:
+      "Plat Stay is the next dataset because the official source is PDF-first, address-rich, and ideal for deterministic blackout-date filtering.",
+    briefCards: [
+      {
+        kicker: "Primary sources",
+        title: "Use the short link as canonical",
+        body:
+          "Sync from the official short link first, then keep the resolved PDF URL and file hash so we can diff source changes cleanly over time.",
+        links: [
+          { label: "go.amex/platstay", href: "https://go.amex/platstay" },
+          {
+            label: "Current Plat Stay PDF",
+            href: "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/platstay.pdf?extlink=SG",
+          },
+        ],
+      },
+      {
+        kicker: "What ships first",
+        title: "Travel dates and remaining properties",
+        body:
+          "Users will enter check-in and check-out dates, or tap quick weekend presets, and the app will keep only properties that are not blocked by listed blackout dates.",
+      },
+      {
+        kicker: "Trust model",
+        title: "Blocked is deterministic, available is not guaranteed",
+        body:
+          "The app should say when a property is blocked by listed blackout dates, but only say 'not blocked by listed blackout dates' otherwise, since hotel availability can still change.",
+      },
+      {
+        kicker: "Next milestone",
+        title: "Structured stay dataset",
+        body:
+          "Parse the PDF into property rows with country, city, address, room type, blackout dates, and reservation contacts, then plot them on the map.",
+      },
+    ],
+  },
+  "love-dining": {
+    id: "love-dining",
+    programId: "love-dining",
+    label: "Overview",
+    eyebrow: "Love Dining / Sprint 3",
+    title: "Love Dining Explorer",
+    description:
+      "Singapore dining explorer for restaurant and hotel dining partners. The dataset will merge official venue cards with the corresponding T&C PDFs so users can browse both the outlet and the rule set.",
+    briefTitle: "Love Dining Buildout",
+    briefSummary:
+      "Love Dining is strong app material because the official pages expose venue detail while the T&C PDFs give the harder eligibility and savings rules.",
+    briefCards: [
+      {
+        kicker: "Primary sources",
+        title: "Merge page cards with PDFs",
+        body:
+          "The page cards are useful for map links, addresses, phones, and websites. The PDFs are the source of truth for savings structure, exclusions, and participating coverage.",
+        links: [
+          {
+            label: "Restaurants page",
+            href: "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+          },
+          {
+            label: "Restaurants T&C PDF",
+            href: "https://www.americanexpress.com/content/dam/amex/sg/benefits/Love_Dining_Restaurants_Terms_and_Conditions.pdf",
+          },
+          {
+            label: "Hotels page",
+            href: "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+          },
+          {
+            label: "Hotels T&C PDF",
+            href: "https://www.americanexpress.com/content/dam/amex/sg/benefits/Love_Dining_Hotels_TnC.pdf",
+          },
+        ],
+      },
+      {
+        kicker: "What ships first",
+        title: "Singapore outlet map",
+        body:
+          "Restaurants and hotel outlets should become a map + list explorer with cuisine, address, hotel grouping, and easy links into the terms for each venue.",
+      },
+      {
+        kicker: "Trust model",
+        title: "Outlet detail first, offer wording second",
+        body:
+          "Map and contact information can be source-backed quickly, but savings percentages and exclusions should always link back into the official Love Dining terms.",
+      },
+      {
+        kicker: "Next milestone",
+        title: "Normalize savings rules",
+        body:
+          "Store participation, savings bands, exclusions, and qualifying item notes in structured fields so the app can answer planning questions more safely later.",
+      },
+    ],
+  },
+  "10xcelerator": {
+    id: "10xcelerator",
+    programId: "10xcelerator",
+    label: "Overview",
+    eyebrow: "10Xcelerator / Planned",
+    title: "10Xcelerator Explorer",
+    description:
+      "Partner and points-earning planner for bonus merchants and categories. This will start as a verified partner directory, then add outlet mapping only where the location data is dependable.",
+    briefTitle: "10Xcelerator Buildout",
+    briefSummary:
+      "10Xcelerator is valuable, but it is less map-ready than the other programs because the official page is much stronger on partner and offer data than on outlet-level addresses.",
+    briefCards: [
+      {
+        kicker: "Primary source",
+        title: "Official partner page first",
+        body:
+          "Start from the official Amex page to capture partner brands, categories, and earn structure before attempting outlet mapping or partner-site enrichment.",
+        links: [
+          {
+            label: "10Xcelerator page",
+            href: "https://www.americanexpress.com/sg/benefits/promotions/shopping/10Xcelerator/10Xcelerator.html",
+          },
+        ],
+      },
+      {
+        kicker: "What ships first",
+        title: "Searchable partner directory",
+        body:
+          "The first useful version is a partner and category explorer with earn-rule summaries, then a map for outlets only where there is verified location data.",
+      },
+      {
+        kicker: "Trust model",
+        title: "Brand-level before outlet-level",
+        body:
+          "If the official source confirms a partner but not every store location, the app should present that honestly as a partner listing rather than pretending every outlet is verified.",
+      },
+      {
+        kicker: "Next milestone",
+        title: "Verified outlet mapping",
+        body:
+          "After the partner directory is stable, add mapped outlets only when there is a dependable second source for addresses and live merchant coverage.",
+      },
+    ],
+  },
 };
 
 const state = {
@@ -125,7 +310,7 @@ const state = {
   filtered: [],
   markers: new Map(),
   activeId: null,
-  routeId: "japan",
+  routeId: "dining/japan",
   mobileToolbarOpen: false,
   tableOpen: false,
 };
@@ -145,9 +330,19 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
 const routeEyebrow = document.getElementById("route-eyebrow");
 const routeTitle = document.getElementById("route-title");
 const routeDescription = document.getElementById("route-description");
+const programTitle = document.getElementById("program-title");
+const programDescription = document.getElementById("program-description");
+const programNav = document.getElementById("program-nav");
+const programLinks = [...programNav.querySelectorAll("[data-program]")];
+const scopeStrip = document.getElementById("scope-strip");
 const scopeNote = document.getElementById("scope-note");
 const scopeNav = document.getElementById("scope-nav");
 const routeLinks = [...scopeNav.querySelectorAll("[data-route]")];
+const dataExplorer = document.getElementById("data-explorer");
+const programBrief = document.getElementById("program-brief");
+const programBriefTitle = document.getElementById("program-brief-title");
+const programBriefSummary = document.getElementById("program-brief-summary");
+const programBriefGrid = document.getElementById("program-brief-grid");
 const toolbar = document.getElementById("filter-toolbar");
 const toolbarToggle = document.getElementById("toolbar-toggle");
 const toolbarToggleMeta = document.getElementById("toolbar-toggle-meta");
@@ -319,7 +514,15 @@ function fillBandSelect(select, bands, presentKeys, placeholder) {
 }
 
 function currentRoute() {
-  return ROUTES[state.routeId] || ROUTES.japan;
+  return ROUTES[state.routeId] || ROUTES["dining/japan"];
+}
+
+function currentProgram() {
+  return PROGRAMS[currentRoute().programId] || PROGRAMS.dining;
+}
+
+function isDiningRoute(route = currentRoute()) {
+  return route.programId === "dining";
 }
 
 function activeFilterCount() {
@@ -376,16 +579,58 @@ function activeRecord() {
 
 function resolveRouteFromHash() {
   const hash = window.location.hash.replace(/^#\/?/, "").trim().toLowerCase();
+  const aliases = {
+    all: "dining/world",
+    world: "dining/world",
+    japan: "dining/japan",
+    tokyo: "dining/tokyo",
+    kyoto: "dining/kyoto",
+    osaka: "dining/osaka",
+    dining: "dining/japan",
+    "plat-stay": "stays",
+    accelerator: "10xcelerator",
+  };
+
+  if (!hash) {
+    return PROGRAMS.dining.defaultRoute;
+  }
+
   if (ROUTES[hash]) {
     return hash;
   }
-  return "japan";
+
+  if (aliases[hash]) {
+    return aliases[hash];
+  }
+
+  const [programPart] = hash.split("/");
+  const program = PROGRAMS[programPart];
+  if (program) {
+    return program.defaultRoute;
+  }
+
+  return PROGRAMS.dining.defaultRoute;
 }
 
-function renderRouteShell(route) {
+function renderProgramShell(program, route) {
   routeEyebrow.textContent = route.eyebrow;
-  routeTitle.textContent = route.title;
   routeDescription.textContent = route.description;
+  programTitle.textContent = program.title;
+  programDescription.textContent = program.description;
+
+  programLinks.forEach((link) => {
+    link.classList.toggle("active", link.dataset.program === program.id);
+  });
+}
+
+function renderScopeShell(route) {
+  if (!isDiningRoute(route)) {
+    scopeStrip.hidden = true;
+    return;
+  }
+
+  scopeStrip.hidden = false;
+  routeTitle.textContent = route.label;
   scopeNote.textContent = route.note;
   mapSummary.textContent = route.mapSummary;
 
@@ -402,6 +647,42 @@ function renderRouteShell(route) {
     link.textContent = item.label;
     downloadStack.appendChild(link);
   });
+}
+
+function renderProgramBrief(route) {
+  if (isDiningRoute(route)) {
+    programBrief.hidden = true;
+    return;
+  }
+
+  programBrief.hidden = false;
+  programBriefTitle.textContent = route.briefTitle || `${route.title} Buildout`;
+  programBriefSummary.textContent =
+    route.briefSummary || "This dataset is being prepared as the next phase of the explorer.";
+
+  programBriefGrid.innerHTML = "";
+  (route.briefCards || []).forEach((card) => {
+    const article = document.createElement("article");
+    article.className = "brief-card";
+    const links = (card.links || [])
+      .map(
+        (link) =>
+          `<a class="inline-link" href="${escapeHtml(link.href)}" target="_blank" rel="noopener">${escapeHtml(link.label)}</a>`
+      )
+      .join("");
+    article.innerHTML = `
+      <div class="brief-kicker">${escapeHtml(card.kicker || "Next")}</div>
+      <h3>${escapeHtml(card.title)}</h3>
+      <p class="brief-copy">${escapeHtml(card.body)}</p>
+      ${links ? `<div class="brief-links">${links}</div>` : ""}
+    `;
+    programBriefGrid.appendChild(article);
+  });
+}
+
+function clearMarkers() {
+  state.markers.forEach((marker) => map.removeLayer(marker));
+  state.markers.clear();
 }
 
 function resetFilterControls() {
@@ -795,14 +1076,33 @@ function focusActiveRecordOnMap() {
 }
 
 function applyRoute(routeId) {
-  state.routeId = ROUTES[routeId] ? routeId : "japan";
+  state.routeId = ROUTES[routeId] ? routeId : PROGRAMS.dining.defaultRoute;
   const route = currentRoute();
+  const program = currentProgram();
+
+  document.title = `${route.title} | Amex Benefits Explorer`;
+  renderProgramShell(program, route);
+  renderProgramBrief(route);
+  renderScopeShell(route);
+
+  if (!isDiningRoute(route)) {
+    dataExplorer.hidden = true;
+    state.scopeRecords = [];
+    state.filtered = [];
+    state.activeId = null;
+    clearMarkers();
+    setToolbarOpen(false);
+    setTableOpen(false);
+    return;
+  }
+
+  dataExplorer.hidden = false;
   state.scopeRecords = state.restaurants.filter((record) => route.matcher(record));
   state.activeId = null;
-  renderRouteShell(route);
   resetFilterControls();
   refreshFilterOptions();
   filterRestaurants();
+  setTimeout(() => map.invalidateSize(), 0);
 }
 
 function handleHashRoute() {
@@ -820,7 +1120,7 @@ async function init() {
   setTableOpen(false);
   handleHashRoute();
   if (!window.location.hash) {
-    window.location.hash = "#/japan";
+    window.location.hash = "#/dining/japan";
   }
 }
 
