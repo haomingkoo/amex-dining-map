@@ -373,7 +373,6 @@ const staysTableToggleMeta = document.getElementById("stays-table-toggle-meta");
 const staysSearchInput = document.getElementById("stays-search-input");
 const staysCountryFilter = document.getElementById("stays-country-filter");
 const staysCityFilter = document.getElementById("stays-city-filter");
-const staysBreakfastFilter = document.getElementById("stays-breakfast-filter");
 const staysCheckinInput = document.getElementById("stays-checkin-input");
 const staysCheckoutInput = document.getElementById("stays-checkout-input");
 const staysResetFiltersButton = document.getElementById("stays-reset-filters");
@@ -458,7 +457,7 @@ function focusLocationNote(record) {
   }
 
   if (hasSourceCoordinates(record)) {
-    return "Pin comes from Pocket Concierge venue data. Still confirm the official listing before relying on it for dining-credit use.";
+    return "";
   }
 
   return "Pin uses approximate fallback mapping. Confirm the official Pocket Concierge listing before travelling to the venue.";
@@ -866,10 +865,8 @@ function renderFocusCard() {
 
   const tags = [
     `<span class="badge gold">${escapeHtml(record.city)}</span>`,
-    record.lat != null && record.lng != null
-      ? `<span class="badge ${hasSourceCoordinates(record) ? "green" : "amber"}">${escapeHtml(
-          hasSourceCoordinates(record) ? "Source-backed pin" : "Approximate pin"
-        )}</span>`
+    record.lat != null && record.lng != null && !hasSourceCoordinates(record)
+      ? '<span class="badge amber">Approximate pin</span>'
       : "",
     record.price_dinner_band_tier && record.price_dinner_band_label
       ? `<span class="badge amber">${escapeHtml(priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label))}</span>`
@@ -920,7 +917,7 @@ function renderFocusCard() {
         )}
       </div>
     </div>
-    <div class="focus-note">${escapeHtml(focusLocationNote(record))}</div>
+    ${focusLocationNote(record) ? `<div class="focus-note">${escapeHtml(focusLocationNote(record))}</div>` : ""}
     <div class="focus-actions">
       ${
         record.source_google_map_url
@@ -1212,13 +1209,14 @@ function stayAvailabilityBadgeClass(status) {
 }
 
 function stayFocusSummary(record, status) {
+  const boardNote = record.breakfast_included ? "" : record.breakfast_note || "Room only.";
   const raw = (record.blackout_raw || "").trim();
   if (!raw) {
-    return record.breakfast_note || "";
+    return boardNote;
   }
 
   if (raw.toLowerCase() === "subject to availability") {
-    return record.breakfast_note || "";
+    return boardNote;
   }
 
   if (status.detail && raw === status.detail) {
@@ -1236,7 +1234,6 @@ function activeStayFilterCount() {
   if (staysSearchInput.value.trim()) count += 1;
   if (staysCountryFilter.value) count += 1;
   if (staysCityFilter.value) count += 1;
-  if (staysBreakfastFilter.value) count += 1;
   if (staysCheckinInput.value) count += 1;
   if (staysCheckoutInput.value) count += 1;
   return count;
@@ -1279,7 +1276,6 @@ function resetStayFilterControls() {
   staysSearchInput.value = "";
   staysCountryFilter.value = "";
   staysCityFilter.value = "";
-  staysBreakfastFilter.value = "";
   staysCheckinInput.value = "";
   staysCheckoutInput.value = "";
 }
@@ -1352,14 +1348,11 @@ function filterStays() {
   const search = staysSearchInput.value.trim().toLowerCase();
   const country = staysCountryFilter.value;
   const city = staysCityFilter.value;
-  const breakfast = staysBreakfastFilter.value;
 
   state.stayBlockedCount = 0;
   state.stayFiltered = state.stays.filter((record) => {
     if (country && record.country !== country) return false;
     if (city && record.city !== city) return false;
-    if (breakfast === "included" && !record.breakfast_included) return false;
-    if (breakfast === "room_only" && record.breakfast_included) return false;
     if (search && !(record.search_text || "").includes(search)) return false;
 
     const status = stayAvailability(record);
@@ -1434,9 +1427,7 @@ function renderStayFocusCard() {
   const tags = [
     record.country ? `<span class="badge gold">${escapeHtml(record.country)}</span>` : "",
     record.city ? `<span class="badge">${escapeHtml(record.city)}</span>` : "",
-    record.breakfast_included
-      ? '<span class="badge green">Breakfast for 2</span>'
-      : '<span class="badge blue">Room only</span>',
+    record.breakfast_included ? "" : '<span class="badge blue">Room only</span>',
     record.coordinate_confidence === "approximate"
       ? '<span class="badge amber">Approximate pin</span>'
       : "",
@@ -1488,7 +1479,7 @@ function renderStayFocusCard() {
 function renderStayTable() {
   if (!state.stayFiltered.length) {
     staysResultsTableBody.innerHTML =
-      '<tr><td colspan="7" class="empty-table">No properties match the current filters and date check.</td></tr>';
+      '<tr><td colspan="6" class="empty-table">No properties match the current filters and date check.</td></tr>';
     return;
   }
 
@@ -1513,7 +1504,6 @@ function renderStayTable() {
         <div class="table-sub">${escapeHtml(status.detail)}</div>
       </td>
       <td>${escapeHtml(record.blackout_raw || "Subject to availability")}</td>
-      <td>${record.breakfast_included ? "Breakfast for 2" : "Room only"}</td>
       <td>${escapeHtml(record.reservation_raw || "See official source")}</td>
     `;
     staysResultsTableBody.appendChild(row);
@@ -1543,7 +1533,7 @@ function renderStayMobileCards() {
       <div class="mobile-card-address">${escapeHtml(record.address)}</div>
       <div class="venue-tags">
         <span class="badge ${stayAvailabilityBadgeClass(status)}">${escapeHtml(status.label)}</span>
-        ${record.breakfast_included ? '<span class="badge green">Breakfast for 2</span>' : '<span class="badge blue">Room only</span>'}
+        ${record.breakfast_included ? "" : '<span class="badge blue">Room only</span>'}
       </div>
       <p class="focus-summary">${escapeHtml(status.detail)}</p>
       <div class="mobile-card-actions">
@@ -1621,22 +1611,6 @@ function fitStayMapToVisibleMarkers() {
   }
 
   staysMap.fitBounds(L.latLngBounds(latLngs), STAYS_FIT_OPTIONS);
-}
-
-function stayPresetRange(kind) {
-  const today = new Date();
-  const baseMonthOffset = kind === "two-months-weekend" ? 2 : 1;
-  const monthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + baseMonthOffset, 1));
-  const day = monthStart.getUTCDay();
-  const daysUntilSaturday = (6 - day + 7) % 7;
-  const saturday = new Date(monthStart);
-  saturday.setUTCDate(monthStart.getUTCDate() + daysUntilSaturday);
-  const monday = new Date(saturday);
-  monday.setUTCDate(saturday.getUTCDate() + 2);
-  return {
-    checkin: saturday.toISOString().slice(0, 10),
-    checkout: monday.toISOString().slice(0, 10),
-  };
 }
 
 function applyRoute(routeId) {
@@ -1767,7 +1741,6 @@ staysCountryFilter.addEventListener("change", () => {
   filterStays();
 });
 staysCityFilter.addEventListener("change", filterStays);
-staysBreakfastFilter.addEventListener("change", filterStays);
 staysCheckinInput.addEventListener("change", filterStays);
 staysCheckoutInput.addEventListener("change", filterStays);
 staysResetFiltersButton.addEventListener("click", () => {
@@ -1778,14 +1751,8 @@ staysResetFiltersButton.addEventListener("click", () => {
 
 stayPresetButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    if (button.dataset.stayPreset === "clear-dates") {
-      staysCheckinInput.value = "";
-      staysCheckoutInput.value = "";
-    } else {
-      const preset = stayPresetRange(button.dataset.stayPreset);
-      staysCheckinInput.value = preset.checkin;
-      staysCheckoutInput.value = preset.checkout;
-    }
+    staysCheckinInput.value = "";
+    staysCheckoutInput.value = "";
     filterStays();
   });
 });
