@@ -172,7 +172,7 @@ const ROUTES = {
       "World stay view for the current Plat Stay property set. Pins are geocoded from official property addresses and should still be verified before booking.",
     defaultView: [20, 10],
     defaultZoom: 2,
-    downloads: [{ label: "Plat Stay KML", href: "../data/kml/plat-stays-all.kml", primary: true }],
+    downloads: [],
   },
   "love-dining": {
     id: "love-dining",
@@ -395,6 +395,7 @@ const staysScopeCount = document.getElementById("stays-scope-count");
 const staysShowingCount = document.getElementById("stays-showing-count");
 const staysMappedCount = document.getElementById("stays-mapped-count");
 const staysCountryCount = document.getElementById("stays-country-count");
+const staysDownloadsSection = document.getElementById("stays-downloads-section");
 const staysDownloadStack = document.getElementById("stays-download-stack");
 const staysMapSummary = document.getElementById("stays-map-summary");
 const staysResultsText = document.getElementById("stays-results-text");
@@ -1421,8 +1422,10 @@ function renderStayStats() {
 }
 
 function renderStayDownloads(route) {
+  const downloads = route.downloads || [];
   staysDownloadStack.innerHTML = "";
-  (route.downloads || []).forEach((item) => {
+  staysDownloadsSection.hidden = downloads.length === 0;
+  downloads.forEach((item) => {
     const link = document.createElement("a");
     link.className = `download-btn${item.primary ? " primary" : ""}`;
     link.href = item.href;
