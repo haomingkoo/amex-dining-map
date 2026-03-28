@@ -295,29 +295,44 @@ const state = {
   stayBlockedCount: 0,
 };
 
-const map = L.map("map", {
-  zoomControl: true,
-  scrollWheelZoom: true,
-}).setView([35.676, 137.5], 5);
+const hasLeaflet = typeof window !== "undefined" && typeof window.L !== "undefined";
+const mapElement = document.getElementById("map");
+const staysMapElement = document.getElementById("stays-map");
 
-const staysMap = L.map("stays-map", {
-  zoomControl: true,
-  scrollWheelZoom: true,
-}).setView([20, 10], 2);
+const map = hasLeaflet
+  ? L.map("map", {
+      zoomControl: true,
+      scrollWheelZoom: true,
+    }).setView([35.676, 137.5], 5)
+  : null;
 
-L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-  attribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-  subdomains: "abcd",
-  maxZoom: 20,
-}).addTo(map);
+const staysMap = hasLeaflet
+  ? L.map("stays-map", {
+      zoomControl: true,
+      scrollWheelZoom: true,
+    }).setView([20, 10], 2)
+  : null;
 
-L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-  attribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-  subdomains: "abcd",
-  maxZoom: 20,
-}).addTo(staysMap);
+if (hasLeaflet) {
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: "abcd",
+    maxZoom: 20,
+  }).addTo(map);
+
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: "abcd",
+    maxZoom: 20,
+  }).addTo(staysMap);
+} else {
+  mapElement.innerHTML =
+    '<div class="empty-state">Map library failed to load. Dining results are still available below.</div>';
+  staysMapElement.innerHTML =
+    '<div class="empty-state">Map library failed to load. Plat Stay results are still available below.</div>';
+}
 
 const routeEyebrow = document.getElementById("route-eyebrow");
 const routeTitle = document.getElementById("route-title");
@@ -464,6 +479,7 @@ function focusLocationNote(record) {
 }
 
 function createMarker(record) {
+  if (!hasLeaflet) return null;
   if (record.lat == null || record.lng == null) return null;
 
   const dinnerBand = priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label);
@@ -707,11 +723,19 @@ function renderProgramBrief(route) {
 }
 
 function clearMarkers() {
+  if (!hasLeaflet || !map) {
+    state.markers.clear();
+    return;
+  }
   state.markers.forEach((marker) => map.removeLayer(marker));
   state.markers.clear();
 }
 
 function clearStayMarkers() {
+  if (!hasLeaflet || !staysMap) {
+    state.stayMarkers.clear();
+    return;
+  }
   state.stayMarkers.forEach((marker) => staysMap.removeLayer(marker));
   state.stayMarkers.clear();
 }
@@ -845,6 +869,7 @@ function renderStats() {
 }
 
 function renderMarkers() {
+  if (!hasLeaflet || !map) return;
   state.markers.forEach((marker) => map.removeLayer(marker));
   state.markers.clear();
 
@@ -1070,7 +1095,7 @@ function renderMobileCards() {
       focusButton.addEventListener("click", () => {
         setActiveRecord(record.id);
         focusActiveRecordOnMap();
-        if (window.innerWidth <= 820) {
+        if (window.innerWidth <= 820 && hasLeaflet && map) {
           const mapTop = map.getContainer().getBoundingClientRect().top + window.scrollY - 16;
           window.scrollTo({ top: Math.max(mapTop, 0), behavior: "smooth" });
         }
@@ -1088,6 +1113,7 @@ function setActiveRecord(id) {
   renderMobileCards();
 }
 function focusActiveRecordOnMap() {
+  if (!hasLeaflet || !map) return;
   const record = activeRecord();
   if (!record) return;
   const marker = state.markers.get(record.id);
@@ -1309,6 +1335,7 @@ function activeStayRecord() {
 }
 
 function createStayMarker(record) {
+  if (!hasLeaflet) return null;
   if (record.lat == null || record.lng == null) return null;
   const status = stayAvailability(record);
   const marker = L.circleMarker([record.lat, record.lng], {
@@ -1406,6 +1433,7 @@ function renderStayDownloads(route) {
 }
 
 function renderStayMarkers() {
+  if (!hasLeaflet || !staysMap) return;
   clearStayMarkers();
 
   state.stayFiltered.forEach((record) => {
@@ -1549,7 +1577,7 @@ function renderStayMobileCards() {
       focusButton.addEventListener("click", () => {
         setActiveStayRecord(record.id);
         focusActiveStayOnMap();
-        if (window.innerWidth <= 820) {
+        if (window.innerWidth <= 820 && hasLeaflet && staysMap) {
           const mapTop = staysMap.getContainer().getBoundingClientRect().top + window.scrollY - 16;
           window.scrollTo({ top: Math.max(mapTop, 0), behavior: "smooth" });
         }
@@ -1567,6 +1595,7 @@ function setActiveStayRecord(id) {
 }
 
 function focusActiveStayOnMap() {
+  if (!hasLeaflet || !staysMap) return;
   const record = activeStayRecord();
   if (!record) return;
   const marker = state.stayMarkers.get(record.id);
@@ -1576,6 +1605,7 @@ function focusActiveStayOnMap() {
 }
 
 function fitDiningMapToVisibleMarkers() {
+  if (!hasLeaflet || !map) return;
   const route = currentRoute();
   const latLngs = state.filtered
     .filter((record) => record.lat != null && record.lng != null)
@@ -1595,6 +1625,7 @@ function fitDiningMapToVisibleMarkers() {
 }
 
 function fitStayMapToVisibleMarkers() {
+  if (!hasLeaflet || !staysMap) return;
   const route = currentRoute();
   const latLngs = state.stayFiltered
     .filter((record) => record.lat != null && record.lng != null)
@@ -1629,10 +1660,12 @@ function applyRoute(routeId) {
     renderStayDownloads(route);
     refreshStayFilterOptions();
     filterStays();
-    setTimeout(() => {
-      staysMap.invalidateSize();
-      fitStayMapToVisibleMarkers();
-    }, 0);
+    if (hasLeaflet && staysMap) {
+      setTimeout(() => {
+        staysMap.invalidateSize();
+        fitStayMapToVisibleMarkers();
+      }, 0);
+    }
     return;
   }
 
@@ -1660,10 +1693,12 @@ function applyRoute(routeId) {
   resetFilterControls();
   refreshFilterOptions();
   filterRestaurants();
-  setTimeout(() => {
-    map.invalidateSize();
-    fitDiningMapToVisibleMarkers();
-  }, 0);
+  if (hasLeaflet && map) {
+    setTimeout(() => {
+      map.invalidateSize();
+      fitDiningMapToVisibleMarkers();
+    }, 0);
+  }
 }
 
 function handleHashRoute() {
@@ -1759,6 +1794,7 @@ stayPresetButtons.forEach((button) => {
 
 window.addEventListener("hashchange", handleHashRoute);
 window.addEventListener("resize", () => {
+  if (!hasLeaflet) return;
   if (isStayRoute()) {
     staysMap.invalidateSize();
     fitStayMapToVisibleMarkers();
