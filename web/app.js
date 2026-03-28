@@ -203,8 +203,9 @@ function priceBandLabel(tier, label) {
 function kidLabel(value) {
   const labels = {
     kid_friendly: "Kid friendly",
-    older_children_only: "Older children only",
-    teens_only: "Teens only",
+    older_children_only: "Older kids only",
+    teens_only: "Older kids only",
+    older_kids_only: "Older kids only",
     policy_available: "Child rules listed",
     unknown: "No child policy listed",
   };
@@ -492,7 +493,10 @@ function filterRestaurants() {
     if (cuisine && !(record.cuisines || []).includes(cuisine)) return false;
     if (lunchBand && record.price_lunch_band_key !== lunchBand) return false;
     if (dinnerBand && record.price_dinner_band_key !== dinnerBand) return false;
-    if (kids && record.child_policy_norm !== kids) return false;
+    if (kids === "older_kids_only" && !["older_children_only", "teens_only"].includes(record.child_policy_norm)) {
+      return false;
+    }
+    if (kids && kids !== "older_kids_only" && record.child_policy_norm !== kids) return false;
     if (menu === "yes" && !record.english_menu) return false;
     if (menu === "no" && record.english_menu) return false;
     if (reservation && record.reservation_type !== reservation) return false;
