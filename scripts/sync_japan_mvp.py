@@ -19,8 +19,24 @@ KML_DIR = DATA_DIR / "kml"
 JSON_PATH = DATA_DIR / "japan-restaurants.json"
 GEOJSON_PATH = DATA_DIR / "japan-restaurants.geojson"
 CACHE_PATH = DATA_DIR / "geocode_cache.json"
+DETAIL_CACHE_PATH = DATA_DIR / "venue_detail_cache.json"
 
 USER_AGENT = "JapanDiningMapMVP/0.1 (+https://local.dev)"
+GRAPHQL_URL = "https://pocket-concierge.jp/graphql"
+VENUE_QUERY = """
+query InitialVenuePage($id: ID!) {
+  venue(id: $id) {
+    id
+    name
+    localizedAddress
+    latitude
+    longitude
+    googleMapUrl
+    addressHidden
+    nearestStations
+  }
+}
+""".strip()
 
 AREA_SEEDS = [
     {
@@ -112,6 +128,24 @@ def fetch_text(url: str) -> str:
         return response.read().decode("utf-8", errors="replace")
 
 
+def post_json(url: str, payload: dict) -> dict:
+    data = json.dumps(payload).encode("utf-8")
+    request = urllib.request.Request(
+        url,
+        data=data,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Origin": "https://pocket-concierge.jp",
+            "Referer": "https://pocket-concierge.jp/",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
 def load_json(path: Path, default):
     if not path.exists():
         return default
@@ -198,6 +232,8 @@ def build_search_text(record: dict) -> str:
         record.get("city"),
         record.get("district"),
         record.get("area_title"),
+        record.get("source_localized_address"),
+        record.get("nearest_stations_text"),
         " ".join(record.get("cuisines", [])),
         record.get("summary_official"),
         record.get("child_policy_raw"),
@@ -221,6 +257,94 @@ def classify_price_band(
         if lower <= value < upper:
             return key, label, tier
     return None, None, None
+
+
+def source_venue_id(record: dict) -> str | None:
+    source_url = record.get("source_url")
+    if not source_url:
+        return None
+    match = re.search(r"/restaurants/(\d+)", source_url)
+    return match.group(1) if match else None
+
+
+def venue_detail_query(venue_id: str) -> dict:
+    payload = {
+        "operationName": "InitialVenuePage",
+        "variables": {"id": venue_id},
+        "query": VENUE_QUERY,
+    }
+    response = post_json(GRAPHQL_URL, payload)
+    if not isinstance(response, dict):
+        return {}
+    data = response.get("data")
+    if not isinstance(data, dict):
+        return {}
+    venue = data.get("venue")
+    return venue if isinstance(venue, dict) else {}
+
+
+def parse_google_map_coordinates(url: str | None) -> tuple[float | None, float | None]:
+    if not url:
+        return None, None
+    parsed = urllib.parse.urlparse(url)
+    query = urllib.parse.parse_qs(parsed.query)
+    q_value = query.get("q", [None])[0]
+    if not q_value:
+        return None, None
+    match = re.match(r"\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$", q_value)
+    if not match:
+        return None, None
+    return float(match.group(1)), float(match.group(2))
+
+
+def enrich_from_source(record: dict, cache: dict) -> None:
+    venue_id = source_venue_id(record)
+    if not venue_id:
+        return
+
+    if venue_id in cache:
+        venue = cache[venue_id]
+    else:
+        venue = venue_detail_query(venue_id)
+        cache[venue_id] = venue
+        save_json(DETAIL_CACHE_PATH, cache)
+        time.sleep(0.2)
+
+    if not venue:
+        return
+
+    record["source_address_hidden"] = bool(venue.get("addressHidden"))
+    record["source_google_map_url"] = venue.get("googleMapUrl")
+    nearest = venue.get("nearestStations") or []
+    record["nearest_stations"] = nearest
+    record["nearest_stations_text"] = " ".join(nearest)
+
+    if not record["source_address_hidden"]:
+        record["source_localized_address"] = venue.get("localizedAddress")
+    else:
+        record["source_localized_address"] = None
+
+    lat = venue.get("latitude")
+    lng = venue.get("longitude")
+    if lat is None or lng is None:
+        lat, lng = parse_google_map_coordinates(venue.get("googleMapUrl"))
+        if lat is not None and lng is not None:
+            record["lat"] = lat
+            record["lng"] = lng
+            record["coordinate_source"] = "pocket_concierge_google_map_url"
+            record["coordinate_confidence"] = "source"
+            record["map_pin_note"] = (
+                "Source venue coordinates from Pocket Concierge public map data."
+            )
+            return
+
+    if lat is not None and lng is not None:
+        record["lat"] = float(lat)
+        record["lng"] = float(lng)
+        record["coordinate_source"] = "pocket_concierge_graphql"
+        record["coordinate_confidence"] = "source"
+        record["map_pin_note"] = "Source venue coordinates from Pocket Concierge."
+        return
 
 
 def extract_restaurant_blocks(section_html: str) -> list[str]:
@@ -297,6 +421,11 @@ def parse_area_page(area: dict) -> list[dict]:
             "english_menu": english_menu,
             "michelin_status": None,
             "michelin_source": None,
+            "source_address_hidden": None,
+            "source_localized_address": None,
+            "source_google_map_url": None,
+            "nearest_stations": [],
+            "nearest_stations_text": None,
             "lat": None,
             "lng": None,
             "coordinate_source": None,
@@ -390,6 +519,10 @@ def kml_description(record: dict) -> str:
         f"<strong>{html.escape(record['name'])}</strong>",
         html.escape(f"{record['city']} / {record.get('district') or record['area_title']}"),
     ]
+    if record.get("source_localized_address"):
+        lines.append(html.escape("Address: " + record["source_localized_address"]))
+    if record.get("nearest_stations"):
+        lines.append(html.escape("Nearest: " + "; ".join(record["nearest_stations"])))
     if record.get("cuisines"):
         lines.append(html.escape("Cuisine: " + ", ".join(record["cuisines"])))
     if record.get("reservation_type"):
@@ -491,7 +624,8 @@ def write_kml_outputs(records: list[dict]) -> None:
 
 def main() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    cache = load_json(CACHE_PATH, {})
+    geocode_cache = load_json(CACHE_PATH, {})
+    detail_cache = load_json(DETAIL_CACHE_PATH, {})
 
     records: list[dict] = []
     for area in AREA_SEEDS:
@@ -506,7 +640,9 @@ def main() -> None:
     )
 
     for record in normalized:
-        geocode_record(record, cache)
+        enrich_from_source(record, detail_cache)
+        if record.get("lat") is None or record.get("lng") is None:
+            geocode_record(record, geocode_cache)
         record["search_text"] = build_search_text(record)
 
     save_json(JSON_PATH, normalized)
