@@ -353,6 +353,7 @@ h3 {
 
 .search-wrap input,
 .filter-wrap select,
+.filter-wrap input,
 .ghost-btn {
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -362,13 +363,15 @@ h3 {
 }
 
 .search-wrap input,
-.filter-wrap select {
+.filter-wrap select,
+.filter-wrap input {
   padding: 10px 12px;
   font-size: 14px;
 }
 
 .search-wrap input:focus,
 .filter-wrap select:focus,
+.filter-wrap input:focus,
 .ghost-btn:focus {
   outline: none;
   border-color: var(--border-strong);
@@ -476,6 +479,11 @@ h3 {
 }
 
 #map {
+  width: 100%;
+  height: 620px;
+}
+
+#stays-map {
   width: 100%;
   height: 620px;
 }
@@ -621,6 +629,20 @@ h3 {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 16px;
+}
+
+.preset-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 10px;
+  grid-column: span 2;
+}
+
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .inline-link {

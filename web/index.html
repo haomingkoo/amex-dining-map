@@ -297,6 +297,193 @@
           <div class="mobile-results-list" id="mobile-results-list"></div>
         </section>
       </div>
+
+      <div id="stays-explorer" hidden>
+        <section class="stats-row">
+          <div class="stat-card panel-surface">
+            <div class="stat-label">Scope Properties</div>
+            <div class="stat-value" id="stays-scope-count">0</div>
+          </div>
+          <div class="stat-card panel-surface">
+            <div class="stat-label">Showing</div>
+            <div class="stat-value" id="stays-showing-count">0</div>
+          </div>
+          <div class="stat-card panel-surface">
+            <div class="stat-label">Mapped</div>
+            <div class="stat-value" id="stays-mapped-count">0</div>
+          </div>
+          <div class="stat-card panel-surface">
+            <div class="stat-label">Countries</div>
+            <div class="stat-value" id="stays-country-count">0</div>
+          </div>
+        </section>
+
+        <section class="explorer-grid">
+          <section class="map-panel panel-surface">
+            <div class="panel-head">
+              <div>
+                <h2>Property Map</h2>
+                <p id="stays-map-summary">
+                  Browse the current Plat Stay property set, then narrow it with
+                  travel dates and country filters.
+                </p>
+              </div>
+            </div>
+            <div id="stays-map"></div>
+            <div class="map-downloads">
+              <div class="stat-label">KML Downloads</div>
+              <div class="download-stack" id="stays-download-stack"></div>
+            </div>
+          </section>
+
+          <aside class="focus-panel panel-surface">
+            <div class="panel-head">
+              <div>
+                <h2>Selected Property</h2>
+                <p id="stays-results-text">Loading...</p>
+              </div>
+            </div>
+            <div class="focus-body" id="stays-focus-card"></div>
+          </aside>
+        </section>
+
+        <section class="filter-shell">
+          <button
+            id="stays-toolbar-toggle"
+            type="button"
+            class="toolbar-toggle panel-surface"
+            aria-expanded="false"
+            aria-controls="stays-filter-toolbar"
+          >
+            <span>
+              <span class="toolbar-toggle-title">Search and Filters</span>
+              <span class="toolbar-toggle-meta" id="stays-toolbar-toggle-meta">
+                All filters off
+              </span>
+            </span>
+            <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
+          </button>
+
+          <section class="toolbar panel-surface" id="stays-filter-toolbar">
+            <label class="search-wrap">
+              <span class="label">Search</span>
+              <input
+                id="stays-search-input"
+                type="search"
+                placeholder="Property, city, country, room type..."
+              />
+            </label>
+
+            <label class="filter-wrap">
+              <span class="label">Country</span>
+              <select id="stays-country-filter">
+                <option value="">All countries</option>
+              </select>
+            </label>
+
+            <label class="filter-wrap">
+              <span class="label">City</span>
+              <select id="stays-city-filter">
+                <option value="">All cities</option>
+              </select>
+            </label>
+
+            <label class="filter-wrap">
+              <span class="label">Breakfast</span>
+              <select id="stays-breakfast-filter">
+                <option value="">All</option>
+                <option value="included">Breakfast for 2</option>
+                <option value="room_only">Room only</option>
+              </select>
+            </label>
+
+            <label class="filter-wrap">
+              <span class="label">Check-in</span>
+              <input id="stays-checkin-input" type="date" />
+            </label>
+
+            <label class="filter-wrap">
+              <span class="label">Check-out</span>
+              <input id="stays-checkout-input" type="date" />
+            </label>
+
+            <div class="preset-wrap">
+              <span class="label">Quick Dates</span>
+              <div class="preset-row">
+                <button type="button" class="ghost-btn secondary" data-stay-preset="this-weekend">
+                  This weekend
+                </button>
+                <button type="button" class="ghost-btn secondary" data-stay-preset="next-weekend">
+                  Next weekend
+                </button>
+                <button type="button" class="ghost-btn secondary" data-stay-preset="clear-dates">
+                  Clear dates
+                </button>
+              </div>
+            </div>
+
+            <div class="filter-actions">
+              <span class="label">Reset</span>
+              <button id="stays-reset-filters" type="button" class="ghost-btn">
+                Clear filters
+              </button>
+            </div>
+          </section>
+        </section>
+
+        <section class="table-shell">
+          <button
+            id="stays-table-toggle"
+            type="button"
+            class="toolbar-toggle panel-surface"
+            aria-expanded="false"
+            aria-controls="stays-results-table-panel"
+          >
+            <span>
+              <span class="toolbar-toggle-title">Detailed Table</span>
+              <span class="toolbar-toggle-meta" id="stays-table-toggle-meta">
+                Open for side-by-side scanning and blackout-date detail
+              </span>
+            </span>
+            <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
+          </button>
+
+          <section class="table-panel panel-surface" id="stays-results-table-panel">
+            <div class="panel-head table-head">
+              <div>
+                <h2>Results Table</h2>
+                <p id="stays-table-summary">Loading...</p>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Property</th>
+                    <th>Place</th>
+                    <th>Eligible Room</th>
+                    <th>Travel Match</th>
+                    <th>Blackout Notes</th>
+                    <th>Breakfast</th>
+                    <th>Reservation</th>
+                  </tr>
+                </thead>
+                <tbody id="stays-results-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="mobile-results-panel panel-surface">
+          <div class="panel-head">
+            <div>
+              <h2>Mobile Results</h2>
+              <p id="stays-mobile-summary">Loading...</p>
+            </div>
+          </div>
+          <div class="mobile-results-list" id="stays-mobile-results-list"></div>
+        </section>
+      </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

@@ -1,4 +1,5 @@
 const DATA_URL = "../data/japan-restaurants.json";
+const STAYS_DATA_URL = "../data/plat-stays.json";
 
 const LUNCH_BANDS = [
   { key: "under-5k", label: "Under JPY 5k", tier: "$" },
@@ -161,46 +162,15 @@ const ROUTES = {
     id: "stays",
     programId: "stays",
     label: "Overview",
-    eyebrow: "Plat Stay / Sprint 2",
+    eyebrow: "Plat Stay / Live",
     title: "Plat Stay Explorer",
     description:
-      "Date-aware stay planner for Platinum Stay properties. The first version will let people key in travel dates, knock out blackout conflicts, and keep only the remaining properties on the map.",
-    briefTitle: "Plat Stay Buildout",
-    briefSummary:
-      "Plat Stay is the next dataset because the official source is PDF-first, address-rich, and ideal for deterministic blackout-date filtering.",
-    briefCards: [
-      {
-        kicker: "Primary sources",
-        title: "Use the short link as canonical",
-        body:
-          "Sync from the official short link first, then keep the resolved PDF URL and file hash so we can diff source changes cleanly over time.",
-        links: [
-          { label: "go.amex/platstay", href: "https://go.amex/platstay" },
-          {
-            label: "Current Plat Stay PDF",
-            href: "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/platstay.pdf?extlink=SG",
-          },
-        ],
-      },
-      {
-        kicker: "What ships first",
-        title: "Travel dates and remaining properties",
-        body:
-          "Users will enter check-in and check-out dates, or tap quick weekend presets, and the app will keep only properties that are not blocked by listed blackout dates.",
-      },
-      {
-        kicker: "Trust model",
-        title: "Blocked is deterministic, available is not guaranteed",
-        body:
-          "The app should say when a property is blocked by listed blackout dates, but only say 'not blocked by listed blackout dates' otherwise, since hotel availability can still change.",
-      },
-      {
-        kicker: "Next milestone",
-        title: "Structured stay dataset",
-        body:
-          "Parse the PDF into property rows with country, city, address, room type, blackout dates, and reservation contacts, then plot them on the map.",
-      },
-    ],
+      "Date-aware stay planner for Platinum Stay properties. Enter travel dates, remove exact blackout conflicts, and keep the remaining properties on the map.",
+    mapSummary:
+      "World stay view for the current Plat Stay property set. Pins are geocoded from official property addresses and should still be verified before booking.",
+    defaultView: [20, 10],
+    defaultZoom: 2,
+    downloads: [{ label: "Plat Stay KML", href: "../data/kml/plat-stays-all.kml", primary: true }],
   },
   "love-dining": {
     id: "love-dining",
@@ -306,6 +276,7 @@ const ROUTES = {
 
 const state = {
   restaurants: [],
+  stays: [],
   scopeRecords: [],
   filtered: [],
   markers: new Map(),
@@ -313,6 +284,13 @@ const state = {
   routeId: "dining/japan",
   mobileToolbarOpen: false,
   tableOpen: false,
+  stayScopeRecords: [],
+  stayFiltered: [],
+  stayMarkers: new Map(),
+  stayActiveId: null,
+  stayToolbarOpen: false,
+  stayTableOpen: false,
+  stayBlockedCount: 0,
 };
 
 const map = L.map("map", {
@@ -320,12 +298,24 @@ const map = L.map("map", {
   scrollWheelZoom: true,
 }).setView([35.676, 137.5], 5);
 
+const staysMap = L.map("stays-map", {
+  zoomControl: true,
+  scrollWheelZoom: true,
+}).setView([20, 10], 2);
+
 L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
   attribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
   subdomains: "abcd",
   maxZoom: 20,
 }).addTo(map);
+
+L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains: "abcd",
+  maxZoom: 20,
+}).addTo(staysMap);
 
 const routeEyebrow = document.getElementById("route-eyebrow");
 const routeTitle = document.getElementById("route-title");
@@ -371,6 +361,33 @@ const tableSummary = document.getElementById("table-summary");
 const mobileSummary = document.getElementById("mobile-summary");
 const resultsTableBody = document.getElementById("results-table-body");
 const mobileResultsList = document.getElementById("mobile-results-list");
+const staysExplorer = document.getElementById("stays-explorer");
+const staysToolbar = document.getElementById("stays-filter-toolbar");
+const staysToolbarToggle = document.getElementById("stays-toolbar-toggle");
+const staysToolbarToggleMeta = document.getElementById("stays-toolbar-toggle-meta");
+const staysTablePanel = document.getElementById("stays-results-table-panel");
+const staysTableToggle = document.getElementById("stays-table-toggle");
+const staysTableToggleMeta = document.getElementById("stays-table-toggle-meta");
+const staysSearchInput = document.getElementById("stays-search-input");
+const staysCountryFilter = document.getElementById("stays-country-filter");
+const staysCityFilter = document.getElementById("stays-city-filter");
+const staysBreakfastFilter = document.getElementById("stays-breakfast-filter");
+const staysCheckinInput = document.getElementById("stays-checkin-input");
+const staysCheckoutInput = document.getElementById("stays-checkout-input");
+const staysResetFiltersButton = document.getElementById("stays-reset-filters");
+const staysScopeCount = document.getElementById("stays-scope-count");
+const staysShowingCount = document.getElementById("stays-showing-count");
+const staysMappedCount = document.getElementById("stays-mapped-count");
+const staysCountryCount = document.getElementById("stays-country-count");
+const staysDownloadStack = document.getElementById("stays-download-stack");
+const staysMapSummary = document.getElementById("stays-map-summary");
+const staysResultsText = document.getElementById("stays-results-text");
+const staysFocusCard = document.getElementById("stays-focus-card");
+const staysTableSummary = document.getElementById("stays-table-summary");
+const staysMobileSummary = document.getElementById("stays-mobile-summary");
+const staysResultsTableBody = document.getElementById("stays-results-table-body");
+const staysMobileResultsList = document.getElementById("stays-mobile-results-list");
+const stayPresetButtons = [...document.querySelectorAll("[data-stay-preset]")];
 
 function escapeHtml(value) {
   return String(value)
@@ -525,6 +542,14 @@ function isDiningRoute(route = currentRoute()) {
   return route.programId === "dining";
 }
 
+function isStayRoute(route = currentRoute()) {
+  return route.programId === "stays";
+}
+
+function isLiveDataRoute(route = currentRoute()) {
+  return isDiningRoute(route) || isStayRoute(route);
+}
+
 function activeFilterCount() {
   const route = currentRoute();
   let count = 0;
@@ -650,7 +675,7 @@ function renderScopeShell(route) {
 }
 
 function renderProgramBrief(route) {
-  if (isDiningRoute(route)) {
+  if (isLiveDataRoute(route)) {
     programBrief.hidden = true;
     return;
   }
@@ -683,6 +708,11 @@ function renderProgramBrief(route) {
 function clearMarkers() {
   state.markers.forEach((marker) => map.removeLayer(marker));
   state.markers.clear();
+}
+
+function clearStayMarkers() {
+  state.stayMarkers.forEach((marker) => staysMap.removeLayer(marker));
+  state.stayMarkers.clear();
 }
 
 function resetFilterControls() {
@@ -1075,6 +1105,460 @@ function focusActiveRecordOnMap() {
   marker.openPopup();
 }
 
+function stayGoogleMapsUrl(record) {
+  if (record.lat != null && record.lng != null) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      `${record.lat},${record.lng}`
+    )}`;
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(record.address)}`;
+}
+
+function stayDateRange() {
+  if (!staysCheckinInput.value || !staysCheckoutInput.value) {
+    return null;
+  }
+  const start = new Date(`${staysCheckinInput.value}T00:00:00Z`);
+  const end = new Date(`${staysCheckoutInput.value}T00:00:00Z`);
+  if (Number.isNaN(start.valueOf()) || Number.isNaN(end.valueOf()) || end <= start) {
+    return null;
+  }
+  return { start, end };
+}
+
+function stayRangeOverlaps(range, selected) {
+  const start = new Date(`${range.start}T00:00:00Z`);
+  const endInclusive = new Date(`${range.end}T00:00:00Z`);
+  const endExclusive = new Date(endInclusive);
+  endExclusive.setUTCDate(endExclusive.getUTCDate() + 1);
+  return selected.start < endExclusive && selected.end > start;
+}
+
+function stayAvailability(record) {
+  const selected = stayDateRange();
+  if (!selected) {
+    return {
+      key: "not_evaluated",
+      label: "Set dates to check blackout conflicts",
+      detail: "Add check-in and check-out dates to remove exact blackout conflicts.",
+      blocked: false,
+    };
+  }
+
+  const exactRanges = record.blackout_exact_ranges || [];
+  const conflicts = exactRanges.filter((range) => stayRangeOverlaps(range, selected));
+  if (conflicts.length) {
+    return {
+      key: "blocked",
+      label: "Blocked by listed blackout dates",
+      detail: conflicts.map((range) => range.label).join(" | "),
+      blocked: true,
+    };
+  }
+
+  const notes = record.blackout_notes || [];
+  if (notes.length) {
+    return {
+      key: "not_blocked_with_notes",
+      label: "Not blocked by listed dates",
+      detail: notes.join(" | "),
+      blocked: false,
+    };
+  }
+
+  return {
+    key: "not_blocked",
+    label: "Not blocked by listed blackout dates",
+    detail: "Still subject to hotel availability and final confirmation.",
+    blocked: false,
+  };
+}
+
+function stayAvailabilityBadgeClass(status) {
+  if (status.key === "blocked") return "amber";
+  if (status.key === "not_blocked" || status.key === "not_blocked_with_notes") return "green";
+  return "blue";
+}
+
+function activeStayFilterCount() {
+  let count = 0;
+  if (staysSearchInput.value.trim()) count += 1;
+  if (staysCountryFilter.value) count += 1;
+  if (staysCityFilter.value) count += 1;
+  if (staysBreakfastFilter.value) count += 1;
+  if (staysCheckinInput.value) count += 1;
+  if (staysCheckoutInput.value) count += 1;
+  return count;
+}
+
+function setStayToolbarOpen(isOpen) {
+  state.stayToolbarOpen = isOpen;
+  staysToolbar.classList.toggle("is-open", isOpen);
+  staysToolbarToggle.setAttribute("aria-expanded", String(isOpen));
+  const icon = staysToolbarToggle.querySelector(".toolbar-toggle-icon");
+  if (icon) {
+    icon.textContent = isOpen ? "-" : "+";
+  }
+}
+
+function renderStayToolbarToggle() {
+  const count = activeStayFilterCount();
+  staysToolbarToggleMeta.textContent =
+    count > 0 ? `${count} active filter${count === 1 ? "" : "s"}` : "All filters off";
+}
+
+function setStayTableOpen(isOpen) {
+  state.stayTableOpen = isOpen;
+  staysTablePanel.classList.toggle("is-open", isOpen);
+  staysTableToggle.setAttribute("aria-expanded", String(isOpen));
+  const icon = staysTableToggle.querySelector(".toolbar-toggle-icon");
+  if (icon) {
+    icon.textContent = isOpen ? "-" : "+";
+  }
+}
+
+function renderStayTableToggle() {
+  const count = state.stayFiltered.length;
+  staysTableToggleMeta.textContent = state.stayTableOpen
+    ? `Showing ${count} detailed row${count === 1 ? "" : "s"}`
+    : `${count} row${count === 1 ? "" : "s"} available for deeper scanning`;
+}
+
+function resetStayFilterControls() {
+  staysSearchInput.value = "";
+  staysCountryFilter.value = "";
+  staysCityFilter.value = "";
+  staysBreakfastFilter.value = "";
+  staysCheckinInput.value = "";
+  staysCheckoutInput.value = "";
+}
+
+function refreshStayFilterOptions() {
+  const country = staysCountryFilter.value;
+  fillSelect(
+    staysCountryFilter,
+    uniqueValues(state.stays.map((record) => record.country)),
+    "All countries"
+  );
+  const cityPool = state.stays.filter((record) => {
+    if (!country) return true;
+    return record.country === country;
+  });
+  fillSelect(staysCityFilter, uniqueValues(cityPool.map((record) => record.city)), "All cities");
+}
+
+function ensureActiveStayRecord() {
+  if (!state.stayFiltered.length) {
+    state.stayActiveId = null;
+    return;
+  }
+  if (!state.stayFiltered.some((record) => record.id === state.stayActiveId)) {
+    state.stayActiveId = state.stayFiltered[0].id;
+  }
+}
+
+function activeStayRecord() {
+  return state.stayFiltered.find((record) => record.id === state.stayActiveId) || null;
+}
+
+function createStayMarker(record) {
+  if (record.lat == null || record.lng == null) return null;
+  const status = stayAvailability(record);
+  const marker = L.circleMarker([record.lat, record.lng], {
+    radius: 8,
+    fillColor: status.key === "blocked" ? "#d6a44c" : "#5fb9a6",
+    fillOpacity: 0.92,
+    color: "#091018",
+    weight: 2,
+  });
+
+  marker.bindPopup(`
+    <div class="popup-card">
+      <div class="popup-name">${escapeHtml(record.name)}</div>
+      <div>${escapeHtml(record.city || "City unknown")} / ${escapeHtml(record.country || "Country unknown")}</div>
+      <div>${escapeHtml(record.address)}</div>
+      <div>${escapeHtml(record.eligible_room_type)}</div>
+      <div>${escapeHtml(status.label)}</div>
+      ${
+        record.blackout_raw
+          ? `<div>${escapeHtml(`Blackouts: ${record.blackout_raw}`)}</div>`
+          : ""
+      }
+      ${
+        record.reservation_raw
+          ? `<div>${escapeHtml(`Reservation: ${record.reservation_raw}`)}</div>`
+          : ""
+      }
+    </div>
+  `);
+  marker.on("click", () => {
+    setActiveStayRecord(record.id);
+  });
+  return marker;
+}
+
+function filterStays() {
+  const search = staysSearchInput.value.trim().toLowerCase();
+  const country = staysCountryFilter.value;
+  const city = staysCityFilter.value;
+  const breakfast = staysBreakfastFilter.value;
+
+  state.stayBlockedCount = 0;
+  state.stayFiltered = state.stays.filter((record) => {
+    if (country && record.country !== country) return false;
+    if (city && record.city !== city) return false;
+    if (breakfast === "included" && !record.breakfast_included) return false;
+    if (breakfast === "room_only" && record.breakfast_included) return false;
+    if (search && !(record.search_text || "").includes(search)) return false;
+
+    const status = stayAvailability(record);
+    if (status.blocked) {
+      state.stayBlockedCount += 1;
+      return false;
+    }
+    return true;
+  });
+
+  state.stayScopeRecords = state.stays;
+  ensureActiveStayRecord();
+  renderStayStats();
+  renderStayMarkers();
+  renderStayFocusCard();
+  renderStayTable();
+  renderStayMobileCards();
+}
+
+function renderStayStats() {
+  const mapped = state.stayFiltered.filter((record) => record.lat != null && record.lng != null).length;
+  const countries = uniqueValues(state.stays.map((record) => record.country));
+  const selected = stayDateRange();
+
+  staysScopeCount.textContent = state.stays.length;
+  staysShowingCount.textContent = state.stayFiltered.length;
+  staysMappedCount.textContent = mapped;
+  staysCountryCount.textContent = countries.length;
+
+  staysResultsText.textContent = `${state.stayFiltered.length} result${state.stayFiltered.length === 1 ? "" : "s"} in Plat Stay`;
+  staysTableSummary.textContent = selected
+    ? `Showing ${state.stayFiltered.length} remaining properties after removing ${state.stayBlockedCount} exact blackout conflicts.`
+    : `Showing ${state.stayFiltered.length} properties. Add travel dates to remove exact blackout conflicts.`;
+  staysMobileSummary.textContent = staysTableSummary.textContent;
+  staysMapSummary.textContent = `Plat Stay world view. ${mapped} mapped pin${mapped === 1 ? "" : "s"} in the current filtered view.`;
+  renderStayToolbarToggle();
+  renderStayTableToggle();
+}
+
+function renderStayDownloads(route) {
+  staysDownloadStack.innerHTML = "";
+  (route.downloads || []).forEach((item) => {
+    const link = document.createElement("a");
+    link.className = `download-btn${item.primary ? " primary" : ""}`;
+    link.href = item.href;
+    link.download = "";
+    link.textContent = item.label;
+    staysDownloadStack.appendChild(link);
+  });
+}
+
+function renderStayMarkers() {
+  const route = currentRoute();
+  clearStayMarkers();
+
+  const bounds = [];
+  state.stayFiltered.forEach((record) => {
+    const marker = createStayMarker(record);
+    if (!marker) return;
+    marker.addTo(staysMap);
+    state.stayMarkers.set(record.id, marker);
+    bounds.push(marker.getLatLng());
+  });
+
+  if (bounds.length) {
+    staysMap.fitBounds(bounds, { padding: [34, 34], maxZoom: 10 });
+  } else {
+    staysMap.setView(route.defaultView, route.defaultZoom);
+  }
+}
+
+function renderStayFocusCard() {
+  const record = activeStayRecord();
+  if (!record) {
+    staysFocusCard.innerHTML = '<div class="empty-state">No property matches the current route and filters.</div>';
+    return;
+  }
+
+  const status = stayAvailability(record);
+  const tags = [
+    record.country ? `<span class="badge gold">${escapeHtml(record.country)}</span>` : "",
+    record.city ? `<span class="badge">${escapeHtml(record.city)}</span>` : "",
+    `<span class="badge ${stayAvailabilityBadgeClass(status)}">${escapeHtml(status.label)}</span>`,
+    record.breakfast_included
+      ? '<span class="badge green">Breakfast for 2</span>'
+      : '<span class="badge blue">Room only</span>',
+    record.coordinate_confidence === "approximate"
+      ? '<span class="badge amber">Geocoded pin</span>'
+      : "",
+  ]
+    .filter(Boolean)
+    .join("");
+
+  staysFocusCard.innerHTML = `
+    <div class="focus-kicker">${escapeHtml(record.city || "City unknown")} / ${escapeHtml(record.country || "Country unknown")}</div>
+    <h3 class="focus-title">${escapeHtml(record.name)}</h3>
+    <div class="focus-subtitle">${escapeHtml(record.eligible_room_type || "Eligible room type not listed")}</div>
+    <div class="focus-address">${escapeHtml(record.address)}</div>
+    <div class="focus-tags">${tags}</div>
+    <div class="price-grid">
+      <div class="price-card">
+        <span class="price-label">Travel Match</span>
+        <div class="price-tier">${escapeHtml(status.label)}</div>
+        <div class="price-raw">${escapeHtml(status.detail)}</div>
+      </div>
+      <div class="price-card">
+        <span class="price-label">Reservation</span>
+        <div class="price-tier">${escapeHtml(record.reservation_mode.replaceAll("_", " "))}</div>
+        <div class="price-raw">${escapeHtml(record.reservation_raw || "See official source")}</div>
+      </div>
+    </div>
+    ${
+      record.blackout_raw
+        ? `<p class="focus-summary">${escapeHtml(`Official blackout notes: ${record.blackout_raw}`)}</p>`
+        : `<p class="focus-summary">${escapeHtml(record.breakfast_note || "")}</p>`
+    }
+    <div class="focus-note">${escapeHtml(record.map_pin_note)}</div>
+    <div class="focus-actions">
+      <a class="inline-link" href="${escapeHtml(stayGoogleMapsUrl(record))}" target="_blank" rel="noopener">Open in Google Maps</a>
+      <a class="inline-link" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Open official source</a>
+      ${
+        record.lat != null && record.lng != null
+          ? `<button type="button" class="ghost-btn secondary" data-focus-stay-map="true">Center on map</button>`
+          : ""
+      }
+    </div>
+  `;
+
+  const centerButton = staysFocusCard.querySelector("[data-focus-stay-map='true']");
+  if (centerButton) {
+    centerButton.addEventListener("click", () => {
+      focusActiveStayOnMap();
+    });
+  }
+}
+
+function renderStayTable() {
+  if (!state.stayFiltered.length) {
+    staysResultsTableBody.innerHTML =
+      '<tr><td colspan="7" class="empty-table">No properties match the current filters and date check.</td></tr>';
+    return;
+  }
+
+  staysResultsTableBody.innerHTML = "";
+  state.stayFiltered.forEach((record) => {
+    const status = stayAvailability(record);
+    const row = document.createElement("tr");
+    row.className = record.id === state.stayActiveId ? "active" : "";
+    row.addEventListener("click", () => {
+      setActiveStayRecord(record.id);
+      focusActiveStayOnMap();
+    });
+    row.innerHTML = `
+      <td><div class="table-title">${escapeHtml(record.name)}</div></td>
+      <td>
+        <div>${escapeHtml(record.country || "Country unknown")}</div>
+        <div class="table-sub">${escapeHtml(record.city || record.address)}</div>
+      </td>
+      <td>${escapeHtml(record.eligible_room_type || "Unknown")}</td>
+      <td>
+        <div class="price-tier">${escapeHtml(status.label)}</div>
+        <div class="table-sub">${escapeHtml(status.detail)}</div>
+      </td>
+      <td>${escapeHtml(record.blackout_raw || "Subject to availability")}</td>
+      <td>${record.breakfast_included ? "Breakfast for 2" : "Room only"}</td>
+      <td>${escapeHtml(record.reservation_raw || "See official source")}</td>
+    `;
+    staysResultsTableBody.appendChild(row);
+  });
+}
+
+function renderStayMobileCards() {
+  if (!state.stayFiltered.length) {
+    staysMobileResultsList.innerHTML =
+      '<div class="empty-state">No properties match the current filters and date check.</div>';
+    return;
+  }
+
+  staysMobileResultsList.innerHTML = "";
+  state.stayFiltered.forEach((record) => {
+    const status = stayAvailability(record);
+    const card = document.createElement("article");
+    card.className = `mobile-card${record.id === state.stayActiveId ? " active" : ""}`;
+    card.innerHTML = `
+      <div class="mobile-card-top">
+        <div>
+          <div class="focus-kicker">${escapeHtml(record.city || "City unknown")} / ${escapeHtml(record.country || "Country unknown")}</div>
+          <h3 class="mobile-card-title">${escapeHtml(record.name)}</h3>
+          <div class="mobile-card-subtitle">${escapeHtml(record.eligible_room_type || "Eligible room type not listed")}</div>
+        </div>
+      </div>
+      <div class="mobile-card-address">${escapeHtml(record.address)}</div>
+      <div class="venue-tags">
+        <span class="badge ${stayAvailabilityBadgeClass(status)}">${escapeHtml(status.label)}</span>
+        ${record.breakfast_included ? '<span class="badge green">Breakfast for 2</span>' : '<span class="badge blue">Room only</span>'}
+      </div>
+      <p class="focus-summary">${escapeHtml(status.detail)}</p>
+      <div class="mobile-card-actions">
+        <button type="button" class="ghost-btn secondary" data-mobile-stay-focus="${escapeHtml(record.id)}">
+          Show on map
+        </button>
+        <a class="inline-link" href="${escapeHtml(stayGoogleMapsUrl(record))}" target="_blank" rel="noopener">Google Maps</a>
+      </div>
+    `;
+    const focusButton = card.querySelector("[data-mobile-stay-focus]");
+    if (focusButton) {
+      focusButton.addEventListener("click", () => {
+        setActiveStayRecord(record.id);
+        focusActiveStayOnMap();
+        if (window.innerWidth <= 820) {
+          const mapTop = staysMap.getContainer().getBoundingClientRect().top + window.scrollY - 16;
+          window.scrollTo({ top: Math.max(mapTop, 0), behavior: "smooth" });
+        }
+      });
+    }
+    staysMobileResultsList.appendChild(card);
+  });
+}
+
+function setActiveStayRecord(id) {
+  state.stayActiveId = id;
+  renderStayFocusCard();
+  renderStayTable();
+  renderStayMobileCards();
+}
+
+function focusActiveStayOnMap() {
+  const record = activeStayRecord();
+  if (!record) return;
+  const marker = state.stayMarkers.get(record.id);
+  if (!marker) return;
+  staysMap.flyTo(marker.getLatLng(), Math.max(staysMap.getZoom(), 8), { duration: 0.6 });
+  marker.openPopup();
+}
+
+function stayPresetRange(kind) {
+  const today = new Date();
+  const utcToday = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+  const day = utcToday.getUTCDay();
+  const daysUntilSaturday = (6 - day + 7) % 7;
+  const saturday = new Date(utcToday);
+  saturday.setUTCDate(utcToday.getUTCDate() + daysUntilSaturday + (kind === "next-weekend" ? 7 : 0));
+  const monday = new Date(saturday);
+  monday.setUTCDate(saturday.getUTCDate() + 2);
+  return {
+    checkin: saturday.toISOString().slice(0, 10),
+    checkout: monday.toISOString().slice(0, 10),
+  };
+}
+
 function applyRoute(routeId) {
   state.routeId = ROUTES[routeId] ? routeId : PROGRAMS.dining.defaultRoute;
   const route = currentRoute();
@@ -1085,18 +1569,35 @@ function applyRoute(routeId) {
   renderProgramBrief(route);
   renderScopeShell(route);
 
+  if (isStayRoute(route)) {
+    dataExplorer.hidden = true;
+    staysExplorer.hidden = false;
+    renderStayDownloads(route);
+    refreshStayFilterOptions();
+    filterStays();
+    setTimeout(() => staysMap.invalidateSize(), 0);
+    return;
+  }
+
   if (!isDiningRoute(route)) {
     dataExplorer.hidden = true;
+    staysExplorer.hidden = true;
     state.scopeRecords = [];
     state.filtered = [];
     state.activeId = null;
+    state.stayFiltered = [];
+    state.stayActiveId = null;
     clearMarkers();
+    clearStayMarkers();
     setToolbarOpen(false);
     setTableOpen(false);
+    setStayToolbarOpen(false);
+    setStayTableOpen(false);
     return;
   }
 
   dataExplorer.hidden = false;
+  staysExplorer.hidden = true;
   state.scopeRecords = state.restaurants.filter((record) => route.matcher(record));
   state.activeId = null;
   resetFilterControls();
@@ -1110,14 +1611,22 @@ function handleHashRoute() {
 }
 
 async function init() {
-  const response = await fetch(DATA_URL);
-  state.restaurants = await response.json();
+  const [restaurantResponse, staysResponse] = await Promise.all([fetch(DATA_URL), fetch(STAYS_DATA_URL)]);
+  state.restaurants = await restaurantResponse.json();
   state.restaurants.forEach((record) => {
     record.search_text = (record.search_text || "").toLowerCase();
   });
+  if (staysResponse.ok) {
+    state.stays = await staysResponse.json();
+    state.stays.forEach((record) => {
+      record.search_text = (record.search_text || "").toLowerCase();
+    });
+  }
 
   setToolbarOpen(false);
   setTableOpen(false);
+  setStayToolbarOpen(false);
+  setStayTableOpen(false);
   handleHashRoute();
   if (!window.location.hash) {
     window.location.hash = "#/dining/japan";
@@ -1157,17 +1666,64 @@ tableToggle.addEventListener("click", () => {
   renderTableToggle();
 });
 
+staysToolbarToggle.addEventListener("click", () => {
+  setStayToolbarOpen(!state.stayToolbarOpen);
+});
+
+staysTableToggle.addEventListener("click", () => {
+  setStayTableOpen(!state.stayTableOpen);
+  renderStayTableToggle();
+});
+
+staysSearchInput.addEventListener("input", filterStays);
+staysCountryFilter.addEventListener("change", () => {
+  refreshStayFilterOptions();
+  filterStays();
+});
+staysCityFilter.addEventListener("change", filterStays);
+staysBreakfastFilter.addEventListener("change", filterStays);
+staysCheckinInput.addEventListener("change", filterStays);
+staysCheckoutInput.addEventListener("change", filterStays);
+staysResetFiltersButton.addEventListener("click", () => {
+  resetStayFilterControls();
+  refreshStayFilterOptions();
+  filterStays();
+});
+
+stayPresetButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    if (button.dataset.stayPreset === "clear-dates") {
+      staysCheckinInput.value = "";
+      staysCheckoutInput.value = "";
+    } else {
+      const preset = stayPresetRange(button.dataset.stayPreset);
+      staysCheckinInput.value = preset.checkin;
+      staysCheckoutInput.value = preset.checkout;
+    }
+    filterStays();
+  });
+});
+
 window.addEventListener("hashchange", handleHashRoute);
 
 init().catch((error) => {
   console.error(error);
   focusCard.innerHTML =
     '<div class="empty-state">Data failed to load. Run the sync script and serve this folder over HTTP.</div>';
+  staysFocusCard.innerHTML =
+    '<div class="empty-state">Data failed to load. Run the sync script and serve this folder over HTTP.</div>';
   resultsText.textContent = "Load failed";
+  staysResultsText.textContent = "Load failed";
   tableSummary.textContent = "Load failed";
+  staysTableSummary.textContent = "Load failed";
   mobileSummary.textContent = "Load failed";
+  staysMobileSummary.textContent = "Load failed";
   resultsTableBody.innerHTML =
     '<tr><td colspan="8" class="empty-table">The dataset failed to load.</td></tr>';
+  staysResultsTableBody.innerHTML =
+    '<tr><td colspan="7" class="empty-table">The dataset failed to load.</td></tr>';
   mobileResultsList.innerHTML =
+    '<div class="empty-state">The dataset failed to load.</div>';
+  staysMobileResultsList.innerHTML =
     '<div class="empty-state">The dataset failed to load.</div>';
 });

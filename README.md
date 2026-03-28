@@ -1,7 +1,7 @@
 # Amex Benefits Explorer
 
-Map-first explorer for American Express benefits, starting with a live Japan
-dining dataset and expanding into stays, Love Dining, and 10Xcelerator.
+Map-first explorer for American Express benefits, with a live Japan dining
+dataset and a first live Plat Stay property explorer.
 
 ## Scope
 
@@ -11,6 +11,7 @@ dining dataset and expanding into stays, Love Dining, and 10Xcelerator.
   - Love Dining
   - 10Xcelerator
 - Live Japan dining dataset from public Pocket Concierge pages
+- Live Plat Stay dataset from the official `go.amex/platstay` PDF
 - Route-based dining views for:
   - World shell
   - Japan
@@ -21,6 +22,8 @@ dining dataset and expanding into stays, Love Dining, and 10Xcelerator.
   - search
   - city / district / cuisine filters
   - kid-policy / English menu / reservation-type filters
+  - Plat Stay date-range filtering
+  - Plat Stay country / city / breakfast filters
   - KML download buttons
   - mobile cards
   - multi-dataset roadmap panels for upcoming programs
@@ -31,6 +34,9 @@ dining dataset and expanding into stays, Love Dining, and 10Xcelerator.
   endpoints.
 - Coordinates are not equal across all future programs. The app is designed to
   surface confidence instead of pretending every pin is equally exact.
+- Plat Stay addresses currently come from the official PDF and geocoding is
+  still approximate. Exact Google Maps links are safer than blindly trusting
+  every plotted pin.
 - Michelin status is intentionally left blank unless verified from an official
   Michelin source.
 - Kid friendliness is normalized from explicit source text. Missing policy is
@@ -43,11 +49,15 @@ amex-dining-map/
 ├── data/
 │   ├── geocode_cache.json
 │   ├── japan-restaurants.json
+│   ├── plat-stays.json
+│   ├── plat-stay-source.json
+│   ├── plat_stay_geocode_cache.json
 │   ├── venue_detail_cache.json
 │   └── kml/
 ├── .env.example
 ├── scripts/
-│   └── sync_japan_mvp.py
+│   ├── sync_japan_mvp.py
+│   └── sync_plat_stay.py
 └── web/
     ├── app.js
     ├── index.html
@@ -63,6 +73,17 @@ JSON + KML outputs.
 ```bash
 cd /Users/koohaoming/dev/amex-dining-map
 python3 scripts/sync_japan_mvp.py
+```
+
+## Build Plat Stay Data
+
+The Plat Stay sync downloads the canonical short-link PDF, parses the property
+table, geocodes the addresses, and writes JSON + KML outputs plus source
+metadata for future diffing.
+
+```bash
+cd /Users/koohaoming/dev/amex-dining-map
+python3 scripts/sync_plat_stay.py
 ```
 
 ## Local Environment
@@ -94,8 +115,10 @@ http://localhost:8000/web/
 - Sprint 1:
   multi-dataset shell and nested dining routing
 - Sprint 2:
-  Plat Stay ingestion + blackout-date planner
+  Plat Stay ingestion + blackout-date planner is live, with more geocode
+  verification still needed
 - Sprint 3:
   Love Dining Restaurants and Hotels ingestion
 - Later:
-  global dining expansion, sync alerts, and a grounded assistant layer
+  global dining expansion, source-change notices, Telegram nudges, and a
+  grounded assistant layer
