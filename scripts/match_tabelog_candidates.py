@@ -15,6 +15,7 @@ import re
 import time
 import urllib.parse
 import urllib.request
+import unicodedata
 from pathlib import Path
 
 
@@ -23,6 +24,7 @@ DATA_DIR = ROOT / "data"
 RESTAURANTS_PATH = DATA_DIR / "japan-restaurants.json"
 OUTPUT_PATH = DATA_DIR / "tabelog-match-candidates.json"
 USER_AGENT = "ChargingTheChargeCard/0.1 (+https://local.dev)"
+POCKET_JP_RESTAURANT_URL = "https://pocket-concierge.jp/restaurants/{id}/"
 
 PREFECTURE_SLUGS = {
     "Aichi": "aichi",
@@ -90,6 +92,32 @@ RATING_RE = re.compile(
 REVIEW_RE = re.compile(
     r'<em class="list-rst__rvw-count-num[^"]*">(?P<count>[\d,]+)</em>'
 )
+TITLE_RE = re.compile(r"<title>(?P<title>.*?)</title>", re.DOTALL | re.IGNORECASE)
+KEYWORDS_RE = re.compile(
+    r'<meta name="keywords" content="(?P<keywords>[^"]*)"',
+    re.DOTALL | re.IGNORECASE,
+)
+FURIGANA_SUFFIX_RE = re.compile(r"（[^）]*）")
+JP_CHAR_RE = re.compile(r"[\u3040-\u30ff\u3400-\u9fff]")
+LD_JSON_RE = re.compile(r'<script type="application/ld\+json">\s*(?P<json>\{.*?\})\s*</script>', re.DOTALL)
+TRANSPORT_RE = re.compile(
+    r"<th>\s*Transportation\s*</th>\s*<td>\s*<p>\s*(?P<transport>.*?)\s*</p>",
+    re.DOTALL | re.IGNORECASE,
+)
+DIGIT_RE = re.compile(r"\d+")
+GENERIC_JP_KEYWORDS = {
+    "すし",
+    "寿司",
+    "鮨",
+    "料理",
+    "和食",
+    "洋食",
+    "フレンチ",
+    "イタリアン",
+    "焼肉",
+    "天ぷら",
+    "うなぎ",
+}
 
 
 def load_records() -> list[dict]:
@@ -112,6 +140,32 @@ def normalize_ascii(value: str) -> str:
     return re.sub(r"\s+", " ", lowered).strip()
 
 
+def normalize_unicode(value: str) -> str:
+    value = unicodedata.normalize("NFKC", value or "").lower()
+    value = FURIGANA_SUFFIX_RE.sub("", value)
+    value = re.sub(r"[^\w\u3040-\u30ff\u3400-\u9fff]+", "", value)
+    return value.strip()
+
+
+def english_candidate_url(url: str) -> str:
+    if "/en/" in url:
+        return url
+    return url.replace("https://tabelog.com/", "https://tabelog.com/en/", 1)
+
+
+def normalize_digits(value: str) -> str:
+    return "".join(DIGIT_RE.findall(value or ""))
+
+
+def parse_price_bounds(value: str) -> tuple[int | None, int | None]:
+    digits = [int(token.replace(",", "")) for token in re.findall(r"\d[\d,]*", value or "")]
+    if not digits:
+        return (None, None)
+    if len(digits) == 1:
+        return (digits[0], digits[0])
+    return (digits[0], digits[1])
+
+
 def tokenize(value: str) -> list[str]:
     return [token for token in normalize_ascii(value).split(" ") if token]
 
@@ -119,6 +173,68 @@ def tokenize(value: str) -> list[str]:
 def important_tokens(value: str, ignore: set[str] | None = None) -> set[str]:
     ignore = ignore or set()
     return {token for token in tokenize(value) if token not in ignore and len(token) > 1}
+
+
+def fetch_native_metadata(record_id: str) -> dict:
+    url = POCKET_JP_RESTAURANT_URL.format(id=record_id.split("-")[-1])
+    html_text = fetch(url)
+    title_match = TITLE_RE.search(html_text)
+    keywords_match = KEYWORDS_RE.search(html_text)
+
+    title = strip_tags(title_match.group("title")) if title_match else ""
+    keywords = []
+    if keywords_match:
+        keywords = [part.strip() for part in html.unescape(keywords_match.group("keywords")).split(",") if part.strip()]
+
+    cleaned_title = title.replace(" | Pocket Concierge", "").replace(" | ポケットコンシェルジュ", "").strip()
+    title_without_reading = FURIGANA_SUFFIX_RE.sub("", cleaned_title).strip()
+
+    useful_keywords = []
+    seen = set()
+    for keyword in keywords:
+        normalized = normalize_unicode(keyword)
+        if not normalized or normalized in seen:
+            continue
+        if keyword in GENERIC_JP_KEYWORDS:
+            continue
+        if re.fullmatch(r".+[都道府県市区町村駅]", keyword):
+            continue
+        seen.add(normalized)
+        useful_keywords.append(keyword)
+
+    return {
+        "title": cleaned_title,
+        "title_without_reading": title_without_reading,
+        "keywords": useful_keywords,
+    }
+
+
+def fetch_detail_metadata(url: str) -> dict:
+    html_text = fetch(english_candidate_url(url))
+    transport_match = TRANSPORT_RE.search(html_text)
+    transportation = strip_tags(transport_match.group("transport")) if transport_match else ""
+    for match in LD_JSON_RE.finditer(html_text):
+        try:
+            payload = json.loads(match.group("json"))
+        except json.JSONDecodeError:
+            continue
+        if payload.get("@type") != "Restaurant":
+            continue
+        address = payload.get("address") or {}
+        return {
+            "name": payload.get("name") or "",
+            "address_locality": address.get("addressLocality") or "",
+            "address_region": address.get("addressRegion") or "",
+            "postal_code": address.get("postalCode") or "",
+            "serves_cuisine": payload.get("servesCuisine") or "",
+            "price_range": payload.get("priceRange") or "",
+            "telephone": payload.get("telephone") or "",
+            "transportation": transportation,
+            "rating_count": payload.get("aggregateRating", {}).get("ratingCount"),
+            "rating_value": payload.get("aggregateRating", {}).get("ratingValue"),
+            "url": payload.get("@id") or english_candidate_url(url),
+        }
+    return {}
 
 
 def overlap_score(left: str, right: str) -> float:
@@ -200,6 +316,21 @@ def candidate_score(record: dict, candidate: dict, query_label: str) -> float:
         name_score = overlap_score(record.get("name") or "", candidate.get("name") or "")
     score += name_score * 10
 
+    native_aliases = record.get("_native_aliases") or []
+    candidate_native = normalize_unicode(candidate.get("name") or "")
+    native_name_score = 0.0
+    if candidate_native and native_aliases:
+        normalized_aliases = [normalize_unicode(alias) for alias in native_aliases]
+        if candidate_native in normalized_aliases:
+            native_name_score = 1.0
+        else:
+            for alias in normalized_aliases:
+                if not alias:
+                    continue
+                if candidate_native in alias or alias in candidate_native:
+                    native_name_score = max(native_name_score, 0.7)
+    score += native_name_score * 12
+
     area_genre = candidate.get("area_genre") or ""
     city = (record.get("city") or "").lower()
     prefecture = (record.get("prefecture") or "").lower()
@@ -222,17 +353,98 @@ def candidate_score(record: dict, candidate: dict, query_label: str) -> float:
     if review_count >= 100:
         score += 0.5
 
-    if name_score == 0 and cuisine_score == 0:
+    if name_score == 0 and native_name_score == 0 and cuisine_score == 0:
         score -= 2
 
     return round(score, 4)
 
 
+def candidate_detail_score(record: dict, detail: dict) -> float:
+    if not detail:
+        return 0.0
+    score = 0.0
+    locality = normalize_ascii(detail.get("address_locality") or "")
+    region = normalize_ascii(detail.get("address_region") or "")
+    city = normalize_ascii(record.get("city") or "")
+    prefecture = normalize_ascii(record.get("prefecture") or "")
+    district = normalize_ascii(record.get("district") or "")
+    if prefecture and prefecture in region:
+        score += 2.0
+    if city and city in locality:
+        score += 2.5
+    if district and district in locality:
+        score += 2.5
+    record_phone = normalize_digits(record.get("phone_number") or "")
+    detail_phone = normalize_digits(detail.get("telephone") or "")
+    if record_phone and detail_phone and record_phone == detail_phone:
+        score += 4.0
+    station_score = overlap_score(record.get("nearest_stations_text") or "", detail.get("transportation") or "")
+    score += station_score * 3
+    record_price = (record.get("price_dinner_min_jpy"), record.get("price_dinner_max_jpy"))
+    detail_price = parse_price_bounds(detail.get("price_range") or "")
+    if all(value is not None for value in [*record_price, *detail_price]):
+        record_min, record_max = record_price
+        detail_min, detail_max = detail_price
+        if record_min <= detail_max and detail_min <= record_max:
+            score += 1.5
+    score += overlap_score(" ".join(record.get("cuisine_types") or []), detail.get("serves_cuisine") or "") * 3
+    score += overlap_score(record.get("name") or "", detail.get("name") or "") * 4
+    return round(score, 4)
+
+
 def rank_candidates(record: dict, limit_per_query: int, pause_seconds: float) -> dict:
+    native_meta = fetch_native_metadata(record.get("id") or "")
+    record = dict(record)
+    native_aliases = []
+    for candidate_alias in [native_meta.get("title_without_reading"), native_meta.get("title")]:
+        candidate_alias = (candidate_alias or "").strip()
+        if candidate_alias and candidate_alias not in native_aliases:
+            native_aliases.append(candidate_alias)
+    record["_native_aliases"] = native_aliases
+    record["_native_title"] = native_meta.get("title_without_reading") or native_meta.get("title")
+    record["_native_keywords"] = native_meta.get("keywords") or []
+
     seen_urls: set[str] = set()
     ranked: list[dict] = []
 
-    for query_label, url in query_variants(record):
+    all_queries = query_variants(record)
+    prefecture = (record.get("prefecture") or "").strip()
+    slug = PREFECTURE_SLUGS.get(prefecture)
+    if slug and record.get("_native_title"):
+        native_queries = [record["_native_title"], *record.get("_native_keywords", [])[:2]]
+        seen_native_queries = set()
+        for term in native_queries:
+            term = (term or "").strip()
+            norm = normalize_unicode(term)
+            if not term or not norm or norm in seen_native_queries:
+                continue
+            seen_native_queries.add(norm)
+            all_queries.append(
+                (
+                    f"jp_prefecture_native:{term}",
+                    f"https://tabelog.com/{slug}/rstLst/?sk={urllib.parse.quote(term)}",
+                )
+            )
+        title = (record["_native_title"] or "").strip()
+        jp_location_terms = [
+            keyword
+            for keyword in record.get("_native_keywords", [])
+            if JP_CHAR_RE.search(keyword) and normalize_unicode(keyword) not in normalize_unicode(title)
+        ]
+        for keyword in jp_location_terms[:3]:
+            combo = f"{title} {keyword}".strip()
+            combo_norm = normalize_unicode(combo)
+            if not combo_norm or combo_norm in seen_native_queries:
+                continue
+            seen_native_queries.add(combo_norm)
+            all_queries.append(
+                (
+                    f"jp_prefecture_native_combo:{combo}",
+                    f"https://tabelog.com/{slug}/rstLst/?sk={urllib.parse.quote(combo)}",
+                )
+            )
+
+    for query_label, url in all_queries:
         try:
             html_text = fetch(url)
         except Exception as exc:
@@ -248,6 +460,31 @@ def rank_candidates(record: dict, limit_per_query: int, pause_seconds: float) ->
             candidate["score"] = candidate_score(record, candidate, query_label)
             candidate["query"] = query_label
             query_candidates.append(candidate)
+
+        query_candidates.sort(
+            key=lambda item: (
+                item.get("score", 0),
+                item.get("score_raw") or 0,
+                item.get("review_count") or 0,
+            ),
+            reverse=True,
+        )
+        for candidate in query_candidates[: max(limit_per_query, 5)]:
+            detail = fetch_detail_metadata(candidate["url"])
+            candidate["detail"] = detail
+            candidate["score"] = round(candidate["score"] + candidate_detail_score(record, detail), 4)
+            if detail.get("url"):
+                candidate["url"] = detail["url"]
+            if detail.get("rating_value") and not candidate.get("score_raw"):
+                try:
+                    candidate["score_raw"] = float(detail["rating_value"])
+                except ValueError:
+                    pass
+            if detail.get("rating_count") and not candidate.get("review_count"):
+                try:
+                    candidate["review_count"] = int(str(detail["rating_count"]).replace(",", ""))
+                except ValueError:
+                    pass
 
         query_candidates.sort(
             key=lambda item: (
@@ -282,6 +519,7 @@ def rank_candidates(record: dict, limit_per_query: int, pause_seconds: float) ->
         "prefecture": record.get("prefecture"),
         "city": record.get("city"),
         "district": record.get("district"),
+        "native_meta": native_meta,
         "queries": ranked,
         "best_candidates": best[:limit_per_query],
     }
