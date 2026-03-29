@@ -180,6 +180,19 @@ def english_candidate_url(url: str) -> str:
     return url.replace("https://tabelog.com/", "https://tabelog.com/en/", 1)
 
 
+def canonical_candidate_url(url: str) -> str:
+    parsed = urllib.parse.urlsplit((url or "").strip())
+    if parsed.netloc not in {"tabelog.com", "selection.tabelog.com"}:
+        return url
+    path_parts = [part for part in parsed.path.split("/") if part]
+    id_index = next((index for index, part in enumerate(path_parts) if part.isdigit()), None)
+    if id_index is None or id_index < 2:
+        return url
+    canonical_parts = path_parts[: id_index + 1]
+    canonical_path = "/" + "/".join(canonical_parts) + "/"
+    return urllib.parse.urlunsplit(("https", "tabelog.com", canonical_path, "", ""))
+
+
 def normalize_digits(value: str) -> str:
     return "".join(DIGIT_RE.findall(value or ""))
 
@@ -463,7 +476,7 @@ def parse_candidates(html_text: str) -> list[dict]:
         review_match = REVIEW_RE.search(body)
         candidates.append(
             {
-                "url": html.unescape(match.group("url")),
+                "url": canonical_candidate_url(html.unescape(match.group("url"))),
                 "name": strip_tags(name_match.group("name")) if name_match else "",
                 "area_genre": strip_tags(area_match.group("text")) if area_match else "",
                 "score_raw": float(rating_match.group("rating")) if rating_match else None,
@@ -700,7 +713,7 @@ def rank_candidates(record: dict, limit_per_query: int, pause_seconds: float) ->
         enriched["detail"] = detail
         enriched["score"] = round(enriched["score"] + candidate_detail_score(record, detail), 4)
         if detail.get("url"):
-            enriched["url"] = detail["url"]
+            enriched["url"] = canonical_candidate_url(detail["url"])
         if detail.get("rating_value") and not enriched.get("score_raw"):
             try:
                 enriched["score_raw"] = float(detail["rating_value"])
