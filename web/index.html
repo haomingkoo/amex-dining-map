@@ -21,6 +21,56 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <section class="intro-gate" id="intro-gate" hidden>
+      <div class="intro-stage">
+        <button class="intro-skip" id="intro-skip-top" type="button">
+          Skip
+        </button>
+        <p class="eyebrow">Fan-made Amex planner</p>
+        <h2 class="intro-title">
+          Get more out of the card without reading five PDFs first.
+        </h2>
+        <p class="intro-copy">
+          Think of this as a guided planner for Amex min-maxers: pick the
+          benefit lane, narrow the shortlist, then jump into the official
+          source before you book or pay.
+        </p>
+        <div class="intro-steps">
+          <article class="intro-step">
+            <span class="intro-step-number">01</span>
+            <h3>Choose the job</h3>
+            <p>Travel, Singapore, wine, or alerts. Start with intent, not program names.</p>
+          </article>
+          <article class="intro-step">
+            <span class="intro-step-number">02</span>
+            <h3>Narrow fast</h3>
+            <p>Use a calmer filter drawer, focus on a shortlist, and keep the selected card visible.</p>
+          </article>
+          <article class="intro-step">
+            <span class="intro-step-number">03</span>
+            <h3>Verify before action</h3>
+            <p>Every route ends with the official booking or source page. Planning first, confirmation second.</p>
+          </article>
+        </div>
+        <div class="intro-actions">
+          <button class="primary-btn" id="intro-start-travel" type="button" data-intro-route="#/stays">
+            Start with Travel
+          </button>
+          <button
+            class="ghost-btn secondary"
+            id="intro-start-dining"
+            type="button"
+            data-intro-route="#/dining/world"
+          >
+            See Dining Abroad
+          </button>
+          <button class="ghost-btn secondary" id="intro-skip-bottom" type="button">
+            Skip intro
+          </button>
+        </div>
+      </div>
+    </section>
+
     <div class="page-shell">
       <header class="hero">
         <div class="hero-copy">
@@ -30,6 +80,11 @@
             A fan-made Amex page for min-maxers who want to get more out of the
             card.
           </p>
+          <div class="hero-actions">
+            <button class="ghost-btn secondary" id="replay-guide" type="button">
+              Replay guide
+            </button>
+          </div>
         </div>
         <div class="hero-note">
           <div class="note-card">
@@ -48,14 +103,11 @@
         </div>
       </header>
 
-      <section class="journey-strip panel-surface">
-        <div class="route-copy">
+      <section class="journey-strip panel-surface compact-strip">
+        <div class="strip-mini-copy">
           <p class="eyebrow">Start Here</p>
-          <h2>Explore By Need</h2>
-          <p id="journey-description">
-            Travel planning, Singapore benefits, wine intelligence, and change
-            tracking should feel like distinct entry points, not one long list
-            of program names.
+          <p class="strip-hint">
+            Choose the job first. The app can stay simpler after that.
           </p>
         </div>
         <nav class="journey-nav" id="journey-nav" aria-label="Journey navigation">

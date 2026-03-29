@@ -3,6 +3,7 @@ const STAYS_DATA_URL = "../data/plat-stays.json";
 const STAYS_META_URL = "../data/plat-stay-source.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
+const INTRO_STORAGE_KEY = "amex-benefits-intro-v1";
 
 const LUNCH_BANDS = [
   { key: "under-5k", label: "Under JPY 5k", tier: "$" },
@@ -24,7 +25,7 @@ const PROGRAMS = {
     label: "Dining Abroad",
     title: "Dining Abroad",
     description:
-      "Fan-made overseas dining explorer for people trying to squeeze more value out of the card, with Japan as the deepest live market right now.",
+      "Overseas dining planning, with Japan as the deepest live market right now.",
     defaultRoute: "dining/world",
   },
   stays: {
@@ -32,7 +33,7 @@ const PROGRAMS = {
     label: "Plat Stay",
     title: "Plat Stay",
     description:
-      "Hotel and resort planner with travel-date checks, blackout-date filtering, and property mapping from official Plat Stay sources.",
+      "Plat Stay mapping with date-aware blackout checks and source-backed hotel pins.",
     defaultRoute: "stays",
   },
   "love-dining": {
@@ -40,7 +41,7 @@ const PROGRAMS = {
     label: "Love Dining",
     title: "Love Dining",
     description:
-      "Singapore dining explorer for restaurant and hotel partners, with savings rules, outlet details, and direct links into the official terms.",
+      "Singapore dining planning with outlet details and savings-rule context.",
     defaultRoute: "love-dining",
   },
   "10xcelerator": {
@@ -48,7 +49,7 @@ const PROGRAMS = {
     label: "More Value",
     title: "More Value",
     description:
-      "Secondary benefit planner for bonus-spend and merchant perks, with outlet mapping only where the location data can be verified.",
+      "Secondary benefit layer for bonus-spend and merchant perks.",
     defaultRoute: "10xcelerator",
   },
   alerts: {
@@ -56,7 +57,7 @@ const PROGRAMS = {
     label: "Alerts",
     title: "Alerts",
     description:
-      "Change-watch layer for source updates, list growth or shrinkage, and later notification nudges when Plat Stay or dining terms move.",
+      "Change-watch layer for list, terms, and blackout movement.",
     defaultRoute: "alerts",
   },
 };
@@ -69,11 +70,11 @@ const ROUTES = {
     eyebrow: "Dining Abroad / World",
     title: "Dining Abroad",
     description:
-      "A fan-made overseas dining explorer for Amex min-maxers. Japan is the richest live market right now while broader market coverage is still being built and verified.",
+      "A fan-made overseas dining explorer for Amex min-maxers.",
     note:
-      "Start here, then narrow into Japan and city routes. As more markets ship, this becomes the true global dining view instead of a Japan-heavy shell.",
+      "Start broad, then narrow into Japan and city routes.",
     mapSummary:
-      "World dining shell. Japan drives the live map today, but this route is where broader overseas dining coverage should accumulate over time.",
+      "World view for overseas dining. Japan is the deepest live market today.",
     matcher: () => true,
     defaultView: [24.5, 132],
     defaultZoom: 3,
@@ -91,11 +92,11 @@ const ROUTES = {
     eyebrow: "Dining Abroad / Japan",
     title: "Japan Dining",
     description:
-      "Map-first dining explorer for the current Japan restaurant set. Search by place, cuisine, price range, child policy, menu support, and reservation style.",
+      "Map-first dining explorer for the current Japan restaurant set, now across the full Pocket Concierge Japan area graph.",
     note:
-      "Japan is the first live market. The same app shell can expand later into Hong Kong, Australia, the UK, and a true all-country view.",
+      "Japan is the strongest live market in the current build.",
     mapSummary:
-      "Japan-wide view across Tokyo, Kyoto, and Osaka. Pins stay on top and the full table sits below.",
+      "Japan-wide dining view with the map first and details on the side.",
     matcher: (record) => record.country === "Japan",
     defaultView: [35.676, 137.5],
     defaultZoom: 5,
@@ -113,9 +114,9 @@ const ROUTES = {
     eyebrow: "Dining Abroad / Tokyo",
     title: "Tokyo Dining",
     description:
-      "Focused route for Tokyo venues. Better when you already know the city and want to narrow by district, cuisine, price band, or family constraints.",
+      "Focused route for Tokyo venues.",
     note:
-      "Tokyo is the densest part of the current Japan MVP, so this route is the clearest way to browse without being overwhelmed.",
+      "Use this when you already know you want Tokyo.",
     mapSummary:
       "Tokyo-only route. Use this when you want to stay inside one city and explore districts instead of the full Japan view.",
     matcher: (record) => record.country === "Japan" && record.city === "Tokyo",
@@ -134,9 +135,9 @@ const ROUTES = {
     eyebrow: "Dining Abroad / Kyoto",
     title: "Kyoto Dining",
     description:
-      "Focused Kyoto route for areas like Gion, Higashiyama, and Kodaiji or Kiyomizu. Useful when you want the map and table to stay calmer.",
+      "Focused Kyoto route for a calmer city-level browse.",
     note:
-      "Kyoto is smaller than Tokyo in count, so the table and map work well as a paired browse view here.",
+      "Use this when you want Kyoto only.",
     mapSummary:
       "Kyoto-only route centered on the live Pocket Concierge areas in the current dataset.",
     matcher: (record) => record.country === "Japan" && record.city === "Kyoto",
@@ -155,11 +156,11 @@ const ROUTES = {
     eyebrow: "Dining Abroad / Osaka",
     title: "Osaka Dining",
     description:
-      "Focused Osaka route for a cleaner city-level browse. Filter by cuisine, price tier, or reservation style without the wider Japan noise.",
+      "Focused Osaka route for a cleaner city-level browse.",
     note:
-      "Osaka is smaller than Tokyo but still benefits from city-level routing because it keeps both the map and the table easy to scan.",
+      "Use this when you want Osaka only.",
     mapSummary:
-      "Osaka-only route for the current Japan MVP city split.",
+      "Osaka-only route for a cleaner city-level browse.",
     matcher: (record) => record.country === "Japan" && record.city === "Osaka",
     fixedCity: "Osaka",
     defaultView: [34.6937, 135.5023],
@@ -176,7 +177,7 @@ const ROUTES = {
     eyebrow: "Plat Stay / Live",
     title: "Plat Stay Explorer",
     description:
-      "Date-aware stay planner for Platinum Stay properties. Enter travel dates, remove exact blackout conflicts, and keep the remaining properties on the map.",
+      "Date-aware stay planner for Platinum Stay properties.",
     mapSummary:
       "World stay view for the current Plat Stay property set. Pins are geocoded from official property addresses and should still be verified before booking.",
     defaultView: [20, 10],
@@ -359,6 +360,12 @@ if (hasLeaflet) {
 const routeEyebrow = document.getElementById("route-eyebrow");
 const routeTitle = document.getElementById("route-title");
 const routeDescription = document.getElementById("route-description");
+const introGate = document.getElementById("intro-gate");
+const introSkipTopButton = document.getElementById("intro-skip-top");
+const introSkipBottomButton = document.getElementById("intro-skip-bottom");
+const introStartTravelButton = document.getElementById("intro-start-travel");
+const introStartDiningButton = document.getElementById("intro-start-dining");
+const replayGuideButton = document.getElementById("replay-guide");
 const programTitle = document.getElementById("program-title");
 const programDescription = document.getElementById("program-description");
 const journeyNav = document.getElementById("journey-nav");
@@ -447,6 +454,86 @@ function tagSection(title, tags, tone = "") {
   `;
 }
 
+function sourceConfidenceLabel(value) {
+  const labels = {
+    manual_verified: "Manual match",
+    verified_by_consensus: "Consensus match",
+    high: "High confidence",
+    medium: "Medium confidence",
+    low: "Low confidence",
+  };
+  return labels[value] || value || null;
+}
+
+function formatReviewCount(value) {
+  if (!Number.isFinite(Number(value))) return null;
+  const count = Number(value);
+  return `${count.toLocaleString()} review${count === 1 ? "" : "s"}`;
+}
+
+function qualitySignals(record) {
+  if (!record || typeof record.external_signals !== "object" || !record.external_signals) {
+    return {};
+  }
+  return record.external_signals;
+}
+
+function externalSignalCard(source, signal) {
+  if (!signal || typeof signal !== "object") return "";
+  const sourceName = source === "tabelog" ? "Tabelog" : "Google";
+  const ratingText =
+    source === "tabelog"
+      ? [
+          signal.honest_stars != null ? `${signal.honest_stars} honest stars` : "",
+          signal.score_raw != null ? `raw ${signal.score_raw}` : "",
+        ]
+          .filter(Boolean)
+          .join(" · ")
+      : [signal.rating != null ? `${signal.rating} rating` : "", signal.price_level || ""]
+          .filter(Boolean)
+          .join(" · ");
+
+  if (!ratingText) return "";
+
+  const ratingMarkup = signal.url
+    ? `<a class="signal-rating" href="${escapeHtml(signal.url)}" target="_blank" rel="noopener">${escapeHtml(ratingText)}</a>`
+    : `<div class="signal-rating">${escapeHtml(ratingText)}</div>`;
+
+  const meta = [
+    formatReviewCount(signal.review_count),
+    sourceConfidenceLabel(signal.match_confidence),
+  ]
+    .filter(Boolean)
+    .map((item) => `<span>${escapeHtml(item)}</span>`)
+    .join("");
+
+  const note = signal.notes ? `<div class="signal-note">${escapeHtml(signal.notes)}</div>` : "";
+
+  return `
+    <article class="signal-card">
+      <div class="signal-source">${escapeHtml(sourceName)}</div>
+      ${ratingMarkup}
+      ${meta ? `<div class="signal-meta">${meta}</div>` : ""}
+      ${note}
+    </article>
+  `;
+}
+
+function externalSignalsSection(record) {
+  const signals = qualitySignals(record);
+  const cards = ["tabelog", "google"]
+    .map((source) => externalSignalCard(source, signals[source]))
+    .filter(Boolean)
+    .join("");
+  if (!cards) return "";
+  return `
+    <div class="signal-section">
+      <div class="tag-section-label">Outside signals</div>
+      <div class="signal-grid">${cards}</div>
+    </div>
+  `;
+}
+
 function uniqueValues(values) {
   return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
 }
@@ -500,6 +587,48 @@ function hasSourceCoordinates(record) {
   return record.lat != null && record.lng != null && record.coordinate_confidence === "source";
 }
 
+function googleMapsSearchUrl(parts) {
+  const query = parts.filter(Boolean).join(", ");
+  if (!query) return null;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+function diningGoogleMapsUrl(record) {
+  const fallback = googleMapsSearchUrl([
+    record.name,
+    record.source_localized_address || record.district || record.city,
+    record.prefecture || "Japan",
+  ]);
+
+  if (!record.source_google_map_url) {
+    return fallback;
+  }
+
+  try {
+    const url = new URL(record.source_google_map_url);
+    const isEmbed =
+      url.searchParams.get("output") === "embed" ||
+      url.hostname.startsWith("maps.google.") ||
+      url.pathname.includes("/embed");
+
+    if (!isEmbed) {
+      return record.source_google_map_url;
+    }
+
+    const q = url.searchParams.get("q");
+    if (fallback) {
+      return fallback;
+    }
+    if (q) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+    }
+  } catch {
+    return fallback || record.source_google_map_url;
+  }
+
+  return fallback || record.source_google_map_url;
+}
+
 function focusLocationNote(record) {
   if (record.lat == null || record.lng == null) {
     return "This venue does not have a plotted pin yet. Use the official Pocket Concierge listing for location confirmation.";
@@ -529,7 +658,7 @@ function createMarker(record) {
   marker.bindPopup(`
     <div class="popup-card">
       <div class="popup-name">${escapeHtml(record.name)}</div>
-      <div>${escapeHtml(record.city)} / ${escapeHtml(record.district || record.area_title)}</div>
+      <div>${escapeHtml(record.city)} / ${escapeHtml(record.district || record.region || record.area_title || record.prefecture || "")}</div>
       ${record.source_localized_address ? `<div>${escapeHtml(record.source_localized_address)}</div>` : ""}
       <div>${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
       ${dinnerBand ? `<div>${escapeHtml(`Dinner band: ${dinnerBand}`)}</div>` : ""}
@@ -537,7 +666,12 @@ function createMarker(record) {
       ${lunchBand ? `<div>${escapeHtml(`Lunch band: ${lunchBand}`)}</div>` : ""}
       ${yens(record.price_lunch_min_jpy, record.price_lunch_max_jpy) ? `<div>${escapeHtml(`Lunch: ${yens(record.price_lunch_min_jpy, record.price_lunch_max_jpy)}`)}</div>` : ""}
       ${record.summary_official ? `<p>${escapeHtml(record.summary_official)}</p>` : ""}
-      <div>${escapeHtml(record.map_pin_note || "")}</div>
+      ${focusLocationNote(record) ? `<div>${escapeHtml(focusLocationNote(record))}</div>` : ""}
+      ${
+        diningGoogleMapsUrl(record)
+          ? `<p><a href="${escapeHtml(diningGoogleMapsUrl(record))}" target="_blank" rel="noopener">Google Maps</a></p>`
+          : ""
+      }
       ${
         record.source_url
           ? `<p><a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Pocket Concierge</a></p>`
@@ -774,6 +908,37 @@ function renderJourneyShell(route) {
   });
 }
 
+function showIntroGate(force = false) {
+  if (!introGate) return;
+  if (!force && window.localStorage.getItem(INTRO_STORAGE_KEY) === "seen") {
+    introGate.hidden = true;
+    document.body.classList.remove("intro-active");
+    return;
+  }
+  introGate.hidden = false;
+  document.body.classList.add("intro-active");
+}
+
+function hideIntroGate({ persist = true } = {}) {
+  if (!introGate) return;
+  if (persist) {
+    window.localStorage.setItem(INTRO_STORAGE_KEY, "seen");
+  }
+  introGate.hidden = true;
+  document.body.classList.remove("intro-active");
+}
+
+function jumpIntoExplorer(routeHash) {
+  hideIntroGate();
+  if (routeHash) {
+    window.location.hash = routeHash;
+  }
+  window.setTimeout(() => {
+    const target = isStayRoute(resolveRouteFromHash()) ? staysExplorer : dataExplorer;
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 80);
+}
+
 function renderScopeShell(route) {
   if (!isDiningRoute(route)) {
     scopeStrip.hidden = true;
@@ -890,7 +1055,7 @@ function refreshFilterOptions() {
 
   fillSelect(
     districtFilter,
-    uniqueValues(districtPool.map((record) => record.district || record.area_title)),
+    uniqueValues(districtPool.map((record) => record.district || record.region || record.area_title)),
     "All districts"
   );
   fillSelect(
@@ -941,7 +1106,7 @@ function filterRestaurants() {
 
   state.filtered = state.scopeRecords.filter((record) => {
     if (city && record.city !== city) return false;
-    if (district && (record.district || record.area_title) !== district) return false;
+    if (district && (record.district || record.region || record.area_title) !== district) return false;
     if (cuisine && !(record.cuisines || []).includes(cuisine)) return false;
     if (lunchBand && record.price_lunch_band_key !== lunchBand) return false;
     if (dinnerBand && record.price_dinner_band_key !== dinnerBand) return false;
@@ -1029,7 +1194,7 @@ function renderFocusCard() {
     .join("");
 
   focusCard.innerHTML = `
-    <div class="focus-kicker">${escapeHtml(record.city)} / ${escapeHtml(record.district || record.area_title)}</div>
+    <div class="focus-kicker">${escapeHtml(record.city)} / ${escapeHtml(record.district || record.region || record.area_title || record.prefecture || "")}</div>
     <h3 class="focus-title">${escapeHtml(record.name)}</h3>
     <div class="focus-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
     ${
@@ -1045,6 +1210,7 @@ function renderFocusCard() {
     <div class="focus-tags">${tags}</div>
     ${tagSection("Known for", record.known_for_tags, "gold")}
     ${tagSection("Specialties", record.signature_dish_tags, "blue")}
+    ${externalSignalsSection(record)}
     <p class="focus-summary">${escapeHtml(record.summary_official || "No official summary available.")}</p>
     <div class="price-grid">
       <div class="price-card">
@@ -1069,8 +1235,8 @@ function renderFocusCard() {
     ${focusLocationNote(record) ? `<div class="focus-note">${escapeHtml(focusLocationNote(record))}</div>` : ""}
     <div class="focus-actions">
       ${
-        record.source_google_map_url
-          ? `<a class="inline-link" href="${escapeHtml(record.source_google_map_url)}" target="_blank" rel="noopener">Open source map</a>`
+        diningGoogleMapsUrl(record)
+          ? `<a class="inline-link" href="${escapeHtml(diningGoogleMapsUrl(record))}" target="_blank" rel="noopener">Open in Google Maps</a>`
           : ""
       }
       ${
@@ -1121,7 +1287,7 @@ function renderTable() {
       </td>
       <td>
         <div>${escapeHtml(record.city)}</div>
-        <div class="table-sub">${escapeHtml(record.source_localized_address || record.district || record.area_title)}</div>
+        <div class="table-sub">${escapeHtml(record.source_localized_address || record.district || record.region || record.area_title || "")}</div>
       </td>
       <td>${escapeHtml((record.cuisines || []).join(", ") || "Unknown")}</td>
       <td>${priceMarkup(
@@ -1161,7 +1327,7 @@ function renderMobileCards() {
     card.innerHTML = `
       <div class="mobile-card-top">
         <div>
-          <div class="focus-kicker">${escapeHtml(record.city)} / ${escapeHtml(record.district || record.area_title)}</div>
+          <div class="focus-kicker">${escapeHtml(record.city)} / ${escapeHtml(record.district || record.region || record.area_title || record.prefecture || "")}</div>
           <h3 class="mobile-card-title">${escapeHtml(record.name)}</h3>
           <div class="mobile-card-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
         </div>
@@ -1184,6 +1350,7 @@ function renderMobileCards() {
       </div>
       ${tagSection("Known for", record.known_for_tags, "gold")}
       ${tagSection("Specialties", record.signature_dish_tags, "blue")}
+      ${externalSignalsSection(record)}
       <div class="mobile-price-grid">
         <div class="mobile-price-card">
           <span class="price-label">Dinner</span>
@@ -1209,8 +1376,8 @@ function renderMobileCards() {
           Show on map
         </button>
         ${
-          record.source_google_map_url
-            ? `<a class="inline-link" href="${escapeHtml(record.source_google_map_url)}" target="_blank" rel="noopener">Source map</a>`
+          diningGoogleMapsUrl(record)
+            ? `<a class="inline-link" href="${escapeHtml(diningGoogleMapsUrl(record))}" target="_blank" rel="noopener">Google Maps</a>`
             : ""
         }
       </div>
@@ -1327,6 +1494,8 @@ function stayAvailability(record) {
   const selected = stayDateRange();
   const exactRanges = record.blackout_exact_ranges || [];
   const notes = record.blackout_notes || [];
+  const raw = (record.blackout_raw || "").trim();
+  const hasSpecificNotes = Boolean(raw) && raw.toLowerCase() !== "subject to availability";
   if (!selected) {
     if (exactRanges.length) {
       return {
@@ -1336,9 +1505,20 @@ function stayAvailability(record) {
         blocked: false,
       };
     }
+    if (hasSpecificNotes) {
+      return {
+        key: "notes_only",
+        label: "Special blackout notes listed",
+        detail: raw,
+        blocked: false,
+      };
+    }
     return {
-      key: "not_evaluated",
-      label: "No listed blackout dates",
+      key: "subject_to_availability",
+      label:
+        record.availability_mode === "subject_to_availability"
+          ? "Still subject to availability"
+          : "No listed blackout dates",
       detail:
         record.availability_mode === "subject_to_availability"
           ? "This property is still subject to hotel availability."
@@ -1357,11 +1537,35 @@ function stayAvailability(record) {
     };
   }
 
-  if (notes.length) {
+  if (exactRanges.length && notes.length) {
     return {
       key: "not_blocked_with_notes",
       label: "Not blocked by listed dates",
       detail: notes.join(" | "),
+      blocked: false,
+    };
+  }
+
+  if (hasSpecificNotes) {
+    return {
+      key: "notes_only",
+      label: "Special blackout notes listed",
+      detail: raw,
+      blocked: false,
+    };
+  }
+
+  if (!exactRanges.length) {
+    return {
+      key: "subject_to_availability",
+      label:
+        record.availability_mode === "subject_to_availability"
+          ? "Still subject to availability"
+          : "Dates selected",
+      detail:
+        record.availability_mode === "subject_to_availability"
+          ? "No exact blackout dates are listed. Final confirmation depends on hotel availability."
+          : "No exact blackout dates are listed for the selected stay.",
       blocked: false,
     };
   }
@@ -1506,7 +1710,12 @@ function createStayMarker(record) {
       }
       ${
         record.reservation_raw
-          ? `<div>${escapeHtml(`Reservation: ${record.reservation_raw}`)}</div>`
+          ? `<div>Reservation: ${stayReservationSummaryHtml(record)}</div>`
+          : ""
+      }
+      ${
+        record.source_url
+          ? `<p><a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Official source</a></p>`
           : ""
       }
     </div>
@@ -1889,6 +2098,7 @@ async function init() {
   if (!window.location.hash) {
     window.location.hash = "#/dining/world";
   }
+  showIntroGate();
 }
 
 searchInput.addEventListener("input", filterRestaurants);
@@ -1913,6 +2123,26 @@ resetFiltersButton.addEventListener("click", () => {
   resetFilterControls();
   refreshFilterOptions();
   filterRestaurants();
+});
+
+introSkipTopButton?.addEventListener("click", () => {
+  hideIntroGate();
+});
+
+introSkipBottomButton?.addEventListener("click", () => {
+  hideIntroGate();
+});
+
+introStartTravelButton?.addEventListener("click", () => {
+  jumpIntoExplorer(introStartTravelButton.dataset.introRoute);
+});
+
+introStartDiningButton?.addEventListener("click", () => {
+  jumpIntoExplorer(introStartDiningButton.dataset.introRoute);
+});
+
+replayGuideButton?.addEventListener("click", () => {
+  showIntroGate(true);
 });
 
 toolbarToggle.addEventListener("click", () => {

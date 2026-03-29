@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sync the Japan MVP dataset from public Pocket Concierge area pages."""
+"""Sync the Japan dining dataset from Pocket Concierge GraphQL."""
 
 from __future__ import annotations
 
@@ -20,79 +20,118 @@ JSON_PATH = DATA_DIR / "japan-restaurants.json"
 GEOJSON_PATH = DATA_DIR / "japan-restaurants.geojson"
 CACHE_PATH = DATA_DIR / "geocode_cache.json"
 DETAIL_CACHE_PATH = DATA_DIR / "venue_detail_cache.json"
+QUALITY_SIGNALS_PATH = DATA_DIR / "restaurant-quality-signals.json"
 
-USER_AGENT = "JapanDiningMapMVP/0.1 (+https://local.dev)"
+USER_AGENT = "JapanDiningMapMVP/0.2 (+https://local.dev)"
 GRAPHQL_URL = "https://pocket-concierge.jp/graphql"
-VENUE_QUERY = """
-query InitialVenuePage($id: ID!) {
-  venue(id: $id) {
+
+SEARCH_PROPERTIES_QUERY = """
+query SearchProperties {
+  areas {
     id
     name
-    localizedAddress
-    latitude
-    longitude
-    googleMapUrl
-    addressHidden
-    nearestStations
   }
 }
 """.strip()
 
-AREA_SEEDS = [
-    {
-        "slug": "azabu",
-        "city": "Tokyo",
-        "label": "Azabu",
-        "url": "https://pocket-concierge.jp/lp/amex/gms/pocket_azabu/index.html?extlink=va-jp-ICS-GMS_LP_en_Azabu",
-    },
-    {
-        "slug": "ginza",
-        "city": "Tokyo",
-        "label": "Ginza",
-        "url": "https://pocket-concierge.jp/lp/amex/gms/pocket_ginza/index.html?extlink=va-jp-ICS-GMS_LP_en_Ginza",
-    },
-    {
-        "slug": "ebisu",
-        "city": "Tokyo",
-        "label": "Ebisu",
-        "url": "https://pocket-concierge.jp/lp/amex/gms/pocket_ebisu/index.html?extlink=va-jp-ICS-GMS_LP_en_Ebisu",
-    },
-    {
-        "slug": "omotesando",
-        "city": "Tokyo",
-        "label": "Omotesando",
-        "url": "https://pocket-concierge.jp/lp/amex/gms/pocket_omotesando/index.html?extlink=va-jp-ICS-GMS_LP_en_Omotesando",
-    },
-    {
-        "slug": "kagurazaka",
-        "city": "Tokyo",
-        "label": "Kagurazaka",
-        "url": "https://pocket-concierge.jp/lp/amex/gms/pocket_kagurazaka/index.html?extlink=va-jp-ICS-GMS_LP_en_Kagurazaka",
-    },
-    {
-        "slug": "osaka",
-        "city": "Osaka",
-        "label": "Osaka",
-        "url": "https://pocket-concierge.jp/lp/amex/gms/pocket_osaka/index.html?extlink=va-jp-ICS-GMS_LP_en_Osaka",
-    },
-    {
-        "slug": "kodaiji-kiyomizu",
-        "city": "Kyoto",
-        "label": "Kodaiji / Kiyomizu",
-        "url": "https://pocket-concierge.jp/lp/amex/gms/pocket_kodaiji_kiyomizu/index.html?extlink=va-jp-ICS-GMS_LP_en_Kodaiji_Kiyomizu",
-    },
-    {
-        "slug": "gion",
-        "city": "Kyoto",
-        "label": "Gion",
-        "url": "https://pocket-concierge.jp/lp/amex/gms/pocket_gion/index.html?extlink=va-jp-ICS-GMS_LP_en_Gion",
-    },
-    {
-        "slug": "higashiyama",
-        "city": "Kyoto",
-        "label": "Higashiyama",
-        "url": "https://pocket-concierge.jp/lp/amex/gms/pocket_higashiyama/index.html?extlink=va-jp-ICS-GMS_LP_en_Higashiyama",
-    },
+SEARCH_VENUES_QUERY = """
+query searchVenues($areaIds: [ID!], $pagination: PaginationInput) {
+  venuesSearch(
+    paginationInput: $pagination
+    areaIds: $areaIds
+  ) {
+    collection {
+      address {
+        prefecture {
+          id
+          name
+        }
+        town {
+          name
+        }
+      }
+      area {
+        id
+        name
+      }
+      blurb
+      cuisines {
+        id
+        name
+      }
+      id
+      limitedScopeUrlHash
+      name
+      priceRanges {
+        max
+        min
+        serviceType
+      }
+      realTimeBooking
+    }
+    metadata {
+      currentPage
+      limitValue
+      totalCount
+      totalPages
+    }
+  }
+}
+""".strip()
+
+VENUE_DETAIL_QUERY = """
+query PartialVenueWithCourses($id: ID!) {
+  venue(id: $id) {
+    id
+    addressHidden
+    googleMapUrl
+    latitude
+    longitude
+    localizedAddress
+    longDescription
+    nearestStations
+    phoneNumber
+    recommendations {
+      ageRange
+      comment
+      visitFrequency
+      visitPurpose
+      visitedAt
+    }
+    reservationTerms
+    services
+    websiteUrl
+    transactionsAllowed
+    frequentlyAskedQuestions {
+      question
+      answer
+    }
+    courses {
+      fixedPrice
+      fixedTitle
+      costPerGuest
+      id
+      name
+      serviceType
+      summary
+      supplementaryInformation
+    }
+  }
+}
+""".strip()
+
+TARGET_AREA_ORDER = [
+    "Tokyo",
+    "Yokohama/Kawasaki",
+    "Kamakura/Hayama/Shonan",
+    "Greater Tokyo Area",
+    "Kyoto/Osaka/Nara",
+    "Chubu/Tokai/Karuizawa",
+    "Kanazawa/Toyama/Hokuriku",
+    "Hokkaido",
+    "Tohoku",
+    "Chugoku/Shikoku",
+    "Kyushu/Okinawa",
 ]
 
 CITY_COLORS = {
@@ -117,54 +156,40 @@ DINNER_PRICE_BANDS = [
 
 SIGNATURE_PATTERNS = [
     (r"\bkobe beef\b", "Kobe beef"),
-    (r"\bnigiri sushi\b", "Nigiri sushi"),
-    (r"\bedomae-style sushi\b|\bedo-style sushi\b|\bosaka-style \"edomae\" sushi\b", "Edomae sushi"),
+    (r"\bblue lobster\b", "Blue lobster"),
+    (r"\bedomae-style sushi\b|\bedo-style sushi\b|\bnigiri sushi\b", "Edomae sushi"),
     (r"\bsushi\b", "Sushi"),
     (r"\btempura\b", "Tempura"),
     (r"\bteppanyaki\b", "Teppanyaki"),
     (r"\byakitori\b|\bgrilled fresh chicken\b", "Yakitori / grilled chicken"),
-    (r"\bbroth and rice\b", "Broth and rice"),
-    (r"\bsoups?\b", "Soup dishes"),
     (r"\bsoba\b", "Soba"),
-    (r"\bkappo cuisine\b", "Kappo"),
-    (r"\bkaiseki cuisine\b|\btea ceremony-style kaiseki\b|\bkaiseki\b", "Kaiseki"),
+    (r"\bkappo\b", "Kappo"),
+    (r"\bkaiseki\b", "Kaiseki"),
     (r"\bkyoto cuisine\b", "Kyoto cuisine"),
     (r"\bbasque cuisine\b", "Basque cuisine"),
-    (r"\btraditional french cuisine\b|\bfrench cuisine\b|\bparis bistro\b", "French cuisine"),
-    (r"\bsteakhouse\b", "Steak"),
+    (r"\bfrench cuisine\b|\bparis bistro\b", "French cuisine"),
+    (r"\bsteakhouse\b|\bsteak\b", "Steak"),
+    (r"\bdeer\b|\bgame\b", "Game dishes"),
+    (r"\bomakase\b", "Omakase"),
 ]
 
 KNOWN_FOR_PATTERNS = [
     (r"\b1-star\b", "1-star reputation"),
     (r"\b2-star\b", "2-star reputation"),
     (r"\b3-star\b", "3-star reputation"),
-    (r"\bworld gourmet guide awarded\b", "World gourmet guide"),
     (r"\bhidden\b|\btucked away\b", "Hidden spot"),
     (r"\bback streets of gion\b", "Back streets of Gion"),
     (r"\bpanoramic views? of kyoto\b|\bevening view\b", "Notable views"),
     (r"\boverlooking the famous garden\b", "Garden views"),
     (r"\bspanish-style stone kiln oven\b", "Stone kiln cooking"),
     (r"\btraditional cooking techniques\b", "Traditional technique"),
-    (r"\bfrench twist\b", "French twist"),
     (r"\bjapanese terroir\b", "Japanese terroir"),
-    (r"\bcarefully selected dishes\b", "Chef-selected dishes"),
-    (r"\bfour seasons\b|\bseasonal\b", "Seasonal cooking"),
-    (r"\bnear kennin-ji temple\b", "Near Kennin-ji Temple"),
-    (r"\bnear yasaka shrine and kiyomizu-dera\b", "Near Yasaka Shrine / Kiyomizu-dera"),
-    (r"\bover 350 years\b|\b110-year-old\b|\bover 90 years\b|\bfor over 90 years\b", "Historic institution"),
+    (r"\bseasonal\b|\bfour seasons\b", "Seasonal cooking"),
+    (r"\bhokkaido-born\b|\bhokkaido ingredients\b", "Hokkaido ingredients"),
+    (r"\bprivate room\b", "Private room option"),
+    (r"\bchef-selected\b|\bselected dishes\b", "Chef-selected dishes"),
+    (r"\bworld gourmet guide\b", "World gourmet guide"),
 ]
-
-
-def fetch_text(url: str) -> str:
-    request = urllib.request.Request(
-        url,
-        headers={
-            "User-Agent": USER_AGENT,
-            "Accept-Language": "en-US,en;q=0.9",
-        },
-    )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return response.read().decode("utf-8", errors="replace")
 
 
 def post_json(url: str, payload: dict) -> dict:
@@ -195,41 +220,240 @@ def save_json(path: Path, payload) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
 
 
-def strip_tags(value: str) -> str:
+def sanitize_signal(signal: dict | None) -> dict:
+    if not isinstance(signal, dict):
+        return {}
+    allowed_keys = {
+        "score_raw",
+        "honest_stars",
+        "rating",
+        "review_count",
+        "price_level",
+        "url",
+        "match_confidence",
+        "last_checked_at",
+        "notes",
+    }
+    return {key: signal[key] for key in allowed_keys if key in signal and signal[key] not in (None, "")}
+
+
+def merged_quality_signals(record_id: str, signals_by_id: dict) -> dict:
+    source = signals_by_id.get(record_id)
+    if not isinstance(source, dict):
+        return {}
+    merged: dict[str, dict] = {}
+    for provider in ("tabelog", "google"):
+        signal = sanitize_signal(source.get(provider))
+        if signal:
+            merged[provider] = signal
+    return merged
+
+
+def compact_space(value: str | None) -> str:
+    if not value:
+        return ""
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def google_maps_search_url(*parts: str | None) -> str | None:
+    query = ", ".join(part.strip() for part in parts if part and part.strip())
+    if not query:
+        return None
+    return f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(query)}"
+
+
+def normalize_google_map_url(raw_url: str | None, *fallback_parts: str | None) -> str | None:
+    fallback = google_maps_search_url(*fallback_parts)
+    if not raw_url:
+        return fallback
+
+    parsed = urllib.parse.urlparse(raw_url)
+    params = urllib.parse.parse_qs(parsed.query)
+    is_embed = params.get("output", [None])[0] == "embed" or "/embed" in parsed.path
+    if not is_embed:
+        return raw_url
+
+    if fallback:
+        return fallback
+
+    q = params.get("q", [None])[0]
+    if q:
+        return f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(q)}"
+    return raw_url
+
+
+def strip_tags(value: str | None) -> str:
+    if not value:
+        return ""
     value = re.sub(r"<br\s*/?>", " ", value)
     value = re.sub(r"<[^>]+>", "", value)
-    value = html.unescape(value)
-    value = re.sub(r"\s+", " ", value)
-    return value.strip()
+    return compact_space(html.unescape(value))
 
 
-def match_first(text: str, pattern: str) -> str | None:
-    match = re.search(pattern, text, flags=re.S)
-    if not match:
+def titlecase_geo(value: str | None) -> str | None:
+    cleaned = compact_space(value)
+    if not cleaned:
         return None
-    return strip_tags(match.group(1))
+    cleaned = cleaned.replace("-", " ")
+    return " ".join(part[:1].upper() + part[1:] for part in cleaned.split())
 
 
-def parse_budget(text: str | None) -> tuple[int | None, int | None]:
-    if not text:
+def append_unique(values: list[str], item: str | None) -> None:
+    if item and item not in values:
+        values.append(item)
+
+
+def classify_price_band(
+    value: int | None, bands: list[tuple[str, str, str, int, int | None]]
+) -> tuple[str | None, str | None, str | None]:
+    if value is None:
+        return None, None, None
+
+    for key, label, tier, lower, upper in bands:
+        if upper is None and value >= lower:
+            return key, label, tier
+        if lower <= value < upper:
+            return key, label, tier
+    return None, None, None
+
+
+def fetch_search_properties() -> list[dict]:
+    payload = {
+        "operationName": "SearchProperties",
+        "variables": {},
+        "query": SEARCH_PROPERTIES_QUERY,
+    }
+    response = post_json(GRAPHQL_URL, payload)
+    return response.get("data", {}).get("areas", [])
+
+
+def select_target_areas(areas: list[dict]) -> list[dict]:
+    by_name = {area["name"]: area for area in areas}
+    missing = [name for name in TARGET_AREA_ORDER if name not in by_name]
+    if missing:
+        raise RuntimeError(f"Missing expected Pocket Concierge areas: {', '.join(missing)}")
+    return [by_name[name] for name in TARGET_AREA_ORDER]
+
+
+def search_venues(area_id: str, page: int, limit: int = 100) -> dict:
+    payload = {
+        "operationName": "searchVenues",
+        "variables": {
+            "areaIds": [area_id],
+            "pagination": {"limit": limit, "page": page},
+        },
+        "query": SEARCH_VENUES_QUERY,
+    }
+    response = post_json(GRAPHQL_URL, payload)
+    return response.get("data", {}).get("venuesSearch", {})
+
+
+def iter_area_venues(area: dict) -> list[dict]:
+    records: list[dict] = []
+    page = 1
+    total_pages = 1
+
+    while page <= total_pages:
+        payload = search_venues(area["id"], page=page, limit=100)
+        metadata = payload.get("metadata") or {}
+        collection = payload.get("collection") or []
+        total_pages = int(metadata.get("totalPages") or 1)
+        records.extend(collection)
+        page += 1
+        time.sleep(0.1)
+
+    return records
+
+
+def venue_detail_query(venue_id: str) -> dict:
+    payload = {
+        "operationName": "PartialVenueWithCourses",
+        "variables": {"id": venue_id},
+        "query": VENUE_DETAIL_QUERY,
+    }
+    response = post_json(GRAPHQL_URL, payload)
+    return response.get("data", {}).get("venue", {}) or {}
+
+
+def parse_google_map_coordinates(url: str | None) -> tuple[float | None, float | None]:
+    if not url:
         return None, None
-    numbers = [int(n.replace(",", "")) for n in re.findall(r"¥\s*([\d,]+)", text)]
-    if not numbers:
+    parsed = urllib.parse.urlparse(url)
+    query = urllib.parse.parse_qs(parsed.query)
+    q_value = query.get("q", [None])[0]
+    if not q_value:
         return None, None
-    return min(numbers), max(numbers)
+    match = re.match(r"\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$", q_value)
+    if not match:
+        return None, None
+    return float(match.group(1)), float(match.group(2))
 
 
-def parse_location(location_text: str | None, fallback_city: str) -> tuple[str, str | None]:
-    if not location_text:
-        return fallback_city, None
-    parts = [part.strip() for part in location_text.replace("\xa0", " ").split(",") if part.strip()]
-    if len(parts) >= 2:
-        return parts[0], parts[1]
-    return fallback_city, parts[0] if parts else None
+def infer_city(
+    localized_address: str | None,
+    prefecture: str | None,
+    area_name: str | None,
+    town_name: str | None,
+) -> str:
+    parts = [compact_space(part) for part in (localized_address or "").split(",") if compact_space(part)]
+
+    if prefecture == "Tokyo" or "Tokyo" in parts:
+        return "Tokyo"
+
+    for index, part in enumerate(parts):
+        lower = part.lower()
+        if lower.endswith("-shi"):
+            city = titlecase_geo(part[:-4])
+            if city:
+                return city
+        if lower.endswith("-ku"):
+            if index + 1 < len(parts) and parts[index + 1].lower().endswith("-shi"):
+                city = titlecase_geo(parts[index + 1][:-4])
+                if city:
+                    return city
+            if prefecture == "Tokyo":
+                return "Tokyo"
+
+    address_text = " ".join(parts).lower()
+    for choice in ("Kyoto", "Osaka", "Nara"):
+        if choice.lower() in address_text:
+            return choice
+
+    if area_name in {"Tokyo", "Greater Tokyo Area"}:
+        return "Tokyo"
+    if prefecture:
+        return titlecase_geo(prefecture) or "Japan"
+    return titlecase_geo(town_name) or titlecase_geo(area_name) or "Japan"
 
 
-def normalize_child_policy(notice: str | None, child_icon: str | None) -> str:
-    source = " ".join(part for part in [notice, child_icon] if part).lower()
+def infer_district(town_name: str | None, area_name: str | None, city: str) -> str | None:
+    town = compact_space(town_name)
+    if town and town.lower() != city.lower():
+        return town
+    if area_name and area_name not in TARGET_AREA_ORDER and area_name.lower() != city.lower():
+        return area_name
+    return None
+
+
+def extract_child_policy_excerpt(text: str | None) -> str | None:
+    cleaned = strip_tags(text)
+    if not cleaned:
+        return None
+    match = re.search(r"children[^.]*\.", cleaned, flags=re.I)
+    if match:
+        return compact_space(match.group(0))
+    match = re.search(r"child[^.]*\.", cleaned, flags=re.I)
+    return compact_space(match.group(0)) if match else None
+
+
+def normalize_child_policy(note: str | None, services: list[str] | None) -> str:
+    service_text = " ".join(services or []).lower()
+    if "child-friendly" in service_text:
+        return "kid_friendly"
+    if "children-over12-accepted" in service_text:
+        return "older_children_only"
+
+    source = compact_space(note).lower()
     if not source:
         return "unknown"
 
@@ -251,18 +475,16 @@ def normalize_child_policy(notice: str | None, child_icon: str | None) -> str:
     return "policy_available"
 
 
-def restaurant_id_from_url(url: str | None, fallback_slug: str) -> str:
-    if not url:
-        return fallback_slug
-    match = re.search(r"/restaurants/(\d+)", url)
-    return match.group(1) if match else fallback_slug
+def build_source_url(venue_id: str) -> str:
+    return f"https://pocket-concierge.jp/en/restaurants/{venue_id}/"
 
 
-def slugify(value: str) -> str:
-    value = value.lower()
-    value = re.sub(r"[^a-z0-9]+", "-", value)
-    value = re.sub(r"-+", "-", value)
-    return value.strip("-")
+def service_price_range(price_ranges: list[dict], service_type: str) -> tuple[int | None, int | None]:
+    for price_range in price_ranges or []:
+        if price_range.get("serviceType") != service_type:
+            continue
+        return price_range.get("min"), price_range.get("max")
+    return None, None
 
 
 def build_search_text(record: dict) -> str:
@@ -270,7 +492,8 @@ def build_search_text(record: dict) -> str:
         record.get("name"),
         record.get("city"),
         record.get("district"),
-        record.get("area_title"),
+        record.get("region"),
+        record.get("prefecture"),
         record.get("source_localized_address"),
         record.get("nearest_stations_text"),
         " ".join(record.get("cuisines", [])),
@@ -282,44 +505,22 @@ def build_search_text(record: dict) -> str:
         record.get("price_dinner_band_tier"),
         " ".join(record.get("known_for_tags", [])),
         " ".join(record.get("signature_dish_tags", [])),
+        " ".join(record.get("service_tags", [])),
     ]
     return " ".join(field for field in fields if field).lower()
 
 
-def classify_price_band(
-    value: int | None, bands: list[tuple[str, str, str, int, int | None]]
-) -> tuple[str | None, str | None, str | None]:
-    if value is None:
-        return None, None, None
-
-    for key, label, tier, lower, upper in bands:
-        if upper is None and value >= lower:
-            return key, label, tier
-        if lower <= value < upper:
-            return key, label, tier
-    return None, None, None
-
-
-def append_unique(values: list[str], item: str) -> None:
-    if item and item not in values:
-        values.append(item)
-
-
-def derive_restaurant_enrichment(record: dict) -> None:
-    summary = record.get("summary_official") or ""
-    summary_lower = summary.lower()
-    cuisine_text = " ".join(record.get("cuisines", []))
-    source_text = " ".join(part for part in [summary_lower, cuisine_text.lower()] if part)
-
+def derive_restaurant_enrichment(record: dict, source_text: str) -> None:
+    source = source_text.lower()
     known_for: list[str] = []
     signature_dishes: list[str] = []
 
     for pattern, label in KNOWN_FOR_PATTERNS:
-        if re.search(pattern, source_text):
+        if re.search(pattern, source):
             append_unique(known_for, label)
 
     for pattern, label in SIGNATURE_PATTERNS:
-        if re.search(pattern, source_text):
+        if re.search(pattern, source):
             append_unique(signature_dishes, label)
 
     if record.get("district") == "Gion":
@@ -328,206 +529,90 @@ def derive_restaurant_enrichment(record: dict) -> None:
     record["known_for_tags"] = known_for
     record["signature_dish_tags"] = signature_dishes
     record["restaurant_enrichment_source"] = (
-        "Pocket Concierge summary and venue metadata"
+        "Pocket Concierge blurb, venue description, and course metadata"
         if known_for or signature_dishes
         else None
     )
 
 
-def source_venue_id(record: dict) -> str | None:
-    source_url = record.get("source_url")
-    if not source_url:
-        return None
-    match = re.search(r"/restaurants/(\d+)", source_url)
-    return match.group(1) if match else None
-
-
-def venue_detail_query(venue_id: str) -> dict:
-    payload = {
-        "operationName": "InitialVenuePage",
-        "variables": {"id": venue_id},
-        "query": VENUE_QUERY,
-    }
-    response = post_json(GRAPHQL_URL, payload)
-    if not isinstance(response, dict):
-        return {}
-    data = response.get("data")
-    if not isinstance(data, dict):
-        return {}
-    venue = data.get("venue")
-    return venue if isinstance(venue, dict) else {}
-
-
-def parse_google_map_coordinates(url: str | None) -> tuple[float | None, float | None]:
-    if not url:
-        return None, None
-    parsed = urllib.parse.urlparse(url)
-    query = urllib.parse.parse_qs(parsed.query)
-    q_value = query.get("q", [None])[0]
-    if not q_value:
-        return None, None
-    match = re.match(r"\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$", q_value)
-    if not match:
-        return None, None
-    return float(match.group(1)), float(match.group(2))
-
-
-def enrich_from_source(record: dict, cache: dict) -> None:
-    venue_id = source_venue_id(record)
-    if not venue_id:
-        return
-
-    if venue_id in cache:
-        venue = cache[venue_id]
-    else:
-        venue = venue_detail_query(venue_id)
-        cache[venue_id] = venue
-        save_json(DETAIL_CACHE_PATH, cache)
-        time.sleep(0.2)
-
-    if not venue:
-        return
-
-    record["source_address_hidden"] = bool(venue.get("addressHidden"))
-    record["source_google_map_url"] = venue.get("googleMapUrl")
-    nearest = venue.get("nearestStations") or []
-    record["nearest_stations"] = nearest
-    record["nearest_stations_text"] = " ".join(nearest)
-
-    if not record["source_address_hidden"]:
-        record["source_localized_address"] = venue.get("localizedAddress")
-    else:
-        record["source_localized_address"] = None
-
-    lat = venue.get("latitude")
-    lng = venue.get("longitude")
-    if lat is None or lng is None:
-        lat, lng = parse_google_map_coordinates(venue.get("googleMapUrl"))
-        if lat is not None and lng is not None:
-            record["lat"] = lat
-            record["lng"] = lng
-            record["coordinate_source"] = "pocket_concierge_google_map_url"
-            record["coordinate_confidence"] = "source"
-            record["map_pin_note"] = (
-                "Source venue coordinates from Pocket Concierge public map data."
-            )
-            return
-
-    if lat is not None and lng is not None:
-        record["lat"] = float(lat)
-        record["lng"] = float(lng)
-        record["coordinate_source"] = "pocket_concierge_graphql"
-        record["coordinate_confidence"] = "source"
-        record["map_pin_note"] = "Source venue coordinates from Pocket Concierge."
-        return
-
-
-def extract_restaurant_blocks(section_html: str) -> list[str]:
-    starts = [match.start() for match in re.finditer(r'<div class="sec-restaurants__item"', section_html)]
-    if not starts:
-        return []
-
-    blocks: list[str] = []
-    for index, start in enumerate(starts):
-        end = starts[index + 1] if index + 1 < len(starts) else len(section_html)
-        blocks.append(section_html[start:end])
-    return blocks
-
-
-def parse_area_page(area: dict) -> list[dict]:
-    page_html = fetch_text(area["url"])
-    section_match = re.search(
-        r'<div id="restaurants".*?(?=<div id="other-destinations"|</main>)',
-        page_html,
-        flags=re.S,
+def build_record_from_search_result(venue: dict, area_name: str) -> dict:
+    venue_id = str(venue["id"])
+    address = venue.get("address") or {}
+    prefecture = (address.get("prefecture") or {}).get("name")
+    town_name = (address.get("town") or {}).get("name")
+    lunch_min, lunch_max = service_price_range(venue.get("priceRanges") or [], "LUNCH")
+    dinner_min, dinner_max = service_price_range(venue.get("priceRanges") or [], "DINNER")
+    lunch_band_key, lunch_band_label, lunch_band_tier = classify_price_band(lunch_min, LUNCH_PRICE_BANDS)
+    dinner_band_key, dinner_band_label, dinner_band_tier = classify_price_band(
+        dinner_min, DINNER_PRICE_BANDS
     )
-    if not section_match:
-        raise RuntimeError(f"Could not find restaurants section for {area['slug']}")
 
-    section_html = section_match.group(0)
-    restaurants: list[dict] = []
-    for block in extract_restaurant_blocks(section_html):
-        name = match_first(block, r'<div class="sec-restaurants__name">(.*?)</div>')
-        if not name:
-            continue
+    initial_city = "Tokyo" if prefecture == "Tokyo" else (titlecase_geo(prefecture) or "Japan")
+    district = infer_district(town_name, area_name, initial_city)
 
-        location_text = match_first(block, r'<div class="sec-restaurants__location">(.*?)</div>')
-        city, district = parse_location(location_text, area["city"])
-        genre = match_first(block, r'<div class="sec-restaurants__genre">(.*?)</div>')
-        reservation_type = match_first(block, r'<div class="sec-restaurants__reservation-type">(.*?)</div>')
-        summary = match_first(block, r'<div class="sec-restaurants__summary">(.*?)</div>')
-        notice = match_first(block, r'<div class="sec-restaurants__notice">(.*?)</div>')
-        lunch_text = match_first(block, r'<span class="sec-restaurants__budget-lunch">(.*?)</span>')
-        dinner_text = match_first(block, r'<span class="sec-restaurants__budget-dinner">(.*?)</span>')
-        child_icon = match_first(block, r'sec-restaurants__icon--child">(.*?)</span>')
-        english_menu = bool(re.search(r'sec-restaurants__icon--menu">English menu', block))
-        detail_url = match_first(block, r'<a href="(https://pocket-concierge\.jp/en/restaurants/[^"]+)"')
-        lunch_min, lunch_max = parse_budget(lunch_text)
-        dinner_min, dinner_max = parse_budget(dinner_text)
+    return {
+        "id": f"pocket-{venue_id}",
+        "source": "Pocket Concierge",
+        "source_url": build_source_url(venue_id),
+        "source_search_area_ids": [venue.get("area", {}).get("id") or area_name],
+        "source_search_areas": [area_name],
+        "source_limited_scope_url_hash": venue.get("limitedScopeUrlHash"),
+        "country": "Japan",
+        "region": area_name,
+        "area_title": area_name,
+        "prefecture": prefecture,
+        "city": initial_city,
+        "district": district,
+        "source_search_town": town_name,
+        "name": venue.get("name"),
+        "cuisines": [item.get("name") for item in venue.get("cuisines") or [] if item.get("name")],
+        "reservation_type": "Real-time booking" if venue.get("realTimeBooking") else "Request booking",
+        "price_lunch_min_jpy": lunch_min,
+        "price_lunch_max_jpy": lunch_max,
+        "price_dinner_min_jpy": dinner_min,
+        "price_dinner_max_jpy": dinner_max,
+        "price_lunch_band_key": lunch_band_key,
+        "price_lunch_band_label": lunch_band_label,
+        "price_lunch_band_tier": lunch_band_tier,
+        "price_dinner_band_key": dinner_band_key,
+        "price_dinner_band_label": dinner_band_label,
+        "price_dinner_band_tier": dinner_band_tier,
+        "summary_official": compact_space(venue.get("blurb")),
+        "known_for_tags": [],
+        "signature_dish_tags": [],
+        "restaurant_enrichment_source": None,
+        "child_policy_raw": None,
+        "child_policy_norm": "unknown",
+        "english_menu": False,
+        "source_address_hidden": None,
+        "source_localized_address": None,
+        "source_google_map_url": None,
+        "nearest_stations": [],
+        "nearest_stations_text": None,
+        "service_tags": [],
+        "website_url": None,
+        "phone_number": None,
+        "recommendation_count": 0,
+        "course_count": 0,
+        "external_signals": {},
+        "lat": None,
+        "lng": None,
+        "coordinate_source": None,
+        "coordinate_confidence": "unknown",
+        "search_text": "",
+        "last_verified_at": datetime.now(UTC).isoformat(),
+        "map_pin_note": "Approximate location based on public geocoding unless replaced by stronger source matching.",
+        "city_color": CITY_COLORS.get(initial_city, "slate"),
+    }
 
-        fallback_slug = slugify(name)
-        record = {
-            "id": f"pocket-{area['slug']}-{restaurant_id_from_url(detail_url, fallback_slug)}",
-            "source": "Pocket Concierge",
-            "source_url": detail_url,
-            "source_area_page": area["url"],
-            "source_area_slug": area["slug"],
-            "country": "Japan",
-            "city": city,
-            "district": district,
-            "area_title": area["label"],
-            "name": name,
-            "cuisines": [genre] if genre else [],
-            "reservation_type": reservation_type,
-            "price_lunch_min_jpy": lunch_min,
-            "price_lunch_max_jpy": lunch_max,
-            "price_dinner_min_jpy": dinner_min,
-            "price_dinner_max_jpy": dinner_max,
-            "price_lunch_band_key": None,
-            "price_lunch_band_label": None,
-            "price_lunch_band_tier": None,
-            "price_dinner_band_key": None,
-            "price_dinner_band_label": None,
-            "price_dinner_band_tier": None,
-            "summary_official": summary,
-            "known_for_tags": [],
-            "signature_dish_tags": [],
-            "restaurant_enrichment_source": None,
-            "child_policy_raw": notice or child_icon,
-            "child_icon_label": child_icon,
-            "child_policy_norm": normalize_child_policy(notice, child_icon),
-            "english_menu": english_menu,
-            "michelin_status": None,
-            "michelin_source": None,
-            "source_address_hidden": None,
-            "source_localized_address": None,
-            "source_google_map_url": None,
-            "nearest_stations": [],
-            "nearest_stations_text": None,
-            "lat": None,
-            "lng": None,
-            "coordinate_source": None,
-            "coordinate_confidence": "unknown",
-            "search_text": "",
-            "last_verified_at": datetime.now(UTC).isoformat(),
-            "map_pin_note": "Approximate location based on public geocoding unless replaced by stronger source matching.",
-            "city_color": CITY_COLORS.get(city, "slate"),
-        }
-        lunch_band_key, lunch_band_label, lunch_band_tier = classify_price_band(lunch_min, LUNCH_PRICE_BANDS)
-        dinner_band_key, dinner_band_label, dinner_band_tier = classify_price_band(
-            dinner_min, DINNER_PRICE_BANDS
-        )
-        record["price_lunch_band_key"] = lunch_band_key
-        record["price_lunch_band_label"] = lunch_band_label
-        record["price_lunch_band_tier"] = lunch_band_tier
-        record["price_dinner_band_key"] = dinner_band_key
-        record["price_dinner_band_label"] = dinner_band_label
-        record["price_dinner_band_tier"] = dinner_band_tier
-        derive_restaurant_enrichment(record)
-        record["search_text"] = build_search_text(record)
-        restaurants.append(record)
 
-    return restaurants
+def merge_record(existing: dict, incoming: dict) -> None:
+    for area_id in incoming["source_search_area_ids"]:
+        if area_id not in existing["source_search_area_ids"]:
+            existing["source_search_area_ids"].append(area_id)
+    for area_name in incoming["source_search_areas"]:
+        if area_name not in existing["source_search_areas"]:
+            existing["source_search_areas"].append(area_name)
 
 
 def geocode_query(query: str) -> dict | None:
@@ -547,11 +632,11 @@ def geocode_query(query: str) -> dict | None:
 
 def geocode_record(record: dict, cache: dict) -> None:
     queries = []
+    if record.get("source_localized_address"):
+        queries.append(record["source_localized_address"] + ", Japan")
     if record.get("district"):
         queries.append(f"{record['name']}, {record['district']}, {record['city']}, Japan")
     queries.append(f"{record['name']}, {record['city']}, Japan")
-    if record.get("district"):
-        queries.append(f"{record['district']}, {record['city']}, Japan")
 
     for index, query in enumerate(queries):
         if query in cache:
@@ -567,9 +652,108 @@ def geocode_record(record: dict, cache: dict) -> None:
 
         record["lat"] = float(result["lat"])
         record["lng"] = float(result["lon"])
-        record["coordinate_source"] = "nominatim_name_query" if index < 2 else "nominatim_area_fallback"
+        record["coordinate_source"] = "nominatim_address_query" if index == 0 else "nominatim_name_query"
         record["coordinate_confidence"] = "approximate"
         return
+
+
+def enrich_from_source(record: dict, cache: dict) -> None:
+    venue_id = record["id"].replace("pocket-", "", 1)
+    if venue_id in cache:
+        venue = cache[venue_id]
+    else:
+        venue = venue_detail_query(venue_id)
+        cache[venue_id] = venue
+        save_json(DETAIL_CACHE_PATH, cache)
+        time.sleep(0.15)
+
+    if not venue:
+        derive_restaurant_enrichment(
+            record,
+            " ".join(part for part in [record.get("summary_official"), " ".join(record.get("cuisines", []))] if part),
+        )
+        return
+
+    localized_address = compact_space(venue.get("localizedAddress"))
+    record["source_address_hidden"] = bool(venue.get("addressHidden"))
+    record["source_google_map_url"] = normalize_google_map_url(
+        venue.get("googleMapUrl"),
+        record.get("name"),
+        localized_address,
+        record.get("prefecture"),
+        "Japan",
+    )
+    record["nearest_stations"] = venue.get("nearestStations") or []
+    record["nearest_stations_text"] = " ".join(record["nearest_stations"]) or None
+    record["website_url"] = venue.get("websiteUrl")
+    record["phone_number"] = venue.get("phoneNumber")
+    record["recommendation_count"] = len(venue.get("recommendations") or [])
+    record["course_count"] = len(venue.get("courses") or [])
+    record["service_tags"] = list(venue.get("services") or [])
+    record["english_menu"] = any(
+        token in {"english-menu", "english-speaking-staff"} for token in record["service_tags"]
+    )
+    record["child_policy_raw"] = extract_child_policy_excerpt(venue.get("reservationTerms"))
+    record["child_policy_norm"] = normalize_child_policy(record["child_policy_raw"], record["service_tags"])
+
+    if localized_address and not record["source_address_hidden"]:
+        record["source_localized_address"] = localized_address
+
+    record["city"] = infer_city(
+        localized_address,
+        record.get("prefecture"),
+        record.get("region"),
+        record.get("source_search_town"),
+    )
+    record["district"] = infer_district(
+        record.get("source_search_town"),
+        record.get("region"),
+        record["city"],
+    )
+    record["city_color"] = CITY_COLORS.get(record["city"], "slate")
+
+    lat = venue.get("latitude")
+    lng = venue.get("longitude")
+    if lat is None or lng is None:
+        lat, lng = parse_google_map_coordinates(venue.get("googleMapUrl"))
+        if lat is not None and lng is not None:
+            record["lat"] = lat
+            record["lng"] = lng
+            record["coordinate_source"] = "pocket_concierge_google_map_url"
+            record["coordinate_confidence"] = "source"
+            record["map_pin_note"] = "Source venue coordinates from Pocket Concierge public map data."
+    else:
+        record["lat"] = float(lat)
+        record["lng"] = float(lng)
+        record["coordinate_source"] = "pocket_concierge_graphql"
+        record["coordinate_confidence"] = "source"
+        record["map_pin_note"] = "Source venue coordinates from Pocket Concierge."
+
+    course_text = " ".join(
+        compact_space(
+            " ".join(
+                part
+                for part in [
+                    course.get("name"),
+                    course.get("summary"),
+                    course.get("supplementaryInformation"),
+                ]
+                if part
+            )
+        )
+        for course in venue.get("courses") or []
+    )
+    source_text = " ".join(
+        part
+        for part in [
+            record.get("summary_official"),
+            compact_space(venue.get("longDescription")),
+            course_text,
+            " ".join(record.get("cuisines", [])),
+        ]
+        if part
+    )
+    derive_restaurant_enrichment(record, source_text)
 
 
 def to_geojson(records: list[dict]) -> dict:
@@ -596,7 +780,9 @@ def to_geojson(records: list[dict]) -> dict:
 def kml_description(record: dict) -> str:
     lines = [
         f"<strong>{html.escape(record['name'])}</strong>",
-        html.escape(f"{record['city']} / {record.get('district') or record['area_title']}"),
+        html.escape(
+            f"{record['city']} / {record.get('district') or record.get('region') or record.get('prefecture')}"
+        ),
     ]
     if record.get("source_localized_address"):
         lines.append(html.escape("Address: " + record["source_localized_address"]))
@@ -614,17 +800,6 @@ def kml_description(record: dict) -> str:
         )
         if dinner_band:
             lines.append(html.escape("Dinner range: " + dinner_band))
-        lines.append(
-            html.escape(
-                "Dinner: JPY "
-                f"{record['price_dinner_min_jpy']:,}"
-                + (
-                    f" - {record['price_dinner_max_jpy']:,}"
-                    if record.get("price_dinner_max_jpy")
-                    else ""
-                )
-            )
-        )
     if record.get("price_lunch_min_jpy"):
         lunch_band = " ".join(
             part
@@ -633,17 +808,6 @@ def kml_description(record: dict) -> str:
         )
         if lunch_band:
             lines.append(html.escape("Lunch range: " + lunch_band))
-        lines.append(
-            html.escape(
-                "Lunch: JPY "
-                f"{record['price_lunch_min_jpy']:,}"
-                + (
-                    f" - {record['price_lunch_max_jpy']:,}"
-                    if record.get("price_lunch_max_jpy")
-                    else ""
-                )
-            )
-        )
     if record.get("child_policy_raw"):
         lines.append(html.escape("Child policy: " + record["child_policy_raw"]))
     if record.get("summary_official"):
@@ -709,31 +873,43 @@ def main() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     geocode_cache = load_json(CACHE_PATH, {})
     detail_cache = load_json(DETAIL_CACHE_PATH, {})
+    quality_signals = load_json(QUALITY_SIGNALS_PATH, {})
 
-    records: list[dict] = []
-    for area in AREA_SEEDS:
-        records.extend(parse_area_page(area))
+    areas = select_target_areas(fetch_search_properties())
+    deduped: dict[str, dict] = {}
 
-    deduped = {}
-    for record in records:
-        deduped[record["id"]] = record
+    for area in areas:
+        search_results = iter_area_venues(area)
+        print(f"Fetched {len(search_results)} search hits from area {area['name']}.")
+        for venue in search_results:
+            record = build_record_from_search_result(venue, area["name"])
+            existing = deduped.get(record["id"])
+            if existing:
+                merge_record(existing, record)
+                continue
+            deduped[record["id"]] = record
+
     normalized = sorted(
         deduped.values(),
         key=lambda item: (item["city"], item.get("district") or "", item["name"]),
     )
 
-    for record in normalized:
+    for index, record in enumerate(normalized, start=1):
         enrich_from_source(record, detail_cache)
+        record["external_signals"] = merged_quality_signals(record["id"], quality_signals)
         if record.get("lat") is None or record.get("lng") is None:
             geocode_record(record, geocode_cache)
         record["search_text"] = build_search_text(record)
+        if index % 50 == 0:
+            print(f"Enriched {index}/{len(normalized)} venues...")
 
     save_json(JSON_PATH, normalized)
     save_json(GEOJSON_PATH, to_geojson(normalized))
     write_kml_outputs(normalized)
 
     mapped = sum(1 for record in normalized if record.get("lat") is not None)
-    print(f"Synced {len(normalized)} restaurants; mapped {mapped}.")
+    cities = sorted({record["city"] for record in normalized})
+    print(f"Synced {len(normalized)} restaurants; mapped {mapped}; cities {len(cities)}.")
 
 
 if __name__ == "__main__":
