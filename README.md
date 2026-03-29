@@ -112,6 +112,16 @@ Then open:
 http://localhost:8000/web/
 ```
 
+## Auto Refresh
+
+- GitHub Pages deploys automatically on every push to `main`.
+- A scheduled GitHub Action now refreshes the generated `data/` files daily at
+  `01:00 UTC` and pushes a commit only when the source data actually changes.
+- The scheduled run also supports manual triggering from the Actions tab.
+- Optional repository secrets:
+  - `GEOAPIFY_API_KEY`
+  - `TOMTOM_API_KEY`
+
 ## Current Build Status
 
 - Sprint 1:
