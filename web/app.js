@@ -393,6 +393,7 @@ const searchInput = document.getElementById("search-input");
 const cityFilter = document.getElementById("city-filter");
 const districtFilter = document.getElementById("district-filter");
 const cuisineFilter = document.getElementById("cuisine-filter");
+const tabelogFilter = document.getElementById("tabelog-filter");
 const lunchFilter = document.getElementById("lunch-filter");
 const dinnerFilter = document.getElementById("dinner-filter");
 const kidsFilter = document.getElementById("kids-filter");
@@ -841,6 +842,7 @@ function activeFilterCount() {
   if (!route.fixedCity && cityFilter.value) count += 1;
   if (districtFilter.value) count += 1;
   if (cuisineFilter.value) count += 1;
+  if (tabelogFilter.value) count += 1;
   if (lunchFilter.value) count += 1;
   if (dinnerFilter.value) count += 1;
   if (kidsFilter.value) count += 1;
@@ -1065,6 +1067,7 @@ function resetFilterControls() {
   searchInput.value = "";
   districtFilter.value = "";
   cuisineFilter.value = "";
+  tabelogFilter.value = "";
   lunchFilter.value = "";
   dinnerFilter.value = "";
   kidsFilter.value = "";
@@ -1137,6 +1140,7 @@ function filterRestaurants() {
   const city = route.fixedCity || cityFilter.value;
   const district = districtFilter.value;
   const cuisine = cuisineFilter.value;
+  const tabelog = tabelogFilter.value;
   const lunchBand = lunchFilter.value;
   const dinnerBand = dinnerFilter.value;
   const kids = kidsFilter.value;
@@ -1147,6 +1151,11 @@ function filterRestaurants() {
     if (city && record.city !== city) return false;
     if (district && (record.district || record.region || record.area_title) !== district) return false;
     if (cuisine && !(record.cuisines || []).includes(cuisine)) return false;
+    const tabelogSignal = qualitySignals(record).tabelog;
+    if (tabelog === "available" && !tabelogSignal) return false;
+    if (tabelog === "4plus" && !(tabelogSignal && Number(tabelogSignal.honest_stars) >= 4)) return false;
+    if (tabelog === "4_5plus" && !(tabelogSignal && Number(tabelogSignal.honest_stars) >= 4.5)) return false;
+    if (tabelog === "5" && !(tabelogSignal && Number(tabelogSignal.honest_stars) >= 5)) return false;
     if (lunchBand && record.price_lunch_band_key !== lunchBand) return false;
     if (dinnerBand && record.price_dinner_band_key !== dinnerBand) return false;
     if (kids === "older_kids_only" && !["older_children_only", "teens_only"].includes(record.child_policy_norm)) {
@@ -2159,6 +2168,7 @@ cityFilter.addEventListener("change", () => {
 [
   districtFilter,
   cuisineFilter,
+  tabelogFilter,
   lunchFilter,
   dinnerFilter,
   kidsFilter,
