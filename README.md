@@ -1,4 +1,6 @@
-# Amex Benefits Explorer
+# Charging the Charge Card
+
+The unofficial Amex experience guide for min-maxers.
 
 Map-first explorer for American Express benefits, with a live Japan dining
 dataset and a first live Plat Stay property explorer.

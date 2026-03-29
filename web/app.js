@@ -70,7 +70,7 @@ const ROUTES = {
     eyebrow: "Dining Abroad / World",
     title: "Dining Abroad",
     description:
-      "A fan-made overseas dining explorer for Amex min-maxers.",
+      "The unofficial Amex experience guide for overseas dining min-maxers.",
     note:
       "Start broad, then narrow into Japan and city routes.",
     mapSummary:
@@ -593,6 +593,19 @@ function googleMapsSearchUrl(parts) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
+function tabelogSearchUrl(record) {
+  if (!record || record.country !== "Japan" || !record.name) {
+    return null;
+  }
+
+  const queryParts = [record.name, record.city, record.prefecture].filter(Boolean);
+  if (!queryParts.length) {
+    return null;
+  }
+
+  return `https://tabelog.com/en/rstLst/?sk=${encodeURIComponent(queryParts.join(" "))}`;
+}
+
 function diningGoogleMapsUrl(record) {
   const fallback = googleMapsSearchUrl([
     record.name,
@@ -670,6 +683,11 @@ function createMarker(record) {
       ${
         diningGoogleMapsUrl(record)
           ? `<p><a href="${escapeHtml(diningGoogleMapsUrl(record))}" target="_blank" rel="noopener">Google Maps</a></p>`
+          : ""
+      }
+      ${
+        tabelogSearchUrl(record)
+          ? `<p><a href="${escapeHtml(tabelogSearchUrl(record))}" target="_blank" rel="noopener">Search Tabelog</a></p>`
           : ""
       }
       ${
@@ -1240,6 +1258,11 @@ function renderFocusCard() {
           : ""
       }
       ${
+        tabelogSearchUrl(record)
+          ? `<a class="inline-link" href="${escapeHtml(tabelogSearchUrl(record))}" target="_blank" rel="noopener">Search Tabelog</a>`
+          : ""
+      }
+      ${
         record.source_url
           ? `<a class="inline-link" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Open Pocket Concierge</a>`
           : ""
@@ -1378,6 +1401,11 @@ function renderMobileCards() {
         ${
           diningGoogleMapsUrl(record)
             ? `<a class="inline-link" href="${escapeHtml(diningGoogleMapsUrl(record))}" target="_blank" rel="noopener">Google Maps</a>`
+            : ""
+        }
+        ${
+          tabelogSearchUrl(record)
+            ? `<a class="inline-link" href="${escapeHtml(tabelogSearchUrl(record))}" target="_blank" rel="noopener">Search Tabelog</a>`
             : ""
         }
       </div>
@@ -2013,7 +2041,7 @@ function applyRoute(routeId) {
   const route = currentRoute();
   const program = currentProgram();
 
-  document.title = `${route.title} | Amex Benefits Explorer`;
+  document.title = `${route.title} | Charging the Charge Card`;
   renderJourneyShell(route);
   renderProgramShell(program, route);
   renderProgramBrief(route);
