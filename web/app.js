@@ -429,6 +429,11 @@ const staysMobileSummary = document.getElementById("stays-mobile-summary");
 const staysResultsTableBody = document.getElementById("stays-results-table-body");
 const staysMobileResultsList = document.getElementById("stays-mobile-results-list");
 const stayPresetButtons = [...document.querySelectorAll("[data-stay-preset]")];
+const staysTableHeaderRow = staysTablePanel?.querySelector("thead tr");
+
+if (staysTableHeaderRow?.children[3]?.textContent.trim() === "Travel Match") {
+  staysTableHeaderRow.children[3].remove();
+}
 
 function escapeHtml(value) {
   return String(value)
@@ -1653,13 +1658,12 @@ function renderStayFocusCard() {
 function renderStayTable() {
   if (!state.stayFiltered.length) {
     staysResultsTableBody.innerHTML =
-      '<tr><td colspan="6" class="empty-table">No properties match the current filters and date check.</td></tr>';
+      '<tr><td colspan="5" class="empty-table">No properties match the current filters and date check.</td></tr>';
     return;
   }
 
   staysResultsTableBody.innerHTML = "";
   state.stayFiltered.forEach((record) => {
-    const status = stayAvailability(record);
     const row = document.createElement("tr");
     row.className = record.id === state.stayActiveId ? "active" : "";
     row.addEventListener("click", () => {
@@ -1673,10 +1677,6 @@ function renderStayTable() {
         <div class="table-sub">${escapeHtml(record.city || record.address)}</div>
       </td>
       <td>${escapeHtml(record.eligible_room_type || "Unknown")}</td>
-      <td>
-        <div class="price-tier">${escapeHtml(status.label)}</div>
-        <div class="table-sub">${escapeHtml(status.detail)}</div>
-      </td>
       <td>${escapeHtml(record.blackout_raw || "Subject to availability")}</td>
       <td>${escapeHtml(record.reservation_raw || "See official source")}</td>
     `;
