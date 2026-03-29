@@ -3,7 +3,7 @@ const STAYS_DATA_URL = "../data/plat-stays.json";
 const STAYS_META_URL = "../data/plat-stay-source.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
-const INTRO_STORAGE_KEY = "amex-benefits-intro-v1";
+const INTRO_STORAGE_KEY = "amex-benefits-intro-v2";
 
 const LUNCH_BANDS = [
   { key: "under-5k", label: "Under JPY 5k", tier: "$" },
@@ -25,7 +25,7 @@ const PROGRAMS = {
     label: "Dining Abroad",
     title: "Dining Abroad",
     description:
-      "Overseas dining planning, with Japan as the deepest live market right now.",
+      "Overseas dining worth a look, with Japan as the deepest live market right now.",
     defaultRoute: "dining/world",
   },
   stays: {
@@ -33,7 +33,7 @@ const PROGRAMS = {
     label: "Plat Stay",
     title: "Plat Stay",
     description:
-      "Plat Stay mapping with date-aware blackout checks and source-backed hotel pins.",
+      "Hotels worth a look, with blackout notes and official booking links.",
     defaultRoute: "stays",
   },
   "love-dining": {
@@ -41,7 +41,7 @@ const PROGRAMS = {
     label: "Love Dining",
     title: "Love Dining",
     description:
-      "Singapore dining planning with outlet details and savings-rule context.",
+      "Singapore dining spots, benefit detail, and rule context.",
     defaultRoute: "love-dining",
   },
   "10xcelerator": {
@@ -49,7 +49,7 @@ const PROGRAMS = {
     label: "More Value",
     title: "More Value",
     description:
-      "Secondary benefit layer for bonus-spend and merchant perks.",
+      "Extra value ideas when they are actually worth surfacing.",
     defaultRoute: "10xcelerator",
   },
   alerts: {
@@ -57,7 +57,7 @@ const PROGRAMS = {
     label: "Alerts",
     title: "Alerts",
     description:
-      "Change-watch layer for list, terms, and blackout movement.",
+      "Change watch for list updates, terms, and blackout movement.",
     defaultRoute: "alerts",
   },
 };
@@ -70,9 +70,9 @@ const ROUTES = {
     eyebrow: "Dining Abroad / World",
     title: "Dining Abroad",
     description:
-      "The unofficial Amex experience guide for overseas dining min-maxers.",
+      "A fan-made Amex guide for planning travel benefits without digging through benefit pages first.",
     note:
-      "Start broad, then narrow into Japan and city routes.",
+      "Start broad, then narrow into the places you actually care about.",
     mapSummary:
       "World view for overseas dining. Japan is the deepest live market today.",
     matcher: () => true,
@@ -92,7 +92,7 @@ const ROUTES = {
     eyebrow: "Dining Abroad / Japan",
     title: "Japan Dining",
     description:
-      "Map-first dining explorer for the current Japan restaurant set, now across the full Pocket Concierge Japan area graph.",
+      "Japan-wide dining view, with the strongest live coverage in the current build.",
     note:
       "Japan is the strongest live market in the current build.",
     mapSummary:
@@ -114,7 +114,7 @@ const ROUTES = {
     eyebrow: "Dining Abroad / Tokyo",
     title: "Tokyo Dining",
     description:
-      "Focused route for Tokyo venues.",
+      "Focused Tokyo route for quick district-level browsing.",
     note:
       "Use this when you already know you want Tokyo.",
     mapSummary:
@@ -175,9 +175,9 @@ const ROUTES = {
     programId: "stays",
     label: "Overview",
     eyebrow: "Plat Stay / Live",
-    title: "Plat Stay Explorer",
+    title: "Stay Explorer",
     description:
-      "Date-aware stay planner for Platinum Stay properties.",
+      "Explore the Plat Stay hotel set, then jump to the official booking or contact page.",
     mapSummary:
       "World stay view for the current Plat Stay property set. Pins are geocoded from official property addresses and should still be verified before booking.",
     defaultView: [20, 10],
@@ -191,7 +191,7 @@ const ROUTES = {
     eyebrow: "Alerts / Change Watch",
     title: "Alerts And Change Watch",
     description:
-      "Track when the official benefit source changes, when the property list grows or shrinks, and when terms or blackout notes move enough to justify a nudge.",
+      "Track list changes, terms movement, and blackout note updates.",
     briefTitle: "Change Watch",
     getBriefSummary: () => buildAlertsSummary(),
     getBriefCards: () => buildAlertsCards(),
@@ -370,6 +370,7 @@ const programTitle = document.getElementById("program-title");
 const programDescription = document.getElementById("program-description");
 const journeyNav = document.getElementById("journey-nav");
 const journeyLinks = [...journeyNav.querySelectorAll("[data-journey]")];
+const programStrip = document.querySelector(".program-strip");
 const programNav = document.getElementById("program-nav");
 const programLinks = [...programNav.querySelectorAll("[data-program]")];
 const scopeStrip = document.getElementById("scope-strip");
@@ -760,6 +761,19 @@ function currentJourneyId(route = currentRoute()) {
   return null;
 }
 
+function visibleProgramIdsForJourney(journeyId) {
+  if (journeyId === "travel") {
+    return ["dining", "stays"];
+  }
+  if (journeyId === "singapore") {
+    return ["love-dining"];
+  }
+  if (journeyId === "alerts") {
+    return ["alerts"];
+  }
+  return ["dining", "stays", "love-dining"];
+}
+
 function formatTimestamp(value) {
   if (!value) return "Pending sync";
   const date = new Date(value);
@@ -914,8 +928,15 @@ function renderProgramShell(program, route) {
   programTitle.textContent = program.title;
   programDescription.textContent = program.description;
 
+  const visibleIds = visibleProgramIdsForJourney(currentJourneyId(route));
+  if (programStrip) {
+    programStrip.hidden = visibleIds.length <= 1;
+  }
+
   programLinks.forEach((link) => {
-    link.classList.toggle("active", link.dataset.program === program.id);
+    const visible = visibleIds.includes(link.dataset.program);
+    link.hidden = !visible;
+    link.classList.toggle("active", visible && link.dataset.program === program.id);
   });
 }
 

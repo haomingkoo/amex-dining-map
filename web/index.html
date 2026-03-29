@@ -23,33 +23,40 @@
   <body>
     <section class="intro-gate" id="intro-gate" hidden>
       <div class="intro-stage">
+        <div class="intro-halo intro-halo-gold" aria-hidden="true"></div>
+        <div class="intro-halo intro-halo-teal" aria-hidden="true"></div>
         <button class="intro-skip" id="intro-skip-top" type="button">
           Skip
         </button>
         <p class="eyebrow">Charging the Charge Card</p>
         <h2 class="intro-title">
-          Get more out of the card without reading five PDFs first.
+          Travel better. Dine better. Charge smarter.
         </h2>
         <p class="intro-copy">
-          The unofficial Amex experience guide for min-maxers: pick the benefit
-          lane, narrow the shortlist, then jump into the official source before
-          you book or pay.
+          A fan-made Amex guide for people who actually want to use the card
+          well, without digging through scattered benefit pages first.
         </p>
+        <div class="intro-pill-row" aria-label="What this app helps with">
+          <span class="intro-pill">Hotels</span>
+          <span class="intro-pill">Dining</span>
+          <span class="intro-pill">Alerts</span>
+          <span class="intro-pill">Official links</span>
+        </div>
         <div class="intro-steps">
           <article class="intro-step">
             <span class="intro-step-number">01</span>
-            <h3>Choose the job</h3>
-            <p>Travel, Singapore, wine, or alerts. Start with intent, not program names.</p>
+            <h3>Pick a lane</h3>
+            <p>Travel, Singapore, wine, or change tracking. Start with intent, not benefit jargon.</p>
           </article>
           <article class="intro-step">
             <span class="intro-step-number">02</span>
             <h3>Narrow fast</h3>
-            <p>Use a calmer filter drawer, focus on a shortlist, and keep the selected card visible.</p>
+            <p>Use the map, trim the shortlist, and keep one selected card in focus.</p>
           </article>
           <article class="intro-step">
             <span class="intro-step-number">03</span>
-            <h3>Verify before action</h3>
-            <p>Every route ends with the official booking or source page. Planning first, confirmation second.</p>
+            <h3>Jump official</h3>
+            <p>Every route ends on the official booking or source page before you actually book or pay.</p>
           </article>
         </div>
         <div class="intro-actions">
@@ -60,9 +67,9 @@
             class="ghost-btn secondary"
             id="intro-start-dining"
             type="button"
-            data-intro-route="#/dining/world"
+            data-intro-route="#/dining/japan"
           >
-            See Dining Abroad
+            See Japan dining
           </button>
           <button class="ghost-btn secondary" id="intro-skip-bottom" type="button">
             Skip intro
@@ -74,12 +81,17 @@
     <div class="page-shell">
       <header class="hero">
         <div class="hero-copy">
-          <p class="eyebrow" id="route-eyebrow">Dining Abroad / World</p>
+          <p class="eyebrow" id="route-eyebrow">Unofficial Amex guide</p>
           <h1>Charging the Charge Card</h1>
           <p class="lede" id="route-description">
-            The unofficial Amex experience guide for people trying to squeeze
-            more value out of the card.
+            Map the useful bits of the card, shortlist quickly, and jump to the
+            official source before you commit.
           </p>
+          <div class="hero-highlights" aria-label="Explorer highlights">
+            <span class="hero-chip">Travel planning</span>
+            <span class="hero-chip">Dining abroad</span>
+            <span class="hero-chip">Change alerts</span>
+          </div>
           <div class="hero-actions">
             <button class="ghost-btn secondary" id="replay-guide" type="button">
               Replay guide
@@ -88,36 +100,40 @@
         </div>
         <div class="hero-note">
           <div class="note-card">
-            <div class="note-title">Data Policy</div>
-            <p>
-              This explorer combines official Amex pages, PDFs, and partner
-              sources when available. Location confidence and benefit
-              eligibility can vary by program and market.
-            </p>
-            <p>
-              Use the app for planning, not final confirmation. Always verify
-              current eligibility, blackout dates, reservation rules, and venue
-              details on the official source before booking or payment.
-            </p>
+            <div class="note-title">Why use this</div>
+            <div class="note-list">
+              <div class="note-row">
+                <strong>Plan visually</strong>
+                <span>See hotels and restaurants on a map first, not buried in PDFs.</span>
+              </div>
+              <div class="note-row">
+                <strong>Get to the source fast</strong>
+                <span>Every useful card leads back to the official booking or reservation page.</span>
+              </div>
+              <div class="note-row">
+                <strong>Use it as a guide</strong>
+                <span>Fan-made planner first. Official confirmation always comes before payment.</span>
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
       <section class="journey-strip panel-surface compact-strip">
         <div class="strip-mini-copy">
-          <p class="eyebrow">Start Here</p>
+          <p class="eyebrow">Choose Your Lane</p>
           <p class="strip-hint">
-            Choose the job first. The app can stay simpler after that.
+            Start broad. Narrow down after you know the job to be done.
           </p>
         </div>
         <nav class="journey-nav" id="journey-nav" aria-label="Journey navigation">
           <a class="journey-link" href="#/stays" data-journey="travel">
             <strong>Travel</strong>
-            <span>Plat Stay + Dining Abroad</span>
+            <span>Hotels and overseas dining</span>
           </a>
           <a class="journey-link" href="#/love-dining" data-journey="singapore">
             <strong>Singapore</strong>
-            <span>Love Dining and local use cases</span>
+            <span>Local dining benefits</span>
           </a>
           <a
             class="journey-link"
@@ -126,23 +142,21 @@
             rel="noopener"
           >
             <strong>Wine</strong>
-            <span>Open the separate wine intelligence app</span>
+            <span>Open the wine app</span>
           </a>
           <a class="journey-link" href="#/alerts" data-journey="alerts">
             <strong>Alerts</strong>
-            <span>Track list, terms, and blackout changes</span>
+            <span>Track list and terms changes</span>
           </a>
         </nav>
       </section>
 
       <section class="program-strip panel-surface">
         <div class="route-copy">
-          <p class="eyebrow">Live Explorers</p>
+          <p class="eyebrow">Current Planner</p>
           <h2 id="program-title">Dining Abroad</h2>
           <p id="program-description">
-            Travel comes first here: Dining Abroad and Plat Stay are the
-            core live planning flows, while local and secondary benefit modules
-            sit around them.
+            Switch between the live planners in the current lane.
           </p>
         </div>
         <nav class="program-nav" id="program-nav" aria-label="Program navigation">
@@ -155,11 +169,10 @@
 
       <section class="route-strip panel-surface" id="scope-strip">
         <div class="route-copy">
-          <p class="eyebrow">Scope</p>
+          <p class="eyebrow">Zoom In</p>
           <h2 id="route-title">World</h2>
           <p id="scope-note">
-            Start from the world shell, then narrow into Japan and city routes.
-            Japan is the most complete live dining market today.
+            Start broad, then zoom into the places that are actually useful for this trip.
           </p>
         </div>
         <nav class="route-nav" id="scope-nav" aria-label="Route navigation">
