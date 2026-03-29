@@ -374,6 +374,7 @@ const programBrief = document.getElementById("program-brief");
 const programBriefTitle = document.getElementById("program-brief-title");
 const programBriefSummary = document.getElementById("program-brief-summary");
 const programBriefGrid = document.getElementById("program-brief-grid");
+const mapFilterShell = document.getElementById("map-filter-shell");
 const toolbar = document.getElementById("filter-toolbar");
 const toolbarToggle = document.getElementById("toolbar-toggle");
 const toolbarToggleMeta = document.getElementById("toolbar-toggle-meta");
@@ -390,10 +391,7 @@ const kidsFilter = document.getElementById("kids-filter");
 const menuFilter = document.getElementById("menu-filter");
 const reservationFilter = document.getElementById("reservation-filter");
 const resetFiltersButton = document.getElementById("reset-filters");
-const scopeCount = document.getElementById("scope-count");
-const showingCount = document.getElementById("showing-count");
-const mappedCount = document.getElementById("mapped-count");
-const cityCount = document.getElementById("city-count");
+const summaryStripText = document.getElementById("summary-strip-text");
 const downloadStack = document.getElementById("download-stack");
 const mapSummary = document.getElementById("map-summary");
 const resultsText = document.getElementById("results-text");
@@ -403,6 +401,7 @@ const mobileSummary = document.getElementById("mobile-summary");
 const resultsTableBody = document.getElementById("results-table-body");
 const mobileResultsList = document.getElementById("mobile-results-list");
 const staysExplorer = document.getElementById("stays-explorer");
+const staysMapFilterShell = document.getElementById("stays-map-filter-shell");
 const staysToolbar = document.getElementById("stays-filter-toolbar");
 const staysToolbarToggle = document.getElementById("stays-toolbar-toggle");
 const staysToolbarToggleMeta = document.getElementById("stays-toolbar-toggle-meta");
@@ -415,10 +414,7 @@ const staysCityFilter = document.getElementById("stays-city-filter");
 const staysCheckinInput = document.getElementById("stays-checkin-input");
 const staysCheckoutInput = document.getElementById("stays-checkout-input");
 const staysResetFiltersButton = document.getElementById("stays-reset-filters");
-const staysScopeCount = document.getElementById("stays-scope-count");
-const staysShowingCount = document.getElementById("stays-showing-count");
-const staysMappedCount = document.getElementById("stays-mapped-count");
-const staysCountryCount = document.getElementById("stays-country-count");
+const staysSummaryStripText = document.getElementById("stays-summary-strip-text");
 const staysDownloadsSection = document.getElementById("stays-downloads-section");
 const staysDownloadStack = document.getElementById("stays-download-stack");
 const staysMapSummary = document.getElementById("stays-map-summary");
@@ -429,11 +425,6 @@ const staysMobileSummary = document.getElementById("stays-mobile-summary");
 const staysResultsTableBody = document.getElementById("stays-results-table-body");
 const staysMobileResultsList = document.getElementById("stays-mobile-results-list");
 const stayPresetButtons = [...document.querySelectorAll("[data-stay-preset]")];
-const staysTableHeaderRow = staysTablePanel?.querySelector("thead tr");
-
-if (staysTableHeaderRow?.children[3]?.textContent.trim() === "Travel Match") {
-  staysTableHeaderRow.children[3].remove();
-}
 
 function escapeHtml(value) {
   return String(value)
@@ -978,17 +969,23 @@ function renderStats() {
   const route = currentRoute();
   const filteredMapped = state.filtered.filter((record) => record.lat != null && record.lng != null).length;
   const scopeCities = uniqueValues(state.scopeRecords.map((record) => record.city));
+  const filteredCities = uniqueValues(state.filtered.map((record) => record.city));
+  const filterCount = activeFilterCount();
 
-  scopeCount.textContent = state.scopeRecords.length;
-  showingCount.textContent = state.filtered.length;
-  mappedCount.textContent = filteredMapped;
-  cityCount.textContent = scopeCities.length;
+  summaryStripText.textContent =
+    filterCount > 0
+      ? `${state.filtered.length} of ${state.scopeRecords.length} venues shown across ${filteredCities.length} cities, ${
+          filteredMapped === state.filtered.length ? "all mapped" : `${filteredMapped} mapped`
+        }.`
+      : `${state.scopeRecords.length} venues across ${scopeCities.length} cities, ${
+          filteredMapped === state.scopeRecords.length ? "all mapped" : `${filteredMapped} mapped`
+        }.`;
 
-  const resultLine = `${state.filtered.length} result${state.filtered.length === 1 ? "" : "s"} in ${route.label}`;
-  resultsText.textContent = resultLine;
-  tableSummary.textContent = `Showing ${state.filtered.length} of ${state.scopeRecords.length} venues in the current route.`;
+  resultsText.textContent = `Selected venue from ${route.label}`;
+  tableSummary.textContent =
+    filterCount > 0 ? "Current filtered shortlist in table form." : "Current route list in table form.";
   mobileSummary.textContent = tableSummary.textContent;
-  mapSummary.textContent = `${route.mapSummary} ${filteredMapped} mapped pin${filteredMapped === 1 ? "" : "s"} in the current filtered view.`;
+  mapSummary.textContent = route.mapSummary;
   renderToolbarToggle();
   renderTableToggle();
 }
@@ -1551,20 +1548,32 @@ function filterStays() {
 
 function renderStayStats() {
   const mapped = state.stayFiltered.filter((record) => record.lat != null && record.lng != null).length;
-  const countries = uniqueValues(state.stays.map((record) => record.country));
+  const scopeCountries = uniqueValues(state.stays.map((record) => record.country));
+  const filteredCountries = uniqueValues(state.stayFiltered.map((record) => record.country));
   const selected = stayDateRange();
+  const filterCount = activeStayFilterCount();
 
-  staysScopeCount.textContent = state.stays.length;
-  staysShowingCount.textContent = state.stayFiltered.length;
-  staysMappedCount.textContent = mapped;
-  staysCountryCount.textContent = countries.length;
+  if (filterCount > 0) {
+    const filterSummary = selected
+      ? `${state.stayFiltered.length} of ${state.stays.length} properties remain after date and location filters, across ${filteredCountries.length} countries, ${
+          mapped === state.stayFiltered.length ? "all mapped" : `${mapped} mapped`
+        }.`
+      : `${state.stayFiltered.length} of ${state.stays.length} properties shown after filters, across ${filteredCountries.length} countries, ${
+          mapped === state.stayFiltered.length ? "all mapped" : `${mapped} mapped`
+        }.`;
+    staysSummaryStripText.textContent = filterSummary;
+  } else {
+    staysSummaryStripText.textContent = `${state.stays.length} properties across ${scopeCountries.length} countries, ${
+      mapped === state.stays.length ? "all mapped" : `${mapped} mapped`
+    }.`;
+  }
 
-  staysResultsText.textContent = `${state.stayFiltered.length} result${state.stayFiltered.length === 1 ? "" : "s"} in Plat Stay`;
+  staysResultsText.textContent = "Selected property from the current Plat Stay shortlist";
   staysTableSummary.textContent = selected
-    ? `Showing ${state.stayFiltered.length} remaining properties after removing ${state.stayBlockedCount} exact blackout conflicts.`
-    : `Showing ${state.stayFiltered.length} properties. Add travel dates to remove exact blackout conflicts.`;
+    ? "Current shortlist in table form. Exact blackout conflicts are already removed."
+    : "Current Plat Stay list in table form. Add travel dates to remove exact blackout conflicts.";
   staysMobileSummary.textContent = staysTableSummary.textContent;
-  staysMapSummary.textContent = `Plat Stay world view. ${mapped} mapped pin${mapped === 1 ? "" : "s"} in the current filtered view.`;
+  staysMapSummary.textContent = "Plat Stay world view. Use filters and dates to narrow the shortlist.";
   renderStayToolbarToggle();
   renderStayTableToggle();
 }
@@ -1944,6 +1953,25 @@ stayPresetButtons.forEach((button) => {
     staysCheckoutInput.value = "";
     filterStays();
   });
+});
+
+document.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof Node)) return;
+
+  if (state.mobileToolbarOpen && mapFilterShell && !mapFilterShell.contains(target)) {
+    setToolbarOpen(false);
+  }
+
+  if (state.stayToolbarOpen && staysMapFilterShell && !staysMapFilterShell.contains(target)) {
+    setStayToolbarOpen(false);
+  }
+});
+
+window.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  if (state.mobileToolbarOpen) setToolbarOpen(false);
+  if (state.stayToolbarOpen) setStayToolbarOpen(false);
 });
 
 window.addEventListener("hashchange", handleHashRoute);

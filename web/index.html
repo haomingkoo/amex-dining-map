@@ -132,23 +132,8 @@
       </section>
 
       <div id="data-explorer">
-        <section class="stats-row">
-          <div class="stat-card panel-surface">
-            <div class="stat-label">Scope Venues</div>
-            <div class="stat-value" id="scope-count">0</div>
-          </div>
-          <div class="stat-card panel-surface">
-            <div class="stat-label">Showing</div>
-            <div class="stat-value" id="showing-count">0</div>
-          </div>
-          <div class="stat-card panel-surface">
-            <div class="stat-label">Mapped</div>
-            <div class="stat-value" id="mapped-count">0</div>
-          </div>
-          <div class="stat-card panel-surface">
-            <div class="stat-label">Cities</div>
-            <div class="stat-value" id="city-count">0</div>
-          </div>
+        <section class="summary-strip panel-surface">
+          <p class="summary-strip-text" id="summary-strip-text">Loading...</p>
         </section>
 
         <section class="explorer-grid">
@@ -162,6 +147,103 @@
                 </p>
               </div>
             </div>
+            <section class="map-filter-shell" id="map-filter-shell">
+              <button
+                id="toolbar-toggle"
+                type="button"
+                class="toolbar-toggle panel-surface"
+                aria-expanded="false"
+                aria-controls="filter-toolbar"
+              >
+                <span>
+                  <span class="toolbar-toggle-title">Filters</span>
+                  <span class="toolbar-toggle-meta" id="toolbar-toggle-meta">
+                    All filters off
+                  </span>
+                </span>
+                <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
+              </button>
+
+              <section class="toolbar panel-surface" id="filter-toolbar">
+                <label class="search-wrap">
+                  <span class="label">Search</span>
+                  <input
+                    id="search-input"
+                    type="search"
+                    placeholder="Venue, district, cuisine, price range..."
+                  />
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">City</span>
+                  <select id="city-filter">
+                    <option value="">All cities</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">District</span>
+                  <select id="district-filter">
+                    <option value="">All districts</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Cuisine</span>
+                  <select id="cuisine-filter">
+                    <option value="">All cuisines</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Lunch Band</span>
+                  <select id="lunch-filter">
+                    <option value="">All lunch bands</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Dinner Band</span>
+                  <select id="dinner-filter">
+                    <option value="">All dinner bands</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Kids</span>
+                  <select id="kids-filter">
+                    <option value="">All</option>
+                    <option value="kid_friendly">Kid friendly</option>
+                    <option value="older_kids_only">Older kids only</option>
+                    <option value="policy_available">Child rules listed</option>
+                    <option value="unknown">No child policy listed</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">English Menu</span>
+                  <select id="menu-filter">
+                    <option value="">All</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Reservation</span>
+                  <select id="reservation-filter">
+                    <option value="">All</option>
+                  </select>
+                </label>
+
+                <div class="filter-actions">
+                  <span class="label">Reset</span>
+                  <button id="reset-filters" type="button" class="ghost-btn">
+                    Clear filters
+                  </button>
+                </div>
+              </section>
+            </section>
             <div id="map"></div>
             <div class="map-downloads">
               <div class="stat-label">KML Downloads</div>
@@ -178,104 +260,6 @@
             </div>
             <div class="focus-body" id="focus-card"></div>
           </aside>
-        </section>
-
-        <section class="filter-shell">
-          <button
-            id="toolbar-toggle"
-            type="button"
-            class="toolbar-toggle panel-surface"
-            aria-expanded="false"
-            aria-controls="filter-toolbar"
-          >
-            <span>
-              <span class="toolbar-toggle-title">Search and Filters</span>
-              <span class="toolbar-toggle-meta" id="toolbar-toggle-meta">
-                All filters off
-              </span>
-            </span>
-            <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
-          </button>
-
-          <section class="toolbar panel-surface" id="filter-toolbar">
-            <label class="search-wrap">
-              <span class="label">Search</span>
-              <input
-                id="search-input"
-                type="search"
-                placeholder="Venue, district, cuisine, price range..."
-              />
-            </label>
-
-            <label class="filter-wrap">
-              <span class="label">City</span>
-              <select id="city-filter">
-                <option value="">All cities</option>
-              </select>
-            </label>
-
-            <label class="filter-wrap">
-              <span class="label">District</span>
-              <select id="district-filter">
-                <option value="">All districts</option>
-              </select>
-            </label>
-
-            <label class="filter-wrap">
-              <span class="label">Cuisine</span>
-              <select id="cuisine-filter">
-                <option value="">All cuisines</option>
-              </select>
-            </label>
-
-            <label class="filter-wrap">
-              <span class="label">Lunch Band</span>
-              <select id="lunch-filter">
-                <option value="">All lunch bands</option>
-              </select>
-            </label>
-
-            <label class="filter-wrap">
-              <span class="label">Dinner Band</span>
-              <select id="dinner-filter">
-                <option value="">All dinner bands</option>
-              </select>
-            </label>
-
-            <label class="filter-wrap">
-              <span class="label">Kids</span>
-              <select id="kids-filter">
-                <option value="">All</option>
-                <option value="kid_friendly">Kid friendly</option>
-                <option value="older_kids_only">Older kids only</option>
-                <option value="policy_available">Child rules listed</option>
-                <option value="unknown">No child policy listed</option>
-              </select>
-            </label>
-
-            <label class="filter-wrap">
-              <span class="label">English Menu</span>
-              <select id="menu-filter">
-                <option value="">All</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
-            </label>
-
-            <label class="filter-wrap">
-              <span class="label">Reservation</span>
-              <select id="reservation-filter">
-                <option value="">All</option>
-              </select>
-            </label>
-
-            <div class="filter-actions">
-              <span class="label">Reset</span>
-              <button id="reset-filters" type="button" class="ghost-btn">
-                Clear filters
-              </button>
-            </div>
-          </section>
         </section>
 
         <section class="table-shell">
@@ -334,23 +318,8 @@
       </div>
 
       <div id="stays-explorer" hidden>
-        <section class="stats-row">
-          <div class="stat-card panel-surface">
-            <div class="stat-label">Scope Properties</div>
-            <div class="stat-value" id="stays-scope-count">0</div>
-          </div>
-          <div class="stat-card panel-surface">
-            <div class="stat-label">Showing</div>
-            <div class="stat-value" id="stays-showing-count">0</div>
-          </div>
-          <div class="stat-card panel-surface">
-            <div class="stat-label">Mapped</div>
-            <div class="stat-value" id="stays-mapped-count">0</div>
-          </div>
-          <div class="stat-card panel-surface">
-            <div class="stat-label">Countries</div>
-            <div class="stat-value" id="stays-country-count">0</div>
-          </div>
+        <section class="summary-strip panel-surface">
+          <p class="summary-strip-text" id="stays-summary-strip-text">Loading...</p>
         </section>
 
         <section class="explorer-grid">
@@ -364,6 +333,74 @@
                 </p>
               </div>
             </div>
+            <section class="map-filter-shell" id="stays-map-filter-shell">
+              <button
+                id="stays-toolbar-toggle"
+                type="button"
+                class="toolbar-toggle panel-surface"
+                aria-expanded="false"
+                aria-controls="stays-filter-toolbar"
+              >
+                <span>
+                  <span class="toolbar-toggle-title">Filters</span>
+                  <span class="toolbar-toggle-meta" id="stays-toolbar-toggle-meta">
+                    All filters off
+                  </span>
+                </span>
+                <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
+              </button>
+
+              <section class="toolbar panel-surface" id="stays-filter-toolbar">
+                <label class="search-wrap">
+                  <span class="label">Search</span>
+                  <input
+                    id="stays-search-input"
+                    type="search"
+                    placeholder="Property, city, country, room type..."
+                  />
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Country</span>
+                  <select id="stays-country-filter">
+                    <option value="">All countries</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">City</span>
+                  <select id="stays-city-filter">
+                    <option value="">All cities</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Check-in</span>
+                  <input id="stays-checkin-input" type="date" />
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Check-out</span>
+                  <input id="stays-checkout-input" type="date" />
+                </label>
+
+                <div class="preset-wrap">
+                  <span class="label">Dates</span>
+                  <div class="preset-row">
+                    <button type="button" class="ghost-btn secondary" data-stay-preset="clear-dates">
+                      Clear dates
+                    </button>
+                  </div>
+                </div>
+
+                <div class="filter-actions">
+                  <span class="label">Reset</span>
+                  <button id="stays-reset-filters" type="button" class="ghost-btn">
+                    Clear filters
+                  </button>
+                </div>
+              </section>
+            </section>
             <div id="stays-map"></div>
             <div class="map-downloads" id="stays-downloads-section" hidden>
               <div class="stat-label">KML Downloads</div>
@@ -380,75 +417,6 @@
             </div>
             <div class="focus-body" id="stays-focus-card"></div>
           </aside>
-        </section>
-
-        <section class="filter-shell">
-          <button
-            id="stays-toolbar-toggle"
-            type="button"
-            class="toolbar-toggle panel-surface"
-            aria-expanded="false"
-            aria-controls="stays-filter-toolbar"
-          >
-            <span>
-              <span class="toolbar-toggle-title">Search and Filters</span>
-              <span class="toolbar-toggle-meta" id="stays-toolbar-toggle-meta">
-                All filters off
-              </span>
-            </span>
-            <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
-          </button>
-
-          <section class="toolbar panel-surface" id="stays-filter-toolbar">
-            <label class="search-wrap">
-              <span class="label">Search</span>
-              <input
-                id="stays-search-input"
-                type="search"
-                placeholder="Property, city, country, room type..."
-              />
-            </label>
-
-            <label class="filter-wrap">
-              <span class="label">Country</span>
-              <select id="stays-country-filter">
-                <option value="">All countries</option>
-              </select>
-            </label>
-
-            <label class="filter-wrap">
-              <span class="label">City</span>
-              <select id="stays-city-filter">
-                <option value="">All cities</option>
-              </select>
-            </label>
-
-            <label class="filter-wrap">
-              <span class="label">Check-in</span>
-              <input id="stays-checkin-input" type="date" />
-            </label>
-
-            <label class="filter-wrap">
-              <span class="label">Check-out</span>
-              <input id="stays-checkout-input" type="date" />
-            </label>
-
-            <div class="preset-wrap">
-              <span class="label">Dates</span>
-              <div class="preset-row">
-                <button type="button" class="ghost-btn secondary" data-stay-preset="clear-dates">
-                  Clear dates
-                </button>
-              </div>
-            </div>
-
-            <div class="filter-actions">
-              <span class="label">Reset</span>
-              <button id="stays-reset-filters" type="button" class="ghost-btn">
-                Clear filters
-              </button>
-            </div>
-          </section>
         </section>
 
         <section class="table-shell">
@@ -482,7 +450,6 @@
                     <th>Property</th>
                     <th>Place</th>
                     <th>Eligible Room</th>
-                    <th>Travel Match</th>
                     <th>Blackout Notes</th>
                     <th>Reservation</th>
                   </tr>
