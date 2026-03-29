@@ -10,6 +10,7 @@ import time
 import urllib.parse
 import urllib.request
 from datetime import UTC, datetime
+from math import asin, cos, radians, sin, sqrt
 from pathlib import Path
 
 
@@ -409,6 +410,14 @@ def infer_city(
             city = titlecase_geo(part[:-4])
             if city:
                 return city
+        if lower.endswith("-machi") or lower.endswith("-cho"):
+            city = titlecase_geo(part.rsplit("-", 1)[0])
+            if city:
+                return city
+        if lower.endswith("-son") or lower.endswith("-mura"):
+            city = titlecase_geo(part.rsplit("-", 1)[0])
+            if city:
+                return city
         if lower.endswith("-ku"):
             if index + 1 < len(parts) and parts[index + 1].lower().endswith("-shi"):
                 city = titlecase_geo(parts[index + 1][:-4])
@@ -422,7 +431,7 @@ def infer_city(
         if choice.lower() in address_text:
             return choice
 
-    if area_name in {"Tokyo", "Greater Tokyo Area"}:
+    if area_name in {"Tokyo", "Greater Tokyo Area"} and not prefecture:
         return "Tokyo"
     if prefecture:
         return titlecase_geo(prefecture) or "Japan"
@@ -633,6 +642,57 @@ def geocode_query(query: str) -> dict | None:
     return payload[0] if payload else None
 
 
+def official_site_map_coordinates(website_url: str | None, cache: dict) -> dict | None:
+    if not website_url:
+        return None
+    if not re.match(r"^https?://", website_url):
+        return None
+
+    cache_key = f"website::{website_url}"
+    if cache_key in cache:
+        return cache[cache_key]
+
+    request = urllib.request.Request(
+        website_url,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            body = response.read().decode("utf-8", errors="ignore")
+    except Exception:
+        cache[cache_key] = None
+        save_json(CACHE_PATH, cache)
+        return None
+
+    match = re.search(r"latitude:\s*([0-9.]+)\s*,\s*longitude:\s*([0-9.]+)", body)
+    if not match:
+        match = re.search(r"maps\\?q=([0-9.]+)%2C([0-9.]+)", body)
+    if not match:
+        cache[cache_key] = None
+        save_json(CACHE_PATH, cache)
+        return None
+
+    result = {
+        "lat": float(match.group(1)),
+        "lon": float(match.group(2)),
+        "provider": "official_website",
+    }
+    cache[cache_key] = result
+    save_json(CACHE_PATH, cache)
+    return result
+
+
+def distance_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    radius = 6371.0
+    d_lat = radians(lat2 - lat1)
+    d_lng = radians(lng2 - lng1)
+    a = sin(d_lat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(d_lng / 2) ** 2
+    return 2 * radius * asin(sqrt(a))
+
+
 def geocode_record(record: dict, cache: dict) -> None:
     queries = []
     if record.get("source_localized_address"):
@@ -660,7 +720,62 @@ def geocode_record(record: dict, cache: dict) -> None:
         return
 
 
-def enrich_from_source(record: dict, cache: dict) -> None:
+def validate_source_coordinates(record: dict, cache: dict) -> None:
+    if (
+        record.get("lat") is None
+        or record.get("lng") is None
+        or not record.get("source_localized_address")
+        or record.get("coordinate_confidence") != "source"
+    ):
+        return
+
+    query = f"{record['source_localized_address']}, Japan"
+    if query in cache:
+        result = cache[query]
+    else:
+        result = geocode_query(query)
+        cache[query] = result
+        save_json(CACHE_PATH, cache)
+        time.sleep(1.1)
+
+    if not result:
+        website_result = official_site_map_coordinates(record.get("website_url"), cache)
+        if not website_result:
+            return
+
+        validated_lat = float(website_result["lat"])
+        validated_lng = float(website_result["lon"])
+        drift_km = distance_km(float(record["lat"]), float(record["lng"]), validated_lat, validated_lng)
+        if drift_km <= 25:
+            return
+
+        record["lat"] = validated_lat
+        record["lng"] = validated_lng
+        record["coordinate_source"] = "official_website_map"
+        record["coordinate_confidence"] = "address_validated"
+        record["map_pin_note"] = (
+            "Pocket Concierge source coordinates drifted from the official restaurant website map, "
+            "so the pin was corrected to the venue's own published location."
+        )
+        return
+
+    validated_lat = float(result["lat"])
+    validated_lng = float(result["lon"])
+    drift_km = distance_km(float(record["lat"]), float(record["lng"]), validated_lat, validated_lng)
+    if drift_km <= 25:
+        return
+
+    record["lat"] = validated_lat
+    record["lng"] = validated_lng
+    record["coordinate_source"] = "nominatim_address_validation"
+    record["coordinate_confidence"] = "address_validated"
+    record["map_pin_note"] = (
+        "Pocket Concierge source coordinates drifted from the geocoded street address, "
+        "so the pin was corrected to the full address."
+    )
+
+
+def enrich_from_source(record: dict, cache: dict, geocode_cache: dict) -> None:
     venue_id = record["id"].replace("pocket-", "", 1)
     if venue_id in cache:
         venue = cache[venue_id]
@@ -731,6 +846,8 @@ def enrich_from_source(record: dict, cache: dict) -> None:
         record["coordinate_source"] = "pocket_concierge_graphql"
         record["coordinate_confidence"] = "source"
         record["map_pin_note"] = "Source venue coordinates from Pocket Concierge."
+
+    validate_source_coordinates(record, geocode_cache)
 
     course_text = " ".join(
         compact_space(
@@ -898,7 +1015,7 @@ def main() -> None:
     )
 
     for index, record in enumerate(normalized, start=1):
-        enrich_from_source(record, detail_cache)
+        enrich_from_source(record, detail_cache, geocode_cache)
         record["external_signals"] = merged_quality_signals(record["id"], quality_signals)
         if record.get("lat") is None or record.get("lng") is None:
             geocode_record(record, geocode_cache)
