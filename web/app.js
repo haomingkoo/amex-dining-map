@@ -1251,11 +1251,31 @@ function stayGoogleMapsUrl(record) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
+function stayReservationPrimaryLabel(record) {
+  if (record.reservation_mode === "booking_link_prompt" && record.reservation_raw) {
+    return record.reservation_raw;
+  }
+  return record.reservation_primary_label || null;
+}
+
+function stayReservationSummaryHtml(record) {
+  const fallback = escapeHtml(record.reservation_raw || "See official source");
+  if (
+    record.reservation_mode === "booking_link_prompt" &&
+    record.reservation_primary_url &&
+    record.reservation_raw
+  ) {
+    return `<a class="inline-link" href="${escapeHtml(record.reservation_primary_url)}" target="_blank" rel="noopener">${escapeHtml(record.reservation_raw)}</a>`;
+  }
+  return fallback;
+}
+
 function stayReservationActions(record) {
   const links = [];
-  if (record.reservation_primary_url && record.reservation_primary_label) {
+  const primaryLabel = stayReservationPrimaryLabel(record);
+  if (record.reservation_primary_url && primaryLabel) {
     links.push(
-      `<a class="inline-link" href="${escapeHtml(record.reservation_primary_url)}" target="_blank" rel="noopener">${escapeHtml(record.reservation_primary_label)}</a>`
+      `<a class="inline-link" href="${escapeHtml(record.reservation_primary_url)}" target="_blank" rel="noopener">${escapeHtml(primaryLabel)}</a>`
     );
   }
   if (record.reservation_secondary_url && record.reservation_secondary_label) {
@@ -1605,7 +1625,7 @@ function renderStayFocusCard() {
       <div class="price-card">
         <span class="price-label">Reservation</span>
         <div class="price-tier">${escapeHtml(stayReservationModeLabel(record.reservation_mode))}</div>
-        <div class="price-raw">${escapeHtml(record.reservation_raw || "See official source")}</div>
+        <div class="price-raw">${stayReservationSummaryHtml(record)}</div>
       </div>
     </div>
     ${summary ? `<p class="focus-summary">${escapeHtml(summary)}</p>` : ""}
