@@ -438,6 +438,19 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
+function tagSection(title, tags, tone = "") {
+  if (!tags || !tags.length) return "";
+  const badges = tags
+    .map((tag) => `<span class="badge ${tone}">${escapeHtml(tag)}</span>`)
+    .join("");
+  return `
+    <div class="tag-section">
+      <div class="tag-section-label">${escapeHtml(title)}</div>
+      <div class="venue-tags">${badges}</div>
+    </div>
+  `;
+}
+
 function uniqueValues(values) {
   return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
 }
@@ -1028,6 +1041,8 @@ function renderFocusCard() {
         : ""
     }
     <div class="focus-tags">${tags}</div>
+    ${tagSection("Known for", record.known_for_tags, "gold")}
+    ${tagSection("Specialties", record.signature_dish_tags, "blue")}
     <p class="focus-summary">${escapeHtml(record.summary_official || "No official summary available.")}</p>
     <div class="price-grid">
       <div class="price-card">
@@ -1165,6 +1180,8 @@ function renderMobileCards() {
         <span class="badge">${escapeHtml(kidLabel(record.child_policy_norm))}</span>
         ${record.english_menu ? '<span class="badge green">English menu</span>' : ""}
       </div>
+      ${tagSection("Known for", record.known_for_tags, "gold")}
+      ${tagSection("Specialties", record.signature_dish_tags, "blue")}
       <div class="mobile-price-grid">
         <div class="mobile-price-card">
           <span class="price-label">Dinner</span>

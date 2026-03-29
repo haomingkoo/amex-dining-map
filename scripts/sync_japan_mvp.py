@@ -115,6 +115,45 @@ DINNER_PRICE_BANDS = [
     ("30k-plus", "JPY 30k+", "$$$$$", 30_000, None),
 ]
 
+SIGNATURE_PATTERNS = [
+    (r"\bkobe beef\b", "Kobe beef"),
+    (r"\bnigiri sushi\b", "Nigiri sushi"),
+    (r"\bedomae-style sushi\b|\bedo-style sushi\b|\bosaka-style \"edomae\" sushi\b", "Edomae sushi"),
+    (r"\bsushi\b", "Sushi"),
+    (r"\btempura\b", "Tempura"),
+    (r"\bteppanyaki\b", "Teppanyaki"),
+    (r"\byakitori\b|\bgrilled fresh chicken\b", "Yakitori / grilled chicken"),
+    (r"\bbroth and rice\b", "Broth and rice"),
+    (r"\bsoups?\b", "Soup dishes"),
+    (r"\bsoba\b", "Soba"),
+    (r"\bkappo cuisine\b", "Kappo"),
+    (r"\bkaiseki cuisine\b|\btea ceremony-style kaiseki\b|\bkaiseki\b", "Kaiseki"),
+    (r"\bkyoto cuisine\b", "Kyoto cuisine"),
+    (r"\bbasque cuisine\b", "Basque cuisine"),
+    (r"\btraditional french cuisine\b|\bfrench cuisine\b|\bparis bistro\b", "French cuisine"),
+    (r"\bsteakhouse\b", "Steak"),
+]
+
+KNOWN_FOR_PATTERNS = [
+    (r"\b1-star\b", "1-star reputation"),
+    (r"\b2-star\b", "2-star reputation"),
+    (r"\b3-star\b", "3-star reputation"),
+    (r"\bworld gourmet guide awarded\b", "World gourmet guide"),
+    (r"\bhidden\b|\btucked away\b", "Hidden spot"),
+    (r"\bback streets of gion\b", "Back streets of Gion"),
+    (r"\bpanoramic views? of kyoto\b|\bevening view\b", "Notable views"),
+    (r"\boverlooking the famous garden\b", "Garden views"),
+    (r"\bspanish-style stone kiln oven\b", "Stone kiln cooking"),
+    (r"\btraditional cooking techniques\b", "Traditional technique"),
+    (r"\bfrench twist\b", "French twist"),
+    (r"\bjapanese terroir\b", "Japanese terroir"),
+    (r"\bcarefully selected dishes\b", "Chef-selected dishes"),
+    (r"\bfour seasons\b|\bseasonal\b", "Seasonal cooking"),
+    (r"\bnear kennin-ji temple\b", "Near Kennin-ji Temple"),
+    (r"\bnear yasaka shrine and kiyomizu-dera\b", "Near Yasaka Shrine / Kiyomizu-dera"),
+    (r"\bover 350 years\b|\b110-year-old\b|\bover 90 years\b|\bfor over 90 years\b", "Historic institution"),
+]
+
 
 def fetch_text(url: str) -> str:
     request = urllib.request.Request(
@@ -241,6 +280,8 @@ def build_search_text(record: dict) -> str:
         record.get("price_lunch_band_tier"),
         record.get("price_dinner_band_label"),
         record.get("price_dinner_band_tier"),
+        " ".join(record.get("known_for_tags", [])),
+        " ".join(record.get("signature_dish_tags", [])),
     ]
     return " ".join(field for field in fields if field).lower()
 
@@ -257,6 +298,40 @@ def classify_price_band(
         if lower <= value < upper:
             return key, label, tier
     return None, None, None
+
+
+def append_unique(values: list[str], item: str) -> None:
+    if item and item not in values:
+        values.append(item)
+
+
+def derive_restaurant_enrichment(record: dict) -> None:
+    summary = record.get("summary_official") or ""
+    summary_lower = summary.lower()
+    cuisine_text = " ".join(record.get("cuisines", []))
+    source_text = " ".join(part for part in [summary_lower, cuisine_text.lower()] if part)
+
+    known_for: list[str] = []
+    signature_dishes: list[str] = []
+
+    for pattern, label in KNOWN_FOR_PATTERNS:
+        if re.search(pattern, source_text):
+            append_unique(known_for, label)
+
+    for pattern, label in SIGNATURE_PATTERNS:
+        if re.search(pattern, source_text):
+            append_unique(signature_dishes, label)
+
+    if record.get("district") == "Gion":
+        append_unique(known_for, "Gion")
+
+    record["known_for_tags"] = known_for
+    record["signature_dish_tags"] = signature_dishes
+    record["restaurant_enrichment_source"] = (
+        "Pocket Concierge summary and venue metadata"
+        if known_for or signature_dishes
+        else None
+    )
 
 
 def source_venue_id(record: dict) -> str | None:
@@ -415,6 +490,9 @@ def parse_area_page(area: dict) -> list[dict]:
             "price_dinner_band_label": None,
             "price_dinner_band_tier": None,
             "summary_official": summary,
+            "known_for_tags": [],
+            "signature_dish_tags": [],
+            "restaurant_enrichment_source": None,
             "child_policy_raw": notice or child_icon,
             "child_icon_label": child_icon,
             "child_policy_norm": normalize_child_policy(notice, child_icon),
@@ -445,6 +523,7 @@ def parse_area_page(area: dict) -> list[dict]:
         record["price_dinner_band_key"] = dinner_band_key
         record["price_dinner_band_label"] = dinner_band_label
         record["price_dinner_band_tier"] = dinner_band_tier
+        derive_restaurant_enrichment(record)
         record["search_text"] = build_search_text(record)
         restaurants.append(record)
 
@@ -569,6 +648,10 @@ def kml_description(record: dict) -> str:
         lines.append(html.escape("Child policy: " + record["child_policy_raw"]))
     if record.get("summary_official"):
         lines.append(html.escape("Summary: " + record["summary_official"]))
+    if record.get("known_for_tags"):
+        lines.append(html.escape("Known for: " + ", ".join(record["known_for_tags"])))
+    if record.get("signature_dish_tags"):
+        lines.append(html.escape("Signature cues: " + ", ".join(record["signature_dish_tags"])))
     if record.get("source_url"):
         lines.append(
             f'<a href="{html.escape(record["source_url"], quote=True)}" target="_blank" rel="noopener">Pocket Concierge</a>'
