@@ -24,7 +24,7 @@ const PROGRAMS = {
     label: "Dining Abroad",
     title: "Dining Abroad",
     description:
-      "Overseas dining planner with a world-level shell and Japan as the flagship live market while broader country coverage is built out.",
+      "Fan-made overseas dining explorer for people trying to squeeze more value out of the card, with Japan as the deepest live market right now.",
     defaultRoute: "dining/world",
   },
   stays: {
@@ -69,7 +69,7 @@ const ROUTES = {
     eyebrow: "Dining Abroad / World",
     title: "Dining Abroad",
     description:
-      "Top-level overseas dining shell for planning across countries. Japan is the richest live market right now while broader market coverage is still being built and verified.",
+      "A fan-made overseas dining explorer for Amex min-maxers. Japan is the richest live market right now while broader market coverage is still being built and verified.",
     note:
       "Start here, then narrow into Japan and city routes. As more markets ship, this becomes the true global dining view instead of a Japan-heavy shell.",
     mapSummary:
