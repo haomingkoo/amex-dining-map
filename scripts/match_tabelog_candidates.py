@@ -527,6 +527,7 @@ def rank_candidates(record: dict, limit_per_query: int, pause_seconds: float) ->
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--offset", type=int, default=0, help="Skip the first N restaurants before matching")
     parser.add_argument("--limit", type=int, default=25, help="Process only the first N restaurants")
     parser.add_argument("--only-id", help="Process only a single restaurant id")
     parser.add_argument("--top", type=int, default=5, help="Keep top N candidates per query/record")
@@ -538,7 +539,7 @@ def main() -> None:
     if args.only_id:
         records = [record for record in records if record.get("id") == args.only_id]
     else:
-        records = records[: args.limit]
+        records = records[args.offset : args.offset + args.limit]
 
     payload = []
     for index, record in enumerate(records, start=1):

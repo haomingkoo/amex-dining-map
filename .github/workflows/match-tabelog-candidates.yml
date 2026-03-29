@@ -1,0 +1,56 @@
+name: Match Tabelog Candidates
+
+on:
+  workflow_dispatch:
+    inputs:
+      offset:
+        description: "Zero-based record offset"
+        required: true
+        default: "0"
+      limit:
+        description: "Number of restaurants to process"
+        required: true
+        default: "50"
+      top:
+        description: "Top candidates to keep per restaurant"
+        required: true
+        default: "5"
+      pause:
+        description: "Pause between requests in seconds"
+        required: true
+        default: "0.2"
+
+permissions:
+  contents: read
+
+jobs:
+  match:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run Tabelog matcher batch
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          mkdir -p artifacts
+          python3 scripts/match_tabelog_candidates.py \
+            --offset "${{ inputs.offset }}" \
+            --limit "${{ inputs.limit }}" \
+            --top "${{ inputs.top }}" \
+            --pause "${{ inputs.pause }}" \
+            --output "artifacts/tabelog-candidates-${{ inputs.offset }}-${{ inputs.limit }}.json"
+
+      - name: Upload matcher output
+        uses: actions/upload-artifact@v4
+        with:
+          name: tabelog-candidates-${{ inputs.offset }}-${{ inputs.limit }}
+          path: artifacts/
