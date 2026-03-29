@@ -104,6 +104,14 @@ TRANSPORT_RE = re.compile(
     r"<th>\s*Transportation\s*</th>\s*<td>\s*<p>\s*(?P<transport>.*?)\s*</p>",
     re.DOTALL | re.IGNORECASE,
 )
+ADDRESS_RE = re.compile(
+    r"<th>\s*Address\s*</th>\s*<td>\s*(?P<address>.*?)\s*</td>",
+    re.DOTALL | re.IGNORECASE,
+)
+PHONE_RE = re.compile(
+    r"<th>\s*Phone number.*?</th>\s*<td>\s*(?P<phone>.*?)\s*</td>",
+    re.DOTALL | re.IGNORECASE,
+)
 DIGIT_RE = re.compile(r"\d+")
 GENERIC_JP_KEYWORDS = {
     "すし",
@@ -118,6 +126,7 @@ GENERIC_JP_KEYWORDS = {
     "天ぷら",
     "うなぎ",
 }
+GENERIC_SUSHI_HINTS = ("sushi", "すし", "寿司", "鮨")
 
 
 def load_records() -> list[dict]:
@@ -132,6 +141,23 @@ def fetch(url: str) -> str:
 
 def strip_tags(value: str) -> str:
     return html.unescape(re.sub(r"<[^>]+>", " ", value or "")).strip()
+
+
+def clean_table_detail_text(value: str) -> str:
+    cleaned = strip_tags(value)
+    cleaned = re.sub(r"\bShow larger map\b", " ", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\bFind nearby restaurants\b", " ", cleaned, flags=re.IGNORECASE)
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def extract_station_hint(value: str) -> str:
+    cleaned = clean_table_detail_text(value)
+    cleaned = re.sub(r"(?i)^(?:a|an|about a|about|it is a|it is an)\s+\d+-minute\s+walk from\s+", "", cleaned)
+    cleaned = re.sub(r"(?i)^\d+-minute\s+walk from\s+", "", cleaned)
+    cleaned = re.sub(r"(?i)\s+on the\s+.+$", "", cleaned)
+    cleaned = re.sub(r"(?i)\s+on\s+.+$", "", cleaned)
+    cleaned = re.sub(r"\(.*?\)", "", cleaned)
+    return re.sub(r"\s+", " ", cleaned).strip()
 
 
 def normalize_ascii(value: str) -> str:
@@ -175,6 +201,15 @@ def important_tokens(value: str, ignore: set[str] | None = None) -> set[str]:
     return {token for token in tokenize(value) if token not in ignore and len(token) > 1}
 
 
+def looks_like_generic_sushi_counter(name: str) -> bool:
+    normalized = normalize_unicode(name)
+    return bool(normalized) and any(hint in normalized for hint in GENERIC_SUSHI_HINTS)
+
+
+def record_address_anchor(record: dict) -> str:
+    return (record.get("source_localized_address") or record.get("address") or "").strip()
+
+
 def fetch_native_metadata(record_id: str) -> dict:
     url = POCKET_JP_RESTAURANT_URL.format(id=record_id.split("-")[-1])
     html_text = fetch(url)
@@ -212,7 +247,11 @@ def fetch_native_metadata(record_id: str) -> dict:
 def fetch_detail_metadata(url: str) -> dict:
     html_text = fetch(english_candidate_url(url))
     transport_match = TRANSPORT_RE.search(html_text)
+    address_match = ADDRESS_RE.search(html_text)
+    phone_match = PHONE_RE.search(html_text)
     transportation = strip_tags(transport_match.group("transport")) if transport_match else ""
+    full_address_text = clean_table_detail_text(address_match.group("address")) if address_match else ""
+    visible_phone = clean_table_detail_text(phone_match.group("phone")) if phone_match else ""
     for match in LD_JSON_RE.finditer(html_text):
         try:
             payload = json.loads(match.group("json"))
@@ -223,12 +262,14 @@ def fetch_detail_metadata(url: str) -> dict:
         address = payload.get("address") or {}
         return {
             "name": payload.get("name") or "",
+            "street_address": address.get("streetAddress") or full_address_text,
+            "full_address_text": full_address_text,
             "address_locality": address.get("addressLocality") or "",
             "address_region": address.get("addressRegion") or "",
             "postal_code": address.get("postalCode") or "",
             "serves_cuisine": payload.get("servesCuisine") or "",
             "price_range": payload.get("priceRange") or "",
-            "telephone": payload.get("telephone") or "",
+            "telephone": payload.get("telephone") or visible_phone,
             "transportation": transportation,
             "rating_count": payload.get("aggregateRating", {}).get("ratingCount"),
             "rating_value": payload.get("aggregateRating", {}).get("ratingValue"),
@@ -250,24 +291,48 @@ def query_variants(record: dict) -> list[tuple[str, str]]:
     name = (record.get("name") or "").strip()
     city = (record.get("city") or "").strip()
     prefecture = (record.get("prefecture") or "").strip()
+    district = (record.get("district") or "").strip()
+    station_hint = extract_station_hint(record.get("nearest_stations_text") or "")
+    address_digits = normalize_digits(record_address_anchor(record))
     slug = PREFECTURE_SLUGS.get(prefecture)
     variants: list[tuple[str, str]] = []
+    seen: set[str] = set()
+
+    def add_variant(label: str, query_text: str, url: str) -> None:
+        query_norm = normalize_unicode(query_text) if JP_CHAR_RE.search(query_text) else normalize_ascii(query_text)
+        key = f"{label}:{query_norm}"
+        if not query_norm or key in seen:
+            return
+        seen.add(key)
+        variants.append((label, url))
+
     if slug and name:
-        variants.append((f"prefecture_name:{name}", f"https://tabelog.com/en/{slug}/rstLst/?sk={urllib.parse.quote(name)}"))
+        add_variant(f"prefecture_name:{name}", name, f"https://tabelog.com/en/{slug}/rstLst/?sk={urllib.parse.quote(name)}")
     if slug and name and city:
-        variants.append(
-            (
-                f"prefecture_name_city:{name} {city}",
-                f"https://tabelog.com/en/{slug}/rstLst/?sk={urllib.parse.quote(f'{name} {city}')}",
-            )
+        add_variant(
+            f"prefecture_name_city:{name} {city}",
+            f"{name} {city}",
+            f"https://tabelog.com/en/{slug}/rstLst/?sk={urllib.parse.quote(f'{name} {city}')}",
         )
     if name and city and prefecture:
-        variants.append(
-            (
-                f"global_name_city_prefecture:{name} {city} {prefecture}",
-                f"https://tabelog.com/en/rstLst/?sk={urllib.parse.quote(f'{name} {city} {prefecture}')}",
-            )
+        add_variant(
+            f"global_name_city_prefecture:{name} {city} {prefecture}",
+            f"{name} {city} {prefecture}",
+            f"https://tabelog.com/en/rstLst/?sk={urllib.parse.quote(f'{name} {city} {prefecture}')}",
         )
+    for location_term in [district, station_hint, address_digits]:
+        if slug and name and location_term:
+            add_variant(
+                f"prefecture_name_location:{name} {location_term}",
+                f"{name} {location_term}",
+                f"https://tabelog.com/en/{slug}/rstLst/?sk={urllib.parse.quote(f'{name} {location_term}')}",
+            )
+        if name and city and prefecture and location_term:
+            add_variant(
+                f"global_name_location:{name} {location_term}",
+                f"{name} {location_term} {prefecture}",
+                f"https://tabelog.com/en/rstLst/?sk={urllib.parse.quote(f'{name} {location_term} {prefecture}')}",
+            )
     return variants
 
 
@@ -363,21 +428,73 @@ def candidate_detail_score(record: dict, detail: dict) -> float:
     if not detail:
         return 0.0
     score = 0.0
+    detail_name = detail.get("name") or ""
     locality = normalize_ascii(detail.get("address_locality") or "")
     region = normalize_ascii(detail.get("address_region") or "")
+    street_address = detail.get("street_address") or ""
+    detail_address = " ".join(
+        part
+        for part in [
+            detail.get("postal_code") or "",
+            street_address,
+            detail.get("address_locality") or "",
+            detail.get("address_region") or "",
+        ]
+        if part
+    )
     city = normalize_ascii(record.get("city") or "")
     prefecture = normalize_ascii(record.get("prefecture") or "")
     district = normalize_ascii(record.get("district") or "")
+    record_address = record_address_anchor(record)
     if prefecture and prefecture in region:
         score += 2.0
+    elif prefecture and region:
+        score -= 1.25
     if city and city in locality:
         score += 2.5
+    elif city and locality:
+        score -= 1.25
     if district and district in locality:
         score += 2.5
+    elif district and locality:
+        score -= 0.5
+
+    native_aliases = [normalize_unicode(alias) for alias in (record.get("_native_aliases") or []) if alias]
+    detail_name_native = normalize_unicode(detail_name)
+    if detail_name_native and native_aliases:
+        if detail_name_native in native_aliases:
+            score += 5.0
+        elif any(detail_name_native in alias or alias in detail_name_native for alias in native_aliases):
+            score += 3.0
+        else:
+            score -= 1.0
+    if looks_like_generic_sushi_counter(detail_name) and (
+        city and city in locality and not (detail_name_native and native_aliases and any(
+            detail_name_native in alias or alias in detail_name_native for alias in native_aliases
+        ))
+    ):
+        score -= 3.0
+
     record_phone = normalize_digits(record.get("phone_number") or "")
     detail_phone = normalize_digits(detail.get("telephone") or "")
     if record_phone and detail_phone and record_phone == detail_phone:
         score += 4.0
+    elif record_phone and detail_phone:
+        score -= 2.0
+
+    record_address_digits = normalize_digits(record_address)
+    detail_address_digits = normalize_digits(detail_address)
+    if record_address_digits and detail_address_digits:
+        if record_address_digits == detail_address_digits:
+            score += 4.0
+        elif (
+            len(record_address_digits) >= 3
+            and (record_address_digits in detail_address_digits or detail_address_digits in record_address_digits)
+        ):
+            score += 3.0
+        else:
+            score -= 1.5
+
     station_score = overlap_score(record.get("nearest_stations_text") or "", detail.get("transportation") or "")
     score += station_score * 3
     record_price = (record.get("price_dinner_min_jpy"), record.get("price_dinner_max_jpy"))
@@ -388,7 +505,7 @@ def candidate_detail_score(record: dict, detail: dict) -> float:
         if record_min <= detail_max and detail_min <= record_max:
             score += 1.5
     score += overlap_score(" ".join(record.get("cuisine_types") or []), detail.get("serves_cuisine") or "") * 3
-    score += overlap_score(record.get("name") or "", detail.get("name") or "") * 4
+    score += overlap_score(record.get("name") or "", detail_name) * 4
     return round(score, 4)
 
 
@@ -409,9 +526,15 @@ def rank_candidates(record: dict, limit_per_query: int, pause_seconds: float) ->
 
     all_queries = query_variants(record)
     prefecture = (record.get("prefecture") or "").strip()
+    district = (record.get("district") or "").strip()
+    station_hint = extract_station_hint(record.get("nearest_stations_text") or "")
+    address_digits = normalize_digits(record_address_anchor(record))
     slug = PREFECTURE_SLUGS.get(prefecture)
     if slug and record.get("_native_title"):
         native_queries = [record["_native_title"], *record.get("_native_keywords", [])[:2]]
+        for location_term in [district, station_hint, address_digits]:
+            if location_term:
+                native_queries.append(location_term)
         seen_native_queries = set()
         for term in native_queries:
             term = (term or "").strip()
