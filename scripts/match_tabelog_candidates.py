@@ -470,7 +470,10 @@ def rank_candidates(record: dict, limit_per_query: int, pause_seconds: float) ->
             reverse=True,
         )
         for candidate in query_candidates[: max(limit_per_query, 5)]:
-            detail = fetch_detail_metadata(candidate["url"])
+            try:
+                detail = fetch_detail_metadata(candidate["url"])
+            except Exception as exc:
+                detail = {"fetch_error": str(exc)}
             candidate["detail"] = detail
             candidate["score"] = round(candidate["score"] + candidate_detail_score(record, detail), 4)
             if detail.get("url"):
@@ -541,12 +544,13 @@ def main() -> None:
     else:
         records = records[args.offset : args.offset + args.limit]
 
+    output_path = Path(args.output)
     payload = []
     for index, record in enumerate(records, start=1):
         payload.append(rank_candidates(record, limit_per_query=args.top, pause_seconds=args.pause))
+        output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
         print(f"Matched {index}/{len(records)}: {record.get('name')}")
 
-    output_path = Path(args.output)
     output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
     print(f"Wrote {len(payload)} records to {output_path}")
 
