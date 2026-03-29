@@ -44,6 +44,8 @@ body {
     linear-gradient(180deg, #09141e 0%, #071018 52%, #050c13 100%);
   color: var(--text);
   font: 15px/1.6 "Instrument Sans", "Segoe UI", sans-serif;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 body::before {
@@ -66,6 +68,37 @@ button,
 input,
 select {
   font: inherit;
+}
+
+button,
+select,
+input,
+.journey-link,
+.program-link,
+.route-link,
+.toolbar-toggle,
+.ghost-btn,
+.download-btn,
+.inline-link,
+#map,
+#stays-map,
+.leaflet-container {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.hero-copy,
+.note-card,
+.route-copy,
+.brief-card,
+.focus-body,
+.table-scroll th,
+.table-scroll td,
+.mobile-card,
+.empty-state,
+.empty-table {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .page-shell {
