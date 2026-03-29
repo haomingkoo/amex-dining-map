@@ -458,7 +458,7 @@ function tagSection(title, tags, tone = "") {
 
 function sourceConfidenceLabel(value) {
   const labels = {
-    manual_verified: "Manual match",
+    manual_verified: "Verified listing",
     verified_by_consensus: "Consensus match",
     high: "High confidence",
     medium: "Medium confidence",
@@ -609,6 +609,12 @@ function tabelogSearchUrl(record) {
 }
 
 function diningGoogleMapsUrl(record) {
+  const signals = qualitySignals(record);
+  const tabelogSignal = signals.tabelog;
+  if (record.country === "Japan" && tabelogSignal && tabelogSignal.google_query) {
+    return googleMapsSearchUrl([tabelogSignal.google_query]);
+  }
+
   const fallback = googleMapsSearchUrl([
     record.name,
     record.source_localized_address || record.district || record.city,

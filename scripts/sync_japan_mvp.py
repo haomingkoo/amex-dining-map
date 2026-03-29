@@ -233,6 +233,9 @@ def sanitize_signal(signal: dict | None) -> dict:
         "match_confidence",
         "last_checked_at",
         "notes",
+        "native_name",
+        "native_address",
+        "google_query",
     }
     return {key: signal[key] for key in allowed_keys if key in signal and signal[key] not in (None, "")}
 
