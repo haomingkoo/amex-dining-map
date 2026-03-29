@@ -1,5 +1,6 @@
 const DATA_URL = "../data/japan-restaurants.json";
 const STAYS_DATA_URL = "../data/plat-stays.json";
+const STAYS_META_URL = "../data/plat-stay-source.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
 
@@ -20,11 +21,11 @@ const DINNER_BANDS = [
 const PROGRAMS = {
   dining: {
     id: "dining",
-    label: "Dining",
-    title: "Dining",
+    label: "Dining Abroad",
+    title: "Dining Abroad",
     description:
-      "Map-first planning for Amex dining benefits, with Japan live now and broader country coverage added over time.",
-    defaultRoute: "dining/japan",
+      "Overseas dining planner with a world-level shell and Japan as the flagship live market while broader country coverage is built out.",
+    defaultRoute: "dining/world",
   },
   stays: {
     id: "stays",
@@ -44,11 +45,19 @@ const PROGRAMS = {
   },
   "10xcelerator": {
     id: "10xcelerator",
-    label: "10Xcelerator",
-    title: "10Xcelerator",
+    label: "More Value",
+    title: "More Value",
     description:
-      "Partner and points-earning planner for bonus categories and merchants, with outlet mapping only where location data can be verified.",
+      "Secondary benefit planner for bonus-spend and merchant perks, with outlet mapping only where the location data can be verified.",
     defaultRoute: "10xcelerator",
+  },
+  alerts: {
+    id: "alerts",
+    label: "Alerts",
+    title: "Alerts",
+    description:
+      "Change-watch layer for source updates, list growth or shrinkage, and later notification nudges when Plat Stay or dining terms move.",
+    defaultRoute: "alerts",
   },
 };
 
@@ -57,14 +66,14 @@ const ROUTES = {
     id: "dining/world",
     programId: "dining",
     label: "World",
-    eyebrow: "Dining / World Shell",
-    title: "World Dining Explorer",
+    eyebrow: "Dining Abroad / World",
+    title: "Dining Abroad",
     description:
-      "Top-level dining shell for planning across countries. Japan is live now while broader market coverage is still being built and verified.",
+      "Top-level overseas dining shell for planning across countries. Japan is the richest live market right now while broader market coverage is still being built and verified.",
     note:
-      "Start here, then narrow into Japan and city routes. As more markets ship, this becomes the true global dining overview.",
+      "Start here, then narrow into Japan and city routes. As more markets ship, this becomes the true global dining view instead of a Japan-heavy shell.",
     mapSummary:
-      "World dining shell. The current live pins are the Japan dataset while broader country ingestion is being built.",
+      "World dining shell. Japan drives the live map today, but this route is where broader overseas dining coverage should accumulate over time.",
     matcher: () => true,
     defaultView: [24.5, 132],
     defaultZoom: 3,
@@ -79,8 +88,8 @@ const ROUTES = {
     id: "dining/japan",
     programId: "dining",
     label: "Japan",
-    eyebrow: "Dining / Japan",
-    title: "Japan Dining Explorer",
+    eyebrow: "Dining Abroad / Japan",
+    title: "Japan Dining",
     description:
       "Map-first dining explorer for the current Japan restaurant set. Search by place, cuisine, price range, child policy, menu support, and reservation style.",
     note:
@@ -101,7 +110,7 @@ const ROUTES = {
     id: "dining/tokyo",
     programId: "dining",
     label: "Tokyo",
-    eyebrow: "Dining / Tokyo",
+    eyebrow: "Dining Abroad / Tokyo",
     title: "Tokyo Dining",
     description:
       "Focused route for Tokyo venues. Better when you already know the city and want to narrow by district, cuisine, price band, or family constraints.",
@@ -122,7 +131,7 @@ const ROUTES = {
     id: "dining/kyoto",
     programId: "dining",
     label: "Kyoto",
-    eyebrow: "Dining / Kyoto",
+    eyebrow: "Dining Abroad / Kyoto",
     title: "Kyoto Dining",
     description:
       "Focused Kyoto route for areas like Gion, Higashiyama, and Kodaiji or Kiyomizu. Useful when you want the map and table to stay calmer.",
@@ -143,7 +152,7 @@ const ROUTES = {
     id: "dining/osaka",
     programId: "dining",
     label: "Osaka",
-    eyebrow: "Dining / Osaka",
+    eyebrow: "Dining Abroad / Osaka",
     title: "Osaka Dining",
     description:
       "Focused Osaka route for a cleaner city-level browse. Filter by cuisine, price tier, or reservation style without the wider Japan noise.",
@@ -173,6 +182,18 @@ const ROUTES = {
     defaultView: [20, 10],
     defaultZoom: 2,
     downloads: [],
+  },
+  alerts: {
+    id: "alerts",
+    programId: "alerts",
+    label: "Overview",
+    eyebrow: "Alerts / Change Watch",
+    title: "Alerts And Change Watch",
+    description:
+      "Track when the official benefit source changes, when the property list grows or shrinks, and when terms or blackout notes move enough to justify a nudge.",
+    briefTitle: "Change Watch",
+    getBriefSummary: () => buildAlertsSummary(),
+    getBriefCards: () => buildAlertsCards(),
   },
   "love-dining": {
     id: "love-dining",
@@ -279,11 +300,12 @@ const ROUTES = {
 const state = {
   restaurants: [],
   stays: [],
+  staysSourceMeta: null,
   scopeRecords: [],
   filtered: [],
   markers: new Map(),
   activeId: null,
-  routeId: "dining/japan",
+  routeId: "dining/world",
   mobileToolbarOpen: false,
   tableOpen: false,
   stayScopeRecords: [],
@@ -339,6 +361,8 @@ const routeTitle = document.getElementById("route-title");
 const routeDescription = document.getElementById("route-description");
 const programTitle = document.getElementById("program-title");
 const programDescription = document.getElementById("program-description");
+const journeyNav = document.getElementById("journey-nav");
+const journeyLinks = [...journeyNav.querySelectorAll("[data-journey]")];
 const programNav = document.getElementById("program-nav");
 const programLinks = [...programNav.querySelectorAll("[data-program]")];
 const scopeStrip = document.getElementById("scope-strip");
@@ -549,7 +573,7 @@ function fillBandSelect(select, bands, presentKeys, placeholder) {
 }
 
 function currentRoute() {
-  return ROUTES[state.routeId] || ROUTES["dining/japan"];
+  return ROUTES[state.routeId] || ROUTES["dining/world"];
 }
 
 function currentProgram() {
@@ -566,6 +590,73 @@ function isStayRoute(route = currentRoute()) {
 
 function isLiveDataRoute(route = currentRoute()) {
   return isDiningRoute(route) || isStayRoute(route);
+}
+
+function currentJourneyId(route = currentRoute()) {
+  if (isDiningRoute(route) || isStayRoute(route)) return "travel";
+  if (route.programId === "love-dining") return "singapore";
+  if (route.programId === "alerts") return "alerts";
+  return null;
+}
+
+function formatTimestamp(value) {
+  if (!value) return "Pending sync";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("en-SG", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Singapore",
+  });
+}
+
+function buildAlertsSummary() {
+  const meta = state.staysSourceMeta;
+  if (!meta) {
+    return "Wire this panel to snapshot diffs, additions, removals, and blackout changes so users can see what moved before we add nudges.";
+  }
+
+  return `Latest Plat Stay source fetched ${formatTimestamp(meta.fetched_at)}. ${meta.record_count || state.stays.length} properties are in the current snapshot.`;
+}
+
+function buildAlertsCards() {
+  const meta = state.staysSourceMeta;
+  const countries = new Set(state.stays.map((record) => record.country).filter(Boolean));
+  return [
+    {
+      kicker: "Live now",
+      title: "Current Plat Stay snapshot",
+      body: meta
+        ? `${meta.record_count || state.stays.length} properties from ${meta.page_count || "?"} PDF pages. ${state.stays.length} records are available in-app across ${countries.size} countries.`
+        : "Plat Stay source metadata is not available yet, but the app is ready to surface it here once the sync writes it.",
+      links: meta
+        ? [
+            {
+              label: "Official Plat Stay PDF",
+              href: meta.resolved_url || meta.canonical_url || "https://go.amex/platstay",
+            },
+          ]
+        : [],
+    },
+    {
+      kicker: "Watch for",
+      title: "What should trigger an alert",
+      body:
+        "Property additions, removals, blackout-note changes, booking contact changes, and any source-file refresh that materially changes the list or rules.",
+    },
+    {
+      kicker: "Archive",
+      title: "Snapshot every sync",
+      body:
+        "Each sync should keep the current source hash and a structured copy of the records so we can compare adds, drops, and terms deltas without guessing.",
+    },
+    {
+      kicker: "Nudge later",
+      title: "Telegram or email",
+      body:
+        "Once the diff layer exists, the same alert summary can drive Telegram nudges, email digests, or a lightweight webhook without exposing noisy false alarms.",
+    },
+  ];
 }
 
 function activeFilterCount() {
@@ -629,9 +720,10 @@ function resolveRouteFromHash() {
     tokyo: "dining/tokyo",
     kyoto: "dining/kyoto",
     osaka: "dining/osaka",
-    dining: "dining/japan",
+    dining: "dining/world",
     "plat-stay": "stays",
     accelerator: "10xcelerator",
+    alerts: "alerts",
   };
 
   if (!hash) {
@@ -663,6 +755,13 @@ function renderProgramShell(program, route) {
 
   programLinks.forEach((link) => {
     link.classList.toggle("active", link.dataset.program === program.id);
+  });
+}
+
+function renderJourneyShell(route) {
+  const activeJourneyId = currentJourneyId(route);
+  journeyLinks.forEach((link) => {
+    link.classList.toggle("active", link.dataset.journey === activeJourneyId);
   });
 }
 
@@ -698,13 +797,20 @@ function renderProgramBrief(route) {
     return;
   }
 
+  const briefTitle =
+    typeof route.getBriefTitle === "function" ? route.getBriefTitle() : route.briefTitle;
+  const briefSummary =
+    typeof route.getBriefSummary === "function" ? route.getBriefSummary() : route.briefSummary;
+  const briefCards =
+    typeof route.getBriefCards === "function" ? route.getBriefCards() : route.briefCards;
+
   programBrief.hidden = false;
-  programBriefTitle.textContent = route.briefTitle || `${route.title} Buildout`;
+  programBriefTitle.textContent = briefTitle || `${route.title} Buildout`;
   programBriefSummary.textContent =
-    route.briefSummary || "This dataset is being prepared as the next phase of the explorer.";
+    briefSummary || "This dataset is being prepared as the next phase of the explorer.";
 
   programBriefGrid.innerHTML = "";
-  (route.briefCards || []).forEach((card) => {
+  (briefCards || []).forEach((card) => {
     const article = document.createElement("article");
     article.className = "brief-card";
     const links = (card.links || [])
@@ -1653,6 +1759,7 @@ function applyRoute(routeId) {
   const program = currentProgram();
 
   document.title = `${route.title} | Amex Benefits Explorer`;
+  renderJourneyShell(route);
   renderProgramShell(program, route);
   renderProgramBrief(route);
   renderScopeShell(route);
@@ -1709,7 +1816,11 @@ function handleHashRoute() {
 }
 
 async function init() {
-  const [restaurantResponse, staysResponse] = await Promise.all([fetch(DATA_URL), fetch(STAYS_DATA_URL)]);
+  const [restaurantResponse, staysResponse, staysMetaResponse] = await Promise.all([
+    fetch(DATA_URL),
+    fetch(STAYS_DATA_URL),
+    fetch(STAYS_META_URL).catch(() => null),
+  ]);
   state.restaurants = await restaurantResponse.json();
   state.restaurants.forEach((record) => {
     record.search_text = (record.search_text || "").toLowerCase();
@@ -1720,6 +1831,9 @@ async function init() {
       record.search_text = (record.search_text || "").toLowerCase();
     });
   }
+  if (staysMetaResponse && staysMetaResponse.ok) {
+    state.staysSourceMeta = await staysMetaResponse.json();
+  }
 
   setToolbarOpen(false);
   setTableOpen(false);
@@ -1727,7 +1841,7 @@ async function init() {
   setStayTableOpen(false);
   handleHashRoute();
   if (!window.location.hash) {
-    window.location.hash = "#/dining/japan";
+    window.location.hash = "#/dining/world";
   }
 }
 

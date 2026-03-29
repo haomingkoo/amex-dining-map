@@ -167,6 +167,7 @@ h3 {
   margin-top: 12px;
 }
 
+.journey-strip,
 .program-strip,
 .route-strip {
   display: grid;
@@ -186,11 +187,16 @@ h3 {
   margin: 0;
 }
 
+.journey-nav,
 .program-nav,
 .route-nav {
   display: grid;
   gap: 10px;
   align-self: center;
+}
+
+.journey-nav {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .program-nav {
@@ -201,6 +207,7 @@ h3 {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.journey-link,
 .program-link,
 .route-link {
   display: inline-flex;
@@ -221,6 +228,29 @@ h3 {
     color 0.18s ease;
 }
 
+.journey-link {
+  gap: 4px;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 92px;
+  border-radius: var(--radius-md);
+}
+
+.journey-link strong {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.journey-link span {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.journey-link:hover,
+.journey-link.active,
 .program-link:hover,
 .program-link.active,
 .route-link:hover,
@@ -229,6 +259,11 @@ h3 {
   border-color: var(--border-strong);
   background: linear-gradient(135deg, rgba(212, 171, 99, 0.16), rgba(95, 197, 178, 0.08));
   color: var(--text);
+}
+
+.journey-link.active {
+  border-color: rgba(95, 197, 178, 0.35);
+  background: linear-gradient(135deg, rgba(95, 197, 178, 0.16), rgba(142, 190, 255, 0.08));
 }
 
 .program-link.active {
@@ -809,6 +844,7 @@ tbody tr.active {
 }
 
 @media (max-width: 1260px) {
+  .journey-strip,
   .program-strip,
   .route-strip,
   .hero,
@@ -843,6 +879,7 @@ tbody tr.active {
     grid-template-columns: 1fr 1fr;
   }
 
+  .journey-nav,
   .program-nav,
   .route-nav {
     display: flex;
@@ -852,15 +889,21 @@ tbody tr.active {
     scrollbar-width: none;
   }
 
+  .journey-nav::-webkit-scrollbar,
   .program-nav::-webkit-scrollbar,
   .route-nav::-webkit-scrollbar {
     display: none;
   }
 
+  .journey-link,
   .program-link,
   .route-link {
     flex: 0 0 auto;
     min-width: 118px;
+  }
+
+  .journey-link {
+    min-width: 210px;
   }
 
   .toolbar {
