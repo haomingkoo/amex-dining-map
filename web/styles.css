@@ -1096,6 +1096,7 @@ h3 {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 16px;
+  align-items: center;
 }
 
 .preset-wrap {
@@ -1122,6 +1123,30 @@ h3 {
   color: var(--gold);
   text-decoration: none;
   font-weight: 700;
+}
+
+.inline-link.compact {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.inline-link.subtle {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+}
+
+.meta-link {
+  display: inline-flex;
+  margin-top: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.meta-link:hover {
+  color: var(--text);
 }
 
 .table-head {

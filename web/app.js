@@ -1498,9 +1498,22 @@ function stayReservationSummaryHtml(record) {
     record.reservation_primary_url &&
     record.reservation_raw
   ) {
-    return `<a class="inline-link" href="${escapeHtml(record.reservation_primary_url)}" target="_blank" rel="noopener">${escapeHtml(record.reservation_raw)}</a>`;
+    return `<a class="inline-link compact" href="${escapeHtml(record.reservation_primary_url)}" target="_blank" rel="noopener">${escapeHtml(record.reservation_raw)}</a>`;
   }
   return fallback;
+}
+
+function staySourceMetaLink(record) {
+  if (!record.source_url) return "";
+  if (record.reservation_primary_url && record.reservation_primary_url !== record.source_url) {
+    return `<a class="meta-link" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">View source details</a>`;
+  }
+  return "";
+}
+
+function stayOfficialSourceAction(record) {
+  if (!record.source_url || record.reservation_primary_url) return "";
+  return `<a class="inline-link subtle" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Official details</a>`;
 }
 
 function stayReservationActions(record) {
@@ -1777,11 +1790,7 @@ function createStayMarker(record) {
           ? `<div>Reservation: ${stayReservationSummaryHtml(record)}</div>`
           : ""
       }
-      ${
-        record.source_url
-          ? `<p><a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Official source</a></p>`
-          : ""
-      }
+      ${!record.reservation_primary_url && record.source_url ? `<p><a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Official details</a></p>` : ""}
     </div>
   `);
   marker.on("click", () => {
@@ -1913,14 +1922,14 @@ function renderStayFocusCard() {
         <span class="price-label">Reservation</span>
         <div class="price-tier">${escapeHtml(stayReservationModeLabel(record.reservation_mode))}</div>
         <div class="price-raw">${stayReservationSummaryHtml(record)}</div>
+        ${staySourceMetaLink(record)}
       </div>
     </div>
     ${summary ? `<p class="focus-summary">${escapeHtml(summary)}</p>` : ""}
     <div class="focus-note">${escapeHtml(record.map_pin_note)}</div>
     <div class="focus-actions">
       <a class="inline-link" href="${escapeHtml(stayGoogleMapsUrl(record))}" target="_blank" rel="noopener">Open in Google Maps</a>
-      <a class="inline-link" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Open official source</a>
-      ${stayReservationActions(record)}
+      ${stayOfficialSourceAction(record)}
       ${
         record.lat != null && record.lng != null
           ? `<button type="button" class="ghost-btn secondary" data-focus-stay-map="true">Center on map</button>`
