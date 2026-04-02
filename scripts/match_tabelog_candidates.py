@@ -2048,6 +2048,7 @@ def main() -> None:
     parser.add_argument("--offset", type=int, default=0, help="Skip the first N restaurants before matching")
     parser.add_argument("--limit", type=int, default=25, help="Process only the first N restaurants")
     parser.add_argument("--only-id", help="Process only a single restaurant id")
+    parser.add_argument("--only-ids-file", help="JSON file with list of restaurant IDs to process")
     parser.add_argument("--top", type=int, default=5, help="Keep top N candidates per query/record")
     parser.add_argument("--pause", type=float, default=0.4, help="Seconds to sleep between requests")
     parser.add_argument("--output", default=str(OUTPUT_PATH), help="Output JSON path")
@@ -2072,6 +2073,9 @@ def main() -> None:
     records = load_records()
     if args.only_id:
         records = [record for record in records if record.get("id") == args.only_id]
+    elif args.only_ids_file:
+        id_set = set(json.loads(Path(args.only_ids_file).read_text()))
+        records = [record for record in records if record.get("id") in id_set]
     else:
         records = records[args.offset : args.offset + args.limit]
 
