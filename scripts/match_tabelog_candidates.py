@@ -202,6 +202,12 @@ GENERIC_JP_KEYWORDS = {
     "うなぎ",
 }
 GENERIC_SUSHI_HINTS = ("sushi", "すし", "寿司", "鮨")
+# Branch/store suffixes that should be stripped for core name comparison.
+BRANCH_SUFFIXES_RE = re.compile(
+    r"[\s　]*[（(].*?[)）]$"   # trailing parenthetical: (ラシック店)
+    r"|[\s　]+(?:本店|支店|新店|別邸|別館|離れ)$"  # 本店, 支店 etc.
+    r"|[\s　]+\S{1,10}[店舗館]$"  # e.g. ラシック店, 大名古屋ビルヂング店
+)
 LOCATION_KEYWORD_HINTS = ("都", "道", "府", "県", "市", "区", "町", "村", "駅", "通", "川端", "洲", "門", "坂", "橋", "谷", "原")
 
 
@@ -576,6 +582,17 @@ def tokenize(value: str) -> list[str]:
 def important_tokens(value: str, ignore: set[str] | None = None) -> set[str]:
     ignore = ignore or set()
     return {token for token in tokenize(value) if token not in ignore and len(token) > 1}
+
+
+def strip_branch_suffix(name: str) -> str:
+    """Remove branch/store suffixes for core name comparison."""
+    cleaned = name.strip()
+    for _ in range(3):  # iterate to strip nested suffixes
+        prev = cleaned
+        cleaned = BRANCH_SUFFIXES_RE.sub("", cleaned).strip()
+        if cleaned == prev:
+            break
+    return cleaned
 
 
 def looks_like_generic_sushi_counter(name: str) -> bool:
@@ -1409,6 +1426,10 @@ def candidate_match_assessment(record: dict, detail: dict) -> dict:
     locality_missing = not locality.strip()
     identity_anchor_strong = phone_exact and address_digits_good and (native_name_strong or english_name_strong)
     allow_soft_location = prefecture_match and locality_missing and identity_anchor_strong
+    # When name + address strongly match, a phone difference is likely a
+    # number change rather than a wrong restaurant.  Downgrade phone_conflict
+    # to a soft penalty instead of a hard conflict.
+    name_address_anchor = (native_name_strong or english_name_strong) and address_digits_good
 
     reasons: list[str] = []
     conflicts: list[str] = []
@@ -1431,6 +1452,10 @@ def candidate_match_assessment(record: dict, detail: dict) -> dict:
     if phone_exact:
         reasons.append("phone_exact")
         confidence += 10
+    elif phone_conflict and name_address_anchor:
+        # Name + address match strongly; phone probably just changed.
+        reasons.append("phone_changed_likely")
+        confidence -= 2
     elif phone_conflict:
         conflicts.append("phone_conflict")
         confidence -= 6
@@ -1744,10 +1769,16 @@ def browse_match_candidates(record: dict, browse_pool: list[dict]) -> list[dict]
     ]
     english_name = normalize_ascii(record.get("name") or "")
 
+    # Pre-compute branch-stripped variants for matching
+    native_title_core = normalize_unicode(strip_branch_suffix(record.get("_native_title") or ""))
+    native_alias_cores = [normalize_unicode(strip_branch_suffix(a)) for a in (record.get("_native_aliases") or []) if a]
+    english_name_core = normalize_ascii(strip_branch_suffix(record.get("name") or ""))
+
     def match_strength(candidate: dict) -> int:
-        """Return match strength: 3=exact native, 2=exact english, 1=substring, 0=no match."""
+        """Return match strength: 3=exact native, 2=exact english, 1=substring/branch, 0=no match."""
         cand_native = normalize_unicode(candidate.get("name") or "")
         cand_ascii = normalize_ascii(candidate.get("name") or "")
+        cand_native_core = normalize_unicode(strip_branch_suffix(candidate.get("name") or ""))
 
         # Exact native name match (strongest)
         if native_title and cand_native and native_title == cand_native:
@@ -1761,9 +1792,22 @@ def browse_match_candidates(record: dict, browse_pool: list[dict]) -> list[dict]
                 if kw and kw == cand_native:
                     return 3
 
+        # Branch-stripped exact match (same core name, different branch)
+        if native_title_core and cand_native_core and len(native_title_core) >= 3:
+            if native_title_core == cand_native_core:
+                return 3
+        if native_alias_cores and cand_native_core:
+            for alias_core in native_alias_cores:
+                if alias_core and len(alias_core) >= 3 and alias_core == cand_native_core:
+                    return 3
+
         # Exact english name match
         if english_name and cand_ascii and english_name == cand_ascii:
             return 2
+        if english_name_core and cand_ascii and len(english_name_core) >= 4:
+            cand_ascii_core = normalize_ascii(strip_branch_suffix(candidate.get("name") or ""))
+            if english_name_core == cand_ascii_core:
+                return 2
 
         # Substring containment (looser)
         if native_title and cand_native:
@@ -1966,6 +2010,66 @@ def rank_candidates(
     top = best[0] if best else None
     runner_up = best[1] if len(best) > 1 else None
     gap = (top.get("match_confidence", 0) - runner_up.get("match_confidence", 0)) if top and runner_up else 999
+
+    # --- Targeted search fallback when browse yielded only rejects ---
+    if browse_pages > 0 and (not top or top.get("match_status") == "reject"):
+        native_title = record.get("_native_title") or ""
+        eng_name = record.get("name") or ""
+        phone_variants = phone_query_variants(record.get("phone_number") or "")
+        pref_slug = PREFECTURE_SLUGS.get((record.get("prefecture") or "").strip())
+        fallback_search_aggregate: dict[str, dict] = {}
+
+        targeted_queries: list[tuple[str, str]] = []
+        if pref_slug and native_title and JP_CHAR_RE.search(native_title):
+            targeted_queries.append((
+                "targeted_jp_name",
+                f"https://tabelog.com/{pref_slug}/rstLst/?sk={urllib.parse.quote(native_title)}",
+            ))
+            core_title = strip_branch_suffix(native_title)
+            if normalize_unicode(core_title) != normalize_unicode(native_title):
+                targeted_queries.append((
+                    "targeted_jp_core_name",
+                    f"https://tabelog.com/{pref_slug}/rstLst/?sk={urllib.parse.quote(core_title)}",
+                ))
+        if pref_slug and eng_name:
+            targeted_queries.append((
+                "targeted_en_name",
+                f"https://tabelog.com/en/{pref_slug}/rstLst/?sk={urllib.parse.quote(eng_name)}",
+            ))
+        if pref_slug and phone_variants:
+            targeted_queries.append((
+                "targeted_phone",
+                f"https://tabelog.com/en/{pref_slug}/rstLst/?sk={urllib.parse.quote(phone_variants[0])}",
+            ))
+
+        for qlabel, qurl in targeted_queries:
+            try:
+                qcands = fetch_search_candidates(qurl)
+            except Exception:
+                time.sleep(pause_seconds)
+                continue
+            for c in qcands:
+                c["score"] = candidate_score(record, c, qlabel)
+                c["query"] = qlabel
+                existing = fallback_search_aggregate.get(c["url"])
+                if existing is None or candidate_sort_key(c) > candidate_sort_key(existing):
+                    fallback_search_aggregate[c["url"]] = {
+                        **c, "source_queries": [qlabel], "query_hits": 1,
+                    }
+            time.sleep(pause_seconds)
+
+        if fallback_search_aggregate:
+            fb_best = sorted(fallback_search_aggregate.values(), key=candidate_sort_key, reverse=True)
+            ranked.append({"query": "targeted_search_fallback", "url": "targeted_search", "candidates": fb_best[:per_query_limit]})
+            for c in fb_best[:detail_fetch_limit]:
+                enriched = enrich_candidate(record, c)
+                merge_candidate(enriched, final_aggregate)
+
+            best = sorted(final_aggregate.values(), key=candidate_sort_key, reverse=True)
+            best = apply_margin_policy(best)
+            top = best[0] if best else None
+            runner_up = best[1] if len(best) > 1 else None
+            gap = (top.get("match_confidence", 0) - runner_up.get("match_confidence", 0)) if top and runner_up else 999
 
     # Skip all external fallback when browse mode is active
     if browse_pages == 0 and (not top or top.get("match_status") != "verified" or gap < 12):
