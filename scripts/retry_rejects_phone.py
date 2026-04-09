@@ -167,7 +167,7 @@ def main() -> None:
     run_start = datetime.datetime.now()
     upgraded = 0
     status_counts = {"verified": 0, "review": 0, "reject": 0}
-    pause = 0.4
+    pause = 0.1
 
     for count, idx in enumerate(reject_indices, 1):
         r = results[idx]
