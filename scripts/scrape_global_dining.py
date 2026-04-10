@@ -30,6 +30,7 @@ DATA_DIR = ROOT / "data"
 OUTPUT_PATH = DATA_DIR / "global-restaurants.json"
 SNAPSHOT_PATH = DATA_DIR / "global-dining-snapshot.json"
 SOURCE_META_PATH = DATA_DIR / "global-dining-source.json"
+OVERRIDES_PATH = DATA_DIR / "coordinate-overrides.json"
 
 BASE_URL = "https://platinumdining.caffeinesoftware.com"
 SITEMAP_URL = f"{BASE_URL}/sitemap.xml"
@@ -409,6 +410,19 @@ def main() -> None:
 
     # ── 5. Write output files ─────────────────────────────────────────
     fetched_at = datetime.datetime.utcnow().isoformat() + "Z"
+
+    # ── Apply coordinate overrides (manually verified fixes that survive re-scrapes) ──
+    if OVERRIDES_PATH.exists():
+        overrides = json.loads(OVERRIDES_PATH.read_text())
+        applied = 0
+        for r in records:
+            if r["id"] in overrides:
+                fix = overrides[r["id"]]
+                r["lat"] = fix["lat"]
+                r["lng"] = fix["lng"]
+                applied += 1
+        if applied:
+            print(f"Applied {applied} coordinate override(s) from {OVERRIDES_PATH.name}")
 
     OUTPUT_PATH.write_text(json.dumps(records, indent=2, ensure_ascii=False) + "\n")
     print(f"\nWrote {len(records)} records → {OUTPUT_PATH}")
