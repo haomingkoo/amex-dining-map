@@ -2,13 +2,15 @@
 
 ## What This Project Is
 
-An AMEX Platinum dining map covering two programs:
+An AMEX Platinum dining map covering three programs:
 1. **Japan** — Pocket Concierge partner restaurants enriched with Tabelog review scores,
    ratings, and metadata.
 2. **Global Dining Credit** — 16 countries scraped from `platinumdining.caffeinesoftware.com`
    with coordinates, cuisine, and address from JSON-LD structured data.
+3. **Love Dining** — Singapore hotel and restaurant program scraped from Amex SG website
+   (79 venues, geocoded via Nominatim).
 
-Both datasets are merged in the frontend and displayed on a single map.
+All datasets display Google Maps ratings (scraped via Playwright) from `data/google-maps-ratings.json`.
 
 ---
 
@@ -99,6 +101,28 @@ all URLs to `caffeinesoftware.com` automatically).
 
 Output: `data/global-restaurants.json` — committed to repo and loaded by frontend.
 Snapshot: `data/global-dining-snapshot.json` — gitignored, used for diff detection only.
+
+---
+
+## Google Maps Ratings Pipeline
+
+```bash
+# Scrape ratings for all datasets (Playwright, ~1-2 hours for full run)
+python3 scripts/scrape_google_ratings_playwright.py
+
+# Only missing records (preferred for incremental updates)
+python3 scripts/scrape_google_ratings_playwright.py --missing-only
+
+# Specific datasets
+python3 scripts/scrape_google_ratings_playwright.py --datasets love japan global
+
+# Dry run
+python3 scripts/scrape_google_ratings_playwright.py --dry-run
+```
+
+Output: `data/google-maps-ratings.json` — `{id: {rating, review_count, google_name, google_address, maps_url}}`
+
+**Important**: Run sequentially or use `--missing-only` for concurrent runs (race condition fixed in incremental save).
 
 ---
 
