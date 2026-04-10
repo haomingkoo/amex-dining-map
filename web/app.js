@@ -321,43 +321,37 @@ const ROUTES = {
     id: "10xcelerator",
     programId: "10xcelerator",
     label: "Overview",
-    eyebrow: "10Xcelerator / Planned",
-    title: "10Xcelerator Explorer",
+    eyebrow: "Singapore · 10X Accelerator",
+    title: "10X Accelerator",
     description:
-      "Partner and points-earning planner for bonus merchants and categories. This will start as a verified partner directory, then add outlet mapping only where the location data is dependable.",
-    briefTitle: "10Xcelerator Buildout",
+      "Earn 10X Membership Rewards points at partner merchants across dining, shopping, travel, and more in Singapore.",
+    briefTitle: "10X Accelerator — Coming Soon",
     briefSummary:
-      "10Xcelerator is valuable, but it is less map-ready than the other programs because the official page is much stronger on partner and offer data than on outlet-level addresses.",
+      "Earn 10X Membership Rewards points at AMEX partner merchants in Singapore. A searchable partner directory is being added to this app.",
     briefCards: [
       {
-        kicker: "Primary source",
-        title: "Official partner page first",
+        kicker: "What is it",
+        title: "10X points at partner merchants",
         body:
-          "Start from the official Amex page to capture partner brands, categories, and earn structure before attempting outlet mapping or partner-site enrichment.",
+          "The 10X Accelerator programme lets eligible Amex cardholders earn 10 Membership Rewards points per S$1 spent at participating merchants across dining, retail, travel, and lifestyle categories.",
         links: [
           {
-            label: "10Xcelerator page",
+            label: "View official partner list",
             href: "https://www.americanexpress.com/sg/benefits/promotions/shopping/10Xcelerator/10Xcelerator.html",
           },
         ],
       },
       {
-        kicker: "What ships first",
-        title: "Searchable partner directory",
+        kicker: "Categories",
+        title: "Dining, shopping, travel & more",
         body:
-          "The first useful version is a partner and category explorer with earn-rule summaries, then a map for outlets only where there is verified location data.",
+          "Partner categories include restaurants, hotels, airlines, retail brands, and online merchants. Check the official Amex SG page for the current enrolled partners and any spending caps that apply.",
       },
       {
-        kicker: "Trust model",
-        title: "Brand-level before outlet-level",
+        kicker: "Coming soon",
+        title: "Partner directory in progress",
         body:
-          "If the official source confirms a partner but not every store location, the app should present that honestly as a partner listing rather than pretending every outlet is verified.",
-      },
-      {
-        kicker: "Next milestone",
-        title: "Verified outlet mapping",
-        body:
-          "After the partner directory is stable, add mapped outlets only when there is a dependable second source for addresses and live merchant coverage.",
+          "A searchable directory of 10X partners with categories and locations is being added here. For now, the full and up-to-date partner list is on the official Amex SG page.",
       },
     ],
   },
@@ -2515,6 +2509,9 @@ function renderLoveDiningCard() {
   const halal = record.notes && (record.notes.includes("Halal") || record.notes.includes("Muslim"))
     ? `<div class="focus-note">Halal certified</div>` : "";
 
+  const descriptionHtml = record.summary_ai
+    ? `<p class="focus-summary focus-summary-ai">${escapeHtml(record.summary_ai)}</p>` : "";
+
   const scrapedRating = googleRating(record);
   const googleMapsUrl = (scrapedRating && scrapedRating.maps_url)
     ? scrapedRating.maps_url
@@ -2534,6 +2531,7 @@ function renderLoveDiningCard() {
     </div>
     ${closingNote}
     ${halal}
+    ${descriptionHtml}
     <div class="focus-section">
       ${record.address ? `<div class="focus-row"><span class="focus-label">Address</span><span>${escapeHtml(record.address)}</span></div>` : ""}
       ${record.phone ? `<div class="focus-row"><span class="focus-label">Phone</span><span>${escapeHtml(record.phone)}</span></div>` : ""}
@@ -2593,7 +2591,7 @@ function renderLoveDiningMobileList() {
 }
 
 function setLoveToolbarOpen(open) {
-  loveToolbar.hidden = !open;
+  loveToolbar.classList.toggle("is-open", open);
   loveToolbarToggle.setAttribute("aria-expanded", String(open));
   loveToolbarToggle.querySelector(".toolbar-toggle-icon").textContent = open ? "−" : "+";
 }
