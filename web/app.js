@@ -1153,14 +1153,12 @@ function refreshFilterOptions() {
     fillSelect(countryFilter, uniqueValues(scopeRecords.map((r) => r.country)), "All countries");
   }
 
-  // Japan-only filters: only show when scope has Japan records
+  // Japan-only filters: show only when the entire scope is Japan, or user picked Japan
   const selectedCountry = countryFilter.value;
-  const hasJapan = selectedCountry
-    ? selectedCountry === "Japan"
-    : scopeRecords.some((r) => r.country === "Japan");
   const allJapan = scopeRecords.length > 0 && scopeRecords.every((r) => r.country === "Japan");
-  JAPAN_ONLY_FILTER_WRAPS.forEach((wrap) => { if (wrap) wrap.hidden = !hasJapan; });
-  if (districtFilterWrap) districtFilterWrap.hidden = !allJapan;
+  const showJapanFilters = allJapan || selectedCountry === "Japan";
+  JAPAN_ONLY_FILTER_WRAPS.forEach((wrap) => { if (wrap) wrap.hidden = !showJapanFilters; });
+  if (districtFilterWrap) districtFilterWrap.hidden = !showJapanFilters;
 
   const countryPool = selectedCountry
     ? scopeRecords.filter((r) => r.country === selectedCountry)
@@ -2235,6 +2233,7 @@ function applyRoute(routeId) {
 
   dataExplorer.hidden = false;
   staysExplorer.hidden = true;
+  setToolbarOpen(false);
   state.scopeRecords = state.restaurants.filter((record) => route.matcher(record));
   state.activeId = null;
   resetFilterControls();
