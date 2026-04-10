@@ -407,12 +407,21 @@ input,
 
 .scope-nav {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 5px;
   margin-bottom: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.scope-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .scope-link {
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -642,6 +651,32 @@ input,
   padding: 12px 16px;
   border-top: 1px solid var(--border);
 }
+
+.map-legend {
+  display: flex;
+  gap: 14px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,0.3);
+  flex-shrink: 0;
+}
+
+.legend-japan { background: #d6a44c; }
+.legend-global { background: #4db8a6; }
 
 .focus-panel {
   display: flex;

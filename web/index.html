@@ -128,13 +128,16 @@
 
         <!-- Scope nav: city sub-tabs (only visible on dining routes) -->
         <div id="scope-strip">
-          <nav class="scope-nav" id="scope-nav" aria-label="City navigation">
+          <nav class="scope-nav" id="scope-nav" aria-label="Country navigation">
             <a class="scope-link" href="#/dining/world" data-route="dining/world">All</a>
-            <a class="scope-link" href="#/dining/global" data-route="dining/global">Global Credit</a>
             <a class="scope-link" href="#/dining/japan" data-route="dining/japan">Japan</a>
-            <a class="scope-link" href="#/dining/tokyo" data-route="dining/tokyo">Tokyo</a>
-            <a class="scope-link" href="#/dining/kyoto" data-route="dining/kyoto">Kyoto</a>
-            <a class="scope-link" href="#/dining/osaka" data-route="dining/osaka">Osaka</a>
+            <a class="scope-link" href="#/dining/singapore" data-route="dining/singapore">Singapore</a>
+            <a class="scope-link" href="#/dining/hong-kong" data-route="dining/hong-kong">Hong Kong</a>
+            <a class="scope-link" href="#/dining/australia" data-route="dining/australia">Australia</a>
+            <a class="scope-link" href="#/dining/united-kingdom" data-route="dining/united-kingdom">UK</a>
+            <a class="scope-link" href="#/dining/france" data-route="dining/france">France</a>
+            <a class="scope-link" href="#/dining/united-states" data-route="dining/united-states">USA</a>
+            <a class="scope-link" href="#/dining/thailand" data-route="dining/thailand">Thailand</a>
           </nav>
           <p class="scope-hint" id="scope-note"></p>
         </div>
@@ -239,9 +242,10 @@
                   <select id="tabelog-filter">
                     <option value="">Any rating</option>
                     <option value="available">Has Tabelog score</option>
-                    <option value="4plus">4.0+ stars</option>
-                    <option value="4_5plus">4.5+ stars</option>
-                    <option value="5">5 stars</option>
+                    <option value="3_5plus">3.5+</option>
+                    <option value="3_8plus">3.8+</option>
+                    <option value="4plus">4.0+</option>
+                    <option value="4_5plus">4.5+</option>
                   </select>
                 </label>
 
@@ -295,11 +299,11 @@
             </section>
 
             <div id="map"></div>
-
-            <div class="map-downloads">
-              <div class="stat-label">KML downloads</div>
-              <div class="download-stack" id="download-stack"></div>
+            <div class="map-legend" id="map-legend">
+              <span class="legend-item"><span class="legend-dot legend-japan"></span>Japan</span>
+              <span class="legend-item"><span class="legend-dot legend-global"></span>Global Credit</span>
             </div>
+
           </section>
 
           <!-- Selected venue detail panel -->

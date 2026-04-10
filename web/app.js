@@ -79,114 +79,110 @@ const ROUTES = {
     matcher: () => true,
     defaultView: [25, 15],
     defaultZoom: 2,
-    downloads: [
-      { label: "All Japan KML", href: "./data/kml/japan-all.kml", primary: true },
-      { label: "Tokyo KML", href: "./data/kml/tokyo.kml" },
-      { label: "Kyoto KML", href: "./data/kml/kyoto.kml" },
-      { label: "Osaka KML", href: "./data/kml/osaka.kml" },
-    ],
-  },
-  "dining/global": {
-    id: "dining/global",
-    programId: "dining",
-    label: "Global Credit",
-    eyebrow: "Dining / Global Credit",
-    title: "Global Dining Credit",
-    description:
-      "16 countries covered by the Amex Platinum Global Dining Credit. Use the Country filter to drill into a specific market.",
-    note:
-      "Restaurants sourced from platinumdining.caffeinesoftware.com. Use Country + City filters to browse.",
-    mapSummary:
-      "Global Dining Credit markets — 16 countries outside Japan. Filter by Country or City.",
-    matcher: (record) => record.country !== "Japan",
-    defaultView: [25, 10],
-    defaultZoom: 2,
-    downloads: [],
   },
   "dining/japan": {
     id: "dining/japan",
     programId: "dining",
     label: "Japan",
     eyebrow: "Dining / Japan",
-    title: "Japan Dining",
-    description:
-      "Japan restaurants via Pocket Concierge, enriched with Tabelog ratings.",
-    note:
-      "Japan only — the most data-rich market in the current build.",
-    mapSummary:
-      "Japan-wide dining. Use district filters for city-level browsing.",
+    title: "Japan",
+    description: "Japan restaurants via Pocket Concierge, enriched with Tabelog ratings.",
+    note: "Pocket Concierge partners across Japan.",
+    mapSummary: "Japan-wide dining. Use the City filter to zoom into a specific city.",
     matcher: (record) => record.country === "Japan",
     defaultView: [35.676, 137.5],
     defaultZoom: 5,
-    downloads: [
-      { label: "All Japan KML", href: "./data/kml/japan-all.kml", primary: true },
-      { label: "Tokyo KML", href: "./data/kml/tokyo.kml" },
-      { label: "Kyoto KML", href: "./data/kml/kyoto.kml" },
-      { label: "Osaka KML", href: "./data/kml/osaka.kml" },
-    ],
   },
-  "dining/tokyo": {
-    id: "dining/tokyo",
+  "dining/singapore": {
+    id: "dining/singapore",
     programId: "dining",
-    label: "Tokyo",
-    eyebrow: "Dining Abroad / Tokyo",
-    title: "Tokyo Dining",
-    description:
-      "Focused Tokyo route for quick district-level browsing.",
-    note:
-      "Use this when you already know you want Tokyo.",
-    mapSummary:
-      "Tokyo-only route. Use this when you want to stay inside one city and explore districts instead of the full Japan view.",
-    matcher: (record) => record.country === "Japan" && record.city === "Tokyo",
-    fixedCity: "Tokyo",
-    defaultView: [35.6762, 139.6503],
-    defaultZoom: 11,
-    downloads: [
-      { label: "Tokyo KML", href: "./data/kml/tokyo.kml", primary: true },
-      { label: "All Japan KML", href: "./data/kml/japan-all.kml" },
-    ],
-  },
-  "dining/kyoto": {
-    id: "dining/kyoto",
-    programId: "dining",
-    label: "Kyoto",
-    eyebrow: "Dining Abroad / Kyoto",
-    title: "Kyoto Dining",
-    description:
-      "Focused Kyoto route for a calmer city-level browse.",
-    note:
-      "Use this when you want Kyoto only.",
-    mapSummary:
-      "Kyoto-only route centered on the live Pocket Concierge areas in the current dataset.",
-    matcher: (record) => record.country === "Japan" && record.city === "Kyoto",
-    fixedCity: "Kyoto",
-    defaultView: [35.0116, 135.7681],
+    label: "Singapore",
+    eyebrow: "Dining / Singapore",
+    title: "Singapore",
+    description: "Amex Platinum Global Dining Credit partners in Singapore.",
+    note: "Singapore dining credit partners.",
+    mapSummary: "Singapore dining credit restaurants.",
+    matcher: (record) => record.country === "Singapore",
+    defaultView: [1.3521, 103.8198],
     defaultZoom: 12,
-    downloads: [
-      { label: "Kyoto KML", href: "./data/kml/kyoto.kml", primary: true },
-      { label: "All Japan KML", href: "./data/kml/japan-all.kml" },
-    ],
   },
-  "dining/osaka": {
-    id: "dining/osaka",
+  "dining/hong-kong": {
+    id: "dining/hong-kong",
     programId: "dining",
-    label: "Osaka",
-    eyebrow: "Dining Abroad / Osaka",
-    title: "Osaka Dining",
-    description:
-      "Focused Osaka route for a cleaner city-level browse.",
-    note:
-      "Use this when you want Osaka only.",
-    mapSummary:
-      "Osaka-only route for a cleaner city-level browse.",
-    matcher: (record) => record.country === "Japan" && record.city === "Osaka",
-    fixedCity: "Osaka",
-    defaultView: [34.6937, 135.5023],
+    label: "Hong Kong",
+    eyebrow: "Dining / Hong Kong",
+    title: "Hong Kong",
+    description: "Amex Platinum Global Dining Credit partners in Hong Kong.",
+    note: "Hong Kong dining credit partners.",
+    mapSummary: "Hong Kong dining credit restaurants.",
+    matcher: (record) => record.country === "Hong Kong",
+    defaultView: [22.3193, 114.1694],
     defaultZoom: 12,
-    downloads: [
-      { label: "Osaka KML", href: "./data/kml/osaka.kml", primary: true },
-      { label: "All Japan KML", href: "./data/kml/japan-all.kml" },
-    ],
+  },
+  "dining/australia": {
+    id: "dining/australia",
+    programId: "dining",
+    label: "Australia",
+    eyebrow: "Dining / Australia",
+    title: "Australia",
+    description: "Amex Platinum Global Dining Credit partners in Australia.",
+    note: "Australia dining credit partners.",
+    mapSummary: "Australia dining credit restaurants.",
+    matcher: (record) => record.country === "Australia",
+    defaultView: [-25.2744, 133.7751],
+    defaultZoom: 4,
+  },
+  "dining/united-kingdom": {
+    id: "dining/united-kingdom",
+    programId: "dining",
+    label: "UK",
+    eyebrow: "Dining / United Kingdom",
+    title: "United Kingdom",
+    description: "Amex Platinum Global Dining Credit partners in the United Kingdom.",
+    note: "UK dining credit partners.",
+    mapSummary: "United Kingdom dining credit restaurants.",
+    matcher: (record) => record.country === "United Kingdom",
+    defaultView: [54.0, -2.0],
+    defaultZoom: 6,
+  },
+  "dining/france": {
+    id: "dining/france",
+    programId: "dining",
+    label: "France",
+    eyebrow: "Dining / France",
+    title: "France",
+    description: "Amex Platinum Global Dining Credit partners in France.",
+    note: "France dining credit partners.",
+    mapSummary: "France dining credit restaurants.",
+    matcher: (record) => record.country === "France",
+    defaultView: [46.2276, 2.2137],
+    defaultZoom: 6,
+  },
+  "dining/united-states": {
+    id: "dining/united-states",
+    programId: "dining",
+    label: "USA",
+    eyebrow: "Dining / United States",
+    title: "United States",
+    description: "Amex Platinum Global Dining Credit partners in the United States.",
+    note: "US dining credit partners.",
+    mapSummary: "United States dining credit restaurants.",
+    matcher: (record) => record.country === "United States",
+    defaultView: [37.0902, -95.7129],
+    defaultZoom: 4,
+  },
+  "dining/thailand": {
+    id: "dining/thailand",
+    programId: "dining",
+    label: "Thailand",
+    eyebrow: "Dining / Thailand",
+    title: "Thailand",
+    description: "Amex Platinum Global Dining Credit partners in Thailand.",
+    note: "Thailand dining credit partners.",
+    mapSummary: "Thailand dining credit restaurants.",
+    matcher: (record) => record.country === "Thailand",
+    defaultView: [15.87, 100.99],
+    defaultZoom: 6,
   },
   stays: {
     id: "stays",
@@ -200,7 +196,6 @@ const ROUTES = {
       "World stay view for the current Plat Stay property set. Pins are geocoded from official property addresses and should still be verified before booking.",
     defaultView: [20, 10],
     defaultZoom: 2,
-    downloads: [],
   },
   alerts: {
     id: "alerts",
@@ -429,7 +424,6 @@ const menuFilter = document.getElementById("menu-filter");
 const reservationFilter = document.getElementById("reservation-filter");
 const resetFiltersButton = document.getElementById("reset-filters");
 const summaryStripText = document.getElementById("summary-strip-text");
-const downloadStack = document.getElementById("download-stack");
 const mapSummary = document.getElementById("map-summary");
 const resultsText = document.getElementById("results-text");
 const focusCard = document.getElementById("focus-card");
@@ -961,9 +955,9 @@ function resolveRouteFromHash() {
     all: "dining/world",
     world: "dining/world",
     japan: "dining/japan",
-    tokyo: "dining/tokyo",
-    kyoto: "dining/kyoto",
-    osaka: "dining/osaka",
+    tokyo: "dining/japan",
+    kyoto: "dining/japan",
+    osaka: "dining/japan",
     dining: "dining/world",
     "plat-stay": "stays",
     accelerator: "10xcelerator",
@@ -1057,15 +1051,6 @@ function renderScopeShell(route) {
     link.classList.toggle("active", link.dataset.route === route.id);
   });
 
-  downloadStack.innerHTML = "";
-  route.downloads.forEach((item) => {
-    const link = document.createElement("a");
-    link.className = `download-btn${item.primary ? " primary" : ""}`;
-    link.href = item.href;
-    link.download = "";
-    link.textContent = item.label;
-    downloadStack.appendChild(link);
-  });
 }
 
 function renderProgramBrief(route) {
@@ -1241,9 +1226,11 @@ function filterRestaurants() {
     if (cuisine && !(record.cuisines || []).includes(cuisine)) return false;
     const tabelogSignal = qualitySignals(record).tabelog;
     if (tabelog === "available" && !tabelogSignal) return false;
-    if (tabelog === "4plus" && !(tabelogSignal && Number(tabelogSignal.honest_stars) >= 4)) return false;
-    if (tabelog === "4_5plus" && !(tabelogSignal && Number(tabelogSignal.honest_stars) >= 4.5)) return false;
-    if (tabelog === "5" && !(tabelogSignal && Number(tabelogSignal.honest_stars) >= 5)) return false;
+    const tScore = tabelogSignal ? (tabelogSignal.score_raw ?? tabelogSignal.honest_stars) : null;
+    if (tabelog === "3_5plus" && !(tScore != null && tScore >= 3.5)) return false;
+    if (tabelog === "3_8plus" && !(tScore != null && tScore >= 3.8)) return false;
+    if (tabelog === "4plus" && !(tScore != null && tScore >= 4.0)) return false;
+    if (tabelog === "4_5plus" && !(tScore != null && tScore >= 4.5)) return false;
     if (lunchBand && record.price_lunch_band_key !== lunchBand) return false;
     if (dinnerBand && record.price_dinner_band_key !== dinnerBand) return false;
     if (kids === "older_kids_only" && !["older_children_only", "teens_only"].includes(record.child_policy_norm)) {
@@ -1340,9 +1327,10 @@ function renderFocusCard() {
     .join("");
 
   const tabelogSignal = qualitySignals(record).tabelog;
-  const tabelogBadge = tabelogSignal && tabelogSignal.honest_stars != null
+  const tabelogScore = tabelogSignal?.score_raw ?? tabelogSignal?.honest_stars;
+  const tabelogBadge = tabelogSignal && tabelogScore != null
     ? `<a class="tabelog-badge" href="${escapeHtml(tabelogSignal.url || tabelogSearchUrl(record) || "#")}" target="_blank" rel="noopener">
-        <span class="tabelog-stars">${escapeHtml(String(tabelogSignal.honest_stars))}</span>
+        <span class="tabelog-stars">${escapeHtml(String(tabelogScore))}</span>
         <span class="tabelog-meta">Tabelog${tabelogSignal.review_count ? ` · ${Number(tabelogSignal.review_count).toLocaleString()} reviews` : ""}</span>
       </a>`
     : "";
