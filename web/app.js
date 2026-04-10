@@ -23,8 +23,8 @@ const DINNER_BANDS = [
 const PROGRAMS = {
   dining: {
     id: "dining",
-    label: "Global Dining Credits",
-    title: "Global Dining Credits",
+    label: "Dining",
+    title: "Dining",
     description:
       "Amex Platinum dining partners in 17 markets — Japan via Pocket Concierge, plus 16 countries via the Global Dining Credit.",
     defaultRoute: "dining/world",
@@ -68,8 +68,8 @@ const ROUTES = {
     id: "dining/world",
     programId: "dining",
     label: "All",
-    eyebrow: "Global Dining Credits / All",
-    title: "Global Dining Credits",
+    eyebrow: "Dining / All",
+    title: "Dining Explorer",
     description:
       "Amex Platinum dining partners worldwide — Japan via Pocket Concierge plus 16 countries via the Global Dining Credit.",
     note:
@@ -90,7 +90,7 @@ const ROUTES = {
     id: "dining/global",
     programId: "dining",
     label: "Global Credit",
-    eyebrow: "Global Dining Credits / Global Credit",
+    eyebrow: "Dining / Global Credit",
     title: "Global Dining Credit",
     description:
       "16 countries covered by the Amex Platinum Global Dining Credit. Use the Country filter to drill into a specific market.",
@@ -107,7 +107,7 @@ const ROUTES = {
     id: "dining/japan",
     programId: "dining",
     label: "Japan",
-    eyebrow: "Global Dining Credits / Japan",
+    eyebrow: "Dining / Japan",
     title: "Japan Dining",
     description:
       "Japan restaurants via Pocket Concierge, enriched with Tabelog ratings.",
@@ -2193,7 +2193,7 @@ function applyRoute(routeId) {
   const route = currentRoute();
   const program = currentProgram();
 
-  document.title = `${route.title} | Charging the Charge Card`;
+  document.title = `${route.title} | Unofficial Platinum Experience`;
   renderJourneyShell(route);
   renderProgramShell(program, route);
   renderProgramBrief(route);
