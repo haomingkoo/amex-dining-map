@@ -187,6 +187,58 @@ const ROUTES = {
     defaultView: [15.87, 100.99],
     defaultZoom: 6,
   },
+  "dining/taiwan": {
+    id: "dining/taiwan",
+    programId: "dining",
+    label: "Taiwan",
+    eyebrow: "Dining / Taiwan",
+    title: "Taiwan",
+    description: "Amex Platinum Global Dining Credit partners in Taiwan.",
+    note: "Taiwan dining credit partners.",
+    mapSummary: "Taiwan dining credit restaurants.",
+    matcher: (record) => record.country === "Taiwan",
+    defaultView: [23.5, 121.0],
+    defaultZoom: 8,
+  },
+  "dining/germany": {
+    id: "dining/germany",
+    programId: "dining",
+    label: "Germany",
+    eyebrow: "Dining / Germany",
+    title: "Germany",
+    description: "Amex Platinum Global Dining Credit partners in Germany.",
+    note: "Germany dining credit partners.",
+    mapSummary: "Germany dining credit restaurants.",
+    matcher: (record) => record.country === "Germany",
+    defaultView: [51.1657, 10.4515],
+    defaultZoom: 6,
+  },
+  "dining/mexico": {
+    id: "dining/mexico",
+    programId: "dining",
+    label: "Mexico",
+    eyebrow: "Dining / Mexico",
+    title: "Mexico",
+    description: "Amex Platinum Global Dining Credit partners in Mexico.",
+    note: "Mexico dining credit partners.",
+    mapSummary: "Mexico dining credit restaurants.",
+    matcher: (record) => record.country === "Mexico",
+    defaultView: [23.6345, -102.5528],
+    defaultZoom: 5,
+  },
+  "dining/canada": {
+    id: "dining/canada",
+    programId: "dining",
+    label: "Canada",
+    eyebrow: "Dining / Canada",
+    title: "Canada",
+    description: "Amex Platinum Global Dining Credit partners in Canada.",
+    note: "Canada dining credit partners.",
+    mapSummary: "Canada dining credit restaurants.",
+    matcher: (record) => record.country === "Canada",
+    defaultView: [56.1304, -106.3468],
+    defaultZoom: 4,
+  },
   stays: {
     id: "stays",
     programId: "stays",
@@ -1543,17 +1595,23 @@ function renderMobileCards() {
     const kidPolicyKnown = isJapan && record.child_policy_norm && record.child_policy_norm !== "unknown";
     const gMobile = googleRating(record);
     const googleRatingInline = gMobile && gMobile.rating != null
-      ? `<span class="card-google-rating">★ ${gMobile.rating}${gMobile.review_count ? ` (${Number(gMobile.review_count).toLocaleString()})` : ""}</span>`
+      ? `<span class="card-google-rating">★ ${gMobile.rating}${gMobile.review_count ? ` · ${Number(gMobile.review_count).toLocaleString()}` : ""}</span>`
       : "";
+    const regionDot = `<span class="card-region-dot" style="background:${markerColor(record)}" aria-hidden="true"></span>`;
+    const cardSummary = record.summary_official || record.summary_ai;
 
     card.innerHTML = `
       <div class="mobile-card-top">
         <div>
-          <div class="focus-kicker">${escapeHtml(diningKicker(record))}</div>
-          <h3 class="mobile-card-title">${escapeHtml(record.name)} ${googleRatingInline}</h3>
-          <div class="mobile-card-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
+          <div class="focus-kicker">${regionDot}${escapeHtml(diningKicker(record))}</div>
+          <h3 class="mobile-card-title">${escapeHtml(record.name)}</h3>
+          <div class="mobile-card-meta-row">
+            <span class="mobile-card-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</span>
+            ${googleRatingInline}
+          </div>
         </div>
       </div>
+      ${cardSummary ? `<p class="mobile-card-desc">${escapeHtml(cardSummary)}</p>` : ""}
       ${
         record.source_localized_address
           ? `<div class="mobile-card-address">${escapeHtml(record.source_localized_address)}</div>`
@@ -1915,8 +1973,8 @@ function ensureActiveStayRecord() {
     state.stayActiveId = null;
     return;
   }
-  if (!state.stayFiltered.some((record) => record.id === state.stayActiveId)) {
-    state.stayActiveId = state.stayFiltered[0].id;
+  if (state.stayActiveId && !state.stayFiltered.some((record) => record.id === state.stayActiveId)) {
+    state.stayActiveId = null;
   }
 }
 
@@ -2013,7 +2071,7 @@ function renderStayStats() {
     }.`;
   }
 
-  staysResultsText.textContent = "Selected property from the current Plat Stay shortlist";
+  staysResultsText.textContent = state.stayActiveId ? "Selected property · Plat Stay" : "Click a pin to select · Plat Stay";
   staysTableSummary.textContent = selected
     ? "Current shortlist in table form. Exact blackout conflicts are already removed."
     : "Current Plat Stay list in table form. Add travel dates to remove exact blackout conflicts.";
@@ -2052,7 +2110,13 @@ function renderStayMarkers() {
 function renderStayFocusCard() {
   const record = activeStayRecord();
   if (!record) {
-    staysFocusCard.innerHTML = '<div class="empty-state">No matches. Adjust filters or dates to expand results.</div>';
+    staysFocusCard.innerHTML = state.stayFiltered.length > 0
+      ? `<div class="empty-state map-cta">
+          <div class="map-cta-icon" aria-hidden="true">◉</div>
+          <p class="map-cta-heading">Click any pin on the map</p>
+          <p class="map-cta-sub">or select a property from the list below</p>
+        </div>`
+      : '<div class="empty-state">No matches. Adjust filters or dates to expand results.</div>';
     return;
   }
 
@@ -2366,7 +2430,11 @@ function filterLoveDining() {
 function renderLoveDiningCard() {
   const record = state.loveDining.find((r) => r.id === state.loveDiningActiveId) || null;
   if (!record) {
-    loveFocusCard.innerHTML = '<div class="empty-state">Select a venue on the map or from the list below.</div>';
+    loveFocusCard.innerHTML = `<div class="empty-state map-cta">
+      <div class="map-cta-icon" aria-hidden="true">◉</div>
+      <p class="map-cta-heading">Click any dot on the map</p>
+      <p class="map-cta-sub">or select a venue from the list below to see details here</p>
+    </div>`;
     return;
   }
 
