@@ -610,33 +610,15 @@ function kidLabel(value) {
 }
 
 function markerColor(record) {
-  // Japan: gold/amber shades by city
+  // Japan (Pocket Concierge): warm gold family — city shading within same hue
   if (record.country === "Japan") {
-    if (record.city === "Tokyo") return "#d6a44c";
-    if (record.city === "Kyoto") return "#d38f5d";
-    if (record.city === "Osaka") return "#5fb9a6";
-    return "#c9a55a";
+    if (record.city === "Tokyo") return "#e0b050";
+    if (record.city === "Kyoto") return "#cc8c45";
+    if (record.city === "Osaka") return "#bf7535";
+    return "#d4a048";  // other Japan cities
   }
-  // Global: teal shades by country
-  const tealPalette = {
-    "Australia": "#4db8a6",
-    "United Kingdom": "#3dada0",
-    "United States": "#5dc8b5",
-    "France": "#2e9f94",
-    "Singapore": "#67cabb",
-    "Hong Kong": "#48b9aa",
-    "Italy": "#56c4ad",
-    "Canada": "#72d0bf",
-    "Germany": "#3aaba0",
-    "Spain": "#61c9b8",
-    "Thailand": "#44c1ad",
-    "Taiwan": "#51bba7",
-    "Austria": "#65c7b6",
-    "Mexico": "#59c2ac",
-    "Monaco": "#38a89f",
-    "New Zealand": "#6dcdbf",
-  };
-  return tealPalette[record.country] || "#4db8a6";
+  // Global Dining Credit: one teal — program identity, not per-country
+  return "#4db8a6";
 }
 
 function priceMarkup(min, max, tier, label) {
