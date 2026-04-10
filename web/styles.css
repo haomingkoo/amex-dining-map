@@ -1188,6 +1188,7 @@ a.google-badge:hover {
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.15;
+  min-width: 0; /* allow shrinking in flex title row */
 }
 
 /* Love Dining card detail sections */

@@ -174,11 +174,15 @@ async def scrape_one(page, query: str, rid: str) -> dict | None:
             return None  # No useful data
 
         review_count_raw = data.get("reviewCount")
+        raw_address = data.get("address") or ""
+        # Strip Google Maps private-use navigation marker (\ue0c8)
+        clean_address = re.sub(r"[\ue0c0-\ue0ff]", "", raw_address).strip() or None
+
         return {
             "rating": float(rating),
             "review_count": int(review_count_raw) if review_count_raw else None,
             "google_name": data.get("name"),
-            "google_address": data.get("address"),
+            "google_address": clean_address,
             "maps_url": maps_url,
             "scraped_at": time.strftime("%Y-%m-%d"),
         }
