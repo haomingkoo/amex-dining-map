@@ -42,6 +42,7 @@ def load_api_key() -> str:
 
 def groq_generate(prompt: str, api_key: str) -> str:
     import urllib.request
+    import urllib.error
 
     body = json.dumps({
         "model": GROQ_MODEL,
@@ -60,9 +61,19 @@ def groq_generate(prompt: str, api_key: str) -> str:
         },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        result = json.loads(resp.read())
-    return result["choices"][0]["message"]["content"].strip()
+    for attempt in range(5):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                result = json.loads(resp.read())
+            return result["choices"][0]["message"]["content"].strip()
+        except urllib.error.HTTPError as exc:
+            if exc.code == 429:
+                wait = 30 * (2 ** attempt)
+                print(f"  Groq 429 (rate limit) — waiting {wait}s (attempt {attempt + 1}/5)...")
+                time.sleep(wait)
+            else:
+                raise
+    raise RuntimeError("Groq rate limit: gave up after 5 retries")
 
 
 def build_batch_prompt(records: list[dict]) -> str:

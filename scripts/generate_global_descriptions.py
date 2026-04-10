@@ -44,6 +44,7 @@ def load_api_key() -> str:
 def groq_generate(prompt: str, api_key: str) -> str:
     """Call Groq chat completions API and return the text content."""
     import urllib.request
+    import urllib.error
 
     body = json.dumps({
         "model": GROQ_MODEL,
@@ -62,9 +63,19 @@ def groq_generate(prompt: str, api_key: str) -> str:
         },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        result = json.loads(resp.read())
-    return result["choices"][0]["message"]["content"].strip()
+    for attempt in range(5):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                result = json.loads(resp.read())
+            return result["choices"][0]["message"]["content"].strip()
+        except urllib.error.HTTPError as exc:
+            if exc.code == 429:
+                wait = 30 * (2 ** attempt)
+                print(f"  Groq 429 (rate limit) — waiting {wait}s (attempt {attempt + 1}/5)...")
+                time.sleep(wait)
+            else:
+                raise
+    raise RuntimeError("Groq rate limit: gave up after 5 retries")
 
 
 def build_batch_prompt(records: list[dict]) -> str:
@@ -215,9 +226,10 @@ def main() -> None:
         GLOBAL_PATH.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
         print(f"  Saved. Total done so far: {total_done}")
 
-        # Rate limiting — Groq allows ~6000 TPM on free tier
+        # Rate limiting — Groq free tier: ~6000 TPM, ~30 RPM
+        # Each batch of 20 uses ~1800 tokens; sleep 15s keeps us under 6000 TPM
         if batch_num < len(batches):
-            time.sleep(2)
+            time.sleep(15)
 
     print(f"\nDone. Added descriptions for {total_done} restaurants.")
     print(f"Output → {GLOBAL_PATH}")
