@@ -53,10 +53,10 @@
             class="intro-choice"
             id="intro-start-dining"
             type="button"
-            data-intro-route="#/dining/japan"
+            data-intro-route="#/dining/world"
           >
             <span class="choice-label">Overseas Dining</span>
-            <span class="choice-desc">Japan restaurants with Tabelog ratings. Find and save.</span>
+            <span class="choice-desc">17 markets — Japan via Pocket Concierge, 16 countries via Global Dining Credit.</span>
           </button>
 
           <button
@@ -130,6 +130,7 @@
         <div id="scope-strip">
           <nav class="scope-nav" id="scope-nav" aria-label="City navigation">
             <a class="scope-link" href="#/dining/world" data-route="dining/world">All</a>
+            <a class="scope-link" href="#/dining/global" data-route="dining/global">Global Credit</a>
             <a class="scope-link" href="#/dining/japan" data-route="dining/japan">Japan</a>
             <a class="scope-link" href="#/dining/tokyo" data-route="dining/tokyo">Tokyo</a>
             <a class="scope-link" href="#/dining/kyoto" data-route="dining/kyoto">Kyoto</a>
@@ -203,6 +204,13 @@
                     type="search"
                     placeholder="Venue, district, cuisine..."
                   />
+                </label>
+
+                <label class="filter-wrap" id="country-filter-wrap">
+                  <span class="label">Country</span>
+                  <select id="country-filter">
+                    <option value="">All countries</option>
+                  </select>
                 </label>
 
                 <label class="filter-wrap">

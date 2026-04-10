@@ -2,12 +2,13 @@
 
 ## What This Project Is
 
-An AMEX dining map that enriches partner restaurant data with Tabelog review scores,
-ratings, and metadata. Restaurant data comes from Pocket Concierge and is matched
-against Tabelog listings to add quality signals (score, review count, price tier).
+An AMEX Platinum dining map covering two programs:
+1. **Japan** — Pocket Concierge partner restaurants enriched with Tabelog review scores,
+   ratings, and metadata.
+2. **Global Dining Credit** — 16 countries scraped from `platinumdining.caffeinesoftware.com`
+   with coordinates, cuisine, and address from JSON-LD structured data.
 
-The enriched data powers a GeoJSON map and `restaurant-quality-signals.json` used
-by the frontend.
+Both datasets are merged in the frontend and displayed on a single map.
 
 ---
 
@@ -27,6 +28,14 @@ promote_tabelog_matches.py      ← write verified/review matches into quality s
         │
         ▼
 restaurant-quality-signals.json ← final output consumed by the map
+
+platinumdining.caffeinesoftware.com (sitemap)
+        │
+        ▼
+scrape_global_dining.py         ← sitemap crawl + JSON-LD extraction
+        │
+        ▼
+global-restaurants.json         ← 16-country global dining partner data
 ```
 
 ---
@@ -71,7 +80,29 @@ specific page instead of searching.
 
 ---
 
-## Correct Run Order
+## Global Dining Scraper
+
+```bash
+# Scrape all 16 non-Japan countries (~2,470 restaurants, ~10 min at 4 req/s)
+python3 scripts/scrape_global_dining.py
+
+# Check for additions/removals against last snapshot
+python3 scripts/scrape_global_dining.py --diff
+
+# Quick test without writing files
+python3 scripts/scrape_global_dining.py --dry-run --limit 20
+```
+
+Source: `platinumdining.caffeinesoftware.com` (sitemap at same domain, URLs in sitemap
+reference `platinumdining.co.uk` but that domain is unreachable — the scraper remaps
+all URLs to `caffeinesoftware.com` automatically).
+
+Output: `data/global-restaurants.json` — committed to repo and loaded by frontend.
+Snapshot: `data/global-dining-snapshot.json` — gitignored, used for diff detection only.
+
+---
+
+## Correct Run Order (Japan)
 
 ```bash
 # 1. Run main matcher (first time or after new restaurants added)

@@ -1,4 +1,5 @@
 const DATA_URL = "../data/japan-restaurants.json";
+const GLOBAL_DATA_URL = "../data/global-restaurants.json";
 const STAYS_DATA_URL = "../data/plat-stays.json";
 const STAYS_META_URL = "../data/plat-stay-source.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
@@ -25,7 +26,7 @@ const PROGRAMS = {
     label: "Overseas Dining",
     title: "Overseas Dining",
     description:
-      "Japan restaurants with Tabelog ratings, price tiers, and direct Google Maps links.",
+      "Amex Platinum dining partners in 17 markets — Japan via Pocket Concierge, plus 16 countries via the Global Dining Credit.",
     defaultRoute: "dining/world",
   },
   stays: {
@@ -66,18 +67,18 @@ const ROUTES = {
   "dining/world": {
     id: "dining/world",
     programId: "dining",
-    label: "World",
-    eyebrow: "Dining Abroad / World",
-    title: "Dining Abroad",
+    label: "All",
+    eyebrow: "Overseas Dining / All",
+    title: "Overseas Dining",
     description:
-      "A fan-made Amex guide for planning travel benefits without digging through benefit pages first.",
+      "Amex Platinum dining partners worldwide — Japan via Pocket Concierge plus 16 countries via the Global Dining Credit.",
     note:
-      "Start broad, then narrow into the places you actually care about.",
+      "All markets. Use the country or city filter to zoom in.",
     mapSummary:
-      "World view for overseas dining. Japan is the deepest live market today.",
+      "All Amex Platinum dining partners worldwide. Filter by country or city to narrow down.",
     matcher: () => true,
-    defaultView: [24.5, 132],
-    defaultZoom: 3,
+    defaultView: [25, 15],
+    defaultZoom: 2,
     downloads: [
       { label: "All Japan KML", href: "../data/kml/japan-all.kml", primary: true },
       { label: "Tokyo KML", href: "../data/kml/tokyo.kml" },
@@ -85,18 +86,35 @@ const ROUTES = {
       { label: "Osaka KML", href: "../data/kml/osaka.kml" },
     ],
   },
+  "dining/global": {
+    id: "dining/global",
+    programId: "dining",
+    label: "Global Credit",
+    eyebrow: "Overseas Dining / Global Credit",
+    title: "Global Dining Credit",
+    description:
+      "16 countries covered by the Amex Platinum Global Dining Credit. Use the Country filter to drill into a specific market.",
+    note:
+      "Restaurants sourced from platinumdining.caffeinesoftware.com. Use Country + City filters to browse.",
+    mapSummary:
+      "Global Dining Credit markets — 16 countries outside Japan. Filter by Country or City.",
+    matcher: (record) => record.country !== "Japan",
+    defaultView: [25, 10],
+    defaultZoom: 2,
+    downloads: [],
+  },
   "dining/japan": {
     id: "dining/japan",
     programId: "dining",
     label: "Japan",
-    eyebrow: "Dining Abroad / Japan",
+    eyebrow: "Overseas Dining / Japan",
     title: "Japan Dining",
     description:
-      "Japan-wide dining view, with the strongest live coverage in the current build.",
+      "Japan restaurants via Pocket Concierge, enriched with Tabelog ratings.",
     note:
-      "Japan is the strongest live market in the current build.",
+      "Japan only — the most data-rich market in the current build.",
     mapSummary:
-      "Japan-wide dining view with the map first and details on the side.",
+      "Japan-wide dining. Use district filters for city-level browsing.",
     matcher: (record) => record.country === "Japan",
     defaultView: [35.676, 137.5],
     defaultZoom: 5,
@@ -390,6 +408,8 @@ const tablePanel = document.getElementById("results-table-panel");
 const tableToggle = document.getElementById("table-toggle");
 const tableToggleMeta = document.getElementById("table-toggle-meta");
 const searchInput = document.getElementById("search-input");
+const countryFilter = document.getElementById("country-filter");
+const countryFilterWrap = document.getElementById("country-filter-wrap");
 const cityFilter = document.getElementById("city-filter");
 const districtFilter = document.getElementById("district-filter");
 const cuisineFilter = document.getElementById("cuisine-filter");
@@ -563,11 +583,34 @@ function kidLabel(value) {
   return labels[value] || "No child policy listed";
 }
 
-function markerColor(city) {
-  if (city === "Tokyo") return "#d6a44c";
-  if (city === "Kyoto") return "#d38f5d";
-  if (city === "Osaka") return "#5fb9a6";
-  return "#78a8ff";
+function markerColor(record) {
+  // Japan: gold/amber shades by city
+  if (record.country === "Japan") {
+    if (record.city === "Tokyo") return "#d6a44c";
+    if (record.city === "Kyoto") return "#d38f5d";
+    if (record.city === "Osaka") return "#5fb9a6";
+    return "#c9a55a";
+  }
+  // Global: teal shades by country
+  const tealPalette = {
+    "Australia": "#4db8a6",
+    "United Kingdom": "#3dada0",
+    "United States": "#5dc8b5",
+    "France": "#2e9f94",
+    "Singapore": "#67cabb",
+    "Hong Kong": "#48b9aa",
+    "Italy": "#56c4ad",
+    "Canada": "#72d0bf",
+    "Germany": "#3aaba0",
+    "Spain": "#61c9b8",
+    "Thailand": "#44c1ad",
+    "Taiwan": "#51bba7",
+    "Austria": "#65c7b6",
+    "Mexico": "#59c2ac",
+    "Monaco": "#38a89f",
+    "New Zealand": "#6dcdbf",
+  };
+  return tealPalette[record.country] || "#4db8a6";
 }
 
 function priceMarkup(min, max, tier, label) {
@@ -595,6 +638,15 @@ function googleMapsSearchUrl(parts) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
+function diningKicker(record) {
+  const sub = record.district || record.region || record.area_title || record.prefecture || "";
+  if (record.country && record.country !== "Japan") {
+    const parts = [record.country, record.city, sub].filter(Boolean);
+    return parts.join(" / ");
+  }
+  return [record.city, sub].filter(Boolean).join(" / ");
+}
+
 function tabelogSearchUrl(record) {
   if (!record || record.country !== "Japan" || !record.name) {
     return null;
@@ -618,7 +670,7 @@ function diningGoogleMapsUrl(record) {
   const fallback = googleMapsSearchUrl([
     record.name,
     record.source_localized_address || record.district || record.city,
-    record.prefecture || "Japan",
+    record.country !== "Japan" ? record.country : (record.prefecture || "Japan"),
   ]);
 
   if (!record.source_google_map_url) {
@@ -670,7 +722,7 @@ function createMarker(record) {
   const lunchBand = priceBandLabel(record.price_lunch_band_tier, record.price_lunch_band_label);
   const marker = L.circleMarker([record.lat, record.lng], {
     radius: 8,
-    fillColor: markerColor(record.city),
+    fillColor: markerColor(record),
     fillOpacity: 0.92,
     color: "#091018",
     weight: 2,
@@ -679,7 +731,7 @@ function createMarker(record) {
   marker.bindPopup(`
     <div class="popup-card">
       <div class="popup-name">${escapeHtml(record.name)}</div>
-      <div>${escapeHtml(record.city)} / ${escapeHtml(record.district || record.region || record.area_title || record.prefecture || "")}</div>
+      <div>${escapeHtml(diningKicker(record))}</div>
       ${record.source_localized_address ? `<div>${escapeHtml(record.source_localized_address)}</div>` : ""}
       <div>${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
       ${dinnerBand ? `<div>${escapeHtml(`Dinner band: ${dinnerBand}`)}</div>` : ""}
@@ -694,12 +746,12 @@ function createMarker(record) {
           : ""
       }
       ${
-        tabelogSearchUrl(record)
+        record.country === "Japan" && tabelogSearchUrl(record)
           ? `<p><a href="${escapeHtml(tabelogSearchUrl(record))}" target="_blank" rel="noopener">Search Tabelog</a></p>`
           : ""
       }
       ${
-        record.source_url
+        record.source_url && record.source !== "Amex Platinum Dining"
           ? `<p><a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Pocket Concierge</a></p>`
           : ""
       }
@@ -845,6 +897,7 @@ function activeFilterCount() {
   const route = currentRoute();
   let count = 0;
   if (searchInput.value.trim()) count += 1;
+  if (countryFilter.value) count += 1;
   if (!route.fixedCity && cityFilter.value) count += 1;
   if (districtFilter.value) count += 1;
   if (cuisineFilter.value) count += 1;
@@ -1066,6 +1119,7 @@ function clearStayMarkers() {
 function resetFilterControls() {
   const route = currentRoute();
   searchInput.value = "";
+  countryFilter.value = "";
   districtFilter.value = "";
   cuisineFilter.value = "";
   tabelogFilter.value = "";
@@ -1080,6 +1134,22 @@ function resetFilterControls() {
 function refreshFilterOptions() {
   const route = currentRoute();
   const scopeRecords = state.scopeRecords;
+
+  // Country filter: visible only when scope spans multiple countries
+  const uniqueCountries = new Set(scopeRecords.map((r) => r.country));
+  const isMultiCountry = uniqueCountries.size > 1;
+  if (countryFilterWrap) {
+    countryFilterWrap.hidden = !isMultiCountry;
+  }
+  if (isMultiCountry) {
+    fillSelect(countryFilter, uniqueValues(scopeRecords.map((r) => r.country)), "All countries");
+  }
+
+  const selectedCountry = countryFilter.value;
+  const countryPool = selectedCountry
+    ? scopeRecords.filter((r) => r.country === selectedCountry)
+    : scopeRecords;
+
   const selectedCity = route.fixedCity || cityFilter.value;
 
   if (route.fixedCity) {
@@ -1088,10 +1158,11 @@ function refreshFilterOptions() {
     cityFilter.disabled = true;
   } else {
     cityFilter.disabled = false;
-    fillSelect(cityFilter, uniqueValues(scopeRecords.map((record) => record.city)), "All cities");
+    fillSelect(cityFilter, uniqueValues(countryPool.map((record) => record.city)), "All cities");
   }
 
   const districtPool = scopeRecords.filter((record) => {
+    if (selectedCountry && record.country !== selectedCountry) return false;
     if (!selectedCity) return true;
     return record.city === selectedCity;
   });
@@ -1138,6 +1209,7 @@ function ensureActiveRecord() {
 function filterRestaurants() {
   const search = searchInput.value.trim().toLowerCase();
   const route = currentRoute();
+  const country = countryFilter.value;
   const city = route.fixedCity || cityFilter.value;
   const district = districtFilter.value;
   const cuisine = cuisineFilter.value;
@@ -1149,6 +1221,7 @@ function filterRestaurants() {
   const reservation = reservationFilter.value;
 
   state.filtered = state.scopeRecords.filter((record) => {
+    if (country && record.country !== country) return false;
     if (city && record.city !== city) return false;
     if (district && (record.district || record.region || record.area_title) !== district) return false;
     if (cuisine && !(record.cuisines || []).includes(cuisine)) return false;
@@ -1182,16 +1255,26 @@ function filterRestaurants() {
 function renderStats() {
   const route = currentRoute();
   const filteredMapped = state.filtered.filter((record) => record.lat != null && record.lng != null).length;
+  const scopeCountries = uniqueValues(state.scopeRecords.map((r) => r.country));
+  const filteredCountries = uniqueValues(state.filtered.map((r) => r.country));
   const scopeCities = uniqueValues(state.scopeRecords.map((record) => record.city));
   const filteredCities = uniqueValues(state.filtered.map((record) => record.city));
   const filterCount = activeFilterCount();
+  const isMulti = scopeCountries.length > 1;
+
+  const scopeLoc = isMulti
+    ? `${scopeCountries.length} countries, ${scopeCities.length} cities`
+    : `${scopeCities.length} cities`;
+  const filteredLoc = isMulti
+    ? `${filteredCountries.length} ${filteredCountries.length === 1 ? "country" : "countries"}, ${filteredCities.length} ${filteredCities.length === 1 ? "city" : "cities"}`
+    : `${filteredCities.length} ${filteredCities.length === 1 ? "city" : "cities"}`;
 
   summaryStripText.textContent =
     filterCount > 0
-      ? `${state.filtered.length} of ${state.scopeRecords.length} venues shown across ${filteredCities.length} cities, ${
+      ? `${state.filtered.length} of ${state.scopeRecords.length} venues shown across ${filteredLoc}, ${
           filteredMapped === state.filtered.length ? "all mapped" : `${filteredMapped} mapped`
         }.`
-      : `${state.scopeRecords.length} venues across ${scopeCities.length} cities, ${
+      : `${state.scopeRecords.length} venues across ${scopeLoc}, ${
           filteredMapped === state.scopeRecords.length ? "all mapped" : `${filteredMapped} mapped`
         }.`;
 
@@ -1254,7 +1337,7 @@ function renderFocusCard() {
   const tSearchUrl = tabelogSignal && tabelogSignal.url ? tabelogSignal.url : tabelogSearchUrl(record);
 
   focusCard.innerHTML = `
-    <div class="focus-kicker">${escapeHtml(record.city)} / ${escapeHtml(record.district || record.region || record.area_title || record.prefecture || "")}</div>
+    <div class="focus-kicker">${escapeHtml(diningKicker(record))}</div>
     <div class="focus-title-row">
       <h3 class="focus-title">${escapeHtml(record.name)}</h3>
       ${tabelogBadge}
@@ -1302,13 +1385,15 @@ function renderFocusCard() {
           : ""
       }
       ${
-        tSearchUrl
+        record.country === "Japan" && tSearchUrl
           ? `<a class="inline-link" href="${escapeHtml(tSearchUrl)}" target="_blank" rel="noopener">${tabelogSignal && tabelogSignal.url ? "View on Tabelog" : "Search Tabelog"}</a>`
           : ""
       }
       ${
-        record.source_url
-          ? `<a class="inline-link subtle" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Pocket Concierge</a>`
+        record.website_url
+          ? `<a class="inline-link subtle" href="${escapeHtml(record.website_url)}" target="_blank" rel="noopener">Restaurant website</a>`
+          : record.source_url
+          ? `<a class="inline-link subtle" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">${record.source === "Amex Platinum Dining" ? "Amex Dining page" : "Pocket Concierge"}</a>`
           : ""
       }
       ${
@@ -1353,7 +1438,7 @@ function renderTable() {
         }
       </td>
       <td>
-        <div>${escapeHtml(record.city)}</div>
+        <div>${escapeHtml(record.country !== "Japan" ? record.country + " / " + record.city : record.city)}</div>
         <div class="table-sub">${escapeHtml(record.source_localized_address || record.district || record.region || record.area_title || "")}</div>
       </td>
       <td>${escapeHtml((record.cuisines || []).join(", ") || "Unknown")}</td>
@@ -1394,7 +1479,7 @@ function renderMobileCards() {
     card.innerHTML = `
       <div class="mobile-card-top">
         <div>
-          <div class="focus-kicker">${escapeHtml(record.city)} / ${escapeHtml(record.district || record.region || record.area_title || record.prefecture || "")}</div>
+          <div class="focus-kicker">${escapeHtml(diningKicker(record))}</div>
           <h3 class="mobile-card-title">${escapeHtml(record.name)}</h3>
           <div class="mobile-card-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
         </div>
@@ -2152,12 +2237,17 @@ function handleHashRoute() {
 }
 
 async function init() {
-  const [restaurantResponse, staysResponse, staysMetaResponse] = await Promise.all([
+  const [restaurantResponse, globalResponse, staysResponse, staysMetaResponse] = await Promise.all([
     fetch(DATA_URL),
+    fetch(GLOBAL_DATA_URL).catch(() => null),
     fetch(STAYS_DATA_URL),
     fetch(STAYS_META_URL).catch(() => null),
   ]);
   state.restaurants = await restaurantResponse.json();
+  if (globalResponse && globalResponse.ok) {
+    const globalRecs = await globalResponse.json();
+    state.restaurants = [...state.restaurants, ...globalRecs];
+  }
   state.restaurants.forEach((record) => {
     record.search_text = (record.search_text || "").toLowerCase();
   });
@@ -2184,6 +2274,11 @@ async function init() {
 }
 
 searchInput.addEventListener("input", filterRestaurants);
+countryFilter.addEventListener("change", () => {
+  cityFilter.value = "";
+  refreshFilterOptions();
+  filterRestaurants();
+});
 cityFilter.addEventListener("change", () => {
   refreshFilterOptions();
   filterRestaurants();
