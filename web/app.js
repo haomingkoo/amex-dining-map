@@ -494,6 +494,12 @@ const tableSummary = document.getElementById("table-summary");
 const mobileSummary = document.getElementById("mobile-summary");
 const resultsTableBody = document.getElementById("results-table-body");
 const mobileResultsList = document.getElementById("mobile-results-list");
+const mobileVenueSheet = document.getElementById("mobile-venue-sheet");
+const mvsName = document.getElementById("mvs-name");
+const mvsMeta = document.getElementById("mvs-meta");
+const mvsActions = document.getElementById("mvs-actions");
+const mvsRegionDot = document.getElementById("mvs-region-dot");
+const mvsDismiss = document.getElementById("mvs-dismiss");
 const staysExplorer = document.getElementById("stays-explorer");
 const staysMapFilterShell = document.getElementById("stays-map-filter-shell");
 const staysToolbar = document.getElementById("stays-filter-toolbar");
@@ -1380,8 +1386,8 @@ function renderStats() {
   resultsText.textContent = state.activeId ? `Selected venue · ${route.label}` : `Click a dot to select · ${route.label}`;
   tableSummary.textContent =
     filterCount > 0 ? "Current filtered shortlist in table form." : "Current route list in table form.";
-  mobileSummary.textContent = tableSummary.textContent;
-  mapSummary.textContent = route.mapSummary;
+  mobileSummary.textContent = `${state.filtered.length} venues${state.filtered.length > MOBILE_PAGE_SIZE ? ` — scroll to browse all` : ""}`;
+  mapSummary.textContent = window.innerWidth <= 820 ? "Tap a dot to explore a restaurant" : route.mapSummary;
   renderToolbarToggle();
   renderTableToggle();
 }
@@ -1578,15 +1584,23 @@ function renderTable() {
   });
 }
 
-function renderMobileCards() {
+const MOBILE_PAGE_SIZE = 50;
+let mobileCardPage = 1;
+
+function renderMobileCards(resetPage = true) {
+  if (resetPage) mobileCardPage = 1;
   if (!state.filtered.length) {
     mobileResultsList.innerHTML =
       '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
     return;
   }
 
+  const pageLimit = mobileCardPage * MOBILE_PAGE_SIZE;
+  const visible = state.filtered.slice(0, pageLimit);
+  const remaining = state.filtered.length - visible.length;
+
   mobileResultsList.innerHTML = "";
-  state.filtered.forEach((record) => {
+  visible.forEach((record) => {
     const card = document.createElement("article");
     card.className = `mobile-card${record.id === state.activeId ? " active" : ""}`;
     const isJapan = record.country === "Japan";
@@ -1682,13 +1696,70 @@ function renderMobileCards() {
 
     mobileResultsList.appendChild(card);
   });
+
+  if (remaining > 0) {
+    const showMore = document.createElement("button");
+    showMore.className = "mobile-show-more";
+    showMore.textContent = `Show ${Math.min(MOBILE_PAGE_SIZE, remaining).toLocaleString()} more of ${remaining.toLocaleString()} remaining`;
+    showMore.addEventListener("click", () => {
+      mobileCardPage += 1;
+      renderMobileCards(false);
+    });
+    mobileResultsList.appendChild(showMore);
+  }
+
+  // Scroll active card into view after render
+  requestAnimationFrame(() => {
+    const activeCard = mobileResultsList.querySelector(".mobile-card.active");
+    if (activeCard) activeCard.scrollIntoView({ block: "nearest" });
+  });
 }
 
 function setActiveRecord(id) {
   state.activeId = id;
   renderFocusCard();
   renderTable();
-  renderMobileCards();
+  // Ensure the active card's page is loaded on mobile
+  if (id) {
+    const idx = state.filtered.findIndex((r) => r.id === id);
+    if (idx >= 0) {
+      const neededPage = Math.ceil((idx + 1) / MOBILE_PAGE_SIZE);
+      if (neededPage > mobileCardPage) mobileCardPage = neededPage;
+    }
+  }
+  renderMobileCards(false);
+  renderMobileSheet();
+}
+
+function renderMobileSheet() {
+  if (!mobileVenueSheet) return;
+  const isMobile = window.innerWidth <= 820;
+  const record = activeRecord();
+  if (!isMobile || !record) {
+    mobileVenueSheet.classList.remove("sheet-visible");
+    return;
+  }
+  mvsRegionDot.style.background = markerColor(record);
+  mvsName.textContent = record.name;
+  const gRating = googleRating(record);
+  const ratingStr = gRating && gRating.rating != null
+    ? `★ ${gRating.rating}${gRating.review_count ? ` · ${Number(gRating.review_count).toLocaleString()} reviews` : ""}  ·  `
+    : "";
+  const cuisine = (record.cuisines || []).join(", ") || record.cuisine || "";
+  mvsMeta.textContent = `${ratingStr}${cuisine}`;
+
+  const mapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
+  mvsActions.innerHTML = `
+    <button type="button" class="ghost-btn secondary" id="mvs-scroll-btn">Full details ↓</button>
+    ${mapsUrl ? `<a class="ghost-btn secondary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps</a>` : ""}
+  `;
+  mvsActions.querySelector("#mvs-scroll-btn")?.addEventListener("click", () => {
+    const activeCard = mobileResultsList.querySelector(".mobile-card.active");
+    if (activeCard) activeCard.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  mobileVenueSheet.hidden = false;
+  requestAnimationFrame(() => mobileVenueSheet.classList.add("sheet-visible"));
 }
 function focusActiveRecordOnMap() {
   if (!hasLeaflet || !map) return;
@@ -2798,11 +2869,18 @@ window.addEventListener("resize", () => {
     fitStayMapToVisibleMarkers();
     return;
   }
-
   if (isDiningRoute()) {
     map.invalidateSize();
     fitDiningMapToVisibleMarkers();
   }
+  // Hide sheet if resized to desktop
+  if (window.innerWidth > 820 && mobileVenueSheet) {
+    mobileVenueSheet.classList.remove("sheet-visible");
+  }
+});
+
+mvsDismiss?.addEventListener("click", () => {
+  mobileVenueSheet.classList.remove("sheet-visible");
 });
 
 init().catch((error) => {
