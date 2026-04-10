@@ -1,0 +1,503 @@
+#!/usr/bin/env python3
+"""
+Scrape Amex Singapore Love Dining restaurants and hotel outlets.
+
+Usage:
+    python3 scripts/scrape_love_dining.py           # full scrape → data/love-dining.json
+    python3 scripts/scrape_love_dining.py --dry-run  # scrape but don't write, print summary
+    python3 scripts/scrape_love_dining.py --diff     # compare against existing file
+    python3 scripts/scrape_love_dining.py --no-geocode  # skip geocoding pass
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+import time
+import urllib.request
+import urllib.parse
+from pathlib import Path
+from typing import Any
+
+from playwright.sync_api import Page, sync_playwright
+
+RESTAURANTS_URL = "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html"
+HOTELS_URL = "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html"
+OUTPUT_PATH = Path(__file__).parent.parent / "data" / "love-dining.json"
+GEOCODE_CACHE_PATH = Path(__file__).parent.parent / "data" / "love-dining-geocode-cache.json"
+
+CONTEXT_OPTS: dict[str, Any] = {
+    "user_agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/123.0.0.0 Safari/537.36"
+    ),
+    "viewport": {"width": 1280, "height": 900},
+    "locale": "en-SG",
+}
+
+# Restaurants that are closed/leaving — keep in data but flag
+CLOSING_NOTES: dict[str, str] = {
+    "Jia He Grand Chinese Restaurant": "Not eligible from 26 April 2026",
+    "Quenino": "Permanently closed from 1 May 2026",
+    "Sen Of Japan": "Temporarily closed for renovation 8 April – 30 June 2026",
+}
+
+
+# ─── Playwright helpers ────────────────────────────────────────────────────────
+
+def load_and_expand(page: Page, url: str) -> str:
+    """Load a listing page, click all Details buttons, return full page text."""
+    print(f"  Loading {url}")
+    page.goto(url, wait_until="domcontentloaded", timeout=30_000)
+    page.wait_for_timeout(5_000)
+
+    details_buttons = page.query_selector_all("text=Details")
+    print(f"  Expanding {len(details_buttons)} sections...")
+    for btn in details_buttons:
+        try:
+            btn.click()
+            page.wait_for_timeout(150)
+        except Exception:
+            pass
+    page.wait_for_timeout(2_000)
+    return page.inner_text("body")
+
+
+# ─── Parsing: Restaurants ──────────────────────────────────────────────────────
+
+def parse_restaurants(text: str) -> list[dict]:
+    """Parse the expanded restaurant listing page text into records."""
+    # Find the start of the restaurant partners section
+    start = text.find("Love Dining @ Restaurants Partners")
+    if start >= 0:
+        text = text[start:]
+    # Trim footer
+    end = text.find("Your Love Dining Benefits")
+    if end >= 0:
+        text = text[:end]
+
+    records: list[dict] = []
+
+    # Split on category headers we know
+    # Categories: Asian, Contemporary, Western
+    # Each restaurant block looks like:
+    #   NAME\nDetails\n[optional note]\nCuisine: ...\nAddress:\n...\nFind on map\nTel: ...\nVisit Website\n[reservation note]\nTerms and Conditions
+    current_cuisine_cat = ""
+    cat_re = re.compile(r"^(Asian|Contemporary|Western)$", re.MULTILINE)
+
+    # Work through line by line to identify restaurant blocks
+    lines = [l.strip() for l in text.splitlines()]
+    # Remove empty lines for easier processing
+    non_empty = [l for l in lines if l]
+
+    i = 0
+    while i < len(non_empty):
+        line = non_empty[i]
+
+        # Track cuisine category header
+        if cat_re.match(line):
+            current_cuisine_cat = line
+            i += 1
+            continue
+
+        # Detect restaurant name — preceded by a "Details" on the next non-empty line
+        if i + 1 < len(non_empty) and non_empty[i + 1] == "Details":
+            name = line
+            i += 2  # skip name + "Details"
+
+            cuisine = ""
+            address_lines: list[str] = []
+            phones: list[str] = []
+            website = ""
+            notes: list[str] = []
+            hours: list[str] = []
+
+            # Now consume lines until "Terms and Conditions" or next restaurant name
+            while i < len(non_empty):
+                l = non_empty[i]
+                if l == "Terms and Conditions":
+                    i += 1
+                    break
+                if l == "Find on map":
+                    i += 1
+                    continue
+                if l == "Visit Website":
+                    i += 1
+                    continue
+                if l.startswith("Cuisine:"):
+                    cuisine = l.replace("Cuisine:", "").strip()
+                    i += 1
+                    continue
+                if l == "Address:":
+                    i += 1
+                    # Collect address lines until next "Find on map" or known keyword
+                    while i < len(non_empty):
+                        al = non_empty[i]
+                        if al in ("Find on map", "Tel:", "Visit Website", "Terms and Conditions", "Cuisine:", "Address:"):
+                            break
+                        if al.startswith("Tel:") or al.startswith("Opening Hours:"):
+                            break
+                        address_lines.append(al)
+                        i += 1
+                    continue
+                if l.startswith("Tel:") or l.startswith("Tel "):
+                    phones.append(l.split(":", 1)[1].strip())
+                    i += 1
+                    continue
+                if l == "Opening Hours:":
+                    i += 1
+                    while i < len(non_empty):
+                        hl = non_empty[i]
+                        if hl in ("Address:", "Tel:", "Find on map", "Visit Website", "Terms and Conditions", "Cuisine:"):
+                            break
+                        hours.append(hl)
+                        i += 1
+                    continue
+                # Treat everything else as a note/description
+                if l and not l.startswith("*") and l not in ("Details",):
+                    notes.append(l)
+                i += 1
+
+            address = " ".join(address_lines).strip()
+            # Clean up Singapore postal code formatting
+            address = re.sub(r"\s+", " ", address)
+
+            slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+            record: dict = {
+                "id": f"love-{slug}",
+                "name": name,
+                "type": "restaurant",
+                "cuisine_category": current_cuisine_cat,
+                "cuisine": cuisine,
+                "address": address,
+                "city": "Singapore",
+                "country": "Singapore",
+                "phone": " / ".join(phones),
+                "opening_hours": "; ".join(hours) if hours else "",
+                "notes": " ".join(notes) if notes else "",
+                "source": "Amex Love Dining",
+                "source_url": RESTAURANTS_URL,
+            }
+            if name in CLOSING_NOTES:
+                record["closing_note"] = CLOSING_NOTES[name]
+
+            records.append(record)
+            continue
+
+        i += 1
+
+    return records
+
+
+# ─── Parsing: Hotels ──────────────────────────────────────────────────────────
+
+def parse_hotels(text: str) -> list[dict]:
+    """Parse the expanded hotel listing page text into records."""
+    start = text.find("Love Dining @ Hotels Partners")
+    if start >= 0:
+        text = text[start:]
+    end = text.find("Love Dining @ Hotels")
+    # Make sure we're not cutting too early
+    if end >= 0 and end < 100:
+        end = text.find("Love Dining @ Hotels", end + 10)
+    # Trim footer
+    footer = text.find("GET AN AMERICAN EXPRESS CARD")
+    if footer >= 0:
+        text = text[:footer]
+
+    records: list[dict] = []
+    lines = [l.strip() for l in text.splitlines()]
+    non_empty = [l for l in lines if l]
+
+    # Hotel blocks: Hotel Name line followed by address, then description, then outlets
+    # Detect hotel names by known list
+    KNOWN_HOTELS = {
+        "Fairmont Singapore",
+        "Swissôtel The Stamford",
+        "Pullman Singapore Hill Street",
+        "Sofitel Singapore City Centre",
+        "Pan Pacific Orchard, Singapore",
+        "The Fullerton Hotel Singapore",
+        "The Capitol Kempinski Hotel Singapore",
+        "JW Marriott Singapore South Beach",
+        "Singapore Marriott Tang Plaza Hotel",
+        "The St. Regis Singapore",
+        "W Singapore - Sentosa Cove",
+        "Copthorne King\u2019s Hotel Singapore",  # smart apostrophe as on page
+        "Grand Copthorne Waterfront Singapore",
+        "M Hotel Singapore",
+        "Orchard Hotel Singapore",
+        "Paradox Singapore Merchant Court",
+        "Resorts World Sentosa",
+    }
+
+    current_hotel = ""
+    current_hotel_address = ""
+
+    i = 0
+    while i < len(non_empty):
+        line = non_empty[i]
+
+        # Detect hotel name
+        if line in KNOWN_HOTELS:
+            current_hotel = line
+            i += 1
+            # Next line is usually hotel address
+            if i < len(non_empty):
+                addr = non_empty[i]
+                # Simple check: contains "Singapore" and looks like address
+                if "Singapore" in addr or "Road" in addr or "Street" in addr:
+                    current_hotel_address = addr
+                    i += 1
+            continue
+
+        # Detect outlet name — next line is "Details"
+        if current_hotel and i + 1 < len(non_empty) and non_empty[i + 1] == "Details":
+            outlet_name = line
+            i += 2  # skip outlet name + "Details"
+
+            cuisine = ""
+            address_lines: list[str] = []
+            phones: list[str] = []
+            hours: list[str] = []
+            notes: list[str] = []
+
+            while i < len(non_empty):
+                l = non_empty[i]
+                if l == "Terms and Conditions":
+                    i += 1
+                    break
+                if l in ("Find on map", "Visit Website"):
+                    i += 1
+                    continue
+                if l.startswith("Cuisine:"):
+                    cuisine = l.replace("Cuisine:", "").strip()
+                    i += 1
+                    continue
+                if l == "Opening Hours:":
+                    i += 1
+                    while i < len(non_empty):
+                        hl = non_empty[i]
+                        if hl in ("Address:", "Tel:", "Find on map", "Visit Website",
+                                  "Terms and Conditions", "Cuisine:"):
+                            break
+                        hours.append(hl)
+                        i += 1
+                    continue
+                if l == "Address:":
+                    i += 1
+                    while i < len(non_empty):
+                        al = non_empty[i]
+                        if al in ("Find on map", "Tel:", "Visit Website",
+                                  "Terms and Conditions", "Cuisine:", "Address:", "Opening Hours:"):
+                            break
+                        if al.startswith("Tel:") or al.startswith("Opening Hours:"):
+                            break
+                        address_lines.append(al)
+                        i += 1
+                    continue
+                if l.startswith("Tel:") or l.startswith("Tel "):
+                    phones.append(l.split(":", 1)[1].strip())
+                    i += 1
+                    continue
+                if l and l not in ("Details",):
+                    notes.append(l)
+                i += 1
+
+            address = " ".join(address_lines).strip() or current_hotel_address
+            address = re.sub(r"\s+", " ", address)
+
+            slug = re.sub(r"[^a-z0-9]+", "-", f"{current_hotel}-{outlet_name}".lower()).strip("-")
+            record: dict = {
+                "id": f"love-{slug}",
+                "name": outlet_name,
+                "hotel": current_hotel,
+                "type": "hotel",
+                "cuisine": cuisine,
+                "address": address,
+                "city": "Singapore",
+                "country": "Singapore",
+                "phone": " / ".join(phones),
+                "opening_hours": "; ".join(hours) if hours else "",
+                "notes": " ".join(notes) if notes else "",
+                "source": "Amex Love Dining",
+                "source_url": HOTELS_URL,
+            }
+            records.append(record)
+            continue
+
+        i += 1
+
+    return records
+
+
+# ─── Geocoding ────────────────────────────────────────────────────────────────
+
+def _nominatim(query: str) -> tuple[float, float] | None:
+    encoded = urllib.parse.quote(query)
+    url = f"https://nominatim.openstreetmap.org/search?q={encoded}&format=json&limit=1&countrycodes=sg"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "amex-dining-map/1.0"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+        if data:
+            return float(data[0]["lat"]), float(data[0]["lon"])
+    except Exception:
+        pass
+    return None
+
+
+def geocode_address(address: str, cache: dict) -> tuple[float, float] | None:
+    """Geocode a Singapore address using Nominatim. Returns (lat, lon) or None.
+
+    Tries multiple strategies:
+    1. Singapore postal code (most reliable)
+    2. First address fragment before second location (for multi-location venues)
+    3. Street number + street name
+    4. Full address
+    """
+    if address in cache:
+        return cache[address]
+
+    # Strategy 1: extract postal code (6 digits after "Singapore")
+    postal = re.search(r"Singapore\s+(\d{6})", address)
+    if not postal:
+        postal = re.search(r"\b(\d{6})\b", address)
+    if postal:
+        result = _nominatim(f"Singapore {postal.group(1)}")
+        if result:
+            cache[address] = list(result)
+            return result
+        time.sleep(1.1)
+
+    # Strategy 2: take only the first address block (before second location)
+    # Multi-location addresses have two addresses concatenated
+    first_addr = re.split(r"(?<=\d{6})\s+\d+\s", address)[0].strip()
+    if first_addr != address:
+        result = _nominatim(f"{first_addr}, Singapore")
+        if result:
+            cache[address] = list(result)
+            return result
+        time.sleep(1.1)
+
+    # Strategy 3: full address
+    result = _nominatim(f"{address}, Singapore")
+    if result:
+        cache[address] = list(result)
+        return result
+
+    cache[address] = None
+    return None
+
+
+def geocode_all(records: list[dict], skip: bool = False) -> list[dict]:
+    """Add lat/lon to every record. Uses a file cache to avoid re-fetching."""
+    if skip:
+        return records
+
+    cache: dict = {}
+    if GEOCODE_CACHE_PATH.exists():
+        cache = json.loads(GEOCODE_CACHE_PATH.read_text())
+
+    total = len(records)
+    for i, rec in enumerate(records, 1):
+        if rec.get("lat") and rec.get("lon"):
+            continue
+        addr = rec.get("address", "")
+        if not addr:
+            print(f"  [{i}/{total}] {rec['name']} — no address, skipping geocode")
+            continue
+
+        result = geocode_address(addr, cache)
+        if result:
+            rec["lat"] = result[0]
+            rec["lon"] = result[1]
+            print(f"  [{i}/{total}] {rec['name']} → {result[0]:.4f}, {result[1]:.4f}")
+        else:
+            print(f"  [{i}/{total}] {rec['name']} — geocode failed for: {addr}")
+        time.sleep(1.1)  # Nominatim rate limit: 1 req/sec
+
+    GEOCODE_CACHE_PATH.write_text(json.dumps(cache, indent=2, ensure_ascii=False) + "\n")
+    return records
+
+
+# ─── Diff ─────────────────────────────────────────────────────────────────────
+
+def run_diff(new_records: list[dict]) -> None:
+    if not OUTPUT_PATH.exists():
+        print("No existing file to diff against.")
+        return
+    old = json.loads(OUTPUT_PATH.read_text())
+    old_names = {r["name"] for r in old}
+    new_names = {r["name"] for r in new_records}
+    added = new_names - old_names
+    removed = old_names - new_names
+    print(f"\nDiff: +{len(added)} added, -{len(removed)} removed, {len(new_names)} total")
+    for n in sorted(added):
+        print(f"  + {n}")
+    for n in sorted(removed):
+        print(f"  - {n}")
+
+
+# ─── Main ─────────────────────────────────────────────────────────────────────
+
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="Scrape Amex Love Dining Singapore")
+    p.add_argument("--dry-run", action="store_true", help="Scrape, print summary, don't write")
+    p.add_argument("--diff", action="store_true", help="Show additions/removals vs existing file")
+    p.add_argument("--no-geocode", action="store_true", help="Skip geocoding pass")
+    return p.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+
+    print("Launching browser...")
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        ctx = browser.new_context(**CONTEXT_OPTS)
+        page = ctx.new_page()
+
+        rest_text = load_and_expand(page, RESTAURANTS_URL)
+        hotel_text = load_and_expand(page, HOTELS_URL)
+        browser.close()
+
+    print("\nParsing restaurants...")
+    restaurants = parse_restaurants(rest_text)
+    print(f"  → {len(restaurants)} restaurants")
+
+    print("Parsing hotel outlets...")
+    hotels = parse_hotels(hotel_text)
+    print(f"  → {len(hotels)} hotel outlets")
+
+    all_records = restaurants + hotels
+    print(f"\nTotal: {len(all_records)} venues")
+
+    if args.dry_run:
+        print("\nRestaurants:")
+        for r in restaurants:
+            print(f"  {r['name']} | {r['cuisine']} | {r['address']} | {r['phone']}")
+        print("\nHotel outlets:")
+        for r in hotels:
+            print(f"  [{r['hotel']}] {r['name']} | {r['cuisine']} | {r['address']} | {r['phone']}")
+        return
+
+    if args.diff:
+        run_diff(all_records)
+        return
+
+    print("\nGeocoding...")
+    all_records = geocode_all(all_records, skip=args.no_geocode)
+
+    geocoded = sum(1 for r in all_records if r.get("lat"))
+    print(f"\nGeocoded: {geocoded}/{len(all_records)}")
+
+    OUTPUT_PATH.write_text(json.dumps(all_records, indent=2, ensure_ascii=False) + "\n")
+    print(f"Written → {OUTPUT_PATH}")
+
+
+if __name__ == "__main__":
+    main()

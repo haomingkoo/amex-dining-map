@@ -677,6 +677,8 @@ input,
 
 .legend-japan { background: #d6a44c; }
 .legend-global { background: #4db8a6; }
+.legend-love-rest { background: #e06b8b; }
+.legend-love-hotel { background: #9b6bd6; }
 
 .focus-panel {
   display: flex;
@@ -1165,6 +1167,11 @@ tr {
   color: var(--text-secondary);
 }
 
+.focus-note-warn {
+  border-left-color: rgba(224, 107, 139, 0.5);
+  background: rgba(224, 107, 139, 0.06);
+}
+
 .focus-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1325,6 +1332,18 @@ tr {
   border-color: rgba(168, 142, 255, 0.3);
   background: rgba(168, 142, 255, 0.08);
   color: var(--violet);
+}
+
+.badge.love-rest {
+  border-color: rgba(224, 107, 139, 0.35);
+  background: rgba(224, 107, 139, 0.1);
+  color: #e06b8b;
+}
+
+.badge.love-hotel {
+  border-color: rgba(155, 107, 214, 0.35);
+  background: rgba(155, 107, 214, 0.1);
+  color: #9b6bd6;
 }
 
 .venue-tags {

@@ -520,6 +520,95 @@
         </section>
       </div>
 
+      <!-- ═══════════════════════════════════════════════
+           LOVE DINING EXPLORER
+      ════════════════════════════════════════════════ -->
+      <div id="love-dining-explorer" hidden>
+        <section class="summary-strip panel-surface">
+          <p class="summary-strip-text" id="love-summary-strip-text">Loading...</p>
+        </section>
+
+        <section class="explorer-grid">
+          <section class="map-panel panel-surface">
+            <div class="panel-head">
+              <div>
+                <h2>Singapore dining map</h2>
+                <p id="love-map-summary">Up to 50% off your food bill at participating restaurants and hotel outlets islandwide.</p>
+              </div>
+            </div>
+
+            <section class="map-filter-shell" id="love-map-filter-shell">
+              <button
+                id="love-toolbar-toggle"
+                type="button"
+                class="toolbar-toggle panel-surface"
+                aria-expanded="false"
+                aria-controls="love-filter-toolbar"
+              >
+                <span>
+                  <span class="toolbar-toggle-title">Refine</span>
+                  <span class="toolbar-toggle-meta" id="love-toolbar-toggle-meta">All filters off</span>
+                </span>
+                <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
+              </button>
+
+              <section class="toolbar panel-surface" id="love-filter-toolbar">
+                <label class="search-wrap">
+                  <span class="label">Search</span>
+                  <input id="love-search-input" type="search" placeholder="Venue, cuisine, hotel..." />
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Type</span>
+                  <select id="love-type-filter">
+                    <option value="">All venues</option>
+                    <option value="restaurant">Restaurants</option>
+                    <option value="hotel">Hotel outlets</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Cuisine</span>
+                  <select id="love-cuisine-filter">
+                    <option value="">All cuisines</option>
+                  </select>
+                </label>
+
+                <div class="filter-actions">
+                  <button id="love-reset-filters" type="button" class="ghost-btn">Clear filters</button>
+                </div>
+              </section>
+            </section>
+
+            <div id="love-map"></div>
+            <div class="map-legend" id="love-map-legend">
+              <span class="legend-item"><span class="legend-dot legend-love-rest"></span>Restaurant</span>
+              <span class="legend-item"><span class="legend-dot legend-love-hotel"></span>Hotel outlet</span>
+            </div>
+          </section>
+
+          <aside class="focus-panel panel-surface">
+            <div class="panel-head">
+              <div>
+                <h2>Selected venue</h2>
+                <p id="love-results-text">Select a pin on the map</p>
+              </div>
+            </div>
+            <div class="focus-body" id="love-focus-card"></div>
+          </aside>
+        </section>
+
+        <section class="mobile-results-panel panel-surface">
+          <div class="panel-head">
+            <div>
+              <h2>Venues</h2>
+              <p id="love-mobile-summary">Loading...</p>
+            </div>
+          </div>
+          <div class="mobile-results-list" id="love-mobile-results-list"></div>
+        </section>
+      </div>
+
     </div><!-- /page-shell -->
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

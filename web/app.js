@@ -2,8 +2,10 @@ const DATA_URL = "./data/japan-restaurants.json";
 const GLOBAL_DATA_URL = "./data/global-restaurants.json";
 const STAYS_DATA_URL = "./data/plat-stays.json";
 const STAYS_META_URL = "./data/plat-stay-source.json";
+const LOVE_DINING_DATA_URL = "./data/love-dining.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
+const LOVE_FIT_OPTIONS = { padding: [48, 48], maxZoom: 15 };
 const INTRO_STORAGE_KEY = "amex-benefits-intro-v3";
 
 const LUNCH_BANDS = [
@@ -213,13 +215,10 @@ const ROUTES = {
     id: "love-dining",
     programId: "love-dining",
     label: "Overview",
-    eyebrow: "Love Dining / Sprint 3",
-    title: "Love Dining Explorer",
+    eyebrow: "Love Dining / Singapore",
+    title: "Love Dining",
     description:
-      "Singapore dining explorer for restaurant and hotel dining partners. The dataset will merge official venue cards with the corresponding T&C PDFs so users can browse both the outlet and the rule set.",
-    briefTitle: "Love Dining Buildout",
-    briefSummary:
-      "Love Dining is strong app material because the official pages expose venue detail while the T&C PDFs give the harder eligibility and savings rules.",
+      "Up to 50% off your food bill at 30 standalone restaurants and 49 hotel dining outlets across Singapore.",
     briefCards: [
       {
         kicker: "Primary sources",
@@ -329,11 +328,16 @@ const state = {
   stayToolbarOpen: false,
   stayTableOpen: false,
   stayBlockedCount: 0,
+  loveDining: [],
+  loveDiningFiltered: [],
+  loveDiningMarkers: new Map(),
+  loveDiningActiveId: null,
 };
 
 const hasLeaflet = typeof window !== "undefined" && typeof window.L !== "undefined";
 const mapElement = document.getElementById("map");
 const staysMapElement = document.getElementById("stays-map");
+const loveDiningMapElement = document.getElementById("love-map");
 
 const map = hasLeaflet
   ? L.map("map", {
@@ -349,25 +353,30 @@ const staysMap = hasLeaflet
     }).setView([20, 10], 2)
   : null;
 
-if (hasLeaflet) {
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: "abcd",
-    maxZoom: 20,
-  }).addTo(map);
+const loveMap = hasLeaflet
+  ? L.map("love-map", {
+      zoomControl: true,
+      scrollWheelZoom: true,
+    }).setView([1.3521, 103.8198], 12)
+  : null;
 
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+if (hasLeaflet) {
+  const TILE_URL = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+  const TILE_OPTS = {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
     subdomains: "abcd",
     maxZoom: 20,
-  }).addTo(staysMap);
+  };
+  L.tileLayer(TILE_URL, TILE_OPTS).addTo(map);
+  L.tileLayer(TILE_URL, TILE_OPTS).addTo(staysMap);
+  L.tileLayer(TILE_URL, TILE_OPTS).addTo(loveMap);
 } else {
   mapElement.innerHTML =
     '<div class="empty-state">Map library failed to load. Dining results are still available below.</div>';
   staysMapElement.innerHTML =
     '<div class="empty-state">Map library failed to load. Plat Stay results are still available below.</div>';
+  loveDiningMapElement.innerHTML =
+    '<div class="empty-state">Map library failed to load. Venue list is still available below.</div>';
 }
 
 const routeEyebrow = document.getElementById("route-eyebrow");
@@ -456,6 +465,21 @@ const staysMobileSummary = document.getElementById("stays-mobile-summary");
 const staysResultsTableBody = document.getElementById("stays-results-table-body");
 const staysMobileResultsList = document.getElementById("stays-mobile-results-list");
 const stayPresetButtons = [...document.querySelectorAll("[data-stay-preset]")];
+
+const loveDiningExplorer = document.getElementById("love-dining-explorer");
+const loveSummaryStripText = document.getElementById("love-summary-strip-text");
+const loveMapFilterShell = document.getElementById("love-map-filter-shell");
+const loveToolbar = document.getElementById("love-filter-toolbar");
+const loveToolbarToggle = document.getElementById("love-toolbar-toggle");
+const loveToolbarToggleMeta = document.getElementById("love-toolbar-toggle-meta");
+const loveSearchInput = document.getElementById("love-search-input");
+const loveTypeFilter = document.getElementById("love-type-filter");
+const loveCuisineFilter = document.getElementById("love-cuisine-filter");
+const loveResetFiltersBtn = document.getElementById("love-reset-filters");
+const loveResultsText = document.getElementById("love-results-text");
+const loveFocusCard = document.getElementById("love-focus-card");
+const loveMobileSummary = document.getElementById("love-mobile-summary");
+const loveMobileResultsList = document.getElementById("love-mobile-results-list");
 
 function escapeHtml(value) {
   return String(value)
@@ -812,7 +836,7 @@ function isStayRoute(route = currentRoute()) {
 }
 
 function isLiveDataRoute(route = currentRoute()) {
-  return isDiningRoute(route) || isStayRoute(route);
+  return isDiningRoute(route) || isStayRoute(route) || isLoveDiningRoute(route);
 }
 
 function currentJourneyId(route = currentRoute()) {
@@ -2176,6 +2200,214 @@ function fitStayMapToVisibleMarkers() {
   staysMap.fitBounds(L.latLngBounds(latLngs), STAYS_FIT_OPTIONS);
 }
 
+// ─── Love Dining ──────────────────────────────────────────────────────────────
+
+function isLoveDiningRoute(route = currentRoute()) {
+  return route.programId === "love-dining";
+}
+
+function clearLoveDiningMarkers() {
+  if (!hasLeaflet || !loveMap) {
+    state.loveDiningMarkers.clear();
+    return;
+  }
+  state.loveDiningMarkers.forEach((m) => loveMap.removeLayer(m));
+  state.loveDiningMarkers.clear();
+}
+
+function createLoveDiningMarker(record) {
+  if (!hasLeaflet || !loveMap) return null;
+  if (record.lat == null || record.lon == null) return null;
+  const color = record.type === "hotel" ? "#9b6bd6" : "#e06b8b";
+  const marker = L.circleMarker([record.lat, record.lon], {
+    radius: 8,
+    fillColor: color,
+    fillOpacity: 0.9,
+    color: "#091018",
+    weight: 1.5,
+  });
+  marker.on("click", () => {
+    state.loveDiningActiveId = record.id;
+    renderLoveDiningCard();
+    renderLoveDiningMobileList();
+    updateLoveDiningMarkerStyles();
+  });
+  return marker;
+}
+
+function updateLoveDiningMarkerStyles() {
+  state.loveDiningMarkers.forEach((marker, id) => {
+    const isActive = id === state.loveDiningActiveId;
+    marker.setStyle({
+      radius: isActive ? 11 : 8,
+      weight: isActive ? 2.5 : 1.5,
+    });
+  });
+}
+
+function renderLoveDiningMarkers() {
+  if (!hasLeaflet || !loveMap) return;
+  clearLoveDiningMarkers();
+  state.loveDiningFiltered.forEach((record) => {
+    const marker = createLoveDiningMarker(record);
+    if (!marker) return;
+    marker.addTo(loveMap);
+    state.loveDiningMarkers.set(record.id, marker);
+  });
+}
+
+function fitLoveDiningMap() {
+  if (!hasLeaflet || !loveMap) return;
+  const latLngs = state.loveDiningFiltered
+    .filter((r) => r.lat != null && r.lon != null)
+    .map((r) => [r.lat, r.lon]);
+  if (!latLngs.length) return;
+  if (latLngs.length === 1) {
+    loveMap.setView(latLngs[0], 15);
+    return;
+  }
+  loveMap.fitBounds(L.latLngBounds(latLngs), LOVE_FIT_OPTIONS);
+}
+
+function focusLoveDiningOnMap(record) {
+  if (!hasLeaflet || !loveMap || record.lat == null) return;
+  loveMap.setView([record.lat, record.lon], 16);
+}
+
+function refreshLoveDiningCuisineOptions() {
+  const cuisines = [...new Set(state.loveDining.map((r) => r.cuisine).filter(Boolean))].sort();
+  const current = loveCuisineFilter.value;
+  loveCuisineFilter.innerHTML = '<option value="">All cuisines</option>';
+  cuisines.forEach((c) => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    if (c === current) opt.selected = true;
+    loveCuisineFilter.appendChild(opt);
+  });
+}
+
+function filterLoveDining() {
+  const search = (loveSearchInput.value || "").trim().toLowerCase();
+  const type = loveTypeFilter.value;
+  const cuisine = loveCuisineFilter.value;
+
+  state.loveDiningFiltered = state.loveDining.filter((r) => {
+    if (type && r.type !== type) return false;
+    if (cuisine && r.cuisine !== cuisine) return false;
+    if (search) {
+      const hay = [r.name, r.hotel, r.cuisine, r.address].filter(Boolean).join(" ").toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+
+  const n = state.loveDiningFiltered.length;
+  const total = state.loveDining.length;
+  loveSummaryStripText.textContent = n === total
+    ? `${total} venues · Up to 50% off your food bill`
+    : `${n} of ${total} venues`;
+  loveResultsText.textContent = `${n} venue${n === 1 ? "" : "s"} shown`;
+  loveMobileSummary.textContent = `${n} venue${n === 1 ? "" : "s"}`;
+
+  // Active filters summary
+  const active = [type && (type === "hotel" ? "Hotels" : "Restaurants"), cuisine].filter(Boolean);
+  loveToolbarToggleMeta.textContent = active.length ? active.join(", ") : "All filters off";
+
+  renderLoveDiningMarkers();
+  renderLoveDiningCard();
+  renderLoveDiningMobileList();
+}
+
+function renderLoveDiningCard() {
+  const record = state.loveDining.find((r) => r.id === state.loveDiningActiveId) || null;
+  if (!record) {
+    loveFocusCard.innerHTML = '<div class="empty-state">Select a venue on the map or from the list below.</div>';
+    return;
+  }
+
+  const hotelLine = record.hotel ? `<div class="focus-kicker">${escapeHtml(record.hotel)}</div>` : "";
+  const typeBadge = `<span class="badge ${record.type === "hotel" ? "love-hotel" : "love-rest"}">${record.type === "hotel" ? "Hotel outlet" : "Restaurant"}</span>`;
+  const cuisineBadge = record.cuisine ? `<span class="badge">${escapeHtml(record.cuisine)}</span>` : "";
+  const closingNote = record.closing_note
+    ? `<div class="focus-note focus-note-warn">${escapeHtml(record.closing_note)}</div>` : "";
+  const halal = record.notes && (record.notes.includes("Halal") || record.notes.includes("Muslim"))
+    ? `<div class="focus-note">Halal certified</div>` : "";
+
+  const googleMapsUrl = record.lat != null
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(record.name + " " + record.address)}`
+    : null;
+
+  loveFocusCard.innerHTML = `
+    <div class="focus-head">
+      ${hotelLine}
+      <div class="focus-name">${escapeHtml(record.name)}</div>
+      <div class="venue-tags" style="margin-top:6px">${typeBadge}${cuisineBadge}</div>
+    </div>
+    ${closingNote}
+    ${halal}
+    <div class="focus-section">
+      ${record.address ? `<div class="focus-row"><span class="focus-label">Address</span><span>${escapeHtml(record.address)}</span></div>` : ""}
+      ${record.phone ? `<div class="focus-row"><span class="focus-label">Phone</span><span>${escapeHtml(record.phone)}</span></div>` : ""}
+      ${record.opening_hours ? `<div class="focus-row"><span class="focus-label">Hours</span><span>${escapeHtml(record.opening_hours)}</span></div>` : ""}
+    </div>
+    <div class="focus-actions">
+      ${googleMapsUrl ? `<a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Open in Google Maps</a>` : ""}
+      <a class="inline-link subtle" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">View on Amex SG</a>
+      ${record.lat != null ? `<button type="button" class="ghost-btn secondary" data-love-focus-map="true">Center on map</button>` : ""}
+    </div>
+  `;
+
+  const centerBtn = loveFocusCard.querySelector("[data-love-focus-map='true']");
+  if (centerBtn) {
+    centerBtn.addEventListener("click", () => {
+      const r = state.loveDining.find((x) => x.id === state.loveDiningActiveId);
+      if (r) focusLoveDiningOnMap(r);
+    });
+  }
+}
+
+function renderLoveDiningMobileList() {
+  if (!state.loveDiningFiltered.length) {
+    loveMobileResultsList.innerHTML = '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
+    return;
+  }
+  loveMobileResultsList.innerHTML = "";
+  state.loveDiningFiltered.forEach((record) => {
+    const card = document.createElement("article");
+    card.className = `mobile-card${record.id === state.loveDiningActiveId ? " active" : ""}`;
+    card.innerHTML = `
+      <div class="mobile-card-head">
+        <div>
+          ${record.hotel ? `<div class="mobile-card-kicker">${escapeHtml(record.hotel)}</div>` : ""}
+          <div class="mobile-card-title">${escapeHtml(record.name)}</div>
+          <div class="mobile-card-sub">${escapeHtml(record.cuisine || "")} · ${record.type === "hotel" ? "Hotel outlet" : "Restaurant"}</div>
+        </div>
+      </div>
+      <div class="mobile-card-meta">
+        ${record.address ? `<span>${escapeHtml(record.address)}</span>` : ""}
+        ${record.phone ? `<span>${escapeHtml(record.phone)}</span>` : ""}
+      </div>
+    `;
+    card.addEventListener("click", () => {
+      state.loveDiningActiveId = record.id;
+      renderLoveDiningCard();
+      renderLoveDiningMobileList();
+      updateLoveDiningMarkerStyles();
+      if (record.lat != null) focusLoveDiningOnMap(record);
+    });
+    loveMobileResultsList.appendChild(card);
+  });
+}
+
+function setLoveToolbarOpen(open) {
+  loveToolbar.hidden = !open;
+  loveToolbarToggle.setAttribute("aria-expanded", String(open));
+  loveToolbarToggle.querySelector(".toolbar-toggle-icon").textContent = open ? "−" : "+";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function applyRoute(routeId) {
   state.routeId = ROUTES[routeId] ? routeId : PROGRAMS.dining.defaultRoute;
   const route = currentRoute();
@@ -2190,6 +2422,7 @@ function applyRoute(routeId) {
   if (isStayRoute(route)) {
     dataExplorer.hidden = true;
     staysExplorer.hidden = false;
+    loveDiningExplorer.hidden = true;
     renderStayDownloads(route);
     refreshStayFilterOptions();
     filterStays();
@@ -2202,9 +2435,26 @@ function applyRoute(routeId) {
     return;
   }
 
+  if (isLoveDiningRoute(route)) {
+    dataExplorer.hidden = true;
+    staysExplorer.hidden = true;
+    loveDiningExplorer.hidden = false;
+    setLoveToolbarOpen(false);
+    state.loveDiningActiveId = null;
+    filterLoveDining();
+    if (hasLeaflet && loveMap) {
+      setTimeout(() => {
+        loveMap.invalidateSize();
+        fitLoveDiningMap();
+      }, 0);
+    }
+    return;
+  }
+
   if (!isDiningRoute(route)) {
     dataExplorer.hidden = true;
     staysExplorer.hidden = true;
+    loveDiningExplorer.hidden = true;
     state.scopeRecords = [];
     state.filtered = [];
     state.activeId = null;
@@ -2212,6 +2462,7 @@ function applyRoute(routeId) {
     state.stayActiveId = null;
     clearMarkers();
     clearStayMarkers();
+    clearLoveDiningMarkers();
     setToolbarOpen(false);
     setTableOpen(false);
     setStayToolbarOpen(false);
@@ -2221,6 +2472,7 @@ function applyRoute(routeId) {
 
   dataExplorer.hidden = false;
   staysExplorer.hidden = true;
+  loveDiningExplorer.hidden = true;
   setToolbarOpen(false);
   state.scopeRecords = state.restaurants.filter((record) => route.matcher(record));
   state.activeId = null;
@@ -2240,11 +2492,12 @@ function handleHashRoute() {
 }
 
 async function init() {
-  const [restaurantResponse, globalResponse, staysResponse, staysMetaResponse] = await Promise.all([
+  const [restaurantResponse, globalResponse, staysResponse, staysMetaResponse, loveDiningResponse] = await Promise.all([
     fetch(DATA_URL),
     fetch(GLOBAL_DATA_URL).catch(() => null),
     fetch(STAYS_DATA_URL),
     fetch(STAYS_META_URL).catch(() => null),
+    fetch(LOVE_DINING_DATA_URL).catch(() => null),
   ]);
   state.restaurants = await restaurantResponse.json();
   if (globalResponse && globalResponse.ok) {
@@ -2263,11 +2516,15 @@ async function init() {
   if (staysMetaResponse && staysMetaResponse.ok) {
     state.staysSourceMeta = await staysMetaResponse.json();
   }
+  if (loveDiningResponse && loveDiningResponse.ok) {
+    state.loveDining = await loveDiningResponse.json();
+    refreshLoveDiningCuisineOptions();
+  }
 
   setToolbarOpen(false);
   setTableOpen(false);
   setStayToolbarOpen(false);
-  setStayTableOpen(false);
+  setLoveToolbarOpen(false);
   handleHashRoute();
   if (!window.location.hash) {
     window.location.hash = "#/dining/world";
@@ -2303,6 +2560,20 @@ resetFiltersButton.addEventListener("click", () => {
   resetFilterControls();
   refreshFilterOptions();
   filterRestaurants();
+});
+
+// Love Dining events
+loveSearchInput.addEventListener("input", filterLoveDining);
+loveTypeFilter.addEventListener("change", filterLoveDining);
+loveCuisineFilter.addEventListener("change", filterLoveDining);
+loveResetFiltersBtn.addEventListener("click", () => {
+  loveSearchInput.value = "";
+  loveTypeFilter.value = "";
+  loveCuisineFilter.value = "";
+  filterLoveDining();
+});
+loveToolbarToggle.addEventListener("click", () => {
+  setLoveToolbarOpen(loveToolbar.hidden);
 });
 
 introSkipTopButton?.addEventListener("click", () => {
