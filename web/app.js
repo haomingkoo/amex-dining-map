@@ -1314,20 +1314,26 @@ function renderFocusCard() {
     return;
   }
 
+  const isJapan = record.country === "Japan";
+  const hasDinnerPrice = !!(record.price_dinner_band_tier || record.price_dinner_min_jpy);
+  const hasLunchPrice = !!(record.price_lunch_band_tier || record.price_lunch_min_jpy);
+  const showPriceGrid = isJapan && (hasDinnerPrice || hasLunchPrice);
+  const kidPolicyKnown = isJapan && record.child_policy_norm && record.child_policy_norm !== "unknown";
+
   const tags = [
     `<span class="badge gold">${escapeHtml(record.city)}</span>`,
     record.lat != null && record.lng != null && !hasSourceCoordinates(record)
       ? '<span class="badge amber">Approximate pin</span>'
       : "",
-    record.price_dinner_band_tier && record.price_dinner_band_label
+    isJapan && record.price_dinner_band_tier && record.price_dinner_band_label
       ? `<span class="badge amber">${escapeHtml(priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label))}</span>`
       : "",
-    record.price_lunch_band_tier && record.price_lunch_band_label
+    isJapan && record.price_lunch_band_tier && record.price_lunch_band_label
       ? `<span class="badge blue">${escapeHtml(priceBandLabel(record.price_lunch_band_tier, record.price_lunch_band_label))}</span>`
       : "",
-    `<span class="badge">${escapeHtml(kidLabel(record.child_policy_norm))}</span>`,
-    record.english_menu ? '<span class="badge green">English menu</span>' : "",
-    record.reservation_type ? `<span class="badge purple">${escapeHtml(record.reservation_type)}</span>` : "",
+    kidPolicyKnown ? `<span class="badge">${escapeHtml(kidLabel(record.child_policy_norm))}</span>` : "",
+    isJapan && record.english_menu ? '<span class="badge green">English menu</span>' : "",
+    isJapan && record.reservation_type ? `<span class="badge purple">${escapeHtml(record.reservation_type)}</span>` : "",
   ]
     .filter(Boolean)
     .join("");
@@ -1365,26 +1371,17 @@ function renderFocusCard() {
     ${tagSection("Known for", record.known_for_tags, "gold")}
     ${tagSection("Specialties", record.signature_dish_tags, "blue")}
     <p class="focus-summary">${escapeHtml(record.summary_official || "")}</p>
+    ${showPriceGrid ? `
     <div class="price-grid">
-      <div class="price-card">
+      ${hasDinnerPrice ? `<div class="price-card">
         <span class="price-label">Dinner</span>
-        ${priceMarkup(
-          record.price_dinner_min_jpy,
-          record.price_dinner_max_jpy,
-          record.price_dinner_band_tier,
-          record.price_dinner_band_label
-        )}
-      </div>
-      <div class="price-card">
+        ${priceMarkup(record.price_dinner_min_jpy, record.price_dinner_max_jpy, record.price_dinner_band_tier, record.price_dinner_band_label)}
+      </div>` : ""}
+      ${hasLunchPrice ? `<div class="price-card">
         <span class="price-label">Lunch</span>
-        ${priceMarkup(
-          record.price_lunch_min_jpy,
-          record.price_lunch_max_jpy,
-          record.price_lunch_band_tier,
-          record.price_lunch_band_label
-        )}
-      </div>
-    </div>
+        ${priceMarkup(record.price_lunch_min_jpy, record.price_lunch_max_jpy, record.price_lunch_band_tier, record.price_lunch_band_label)}
+      </div>` : ""}
+    </div>` : ""}
     ${focusLocationNote(record) ? `<div class="focus-note">${escapeHtml(focusLocationNote(record))}</div>` : ""}
     <div class="focus-actions">
       ${
