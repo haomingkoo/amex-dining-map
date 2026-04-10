@@ -345,7 +345,7 @@ const map = hasLeaflet
   ? L.map("map", {
       zoomControl: true,
       scrollWheelZoom: true,
-    }).setView([35.676, 137.5], 5)
+    }).setView([25, 15], 2)
   : null;
 
 const staysMap = hasLeaflet
@@ -611,16 +611,28 @@ function kidLabel(value) {
   return labels[value] || "No child policy listed";
 }
 
+const REGION_COLORS = {
+  "east-asia":     "#e8a235",  // warm amber  — Japan, Hong Kong, Taiwan
+  "southeast-asia":"#e07248",  // coral       — Singapore, Thailand
+  "europe":        "#9b7ee8",  // violet      — UK, France, Germany, Austria, Italy, Spain, Monaco
+  "americas":      "#4b95e0",  // sky blue    — USA, Canada, Mexico
+  "oceania":       "#5ec9aa",  // mint teal   — Australia, New Zealand
+  "other":         "#8899aa",  // muted gray
+};
+
+function regionForRecord(record) {
+  const c = record.country;
+  if (c === "Japan" || c === "Hong Kong" || c === "Taiwan") return "east-asia";
+  if (c === "Singapore" || c === "Thailand") return "southeast-asia";
+  if (c === "United Kingdom" || c === "France" || c === "Germany" || c === "Austria" ||
+      c === "Italy" || c === "Spain" || c === "Monaco") return "europe";
+  if (c === "United States" || c === "Canada" || c === "Mexico") return "americas";
+  if (c === "Australia" || c === "New Zealand") return "oceania";
+  return "other";
+}
+
 function markerColor(record) {
-  // Japan (Pocket Concierge): warm gold family — city shading within same hue
-  if (record.country === "Japan") {
-    if (record.city === "Tokyo") return "#e0b050";
-    if (record.city === "Kyoto") return "#cc8c45";
-    if (record.city === "Osaka") return "#bf7535";
-    return "#d4a048";  // other Japan cities
-  }
-  // Global Dining Credit: one teal — program identity, not per-country
-  return "#4db8a6";
+  return REGION_COLORS[regionForRecord(record)] || REGION_COLORS.other;
 }
 
 function priceMarkup(min, max, tier, label) {
@@ -773,7 +785,7 @@ function createMarker(record) {
       ${yens(record.price_dinner_min_jpy, record.price_dinner_max_jpy) ? `<div>${escapeHtml(`Dinner: ${yens(record.price_dinner_min_jpy, record.price_dinner_max_jpy)}`)}</div>` : ""}
       ${lunchBand ? `<div>${escapeHtml(`Lunch band: ${lunchBand}`)}</div>` : ""}
       ${yens(record.price_lunch_min_jpy, record.price_lunch_max_jpy) ? `<div>${escapeHtml(`Lunch: ${yens(record.price_lunch_min_jpy, record.price_lunch_max_jpy)}`)}</div>` : ""}
-      ${record.summary_official ? `<p>${escapeHtml(record.summary_official)}</p>` : ""}
+      ${(record.summary_official || record.summary_ai) ? `<p>${escapeHtml(record.summary_official || record.summary_ai)}</p>` : ""}
       ${focusLocationNote(record) ? `<div>${escapeHtml(focusLocationNote(record))}</div>` : ""}
       ${
         diningGoogleMapsUrl(record)
@@ -1233,8 +1245,9 @@ function ensureActiveRecord() {
     state.activeId = null;
     return;
   }
-  if (!state.filtered.some((record) => record.id === state.activeId)) {
-    state.activeId = state.filtered[0].id;
+  // If active record was filtered out, clear it — but never auto-select
+  if (state.activeId && !state.filtered.some((record) => record.id === state.activeId)) {
+    state.activeId = null;
   }
 }
 
@@ -1312,7 +1325,7 @@ function renderStats() {
           filteredMapped === state.scopeRecords.length ? "all mapped" : `${filteredMapped} mapped`
         }.`;
 
-  resultsText.textContent = `Selected venue from ${route.label}`;
+  resultsText.textContent = state.activeId ? `Selected venue · ${route.label}` : `Click a dot to select · ${route.label}`;
   tableSummary.textContent =
     filterCount > 0 ? "Current filtered shortlist in table form." : "Current route list in table form.";
   mobileSummary.textContent = tableSummary.textContent;
@@ -1337,7 +1350,13 @@ function renderMarkers() {
 function renderFocusCard() {
   const record = activeRecord();
   if (!record) {
-    focusCard.innerHTML = '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
+    focusCard.innerHTML = state.filtered.length > 0
+      ? `<div class="empty-state map-cta">
+          <div class="map-cta-icon" aria-hidden="true">◉</div>
+          <p class="map-cta-heading">Click any dot on the map</p>
+          <p class="map-cta-sub">or select a venue from the list below to see details here</p>
+        </div>`
+      : '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
     return;
   }
 
@@ -1399,7 +1418,12 @@ function renderFocusCard() {
     <div class="focus-tags">${tags}</div>
     ${tagSection("Known for", record.known_for_tags, "gold")}
     ${tagSection("Specialties", record.signature_dish_tags, "blue")}
-    <p class="focus-summary">${escapeHtml(record.summary_official || "")}</p>
+    ${(() => {
+      const summary = record.summary_official || record.summary_ai;
+      if (!summary) return "";
+      const isAi = !record.summary_official && record.summary_ai;
+      return `<p class="focus-summary${isAi ? " focus-summary-ai" : ""}">${escapeHtml(summary)}</p>`;
+    })()}
     ${showPriceGrid ? `
     <div class="price-grid">
       ${hasDinnerPrice ? `<div class="price-card">

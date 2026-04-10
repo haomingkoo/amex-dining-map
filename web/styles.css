@@ -654,7 +654,8 @@ input,
 
 .map-legend {
   display: flex;
-  gap: 14px;
+  flex-wrap: wrap;
+  gap: 8px 14px;
   padding: 8px 14px;
   border-top: 1px solid var(--border);
 }
@@ -675,9 +676,12 @@ input,
   flex-shrink: 0;
 }
 
-.legend-japan { background: #e0b050; }
-.legend-global { background: #4db8a6; }
-.legend-love-rest { background: #e06b8b; }
+.legend-east-asia  { background: #e8a235; }
+.legend-se-asia    { background: #e07248; }
+.legend-europe     { background: #9b7ee8; }
+.legend-americas   { background: #4b95e0; }
+.legend-oceania    { background: #5ec9aa; }
+.legend-love-rest  { background: #e06b8b; }
 .legend-love-hotel { background: #9b6bd6; }
 
 .focus-panel {
@@ -1258,6 +1262,11 @@ a.google-badge:hover {
   line-height: 1.55;
 }
 
+.focus-summary-ai {
+  font-style: italic;
+  opacity: 0.85;
+}
+
 .focus-note {
   margin: 8px 0;
   padding: 10px 12px;
@@ -1563,6 +1572,40 @@ a.google-badge:hover {
   line-height: 1.6;
 }
 
+.empty-state.map-cta {
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.map-cta-icon {
+  font-size: 28px;
+  color: var(--gold);
+  opacity: 0.7;
+  margin-bottom: 8px;
+  animation: pulse-dot 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 0.9; transform: scale(1.12); }
+}
+
+.map-cta-heading {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.map-cta-sub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
 
 /* ═══════════════════════════════════════════════════════════
    LEAFLET POPUP
@@ -1671,10 +1714,6 @@ h1, h2, h3 {
 @media (max-width: 1024px) {
   .explorer-grid {
     grid-template-columns: 1fr;
-  }
-
-  .focus-panel {
-    order: -1;
   }
 
   .program-brief-grid {
