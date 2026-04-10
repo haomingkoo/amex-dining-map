@@ -328,6 +328,8 @@ def fetch_search_properties() -> list[dict]:
         "query": SEARCH_PROPERTIES_QUERY,
     }
     response = post_json(GRAPHQL_URL, payload)
+    if not response:
+        return []
     return response.get("data", {}).get("areas", [])
 
 
@@ -349,6 +351,8 @@ def search_venues(area_id: str, page: int, limit: int = 100) -> dict:
         "query": SEARCH_VENUES_QUERY,
     }
     response = post_json(GRAPHQL_URL, payload)
+    if not response:
+        return {}
     return response.get("data", {}).get("venuesSearch", {})
 
 
@@ -376,6 +380,8 @@ def venue_detail_query(venue_id: str) -> dict:
         "query": VENUE_DETAIL_QUERY,
     }
     response = post_json(GRAPHQL_URL, payload)
+    if not response:
+        return {}
     return response.get("data", {}).get("venue", {}) or {}
 
 
