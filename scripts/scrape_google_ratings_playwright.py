@@ -118,8 +118,19 @@ async def scrape_one(page, query: str, rid: str) -> dict | None:
             pass
         await asyncio.sleep(3)
 
-        # Current URL after redirect (canonical Maps place URL)
+        # If still on search results page (not redirected to place), click the first result
         current_url = page.url
+        if "/search/" in current_url and "/place/" not in current_url:
+            try:
+                # Click the first result link (usually an <a> with href containing /maps/place/)
+                first_place = await page.query_selector('a[href*="/maps/place/"]')
+                if first_place:
+                    await first_place.click()
+                    await asyncio.sleep(3)
+                    current_url = page.url
+            except Exception:
+                pass
+
         maps_url = current_url if "google.com/maps" in current_url else None
 
         # Extract via JS evaluation
