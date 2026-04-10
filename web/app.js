@@ -1,7 +1,7 @@
-const DATA_URL = "../data/japan-restaurants.json";
-const GLOBAL_DATA_URL = "../data/global-restaurants.json";
-const STAYS_DATA_URL = "../data/plat-stays.json";
-const STAYS_META_URL = "../data/plat-stay-source.json";
+const DATA_URL = "./data/japan-restaurants.json";
+const GLOBAL_DATA_URL = "./data/global-restaurants.json";
+const STAYS_DATA_URL = "./data/plat-stays.json";
+const STAYS_META_URL = "./data/plat-stay-source.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
 const INTRO_STORAGE_KEY = "amex-benefits-intro-v3";
@@ -23,8 +23,8 @@ const DINNER_BANDS = [
 const PROGRAMS = {
   dining: {
     id: "dining",
-    label: "Overseas Dining",
-    title: "Overseas Dining",
+    label: "Global Dining Credits",
+    title: "Global Dining Credits",
     description:
       "Amex Platinum dining partners in 17 markets — Japan via Pocket Concierge, plus 16 countries via the Global Dining Credit.",
     defaultRoute: "dining/world",
@@ -68,8 +68,8 @@ const ROUTES = {
     id: "dining/world",
     programId: "dining",
     label: "All",
-    eyebrow: "Overseas Dining / All",
-    title: "Overseas Dining",
+    eyebrow: "Global Dining Credits / All",
+    title: "Global Dining Credits",
     description:
       "Amex Platinum dining partners worldwide — Japan via Pocket Concierge plus 16 countries via the Global Dining Credit.",
     note:
@@ -80,17 +80,17 @@ const ROUTES = {
     defaultView: [25, 15],
     defaultZoom: 2,
     downloads: [
-      { label: "All Japan KML", href: "../data/kml/japan-all.kml", primary: true },
-      { label: "Tokyo KML", href: "../data/kml/tokyo.kml" },
-      { label: "Kyoto KML", href: "../data/kml/kyoto.kml" },
-      { label: "Osaka KML", href: "../data/kml/osaka.kml" },
+      { label: "All Japan KML", href: "./data/kml/japan-all.kml", primary: true },
+      { label: "Tokyo KML", href: "./data/kml/tokyo.kml" },
+      { label: "Kyoto KML", href: "./data/kml/kyoto.kml" },
+      { label: "Osaka KML", href: "./data/kml/osaka.kml" },
     ],
   },
   "dining/global": {
     id: "dining/global",
     programId: "dining",
     label: "Global Credit",
-    eyebrow: "Overseas Dining / Global Credit",
+    eyebrow: "Global Dining Credits / Global Credit",
     title: "Global Dining Credit",
     description:
       "16 countries covered by the Amex Platinum Global Dining Credit. Use the Country filter to drill into a specific market.",
@@ -107,7 +107,7 @@ const ROUTES = {
     id: "dining/japan",
     programId: "dining",
     label: "Japan",
-    eyebrow: "Overseas Dining / Japan",
+    eyebrow: "Global Dining Credits / Japan",
     title: "Japan Dining",
     description:
       "Japan restaurants via Pocket Concierge, enriched with Tabelog ratings.",
@@ -119,10 +119,10 @@ const ROUTES = {
     defaultView: [35.676, 137.5],
     defaultZoom: 5,
     downloads: [
-      { label: "All Japan KML", href: "../data/kml/japan-all.kml", primary: true },
-      { label: "Tokyo KML", href: "../data/kml/tokyo.kml" },
-      { label: "Kyoto KML", href: "../data/kml/kyoto.kml" },
-      { label: "Osaka KML", href: "../data/kml/osaka.kml" },
+      { label: "All Japan KML", href: "./data/kml/japan-all.kml", primary: true },
+      { label: "Tokyo KML", href: "./data/kml/tokyo.kml" },
+      { label: "Kyoto KML", href: "./data/kml/kyoto.kml" },
+      { label: "Osaka KML", href: "./data/kml/osaka.kml" },
     ],
   },
   "dining/tokyo": {
@@ -142,8 +142,8 @@ const ROUTES = {
     defaultView: [35.6762, 139.6503],
     defaultZoom: 11,
     downloads: [
-      { label: "Tokyo KML", href: "../data/kml/tokyo.kml", primary: true },
-      { label: "All Japan KML", href: "../data/kml/japan-all.kml" },
+      { label: "Tokyo KML", href: "./data/kml/tokyo.kml", primary: true },
+      { label: "All Japan KML", href: "./data/kml/japan-all.kml" },
     ],
   },
   "dining/kyoto": {
@@ -163,8 +163,8 @@ const ROUTES = {
     defaultView: [35.0116, 135.7681],
     defaultZoom: 12,
     downloads: [
-      { label: "Kyoto KML", href: "../data/kml/kyoto.kml", primary: true },
-      { label: "All Japan KML", href: "../data/kml/japan-all.kml" },
+      { label: "Kyoto KML", href: "./data/kml/kyoto.kml", primary: true },
+      { label: "All Japan KML", href: "./data/kml/japan-all.kml" },
     ],
   },
   "dining/osaka": {
@@ -184,8 +184,8 @@ const ROUTES = {
     defaultView: [34.6937, 135.5023],
     defaultZoom: 12,
     downloads: [
-      { label: "Osaka KML", href: "../data/kml/osaka.kml", primary: true },
-      { label: "All Japan KML", href: "../data/kml/japan-all.kml" },
+      { label: "Osaka KML", href: "./data/kml/osaka.kml", primary: true },
+      { label: "All Japan KML", href: "./data/kml/japan-all.kml" },
     ],
   },
   stays: {

@@ -32,10 +32,10 @@ jobs:
       - name: Stage Static Site
         run: |
           mkdir -p site
-          cp index.html site/
-          cp .nojekyll site/
-          cp -R web site/web
+          cp -R web/. site/
           cp -R data site/data
+          cp .nojekyll site/
+          cp CNAME site/
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
