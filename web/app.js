@@ -3,6 +3,7 @@ const GLOBAL_DATA_URL = "./data/global-restaurants.json";
 const STAYS_DATA_URL = "./data/plat-stays.json";
 const STAYS_META_URL = "./data/plat-stay-source.json";
 const LOVE_DINING_DATA_URL = "./data/love-dining.json";
+const GOOGLE_RATINGS_URL = "./data/google-maps-ratings.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
 const LOVE_FIT_OPTIONS = { padding: [48, 48], maxZoom: 15 };
@@ -332,6 +333,7 @@ const state = {
   loveDiningFiltered: [],
   loveDiningMarkers: new Map(),
   loveDiningActiveId: null,
+  googleRatings: {},
 };
 
 const hasLeaflet = typeof window !== "undefined" && typeof window.L !== "undefined";
@@ -644,6 +646,31 @@ function googleMapsSearchUrl(parts) {
   const query = parts.filter(Boolean).join(", ");
   if (!query) return null;
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+function googleRating(record) {
+  return state.googleRatings[record.id] || null;
+}
+
+function bestGoogleMapsUrl(record) {
+  const scraped = state.googleRatings[record.id];
+  if (scraped && scraped.maps_url) return scraped.maps_url;
+  return null;
+}
+
+function googleRatingBadge(record) {
+  const g = googleRating(record);
+  if (!g || g.rating == null) return "";
+  const url = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
+  const countStr = g.review_count ? ` · ${Number(g.review_count).toLocaleString()} reviews` : "";
+  const tag = url ? "a" : "span";
+  const attrs = url
+    ? ` href="${escapeHtml(url)}" target="_blank" rel="noopener"`
+    : "";
+  return `<${tag} class="google-badge"${attrs}>
+    <span class="google-stars">${escapeHtml(String(g.rating))}</span>
+    <span class="google-meta">Google Maps${escapeHtml(countStr)}</span>
+  </${tag}>`;
 }
 
 function diningKicker(record) {
@@ -1347,14 +1374,16 @@ function renderFocusCard() {
       </a>`
     : "";
 
-  const googleMapsUrl = diningGoogleMapsUrl(record);
+  const gBadge = googleRatingBadge(record);
+  const ratingBadges = tabelogBadge || gBadge ? `<div class="focus-ratings">${tabelogBadge}${gBadge}</div>` : "";
+  const googleMapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
   const tSearchUrl = tabelogSignal && tabelogSignal.url ? tabelogSignal.url : tabelogSearchUrl(record);
 
   focusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(diningKicker(record))}</div>
     <div class="focus-title-row">
       <h3 class="focus-title">${escapeHtml(record.name)}</h3>
-      ${tabelogBadge}
+      ${ratingBadges}
     </div>
     <div class="focus-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
     ${
@@ -2313,14 +2342,21 @@ function renderLoveDiningCard() {
   const halal = record.notes && (record.notes.includes("Halal") || record.notes.includes("Muslim"))
     ? `<div class="focus-note">Halal certified</div>` : "";
 
-  const googleMapsUrl = record.lat != null
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(record.name + " " + record.address)}`
-    : null;
+  const scrapedRating = googleRating(record);
+  const googleMapsUrl = (scrapedRating && scrapedRating.maps_url)
+    ? scrapedRating.maps_url
+    : record.lat != null
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(record.name + " " + (record.address || "Singapore"))}`
+      : null;
+  const gBadge = googleRatingBadge(record);
 
   loveFocusCard.innerHTML = `
     <div class="focus-head">
       ${hotelLine}
-      <div class="focus-name">${escapeHtml(record.name)}</div>
+      <div class="focus-title-row">
+        <div class="focus-name">${escapeHtml(record.name)}</div>
+        ${gBadge ? `<div class="focus-ratings">${gBadge}</div>` : ""}
+      </div>
       <div class="venue-tags" style="margin-top:6px">${typeBadge}${cuisineBadge}</div>
     </div>
     ${closingNote}
@@ -2355,12 +2391,16 @@ function renderLoveDiningMobileList() {
   state.loveDiningFiltered.forEach((record) => {
     const card = document.createElement("article");
     card.className = `mobile-card${record.id === state.loveDiningActiveId ? " active" : ""}`;
+    const g = googleRating(record);
+    const ratingStr = g && g.rating != null
+      ? `<span class="card-google-rating">★ ${g.rating}${g.review_count ? ` (${Number(g.review_count).toLocaleString()})` : ""}</span>`
+      : "";
     card.innerHTML = `
       <div class="mobile-card-head">
         <div>
           ${record.hotel ? `<div class="mobile-card-kicker">${escapeHtml(record.hotel)}</div>` : ""}
           <div class="mobile-card-title">${escapeHtml(record.name)}</div>
-          <div class="mobile-card-sub">${escapeHtml(record.cuisine || "")} · ${record.type === "hotel" ? "Hotel outlet" : "Restaurant"}</div>
+          <div class="mobile-card-sub">${escapeHtml(record.cuisine || "")} · ${record.type === "hotel" ? "Hotel outlet" : "Restaurant"} ${ratingStr}</div>
         </div>
       </div>
       <div class="mobile-card-meta">
@@ -2471,12 +2511,13 @@ function handleHashRoute() {
 }
 
 async function init() {
-  const [restaurantResponse, globalResponse, staysResponse, staysMetaResponse, loveDiningResponse] = await Promise.all([
+  const [restaurantResponse, globalResponse, staysResponse, staysMetaResponse, loveDiningResponse, ratingsResponse] = await Promise.all([
     fetch(DATA_URL),
     fetch(GLOBAL_DATA_URL).catch(() => null),
     fetch(STAYS_DATA_URL),
     fetch(STAYS_META_URL).catch(() => null),
     fetch(LOVE_DINING_DATA_URL).catch(() => null),
+    fetch(GOOGLE_RATINGS_URL).catch(() => null),
   ]);
   state.restaurants = await restaurantResponse.json();
   if (globalResponse && globalResponse.ok) {
@@ -2498,6 +2539,9 @@ async function init() {
   if (loveDiningResponse && loveDiningResponse.ok) {
     state.loveDining = await loveDiningResponse.json();
     refreshLoveDiningCuisineOptions();
+  }
+  if (ratingsResponse && ratingsResponse.ok) {
+    state.googleRatings = await ratingsResponse.json();
   }
 
   setToolbarOpen(false);
