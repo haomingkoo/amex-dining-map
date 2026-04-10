@@ -206,8 +206,13 @@ def build_record(url: str, json_ld: dict[str, Any]) -> dict[str, Any]:
         else:
             city = state or region
 
-    # Build full address string
-    address_parts = [p for p in [street, locality, state, postal] if p]
+    # Build full address string — deduplicate consecutive identical segments
+    # (some JSON-LD records repeat the region in both addressLocality and addressRegion)
+    raw_parts = [p for p in [street, locality, state, postal] if p]
+    address_parts: list[str] = []
+    for part in raw_parts:
+        if not address_parts or part != address_parts[-1]:
+            address_parts.append(part)
     full_address = ", ".join(address_parts)
     if addr_country and addr_country not in full_address:
         full_address = f"{full_address}, {addr_country}" if full_address else addr_country
