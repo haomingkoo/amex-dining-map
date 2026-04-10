@@ -412,6 +412,14 @@ const countryFilter = document.getElementById("country-filter");
 const countryFilterWrap = document.getElementById("country-filter-wrap");
 const cityFilter = document.getElementById("city-filter");
 const districtFilter = document.getElementById("district-filter");
+const districtFilterWrap = document.getElementById("district-filter-wrap");
+const tabelogFilterWrap = document.getElementById("tabelog-filter-wrap");
+const lunchFilterWrap = document.getElementById("lunch-filter-wrap");
+const dinnerFilterWrap = document.getElementById("dinner-filter-wrap");
+const kidsFilterWrap = document.getElementById("kids-filter-wrap");
+const menuFilterWrap = document.getElementById("menu-filter-wrap");
+const reservationFilterWrap = document.getElementById("reservation-filter-wrap");
+const JAPAN_ONLY_FILTER_WRAPS = [tabelogFilterWrap, lunchFilterWrap, dinnerFilterWrap, kidsFilterWrap, menuFilterWrap, reservationFilterWrap];
 const cuisineFilter = document.getElementById("cuisine-filter");
 const tabelogFilter = document.getElementById("tabelog-filter");
 const lunchFilter = document.getElementById("lunch-filter");
@@ -1145,7 +1153,15 @@ function refreshFilterOptions() {
     fillSelect(countryFilter, uniqueValues(scopeRecords.map((r) => r.country)), "All countries");
   }
 
+  // Japan-only filters: only show when scope has Japan records
   const selectedCountry = countryFilter.value;
+  const hasJapan = selectedCountry
+    ? selectedCountry === "Japan"
+    : scopeRecords.some((r) => r.country === "Japan");
+  const allJapan = scopeRecords.length > 0 && scopeRecords.every((r) => r.country === "Japan");
+  JAPAN_ONLY_FILTER_WRAPS.forEach((wrap) => { if (wrap) wrap.hidden = !hasJapan; });
+  if (districtFilterWrap) districtFilterWrap.hidden = !allJapan;
+
   const countryPool = selectedCountry
     ? scopeRecords.filter((r) => r.country === selectedCountry)
     : scopeRecords;

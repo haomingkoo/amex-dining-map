@@ -746,10 +746,14 @@ input,
   }
   .toolbar {
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr);
-    padding: 12px;
-    margin-bottom: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 10px 12px;
+    gap: 6px;
+    margin-bottom: 8px;
     animation: none !important;
+  }
+  .filter-actions {
+    grid-column: span 3;
   }
 }
 
@@ -757,11 +761,11 @@ input,
 .label {
   display: block;
   color: var(--text-dim);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
 }
 
 .search-wrap,
@@ -774,12 +778,12 @@ input,
 .filter-wrap select,
 .filter-wrap input[type="date"] {
   width: 100%;
-  padding: 9px 11px;
+  padding: 7px 10px;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-xs);
   background: var(--surface-strong);
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
   transition: border-color 0.18s;
   appearance: none;
   -webkit-appearance: none;
