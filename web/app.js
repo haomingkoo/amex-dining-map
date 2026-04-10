@@ -1462,6 +1462,12 @@ function renderTable() {
       focusActiveRecordOnMap();
     });
 
+    const isJapanRow = record.country === "Japan";
+    const gRow = googleRating(record);
+    const gRatingCell = gRow && gRow.rating != null
+      ? `<span class="table-rating">${gRow.rating}${gRow.review_count ? `<span class="table-rating-count"> (${Number(gRow.review_count).toLocaleString()})</span>` : ""}</span>`
+      : "—";
+
     row.innerHTML = `
       <td>
         <div class="table-title">${escapeHtml(record.name)}</div>
@@ -1476,21 +1482,21 @@ function renderTable() {
         <div class="table-sub">${escapeHtml(record.source_localized_address || record.district || record.region || record.area_title || "")}</div>
       </td>
       <td>${escapeHtml((record.cuisines || []).join(", ") || "Unknown")}</td>
-      <td>${priceMarkup(
+      <td>${isJapanRow ? priceMarkup(
         record.price_dinner_min_jpy,
         record.price_dinner_max_jpy,
         record.price_dinner_band_tier,
         record.price_dinner_band_label
-      )}</td>
-      <td>${priceMarkup(
+      ) : "—"}</td>
+      <td>${isJapanRow ? priceMarkup(
         record.price_lunch_min_jpy,
         record.price_lunch_max_jpy,
         record.price_lunch_band_tier,
         record.price_lunch_band_label
-      )}</td>
-      <td>${escapeHtml(kidLabel(record.child_policy_norm))}</td>
-      <td>${record.english_menu ? "Yes" : "No"}</td>
-      <td>${escapeHtml(record.reservation_type || "N/A")}</td>
+      ) : "—"}</td>
+      <td>${isJapanRow && record.child_policy_norm && record.child_policy_norm !== "unknown" ? escapeHtml(kidLabel(record.child_policy_norm)) : "—"}</td>
+      <td>${isJapanRow ? (record.english_menu ? "Yes" : "No") : "—"}</td>
+      <td>${gRatingCell}</td>
     `;
     resultsTableBody.appendChild(row);
   });
