@@ -1242,9 +1242,23 @@ function renderFocusCard() {
     .filter(Boolean)
     .join("");
 
+  const tabelogSignal = qualitySignals(record).tabelog;
+  const tabelogBadge = tabelogSignal && tabelogSignal.honest_stars != null
+    ? `<a class="tabelog-badge" href="${escapeHtml(tabelogSignal.url || tabelogSearchUrl(record) || "#")}" target="_blank" rel="noopener">
+        <span class="tabelog-stars">${escapeHtml(String(tabelogSignal.honest_stars))}</span>
+        <span class="tabelog-meta">Tabelog${tabelogSignal.review_count ? ` · ${Number(tabelogSignal.review_count).toLocaleString()} reviews` : ""}</span>
+      </a>`
+    : "";
+
+  const googleMapsUrl = diningGoogleMapsUrl(record);
+  const tSearchUrl = tabelogSignal && tabelogSignal.url ? tabelogSignal.url : tabelogSearchUrl(record);
+
   focusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(record.city)} / ${escapeHtml(record.district || record.region || record.area_title || record.prefecture || "")}</div>
-    <h3 class="focus-title">${escapeHtml(record.name)}</h3>
+    <div class="focus-title-row">
+      <h3 class="focus-title">${escapeHtml(record.name)}</h3>
+      ${tabelogBadge}
+    </div>
     <div class="focus-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
     ${
       record.source_localized_address
@@ -1259,8 +1273,7 @@ function renderFocusCard() {
     <div class="focus-tags">${tags}</div>
     ${tagSection("Known for", record.known_for_tags, "gold")}
     ${tagSection("Specialties", record.signature_dish_tags, "blue")}
-    ${externalSignalsSection(record)}
-    <p class="focus-summary">${escapeHtml(record.summary_official || "No official summary available.")}</p>
+    <p class="focus-summary">${escapeHtml(record.summary_official || "")}</p>
     <div class="price-grid">
       <div class="price-card">
         <span class="price-label">Dinner</span>
@@ -1284,18 +1297,18 @@ function renderFocusCard() {
     ${focusLocationNote(record) ? `<div class="focus-note">${escapeHtml(focusLocationNote(record))}</div>` : ""}
     <div class="focus-actions">
       ${
-        diningGoogleMapsUrl(record)
-          ? `<a class="inline-link" href="${escapeHtml(diningGoogleMapsUrl(record))}" target="_blank" rel="noopener">Open in Google Maps</a>`
+        googleMapsUrl
+          ? `<a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Open in Google Maps</a>`
           : ""
       }
       ${
-        tabelogSearchUrl(record)
-          ? `<a class="inline-link" href="${escapeHtml(tabelogSearchUrl(record))}" target="_blank" rel="noopener">Search Tabelog</a>`
+        tSearchUrl
+          ? `<a class="inline-link" href="${escapeHtml(tSearchUrl)}" target="_blank" rel="noopener">${tabelogSignal && tabelogSignal.url ? "View on Tabelog" : "Search Tabelog"}</a>`
           : ""
       }
       ${
         record.source_url
-          ? `<a class="inline-link" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Open Pocket Concierge</a>`
+          ? `<a class="inline-link subtle" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Pocket Concierge</a>`
           : ""
       }
       ${
