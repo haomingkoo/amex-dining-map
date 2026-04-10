@@ -2277,10 +2277,9 @@ async function init() {
     state.staysSourceMeta = await staysMetaResponse.json();
   }
 
-  const isWide = window.innerWidth >= 1100;
-  setToolbarOpen(isWide);
+  setToolbarOpen(false);
   setTableOpen(false);
-  setStayToolbarOpen(isWide);
+  setStayToolbarOpen(false);
   setStayTableOpen(false);
   handleHashRoute();
   if (!window.location.hash) {

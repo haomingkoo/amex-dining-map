@@ -739,18 +739,13 @@ input,
   padding-top: 2px;
 }
 
-/* Auto-expand filters on wide screens */
+/* 3-column filter grid on wide screens when open */
 @media (min-width: 1100px) {
-  .toolbar-toggle {
-    display: none;
-  }
-  .toolbar {
-    display: grid !important;
+  .toolbar.is-open {
     grid-template-columns: repeat(3, 1fr);
     padding: 10px 12px;
     gap: 6px;
     margin-bottom: 8px;
-    animation: none !important;
   }
   .filter-actions {
     grid-column: span 3;
