@@ -1507,14 +1507,20 @@ function renderMobileCards() {
   state.filtered.forEach((record) => {
     const card = document.createElement("article");
     card.className = `mobile-card${record.id === state.activeId ? " active" : ""}`;
-    const dinnerBand = priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label);
-    const lunchBand = priceBandLabel(record.price_lunch_band_tier, record.price_lunch_band_label);
+    const isJapan = record.country === "Japan";
+    const dinnerBand = isJapan ? priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label) : "";
+    const lunchBand = isJapan ? priceBandLabel(record.price_lunch_band_tier, record.price_lunch_band_label) : "";
+    const kidPolicyKnown = isJapan && record.child_policy_norm && record.child_policy_norm !== "unknown";
+    const gMobile = googleRating(record);
+    const googleRatingInline = gMobile && gMobile.rating != null
+      ? `<span class="card-google-rating">★ ${gMobile.rating}${gMobile.review_count ? ` (${Number(gMobile.review_count).toLocaleString()})` : ""}</span>`
+      : "";
 
     card.innerHTML = `
       <div class="mobile-card-top">
         <div>
           <div class="focus-kicker">${escapeHtml(diningKicker(record))}</div>
-          <h3 class="mobile-card-title">${escapeHtml(record.name)}</h3>
+          <h3 class="mobile-card-title">${escapeHtml(record.name)} ${googleRatingInline}</h3>
           <div class="mobile-card-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
         </div>
       </div>
@@ -1531,13 +1537,13 @@ function renderMobileCards() {
       <div class="venue-tags">
         ${dinnerBand ? `<span class="badge amber">${escapeHtml(dinnerBand)}</span>` : ""}
         ${lunchBand ? `<span class="badge blue">${escapeHtml(lunchBand)}</span>` : ""}
-        <span class="badge">${escapeHtml(kidLabel(record.child_policy_norm))}</span>
-        ${record.english_menu ? '<span class="badge green">English menu</span>' : ""}
+        ${kidPolicyKnown ? `<span class="badge">${escapeHtml(kidLabel(record.child_policy_norm))}</span>` : ""}
+        ${isJapan && record.english_menu ? '<span class="badge green">English menu</span>' : ""}
       </div>
       ${tagSection("Known for", record.known_for_tags, "gold")}
       ${tagSection("Specialties", record.signature_dish_tags, "blue")}
       ${externalSignalsSection(record)}
-      <div class="mobile-price-grid">
+      ${isJapan ? `<div class="mobile-price-grid">
         <div class="mobile-price-card">
           <span class="price-label">Dinner</span>
           ${priceMarkup(
@@ -1556,14 +1562,14 @@ function renderMobileCards() {
             record.price_lunch_band_label
           )}
         </div>
-      </div>
+      </div>` : ""}
       <div class="mobile-card-actions">
         <button type="button" class="ghost-btn secondary" data-mobile-focus="${escapeHtml(record.id)}">
           Show on map
         </button>
         ${
-          diningGoogleMapsUrl(record)
-            ? `<a class="inline-link" href="${escapeHtml(diningGoogleMapsUrl(record))}" target="_blank" rel="noopener">Google Maps</a>`
+          (bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record))
+            ? `<a class="inline-link" href="${escapeHtml(bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record))}" target="_blank" rel="noopener">Google Maps</a>`
             : ""
         }
         ${

@@ -260,12 +260,25 @@ async def run_scraper(
         new_ratings.update(batch_results)
         print(f"  Batch {batch_num}: matched {len(batch_results)}/{len(batch)}")
 
-        # Incremental save after each batch
-        merged = {**existing, **new_ratings}
+        # Reload file before saving to avoid overwriting concurrent runs
+        current_on_disk: dict[str, dict] = {}
+        if RATINGS_PATH.exists():
+            try:
+                current_on_disk = json.loads(RATINGS_PATH.read_text())
+            except json.JSONDecodeError:
+                pass
+        merged = {**current_on_disk, **new_ratings}
         RATINGS_PATH.write_text(json.dumps(merged, indent=2, ensure_ascii=False) + "\n")
         print(f"  Saved {len(merged)} total → {RATINGS_PATH}")
 
-    return {**existing, **new_ratings}
+    # Final merge from disk
+    final_on_disk: dict[str, dict] = {}
+    if RATINGS_PATH.exists():
+        try:
+            final_on_disk = json.loads(RATINGS_PATH.read_text())
+        except json.JSONDecodeError:
+            final_on_disk = {}
+    return {**final_on_disk, **new_ratings}
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
