@@ -410,12 +410,27 @@ def infer_city(
     if prefecture == "Tokyo" or "Tokyo" in parts:
         return "Tokyo"
 
-    for index, part in enumerate(parts):
-        lower = part.lower()
-        if lower.endswith("-shi"):
+    # Pass 1: prioritise explicit city suffix (-shi) — must run before -cho/-machi
+    # so that "Nakajima-cho, Nakagyo-ku, Kyoto-shi" resolves to "Kyoto" not "Nakajima"
+    for part in parts:
+        if part.lower().endswith("-shi"):
             city = titlecase_geo(part[:-4])
             if city:
                 return city
+
+    # Pass 2: ward (-ku) followed by -shi in next segment
+    for index, part in enumerate(parts):
+        if part.lower().endswith("-ku"):
+            if index + 1 < len(parts) and parts[index + 1].lower().endswith("-shi"):
+                city = titlecase_geo(parts[index + 1][:-4])
+                if city:
+                    return city
+            if prefecture == "Tokyo":
+                return "Tokyo"
+
+    # Pass 3: town/village suffixes — only reached when no -shi found
+    for part in parts:
+        lower = part.lower()
         if lower.endswith("-machi") or lower.endswith("-cho"):
             city = titlecase_geo(part.rsplit("-", 1)[0])
             if city:
@@ -424,13 +439,6 @@ def infer_city(
             city = titlecase_geo(part.rsplit("-", 1)[0])
             if city:
                 return city
-        if lower.endswith("-ku"):
-            if index + 1 < len(parts) and parts[index + 1].lower().endswith("-shi"):
-                city = titlecase_geo(parts[index + 1][:-4])
-                if city:
-                    return city
-            if prefecture == "Tokyo":
-                return "Tokyo"
 
     address_text = " ".join(parts).lower()
     for choice in ("Kyoto", "Osaka", "Nara"):

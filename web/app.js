@@ -1458,11 +1458,9 @@ function renderFocusCard() {
 
   focusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(diningKicker(record))}</div>
-    <div class="focus-title-row">
-      <h3 class="focus-title">${escapeHtml(record.name)}</h3>
-      ${ratingBadges}
-    </div>
+    <h3 class="focus-title">${escapeHtml(record.name)}</h3>
     <div class="focus-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
+    ${ratingBadges}
     ${
       record.source_localized_address
         ? `<div class="focus-address">${escapeHtml(record.source_localized_address)}</div>`
