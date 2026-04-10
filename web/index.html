@@ -6,12 +6,12 @@
     <title>Charging the Charge Card</title>
     <meta
       name="description"
-      content="Charging the Charge Card: the unofficial Amex experience guide for min-maxers."
+      content="Charging the Charge Card — unofficial Amex Platinum guide for min-maxers."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
     <link
@@ -21,198 +21,166 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         ONBOARDING GATE — shown on first visit, hidden after
+    ════════════════════════════════════════════════════════════ -->
     <section class="intro-gate" id="intro-gate" hidden>
+      <div class="intro-ambient">
+        <div class="intro-orb intro-orb-gold" aria-hidden="true"></div>
+        <div class="intro-orb intro-orb-teal" aria-hidden="true"></div>
+      </div>
       <div class="intro-stage">
-        <div class="intro-halo intro-halo-gold" aria-hidden="true"></div>
-        <div class="intro-halo intro-halo-teal" aria-hidden="true"></div>
-        <button class="intro-skip" id="intro-skip-top" type="button">
-          Skip
-        </button>
-        <p class="eyebrow">Charging the Charge Card</p>
-        <h2 class="intro-title">
-          Travel better. Dine better. Charge smarter.
-        </h2>
-        <p class="intro-copy">
-          A fan-made Amex guide for people who actually want to use the card
-          well, without digging through scattered benefit pages first.
-        </p>
-        <div class="intro-pill-row" aria-label="What this app helps with">
-          <span class="intro-pill">Hotels</span>
-          <span class="intro-pill">Dining</span>
-          <span class="intro-pill">Alerts</span>
-          <span class="intro-pill">Official links</span>
-        </div>
-        <div class="intro-steps">
-          <article class="intro-step">
-            <span class="intro-step-number">01</span>
-            <h3>Pick a lane</h3>
-            <p>Travel, Singapore, wine, or change tracking. Start with intent, not benefit jargon.</p>
-          </article>
-          <article class="intro-step">
-            <span class="intro-step-number">02</span>
-            <h3>Narrow fast</h3>
-            <p>Use the map, trim the shortlist, and keep one selected card in focus.</p>
-          </article>
-          <article class="intro-step">
-            <span class="intro-step-number">03</span>
-            <h3>Jump official</h3>
-            <p>Every route ends on the official booking or source page before you actually book or pay.</p>
-          </article>
-        </div>
-        <div class="intro-actions">
-          <button class="primary-btn" id="intro-start-travel" type="button" data-intro-route="#/stays">
-            Start with Travel
-          </button>
+        <button class="intro-skip" id="intro-skip-top" type="button">Skip</button>
+
+        <header class="intro-header">
+          <p class="eyebrow">Charging the Charge Card</p>
+          <h2 class="intro-question">How can I help you today?</h2>
+        </header>
+
+        <div class="intro-choices">
           <button
-            class="ghost-btn secondary"
+            class="intro-choice"
+            id="intro-start-travel"
+            type="button"
+            data-intro-route="#/stays"
+          >
+            <span class="choice-label">Plat Stay</span>
+            <span class="choice-desc">Hotels worldwide with blackout date checking.</span>
+          </button>
+
+          <button
+            class="intro-choice"
             id="intro-start-dining"
             type="button"
             data-intro-route="#/dining/japan"
           >
-            See Japan dining
+            <span class="choice-label">Overseas Dining</span>
+            <span class="choice-desc">Japan restaurants with Tabelog ratings. Find and save.</span>
           </button>
-          <button class="ghost-btn secondary" id="intro-skip-bottom" type="button">
-            Skip intro
+
+          <button
+            class="intro-choice"
+            id="intro-start-love"
+            type="button"
+            data-intro-route="#/love-dining"
+          >
+            <span class="choice-label">Love Dining</span>
+            <span class="choice-desc">Singapore dining offers. Up to 50% off at partners.</span>
+          </button>
+
+          <button
+            class="intro-choice"
+            id="intro-start-10x"
+            type="button"
+            data-intro-route="#/10xcelerator"
+          >
+            <span class="choice-label">10X Accelerator</span>
+            <span class="choice-desc">Bonus points at partner brands. Know where to spend.</span>
           </button>
         </div>
+
+        <button class="intro-skip-bottom" id="intro-skip-bottom" type="button">
+          Skip intro
+        </button>
       </div>
     </section>
 
+    <!-- ═══════════════════════════════════════════════════════════
+         MAIN APP SHELL
+    ════════════════════════════════════════════════════════════ -->
     <div class="page-shell">
-      <header class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow" id="route-eyebrow">Unofficial Amex guide</p>
-          <h1>Charging the Charge Card</h1>
-          <p class="lede" id="route-description">
-            Map the useful bits of the card, shortlist quickly, and jump to the
-            official source before you commit.
-          </p>
-          <div class="hero-highlights" aria-label="Explorer highlights">
-            <span class="hero-chip">Travel planning</span>
-            <span class="hero-chip">Dining abroad</span>
-            <span class="hero-chip">Change alerts</span>
-          </div>
-          <div class="hero-actions">
-            <button class="ghost-btn secondary" id="replay-guide" type="button">
-              Replay guide
-            </button>
-          </div>
+
+      <!-- Top bar -->
+      <header class="app-header">
+        <div class="app-brand">
+          <h1 class="app-title">Charging the Charge Card</h1>
+          <p class="app-eyebrow" id="route-eyebrow">Unofficial Amex guide</p>
         </div>
-        <div class="hero-note">
-          <div class="note-card">
-            <div class="note-title">Why use this</div>
-            <div class="note-list">
-              <div class="note-row">
-                <strong>Plan visually</strong>
-                <span>See hotels and restaurants on a map first, not buried in PDFs.</span>
-              </div>
-              <div class="note-row">
-                <strong>Get to the source fast</strong>
-                <span>Every useful card leads back to the official booking or reservation page.</span>
-              </div>
-              <div class="note-row">
-                <strong>Use it as a guide</strong>
-                <span>Fan-made planner first. Official confirmation always comes before payment.</span>
-              </div>
-            </div>
-          </div>
+        <div class="app-header-actions">
+          <button class="ghost-btn secondary" id="replay-guide" type="button">Guide</button>
         </div>
       </header>
 
-      <section class="journey-strip panel-surface compact-strip">
-        <div class="strip-mini-copy">
-          <p class="eyebrow">Choose Your Lane</p>
-          <p class="strip-hint">
-            Start broad. Narrow down after you know the job to be done.
-          </p>
-        </div>
-        <nav class="journey-nav" id="journey-nav" aria-label="Journey navigation">
-          <a class="journey-link" href="#/stays" data-journey="travel">
-            <strong>Travel</strong>
-            <span>Hotels and overseas dining</span>
+      <!-- Primary section navigation (Hotels / Dining / Love Dining / 10X) -->
+      <section class="app-nav panel-surface">
+        <!-- Journey nav is kept for JS active-state tracking, visually hidden -->
+        <nav id="journey-nav" aria-hidden="true" style="display:none">
+          <a href="#/stays" data-journey="travel">Travel</a>
+          <a href="#/love-dining" data-journey="singapore">Singapore</a>
+          <a href="#/alerts" data-journey="alerts">Alerts</a>
+        </nav>
+
+        <nav class="primary-nav" id="program-nav" aria-label="Section navigation">
+          <a class="primary-link" href="#/dining/japan" data-program="dining">
+            Overseas Dining
           </a>
-          <a class="journey-link" href="#/love-dining" data-journey="singapore">
-            <strong>Singapore</strong>
-            <span>Local dining benefits</span>
+          <a class="primary-link" href="#/stays" data-program="stays">
+            Plat Stay
           </a>
-          <a
-            class="journey-link"
-            href="https://wine.kooexperience.com/"
-            target="_blank"
-            rel="noopener"
-          >
-            <strong>Wine</strong>
-            <span>Open the wine app</span>
+          <a class="primary-link" href="#/love-dining" data-program="love-dining">
+            Love Dining
           </a>
-          <a class="journey-link" href="#/alerts" data-journey="alerts">
-            <strong>Alerts</strong>
-            <span>Track list and terms changes</span>
+          <a class="primary-link" href="#/10xcelerator" data-program="10xcelerator">
+            10X Accelerator
           </a>
         </nav>
-      </section>
 
-      <section class="program-strip panel-surface">
-        <div class="route-copy">
-          <p class="eyebrow">Current Planner</p>
-          <h2 id="program-title">Dining Abroad</h2>
-          <p id="program-description">
-            Switch between the live planners in the current lane.
-          </p>
+        <!-- Scope nav: city sub-tabs (only visible on dining routes) -->
+        <div id="scope-strip">
+          <nav class="scope-nav" id="scope-nav" aria-label="City navigation">
+            <a class="scope-link" href="#/dining/world" data-route="dining/world">All</a>
+            <a class="scope-link" href="#/dining/japan" data-route="dining/japan">Japan</a>
+            <a class="scope-link" href="#/dining/tokyo" data-route="dining/tokyo">Tokyo</a>
+            <a class="scope-link" href="#/dining/kyoto" data-route="dining/kyoto">Kyoto</a>
+            <a class="scope-link" href="#/dining/osaka" data-route="dining/osaka">Osaka</a>
+          </nav>
+          <p class="scope-hint" id="scope-note"></p>
         </div>
-        <nav class="program-nav" id="program-nav" aria-label="Program navigation">
-          <a class="program-link" href="#/dining/world" data-program="dining">Dining Abroad</a>
-          <a class="program-link" href="#/stays" data-program="stays">Plat Stay</a>
-          <a class="program-link" href="#/love-dining" data-program="love-dining">Love Dining</a>
-          <a class="program-link" href="#/10xcelerator" data-program="10xcelerator">More Value</a>
-        </nav>
       </section>
 
-      <section class="route-strip panel-surface" id="scope-strip">
-        <div class="route-copy">
-          <p class="eyebrow">Zoom In</p>
-          <h2 id="route-title">World</h2>
-          <p id="scope-note">
-            Start broad, then zoom into the places that are actually useful for this trip.
-          </p>
+      <!-- Context strip (hidden titles updated by JS for document.title etc.) -->
+      <div class="context-strip">
+        <div class="context-copy">
+          <h2 class="context-title" id="program-title">Dining Abroad</h2>
+          <p class="context-desc" id="program-description"></p>
+          <p id="route-title" style="display:none"></p>
+          <p id="route-description" style="display:none"></p>
         </div>
-        <nav class="route-nav" id="scope-nav" aria-label="Route navigation">
-          <a class="route-link" href="#/dining/world" data-route="dining/world">World</a>
-          <a class="route-link" href="#/dining/japan" data-route="dining/japan">Japan</a>
-          <a class="route-link" href="#/dining/tokyo" data-route="dining/tokyo">Tokyo</a>
-          <a class="route-link" href="#/dining/kyoto" data-route="dining/kyoto">Kyoto</a>
-          <a class="route-link" href="#/dining/osaka" data-route="dining/osaka">Osaka</a>
-        </nav>
-      </section>
+        <p class="summary-strip-text-inline" id="summary-strip-text-desktop"></p>
+      </div>
 
+      <!-- Program buildout brief (for stubbed sections) -->
       <section class="program-brief panel-surface" id="program-brief" hidden>
         <div class="panel-head">
           <div>
-            <h2 id="program-brief-title">Program Buildout</h2>
-            <p id="program-brief-summary">
-              This dataset is being prepared as the next phase of the explorer.
-            </p>
+            <h2 id="program-brief-title">Coming Soon</h2>
+            <p id="program-brief-summary"></p>
           </div>
         </div>
         <div class="program-brief-grid" id="program-brief-grid"></div>
       </section>
 
+      <!-- ═══════════════════════════════════════════════
+           DINING EXPLORER
+      ════════════════════════════════════════════════ -->
       <div id="data-explorer">
         <section class="summary-strip panel-surface">
           <p class="summary-strip-text" id="summary-strip-text">Loading...</p>
         </section>
 
         <section class="explorer-grid">
+          <!-- Map panel with filters -->
           <section class="map-panel panel-surface">
             <div class="panel-head">
               <div>
                 <h2>Map</h2>
-                <p id="map-summary">
-                  Browse the current route on the map, then use the selected
-                  venue panel for the most precise source link.
-                </p>
+                <p id="map-summary">Browse on the map, then use the detail panel for the exact source link.</p>
               </div>
             </div>
+
             <section class="map-filter-shell" id="map-filter-shell">
+              <!-- Mobile filter toggle -->
               <button
                 id="toolbar-toggle"
                 type="button"
@@ -221,10 +189,8 @@
                 aria-controls="filter-toolbar"
               >
                 <span>
-                  <span class="toolbar-toggle-title">Filters</span>
-                  <span class="toolbar-toggle-meta" id="toolbar-toggle-meta">
-                    All filters off
-                  </span>
+                  <span class="toolbar-toggle-title">Refine</span>
+                  <span class="toolbar-toggle-meta" id="toolbar-toggle-meta">All filters off</span>
                 </span>
                 <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
               </button>
@@ -235,7 +201,7 @@
                   <input
                     id="search-input"
                     type="search"
-                    placeholder="Venue, district, cuisine, price range..."
+                    placeholder="Venue, district, cuisine..."
                   />
                 </label>
 
@@ -261,47 +227,47 @@
                 </label>
 
                 <label class="filter-wrap">
-                  <span class="label">Tabelog</span>
+                  <span class="label">Tabelog rating</span>
                   <select id="tabelog-filter">
-                    <option value="">All venues</option>
-                    <option value="available">Has Tabelog rating</option>
-                    <option value="4plus">4.0+ honest stars</option>
-                    <option value="4_5plus">4.5+ honest stars</option>
-                    <option value="5">5 honest stars</option>
+                    <option value="">Any rating</option>
+                    <option value="available">Has Tabelog score</option>
+                    <option value="4plus">4.0+ stars</option>
+                    <option value="4_5plus">4.5+ stars</option>
+                    <option value="5">5 stars</option>
                   </select>
                 </label>
 
                 <label class="filter-wrap">
-                  <span class="label">Lunch Band</span>
+                  <span class="label">Lunch band</span>
                   <select id="lunch-filter">
                     <option value="">All lunch bands</option>
                   </select>
                 </label>
 
                 <label class="filter-wrap">
-                  <span class="label">Dinner Band</span>
+                  <span class="label">Dinner band</span>
                   <select id="dinner-filter">
                     <option value="">All dinner bands</option>
                   </select>
                 </label>
 
                 <label class="filter-wrap">
-                  <span class="label">Kids</span>
+                  <span class="label">Children</span>
                   <select id="kids-filter">
                     <option value="">All</option>
                     <option value="kid_friendly">Kid friendly</option>
                     <option value="older_kids_only">Older kids only</option>
-                    <option value="policy_available">Child rules listed</option>
-                    <option value="unknown">No child policy listed</option>
+                    <option value="policy_available">Rules listed</option>
+                    <option value="unknown">No policy listed</option>
                   </select>
                 </label>
 
                 <label class="filter-wrap">
-                  <span class="label">English Menu</span>
+                  <span class="label">English menu</span>
                   <select id="menu-filter">
                     <option value="">All</option>
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
+                    <option value="yes">Available</option>
+                    <option value="no">Not listed</option>
                   </select>
                 </label>
 
@@ -313,24 +279,26 @@
                 </label>
 
                 <div class="filter-actions">
-                  <span class="label">Reset</span>
                   <button id="reset-filters" type="button" class="ghost-btn">
                     Clear filters
                   </button>
                 </div>
               </section>
             </section>
+
             <div id="map"></div>
+
             <div class="map-downloads">
-              <div class="stat-label">KML Downloads</div>
+              <div class="stat-label">KML downloads</div>
               <div class="download-stack" id="download-stack"></div>
             </div>
           </section>
 
+          <!-- Selected venue detail panel -->
           <aside class="focus-panel panel-surface">
             <div class="panel-head">
               <div>
-                <h2>Selected Venue</h2>
+                <h2>Selected venue</h2>
                 <p id="results-text">Loading...</p>
               </div>
             </div>
@@ -338,6 +306,7 @@
           </aside>
         </section>
 
+        <!-- Results table (collapsible) -->
         <section class="table-shell">
           <button
             id="table-toggle"
@@ -347,10 +316,8 @@
             aria-controls="results-table-panel"
           >
             <span>
-              <span class="toolbar-toggle-title">Detailed Table</span>
-              <span class="toolbar-toggle-meta" id="table-toggle-meta">
-                Open for side-by-side scanning and extra detail
-              </span>
+              <span class="toolbar-toggle-title">Full table</span>
+              <span class="toolbar-toggle-meta" id="table-toggle-meta">Side-by-side comparison</span>
             </span>
             <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
           </button>
@@ -358,7 +325,7 @@
           <section class="table-panel panel-surface" id="results-table-panel">
             <div class="panel-head table-head">
               <div>
-                <h2>Results Table</h2>
+                <h2>All results</h2>
                 <p id="table-summary">Loading...</p>
               </div>
             </div>
@@ -371,7 +338,7 @@
                     <th>Cuisine</th>
                     <th>Dinner</th>
                     <th>Lunch</th>
-                    <th>Kids</th>
+                    <th>Children</th>
                     <th>Menu</th>
                     <th>Reservation</th>
                   </tr>
@@ -382,10 +349,11 @@
           </section>
         </section>
 
+        <!-- Mobile card list -->
         <section class="mobile-results-panel panel-surface">
           <div class="panel-head">
             <div>
-              <h2>Mobile Results</h2>
+              <h2>Venues</h2>
               <p id="mobile-summary">Loading...</p>
             </div>
           </div>
@@ -393,6 +361,9 @@
         </section>
       </div>
 
+      <!-- ═══════════════════════════════════════════════
+           PLAT STAY EXPLORER
+      ════════════════════════════════════════════════ -->
       <div id="stays-explorer" hidden>
         <section class="summary-strip panel-surface">
           <p class="summary-strip-text" id="stays-summary-strip-text">Loading...</p>
@@ -402,13 +373,11 @@
           <section class="map-panel panel-surface">
             <div class="panel-head">
               <div>
-                <h2>Property Map</h2>
-                <p id="stays-map-summary">
-                  Browse the current Plat Stay property set, then narrow it with
-                  travel dates and country filters.
-                </p>
+                <h2>Property map</h2>
+                <p id="stays-map-summary">Browse properties worldwide, then filter by date to check blackout conflicts.</p>
               </div>
             </div>
+
             <section class="map-filter-shell" id="stays-map-filter-shell">
               <button
                 id="stays-toolbar-toggle"
@@ -418,10 +387,8 @@
                 aria-controls="stays-filter-toolbar"
               >
                 <span>
-                  <span class="toolbar-toggle-title">Filters</span>
-                  <span class="toolbar-toggle-meta" id="stays-toolbar-toggle-meta">
-                    All filters off
-                  </span>
+                  <span class="toolbar-toggle-title">Refine</span>
+                  <span class="toolbar-toggle-meta" id="stays-toolbar-toggle-meta">All filters off</span>
                 </span>
                 <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
               </button>
@@ -432,7 +399,7 @@
                   <input
                     id="stays-search-input"
                     type="search"
-                    placeholder="Property, city, country, room type..."
+                    placeholder="Property, city, country..."
                   />
                 </label>
 
@@ -450,36 +417,32 @@
                   </select>
                 </label>
 
-                <label class="filter-wrap">
-                  <span class="label">Check-in</span>
-                  <input id="stays-checkin-input" type="date" />
-                </label>
-
-                <label class="filter-wrap">
-                  <span class="label">Check-out</span>
-                  <input id="stays-checkout-input" type="date" />
-                </label>
-
-                <div class="preset-wrap">
-                  <span class="label">Dates</span>
-                  <div class="preset-row">
-                    <button type="button" class="ghost-btn secondary" data-stay-preset="clear-dates">
-                      Clear dates
-                    </button>
-                  </div>
+                <div class="filter-date-group">
+                  <label class="filter-wrap">
+                    <span class="label">Check-in</span>
+                    <input id="stays-checkin-input" type="date" />
+                  </label>
+                  <label class="filter-wrap">
+                    <span class="label">Check-out</span>
+                    <input id="stays-checkout-input" type="date" />
+                  </label>
                 </div>
 
                 <div class="filter-actions">
-                  <span class="label">Reset</span>
+                  <button type="button" class="ghost-btn secondary" data-stay-preset="clear-dates">
+                    Clear dates
+                  </button>
                   <button id="stays-reset-filters" type="button" class="ghost-btn">
-                    Clear filters
+                    Clear all
                   </button>
                 </div>
               </section>
             </section>
+
             <div id="stays-map"></div>
+
             <div class="map-downloads" id="stays-downloads-section" hidden>
-              <div class="stat-label">KML Downloads</div>
+              <div class="stat-label">KML downloads</div>
               <div class="download-stack" id="stays-download-stack"></div>
             </div>
           </section>
@@ -487,7 +450,7 @@
           <aside class="focus-panel panel-surface">
             <div class="panel-head">
               <div>
-                <h2>Selected Property</h2>
+                <h2>Selected property</h2>
                 <p id="stays-results-text">Loading...</p>
               </div>
             </div>
@@ -504,10 +467,8 @@
             aria-controls="stays-results-table-panel"
           >
             <span>
-              <span class="toolbar-toggle-title">Detailed Table</span>
-              <span class="toolbar-toggle-meta" id="stays-table-toggle-meta">
-                Open for side-by-side scanning and blackout-date detail
-              </span>
+              <span class="toolbar-toggle-title">Full table</span>
+              <span class="toolbar-toggle-meta" id="stays-table-toggle-meta">Side-by-side with blackout detail</span>
             </span>
             <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
           </button>
@@ -515,7 +476,7 @@
           <section class="table-panel panel-surface" id="stays-results-table-panel">
             <div class="panel-head table-head">
               <div>
-                <h2>Results Table</h2>
+                <h2>All properties</h2>
                 <p id="stays-table-summary">Loading...</p>
               </div>
             </div>
@@ -524,9 +485,9 @@
                 <thead>
                   <tr>
                     <th>Property</th>
-                    <th>Place</th>
-                    <th>Eligible Room</th>
-                    <th>Blackout Notes</th>
+                    <th>Location</th>
+                    <th>Eligible room</th>
+                    <th>Blackout notes</th>
                     <th>Reservation</th>
                   </tr>
                 </thead>
@@ -539,14 +500,15 @@
         <section class="mobile-results-panel panel-surface">
           <div class="panel-head">
             <div>
-              <h2>Mobile Results</h2>
+              <h2>Properties</h2>
               <p id="stays-mobile-summary">Loading...</p>
             </div>
           </div>
           <div class="mobile-results-list" id="stays-mobile-results-list"></div>
         </section>
       </div>
-    </div>
+
+    </div><!-- /page-shell -->
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="./app.js"></script>

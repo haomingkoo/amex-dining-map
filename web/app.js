@@ -3,7 +3,7 @@ const STAYS_DATA_URL = "../data/plat-stays.json";
 const STAYS_META_URL = "../data/plat-stay-source.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
-const INTRO_STORAGE_KEY = "amex-benefits-intro-v2";
+const INTRO_STORAGE_KEY = "amex-benefits-intro-v3";
 
 const LUNCH_BANDS = [
   { key: "under-5k", label: "Under JPY 5k", tier: "$" },
@@ -22,10 +22,10 @@ const DINNER_BANDS = [
 const PROGRAMS = {
   dining: {
     id: "dining",
-    label: "Dining Abroad",
-    title: "Dining Abroad",
+    label: "Overseas Dining",
+    title: "Overseas Dining",
     description:
-      "Overseas dining worth a look, with Japan as the deepest live market right now.",
+      "Japan restaurants with Tabelog ratings, price tiers, and direct Google Maps links.",
     defaultRoute: "dining/world",
   },
   stays: {
@@ -33,7 +33,7 @@ const PROGRAMS = {
     label: "Plat Stay",
     title: "Plat Stay",
     description:
-      "Hotels worth a look, with blackout notes and official booking links.",
+      "Plat Stay properties worldwide. Filter by travel dates to surface blackout conflicts.",
     defaultRoute: "stays",
   },
   "love-dining": {
@@ -41,15 +41,15 @@ const PROGRAMS = {
     label: "Love Dining",
     title: "Love Dining",
     description:
-      "Singapore dining spots, benefit detail, and rule context.",
+      "Singapore dining benefits. Up to 50% off at participating restaurants and hotel outlets.",
     defaultRoute: "love-dining",
   },
   "10xcelerator": {
     id: "10xcelerator",
-    label: "More Value",
-    title: "More Value",
+    label: "10X Accelerator",
+    title: "10X Accelerator",
     description:
-      "Extra value ideas when they are actually worth surfacing.",
+      "Bonus points with partner brands. A searchable directory of where your spend earns more.",
     defaultRoute: "10xcelerator",
   },
   alerts: {
@@ -57,7 +57,7 @@ const PROGRAMS = {
     label: "Alerts",
     title: "Alerts",
     description:
-      "Change watch for list updates, terms, and blackout movement.",
+      "Change watch for property additions, removals, and blackout note updates.",
     defaultRoute: "alerts",
   },
 };
@@ -370,7 +370,7 @@ const programTitle = document.getElementById("program-title");
 const programDescription = document.getElementById("program-description");
 const journeyNav = document.getElementById("journey-nav");
 const journeyLinks = [...journeyNav.querySelectorAll("[data-journey]")];
-const programStrip = document.querySelector(".program-strip");
+const programStrip = document.querySelector(".app-nav");
 const programNav = document.getElementById("program-nav");
 const programLinks = [...programNav.querySelectorAll("[data-program]")];
 const scopeStrip = document.getElementById("scope-strip");
@@ -931,20 +931,15 @@ function resolveRouteFromHash() {
 }
 
 function renderProgramShell(program, route) {
-  routeEyebrow.textContent = route.eyebrow;
-  routeDescription.textContent = route.description;
+  if (routeEyebrow) routeEyebrow.textContent = route.eyebrow;
+  if (routeDescription) routeDescription.textContent = route.description;
   programTitle.textContent = program.title;
   programDescription.textContent = program.description;
 
-  const visibleIds = visibleProgramIdsForJourney(currentJourneyId(route));
-  if (programStrip) {
-    programStrip.hidden = visibleIds.length <= 1;
-  }
-
+  // Always keep primary nav visible — mark active tab only
   programLinks.forEach((link) => {
-    const visible = visibleIds.includes(link.dataset.program);
-    link.hidden = !visible;
-    link.classList.toggle("active", visible && link.dataset.program === program.id);
+    link.hidden = false;
+    link.classList.toggle("active", link.dataset.program === program.id);
   });
 }
 
@@ -1225,7 +1220,7 @@ function renderMarkers() {
 function renderFocusCard() {
   const record = activeRecord();
   if (!record) {
-    focusCard.innerHTML = '<div class="empty-state">No venue matches the current route and filters.</div>';
+    focusCard.innerHTML = '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
     return;
   }
 
@@ -1322,7 +1317,7 @@ function renderFocusCard() {
 function renderTable() {
   if (!state.filtered.length) {
     resultsTableBody.innerHTML =
-      '<tr><td colspan="8" class="empty-table">No venues match the current route and filters.</td></tr>';
+      '<tr><td colspan="8" class="empty-table">No matches. Adjust filters to expand results.</td></tr>';
     return;
   }
 
@@ -1372,7 +1367,7 @@ function renderTable() {
 function renderMobileCards() {
   if (!state.filtered.length) {
     mobileResultsList.innerHTML =
-      '<div class="empty-state">No venues match the current route and filters.</div>';
+      '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
     return;
   }
 
@@ -1889,7 +1884,7 @@ function renderStayMarkers() {
 function renderStayFocusCard() {
   const record = activeStayRecord();
   if (!record) {
-    staysFocusCard.innerHTML = '<div class="empty-state">No property matches the current route and filters.</div>';
+    staysFocusCard.innerHTML = '<div class="empty-state">No matches. Adjust filters or dates to expand results.</div>';
     return;
   }
 
@@ -1949,7 +1944,7 @@ function renderStayFocusCard() {
 function renderStayTable() {
   if (!state.stayFiltered.length) {
     staysResultsTableBody.innerHTML =
-      '<tr><td colspan="5" class="empty-table">No properties match the current filters and date check.</td></tr>';
+      '<tr><td colspan="5" class="empty-table">No matches. Adjust filters or dates to expand results.</td></tr>';
     return;
   }
 
@@ -1978,7 +1973,7 @@ function renderStayTable() {
 function renderStayMobileCards() {
   if (!state.stayFiltered.length) {
     staysMobileResultsList.innerHTML =
-      '<div class="empty-state">No properties match the current filters and date check.</div>';
+      '<div class="empty-state">No matches. Adjust filters or dates to expand results.</div>';
     return;
   }
 
@@ -2163,9 +2158,10 @@ async function init() {
     state.staysSourceMeta = await staysMetaResponse.json();
   }
 
-  setToolbarOpen(false);
+  const isWide = window.innerWidth >= 1100;
+  setToolbarOpen(isWide);
   setTableOpen(false);
-  setStayToolbarOpen(false);
+  setStayToolbarOpen(isWide);
   setStayTableOpen(false);
   handleHashRoute();
   if (!window.location.hash) {
@@ -2213,6 +2209,14 @@ introStartTravelButton?.addEventListener("click", () => {
 
 introStartDiningButton?.addEventListener("click", () => {
   jumpIntoExplorer(introStartDiningButton.dataset.introRoute);
+});
+
+document.getElementById("intro-start-love")?.addEventListener("click", (e) => {
+  jumpIntoExplorer(e.currentTarget.dataset.introRoute);
+});
+
+document.getElementById("intro-start-10x")?.addEventListener("click", (e) => {
+  jumpIntoExplorer(e.currentTarget.dataset.introRoute);
 });
 
 replayGuideButton?.addEventListener("click", () => {
