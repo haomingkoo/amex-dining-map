@@ -1,6 +1,9 @@
 name: Generate AI Descriptions
 
 on:
+  schedule:
+    # Runs on the 1st of every month at 02:00 UTC
+    - cron: "0 2 1 * *"
   workflow_dispatch:
     inputs:
       min_words:
@@ -24,6 +27,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-python@v5
         with:
@@ -33,9 +38,13 @@ jobs:
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
-          ARGS="--min-words ${{ github.event.inputs.min_words }} --batch-size ${{ github.event.inputs.batch_size }}"
-          if [ -n "${{ github.event.inputs.country }}" ]; then
-            ARGS="$ARGS --country \"${{ github.event.inputs.country }}\""
+          # On scheduled runs use defaults; on manual runs use inputs
+          MIN_WORDS="${{ github.event.inputs.min_words || '20' }}"
+          BATCH_SIZE="${{ github.event.inputs.batch_size || '20' }}"
+          COUNTRY="${{ github.event.inputs.country }}"
+          ARGS="--min-words $MIN_WORDS --batch-size $BATCH_SIZE"
+          if [ -n "$COUNTRY" ]; then
+            ARGS="$ARGS --country \"$COUNTRY\""
           fi
           eval python3 scripts/generate_global_descriptions.py $ARGS
 
