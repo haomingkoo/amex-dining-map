@@ -187,8 +187,16 @@ def main() -> None:
         print("Nothing to do.")
         return
 
-    # Index data by id for quick update
-    by_id = {r["id"]: r for r in data}
+    # Deduplicate todo by ID — chain restaurants share IDs, generate one description then fan out
+    seen_ids: set[str] = set()
+    deduped: list[dict] = []
+    for r in todo:
+        if r["id"] not in seen_ids:
+            seen_ids.add(r["id"])
+            deduped.append(r)
+    if len(deduped) < len(todo):
+        print(f"Deduplicated {len(todo)} → {len(deduped)} unique IDs.")
+    todo = deduped
 
     batches = [todo[i:i + args.batch_size] for i in range(0, len(todo), args.batch_size)]
     total_done = 0
@@ -214,7 +222,10 @@ def main() -> None:
         written = 0
         for record, desc in zip(batch, descriptions):
             if desc:
-                by_id[record["id"]]["summary_ai"] = desc
+                # Update ALL records with this ID (chain restaurants share the same name/ID pattern)
+                for r in data:
+                    if r["id"] == record["id"]:
+                        r["summary_ai"] = desc
                 print(f"  ✓ {record['name']}: {desc[:70]}...")
                 written += 1
             else:
