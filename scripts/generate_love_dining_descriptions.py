@@ -23,7 +23,7 @@ ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
 LOVE_PATH = DATA_DIR / "love-dining.json"
 
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = "llama-3.1-8b-instant"
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 UA = "Mozilla/5.0 (compatible; amex-dining-map/1.0)"
 
