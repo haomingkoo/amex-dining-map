@@ -1549,7 +1549,7 @@ function renderMobileCards() {
             : ""
         }
         ${
-          tabelogSearchUrl(record)
+          record.country === "Japan" && tabelogSearchUrl(record)
             ? `<a class="inline-link" href="${escapeHtml(tabelogSearchUrl(record))}" target="_blank" rel="noopener">Search Tabelog</a>`
             : ""
         }
