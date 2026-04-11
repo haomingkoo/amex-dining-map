@@ -3,14 +3,17 @@
 
 from __future__ import annotations
 
+import difflib
 import hashlib
 import html
 import json
+import math
 import os
 import re
 import subprocess
 import tempfile
 import time
+import unicodedata
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
@@ -29,6 +32,7 @@ GEOCODE_CACHE_PATH = DATA_DIR / "plat_stay_geocode_cache.json"
 GEOAPIFY_CACHE_PATH = DATA_DIR / "plat_stay_geoapify_cache.json"
 TOMTOM_CACHE_PATH = DATA_DIR / "plat_stay_tomtom_cache.json"
 MANUAL_OVERRIDE_PATH = DATA_DIR / "plat_stay_manual_overrides.json"
+GOOGLE_RATINGS_PATH = DATA_DIR / "google-maps-ratings.json"
 
 CANONICAL_SOURCE_URL = "https://go.amex/platstay"
 USER_AGENT = "AmexBenefitsExplorer/0.1 (+https://kooexperience.com/amex-dining-map/)"
@@ -82,6 +86,26 @@ COUNTRY_CODES = {
     "Vietnam": "vn",
 }
 
+COUNTRY_BOUNDS: dict[str, tuple[float, float, float, float]] = {
+    "Australia": (-44.5, -10.0, 112.0, 154.0),
+    "Bahrain": (25.4, 26.4, 50.3, 50.9),
+    "China": (18.0, 54.0, 73.0, 135.0),
+    "Germany": (47.0, 56.0, 5.0, 16.0),
+    "Greece": (34.0, 42.0, 19.0, 30.0),
+    "Indonesia": (-11.5, 6.5, 95.0, 141.5),
+    "Japan": (24.0, 46.5, 123.0, 146.5),
+    "Malaysia": (0.5, 7.5, 99.0, 120.0),
+    "Maldives": (-1.0, 8.0, 72.0, 74.5),
+    "Mexico": (14.0, 33.0, -119.0, -86.0),
+    "Qatar": (24.4, 26.3, 50.6, 51.8),
+    "Singapore": (1.1, 1.5, 103.5, 104.1),
+    "South Korea": (33.0, 39.7, 124.0, 132.0),
+    "Thailand": (5.0, 21.0, 97.0, 106.0),
+    "Turkey": (35.0, 43.0, 25.0, 45.0),
+    "United Arab Emirates": (22.5, 26.5, 51.0, 56.5),
+    "Vietnam": (8.0, 24.0, 102.0, 110.5),
+}
+
 MONTHS = {
     "january": 1,
     "february": 2,
@@ -96,6 +120,9 @@ MONTHS = {
     "november": 11,
     "december": 12,
 }
+
+GOOGLE_PLACE_ALIGNMENT_KM = 1.5
+GOOGLE_NAME_ONLY_ALIGNMENT_KM = 25.0
 
 
 @dataclass
@@ -272,6 +299,89 @@ def clean_whitespace(value: str) -> str:
     return re.sub(r"\s+", " ", value).strip()
 
 
+def within_country_bounds(country: str | None, lat: float | None, lng: float | None) -> bool:
+    if lat is None or lng is None:
+        return False
+    bounds = COUNTRY_BOUNDS.get(country or "")
+    if not bounds:
+        return True
+    min_lat, max_lat, min_lng, max_lng = bounds
+    return min_lat <= lat <= max_lat and min_lng <= lng <= max_lng
+
+
+def distance_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    radius = 6371.0
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    d_phi = math.radians(lat2 - lat1)
+    d_lambda = math.radians(lng2 - lng1)
+    a = (
+        math.sin(d_phi / 2) ** 2
+        + math.cos(phi1) * math.cos(phi2) * math.sin(d_lambda / 2) ** 2
+    )
+    return 2 * radius * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def parse_google_map_coordinates(url: str | None) -> tuple[float | None, float | None]:
+    if not url:
+        return None, None
+
+    candidates = [url]
+    parsed = urllib.parse.urlparse(url)
+    should_resolve = "goo.gl" in parsed.netloc or "maps.app.goo.gl" in parsed.netloc
+    if should_resolve:
+        try:
+            request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(request, timeout=5) as response:
+                redirected = response.geturl()
+            if redirected and redirected not in candidates:
+                candidates.insert(0, redirected)
+        except Exception:
+            pass
+
+    for candidate in candidates:
+        decoded = urllib.parse.unquote(candidate)
+        for pattern in (
+            r"@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)",
+            r"!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)",
+        ):
+            match = re.search(pattern, decoded)
+            if match:
+                return float(match.group(1)), float(match.group(2))
+
+        query = urllib.parse.parse_qs(urllib.parse.urlparse(candidate).query)
+        for key in ("q", "query"):
+            value = query.get(key, [None])[0]
+            if not value:
+                continue
+            match = re.match(
+                r"\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$",
+                urllib.parse.unquote(value),
+            )
+            if match:
+                return float(match.group(1)), float(match.group(2))
+
+    return None, None
+
+
+def normalized_ascii(value: str | None) -> str:
+    if not value:
+        return ""
+    text = urllib.parse.unquote(value)
+    text = unicodedata.normalize("NFKD", text)
+    text = text.encode("ascii", "ignore").decode("ascii")
+    text = text.lower()
+    text = text.replace("&", " and ")
+    text = text.replace("/", " ")
+    text = re.sub(r"\bno\.?\b", " ", text)
+    text = re.sub(r"\bsection\b", "sec", text)
+    text = re.sub(r"\broad\b", "rd", text)
+    text = re.sub(r"\bstreet\b", "st", text)
+    text = re.sub(r"\bavenue\b", "ave", text)
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return clean_whitespace(text)
+
+
 def normalize_match_text(value: str | None) -> str:
     if not value:
         return ""
@@ -284,6 +394,32 @@ def contains_normalized_text(haystack: str | None, needle: str | None) -> bool:
     if not haystack_normalized or not needle_normalized:
         return False
     return needle_normalized in haystack_normalized
+
+
+def token_overlap(left: str | None, right: str | None) -> int:
+    left_tokens = set(normalized_ascii(left).split())
+    right_tokens = set(normalized_ascii(right).split())
+    return len(left_tokens & right_tokens)
+
+
+def text_similarity(left: str | None, right: str | None) -> float:
+    a = normalized_ascii(left)
+    b = normalized_ascii(right)
+    if not a or not b:
+        return 0.0
+    if a in b or b in a:
+        return 1.0
+    return difflib.SequenceMatcher(None, a, b).ratio()
+
+
+def names_match(left: str | None, right: str | None) -> bool:
+    overlap = token_overlap(left, right)
+    return overlap >= 2 or text_similarity(left, right) >= 0.72
+
+
+def addresses_match(left: str | None, right: str | None) -> bool:
+    overlap = token_overlap(left, right)
+    return overlap >= 3 or text_similarity(left, right) >= 0.65
 
 
 def collapse_multiline(parts: list[str]) -> str:
@@ -912,6 +1048,113 @@ def geocode_record(record: dict, cache: dict) -> None:
         return
 
 
+def google_rating_candidate(record: dict, google_ratings: dict[str, dict]) -> dict | None:
+    rating = google_ratings.get(record["id"])
+    if not isinstance(rating, dict):
+        return None
+
+    google_name = clean_whitespace(rating.get("google_name") or "")
+    if not google_name or google_name.lower() == "results":
+        return None
+
+    lat, lng = parse_google_map_coordinates(rating.get("maps_url"))
+    if not within_country_bounds(record.get("country"), lat, lng):
+        return None
+
+    google_address = clean_whitespace(rating.get("google_address") or "")
+    return {
+        "lat": float(lat),
+        "lng": float(lng),
+        "google_name": google_name,
+        "google_address": google_address,
+        "name_ok": names_match(normalize_name_for_query(record["name"]), google_name),
+        "address_ok": addresses_match(normalize_address_for_query(record["address"]), google_address),
+    }
+
+
+def validate_record_coordinates(record: dict, google_ratings: dict[str, dict]) -> None:
+    if record.get("coordinate_confidence") == "manual_verified":
+        return
+
+    lat = record.get("lat")
+    lng = record.get("lng")
+    current_ok = within_country_bounds(record.get("country"), lat, lng)
+    current_confidence = record.get("coordinate_confidence")
+    strong_current_match = current_confidence in {"poi_address_matched", "address_matched"}
+
+    google_candidate = google_rating_candidate(record, google_ratings)
+    gap = None
+    if google_candidate and current_ok:
+        gap = distance_km(float(lat), float(lng), google_candidate["lat"], google_candidate["lng"])
+
+    if google_candidate and google_candidate["address_ok"]:
+        if strong_current_match and gap is not None and gap > GOOGLE_PLACE_ALIGNMENT_KM:
+            record["lat"] = None
+            record["lng"] = None
+            record["coordinate_source"] = None
+            record["coordinate_confidence"] = "location_conflict"
+            record["map_pin_note"] = (
+                "Independent hotel location matches disagree on this property, so the pin is hidden until the "
+                "address can be manually confirmed."
+            )
+            return
+
+        record["lat"] = google_candidate["lat"]
+        record["lng"] = google_candidate["lng"]
+        record["coordinate_source"] = "google_maps_ratings"
+        record["coordinate_confidence"] = "google_place_verified"
+        if gap is None:
+            record["map_pin_note"] = "Pin follows the matched Google place for this hotel."
+        elif current_confidence == "approximate" and gap > GOOGLE_PLACE_ALIGNMENT_KM:
+            record["map_pin_note"] = (
+                "Approximate geocoding drifted from the matched Google place, so the pin now follows the verified "
+                "hotel location."
+            )
+        elif strong_current_match:
+            record["map_pin_note"] = "The hotel address match and Google place agree on this location."
+        else:
+            record["map_pin_note"] = "Google place matches the hotel listing and address for this property."
+        return
+
+    if google_candidate and google_candidate["name_ok"] and gap is not None and gap <= GOOGLE_PLACE_ALIGNMENT_KM:
+        record["coordinate_source"] = "google_maps_ratings"
+        record["coordinate_confidence"] = "google_place_verified"
+        record["map_pin_note"] = "Google place agrees with the mapped hotel location."
+        return
+
+    if (
+        google_candidate
+        and google_candidate["name_ok"]
+        and current_ok
+        and gap is not None
+        and gap <= GOOGLE_NAME_ONLY_ALIGNMENT_KM
+    ):
+        record["lat"] = google_candidate["lat"]
+        record["lng"] = google_candidate["lng"]
+        record["coordinate_source"] = "google_maps_ratings"
+        record["coordinate_confidence"] = "google_place_verified"
+        if current_confidence == "approximate" and gap > GOOGLE_PLACE_ALIGNMENT_KM:
+            record["map_pin_note"] = (
+                "Approximate geocoding drifted from the matched Google hotel place, so the pin now follows the "
+                "Google place returned for the source-address query."
+            )
+        else:
+            record["map_pin_note"] = "Google place matches the hotel name for the source-address query."
+        return
+
+    if current_ok:
+        return
+
+    record["lat"] = None
+    record["lng"] = None
+    record["coordinate_source"] = None
+    record["coordinate_confidence"] = "none"
+    record["map_pin_note"] = (
+        "The hotel location could not be verified from the official source address yet, so the pin is hidden until "
+        "it can be confirmed."
+    )
+
+
 def build_search_text(record: dict) -> str:
     fields = [
         record.get("name"),
@@ -1150,12 +1393,14 @@ def main() -> None:
     geocode_cache = load_json(GEOCODE_CACHE_PATH, {})
     geoapify_cache = load_json(GEOAPIFY_CACHE_PATH, {})
     tomtom_cache = load_json(TOMTOM_CACHE_PATH, {})
+    google_ratings = load_json(GOOGLE_RATINGS_PATH, {})
     for record in records:
         geocode_record(record, geocode_cache)
         if record.get("coordinate_confidence") not in {"manual_verified"}:
             refine_with_geoapify(record, geoapify_cache)
         if record.get("coordinate_confidence") not in {"manual_verified", "poi_address_matched"}:
             refine_with_tomtom(record, tomtom_cache)
+        validate_record_coordinates(record, google_ratings)
         record["search_text"] = build_search_text(record)
 
     save_json(JSON_PATH, records)

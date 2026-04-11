@@ -15,10 +15,12 @@ import argparse
 import datetime
 import hashlib
 import json
+import difflib
 from math import atan2, cos, radians, sin, sqrt
 import re
 import sys
 import time
+import unicodedata
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
@@ -34,6 +36,7 @@ SNAPSHOT_PATH = DATA_DIR / "global-dining-snapshot.json"
 SOURCE_META_PATH = DATA_DIR / "global-dining-source.json"
 OVERRIDES_PATH = DATA_DIR / "coordinate-overrides.json"
 GEOCODE_CACHE_PATH = DATA_DIR / "global-dining-geocode-cache.json"
+GOOGLE_RATINGS_PATH = DATA_DIR / "google-maps-ratings.json"
 
 BASE_URL = "https://platinumdining.caffeinesoftware.com"
 SITEMAP_URL = f"{BASE_URL}/sitemap.xml"
@@ -49,6 +52,9 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
 }
+
+SOURCE_MAP_ALIGNMENT_KM = 0.35
+GOOGLE_PLACE_ALIGNMENT_KM = 0.35
 
 
 def http_get(url: str, retries: int = 3, timeout: int = 15) -> str:
@@ -249,10 +255,11 @@ def parse_google_map_coordinates(url: str | None) -> tuple[float | None, float |
 
     candidates = [url]
     parsed = urllib.parse.urlparse(url)
-    if "goo.gl" in parsed.netloc or "maps.app.goo.gl" in parsed.netloc:
+    should_resolve = "goo.gl" in parsed.netloc or "maps.app.goo.gl" in parsed.netloc
+    if should_resolve:
         try:
             req = urllib.request.Request(url, headers=HEADERS)
-            with urllib.request.urlopen(req, timeout=15) as resp:
+            with urllib.request.urlopen(req, timeout=5) as resp:
                 redirected = resp.geturl()
             if redirected and redirected not in candidates:
                 candidates.insert(0, redirected)
@@ -279,6 +286,87 @@ def parse_google_map_coordinates(url: str | None) -> tuple[float | None, float |
                 return float(match.group(1)), float(match.group(2))
 
     return None, None
+
+
+def parse_google_place_id(url: str | None) -> str | None:
+    if not url:
+        return None
+    try:
+        parsed = urllib.parse.urlparse(url)
+        return urllib.parse.parse_qs(parsed.query).get("query_place_id", [None])[0]
+    except Exception:
+        return None
+
+
+def normalized_ascii(value: str | None) -> str:
+    if not value:
+        return ""
+    text = urllib.parse.unquote(value)
+    text = unicodedata.normalize("NFKD", text)
+    text = text.encode("ascii", "ignore").decode("ascii")
+    text = text.lower()
+    text = text.replace("&", " and ")
+    text = text.replace("/", " ")
+    text = re.sub(r"\bno\.?\b", " ", text)
+    text = re.sub(r"\bsection\b", "sec", text)
+    text = re.sub(r"\broad\b", "rd", text)
+    text = re.sub(r"\bstreet\b", "st", text)
+    text = re.sub(r"\bavenue\b", "ave", text)
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return compact_space(text)
+
+
+def token_overlap(left: str | None, right: str | None) -> int:
+    left_tokens = set(normalized_ascii(left).split())
+    right_tokens = set(normalized_ascii(right).split())
+    return len(left_tokens & right_tokens)
+
+
+def text_similarity(left: str | None, right: str | None) -> float:
+    a = normalized_ascii(left)
+    b = normalized_ascii(right)
+    if not a or not b:
+        return 0.0
+    if a in b or b in a:
+        return 1.0
+    return difflib.SequenceMatcher(None, a, b).ratio()
+
+
+def names_match(left: str | None, right: str | None) -> bool:
+    overlap = token_overlap(left, right)
+    return overlap >= 2 or text_similarity(left, right) >= 0.72
+
+
+def addresses_match(left: str | None, right: str | None) -> bool:
+    overlap = token_overlap(left, right)
+    return overlap >= 3 or text_similarity(left, right) >= 0.65
+
+
+def google_rating_candidate(
+    record: dict[str, Any],
+    google_ratings: dict[str, Any],
+) -> dict[str, Any] | None:
+    rating = google_ratings.get(record["id"])
+    if not isinstance(rating, dict):
+        return None
+
+    google_name = compact_space(rating.get("google_name"))
+    if not google_name or google_name.lower() == "results":
+        return None
+
+    lat, lng = parse_google_map_coordinates(rating.get("maps_url"))
+    if not within_country_bounds(record.get("country"), lat, lng):
+        return None
+
+    return {
+        "lat": float(lat),
+        "lng": float(lng),
+        "place_id": parse_google_place_id(rating.get("maps_url")),
+        "name_ok": names_match(record.get("name"), google_name),
+        "address_ok": addresses_match(record.get("source_localized_address"), rating.get("google_address")),
+        "google_name": google_name,
+        "google_address": compact_space(rating.get("google_address")),
+    }
 
 
 def candidate_queries(record: dict[str, Any]) -> list[tuple[str, str]]:
@@ -335,10 +423,127 @@ def validated_fallback_coordinates(record: dict[str, Any], cache: dict[str, Any]
     return None
 
 
-def validate_record_coordinates(record: dict[str, Any], cache: dict[str, Any]) -> None:
+def validate_record_coordinates(
+    record: dict[str, Any],
+    cache: dict[str, Any],
+    google_ratings: dict[str, Any],
+) -> None:
     lat = record.get("lat")
     lng = record.get("lng")
-    if within_country_bounds(record.get("country"), lat, lng):
+    source_geo_ok = within_country_bounds(record.get("country"), lat, lng)
+    source_map_lat, source_map_lng = parse_google_map_coordinates(record.get("source_google_map_url"))
+    source_map_ok = within_country_bounds(record.get("country"), source_map_lat, source_map_lng)
+    source_map_place_id = parse_google_place_id(record.get("source_google_map_url"))
+    google_candidate = google_rating_candidate(record, google_ratings)
+
+    if (
+        google_candidate
+        and source_map_place_id
+        and google_candidate.get("place_id")
+        and source_map_place_id == google_candidate["place_id"]
+        and not source_map_ok
+    ):
+        record["lat"] = google_candidate["lat"]
+        record["lng"] = google_candidate["lng"]
+        record["coordinate_source"] = "google_maps_ratings"
+        record["coordinate_confidence"] = "google_place_verified"
+        record["map_pin_note"] = (
+            "The official source map points to the same Google place, so the pin uses the verified Google place "
+            "coordinates."
+        )
+        return
+
+    if source_map_ok:
+        if google_candidate:
+            same_place = (
+                source_map_place_id
+                and google_candidate.get("place_id")
+                and source_map_place_id == google_candidate["place_id"]
+            )
+            map_gap = distance_km(
+                float(source_map_lat),
+                float(source_map_lng),
+                google_candidate["lat"],
+                google_candidate["lng"],
+            )
+            if same_place or map_gap <= GOOGLE_PLACE_ALIGNMENT_KM:
+                record["lat"] = float(source_map_lat)
+                record["lng"] = float(source_map_lng)
+                record["coordinate_source"] = "source_google_map_url"
+                record["coordinate_confidence"] = "google_place_verified"
+                if source_geo_ok:
+                    source_gap = distance_km(float(lat), float(lng), float(source_map_lat), float(source_map_lng))
+                    if source_gap > SOURCE_MAP_ALIGNMENT_KM:
+                        record["map_pin_note"] = (
+                            "Raw source coordinates drifted from the official source map, so the pin now follows "
+                            "the official map link confirmed by the Google place."
+                        )
+                    else:
+                        record["map_pin_note"] = (
+                            "Official source map and Google place agree on this location."
+                        )
+                else:
+                    record["map_pin_note"] = (
+                        "Source map and Google place agree on this location, so the pin uses the verified place."
+                    )
+                return
+
+            if google_candidate["name_ok"] or google_candidate["address_ok"]:
+                record["lat"] = None
+                record["lng"] = None
+                record["coordinate_source"] = None
+                record["coordinate_confidence"] = "location_conflict"
+                record["map_pin_note"] = (
+                    "The official source map and the matched Google place disagree on the venue location, so the pin "
+                    "is hidden until the place can be confirmed."
+                )
+                return
+
+        record["lat"] = float(source_map_lat)
+        record["lng"] = float(source_map_lng)
+        record["coordinate_source"] = "source_google_map_url"
+        record["coordinate_confidence"] = "source_map_verified"
+        if source_geo_ok:
+            source_gap = distance_km(float(lat), float(lng), float(source_map_lat), float(source_map_lng))
+            if source_gap > SOURCE_MAP_ALIGNMENT_KM:
+                record["map_pin_note"] = (
+                    "Raw source coordinates were offset from the official source map, so the pin now follows the "
+                    "official map link."
+                )
+            else:
+                record["map_pin_note"] = "Pin matches the official source map link for this venue."
+        else:
+            record["map_pin_note"] = "Pin comes from the official source map link for this venue."
+        return
+
+    if source_geo_ok and google_candidate and (google_candidate["name_ok"] or google_candidate["address_ok"]):
+        source_gap = distance_km(float(lat), float(lng), google_candidate["lat"], google_candidate["lng"])
+        if source_gap <= GOOGLE_PLACE_ALIGNMENT_KM:
+            record["coordinate_source"] = "google_maps_ratings"
+            record["coordinate_confidence"] = "google_place_verified"
+            record["map_pin_note"] = "Source coordinates align with the matched Google place."
+            return
+
+    if source_geo_ok:
+        record["coordinate_source"] = "json_ld_geo"
+        record["coordinate_confidence"] = "source"
+        record["map_pin_note"] = None
+        return
+
+    if google_candidate and (google_candidate["name_ok"] or google_candidate["address_ok"]):
+        record["lat"] = google_candidate["lat"]
+        record["lng"] = google_candidate["lng"]
+        record["coordinate_source"] = "google_maps_ratings"
+        record["coordinate_confidence"] = "google_place_verified"
+        if record.get("source_google_map_url"):
+            record["map_pin_note"] = (
+                "Published source coordinates were unusable, so the pin now follows the matched Google place for "
+                "this venue."
+            )
+        else:
+            record["map_pin_note"] = (
+                "Source coordinates were invalid for this venue, so the pin now follows the matched Google place."
+            )
         return
 
     fallback = validated_fallback_coordinates(record, cache)
@@ -586,12 +791,15 @@ def main() -> None:
     geocode_cache: dict[str, Any] = {}
     if GEOCODE_CACHE_PATH.exists():
         geocode_cache = json.loads(GEOCODE_CACHE_PATH.read_text())
+    google_ratings: dict[str, Any] = {}
+    if GOOGLE_RATINGS_PATH.exists():
+        google_ratings = json.loads(GOOGLE_RATINGS_PATH.read_text())
 
     corrected = 0
     hidden = 0
     for record in records:
         before = (record.get("lat"), record.get("lng"), record.get("coordinate_confidence"))
-        validate_record_coordinates(record, geocode_cache)
+        validate_record_coordinates(record, geocode_cache, google_ratings)
         after = (record.get("lat"), record.get("lng"), record.get("coordinate_confidence"))
         if before != after:
             if after[0] is None or after[1] is None:
