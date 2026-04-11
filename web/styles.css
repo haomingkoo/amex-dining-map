@@ -1079,14 +1079,17 @@ tr {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 4px;
 }
 
-/* When ratings appear below cuisine (dining focus card) */
-.focus-subtitle + .focus-ratings {
-  margin-top: 10px;
-  margin-bottom: 2px;
+.focus-title-block {
+  flex: 1 1 220px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 /* Tabelog prominent badge in venue title row */
@@ -1130,6 +1133,7 @@ tr {
 .focus-ratings {
   display: flex;
   align-items: flex-start;
+  flex-wrap: wrap;
   gap: 8px;
   flex-shrink: 0;
 }

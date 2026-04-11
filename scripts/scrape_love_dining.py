@@ -46,6 +46,61 @@ CLOSING_NOTES: dict[str, str] = {
 }
 
 
+def normalize_inline_text(value: str | None) -> str:
+    return re.sub(r"\s+", " ", (value or "").replace("\xa0", " ")).strip()
+
+
+def phone_count(phone: str | None) -> int:
+    normalized = normalize_inline_text(phone)
+    if not normalized:
+        return 0
+    return len([part for part in re.split(r"\s*/\s*", normalized) if part])
+
+
+def repeated_name_in_notes(name: str | None, notes: str | None) -> bool:
+    normalized_name = normalize_inline_text(name).lower()
+    normalized_notes = normalize_inline_text(notes).lower()
+    if not normalized_name or not normalized_notes:
+        return False
+    return normalized_notes.split(normalized_name).__len__() - 1 >= 2
+
+
+def address_block_count(address: str | None) -> int:
+    normalized = normalize_inline_text(address)
+    if not normalized:
+        return 0
+    postal_matches = re.findall(r"\b\d{6}\b", normalized)
+    street_matches = re.findall(
+        r"\b\d{1,4}[A-Z]?\s+(?:[A-Za-z0-9'.&/-]+\s+){0,7}"
+        r"(?:Road|Rd|Street|St|Avenue|Ave|Drive|Dr|Quay|Boulevard|Blvd|Turn|Way|"
+        r"Crescent|Close|Lane|Ln|Park|Place|Walk|View|Hill|Court|Centre|Center|"
+        r"Terrace|Link)\b",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    return max(len(postal_matches), len(street_matches))
+
+
+def annotate_location_metadata(record: dict) -> None:
+    multi_location = (
+        phone_count(record.get("phone")) > 1
+        and (
+            repeated_name_in_notes(record.get("name"), record.get("notes"))
+            or address_block_count(record.get("address")) > 1
+        )
+    )
+    if not multi_location:
+        return
+
+    record["multi_location"] = True
+    if address_block_count(record.get("address")) > 1:
+        record["location_pin_hidden"] = True
+        record["map_pin_note"] = (
+            "This Love Dining entry bundles multiple outlets into one source record, "
+            "so the map pin is intentionally hidden until the branches are split cleanly."
+        )
+
+
 # ─── Playwright helpers ────────────────────────────────────────────────────────
 
 def load_and_expand(page: Page, url: str) -> str:
@@ -161,9 +216,7 @@ def parse_restaurants(text: str) -> list[dict]:
                     notes.append(l)
                 i += 1
 
-            address = " ".join(address_lines).strip()
-            # Clean up Singapore postal code formatting
-            address = re.sub(r"\s+", " ", address)
+            address = normalize_inline_text(" ".join(address_lines))
 
             slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
             record: dict = {
@@ -175,9 +228,9 @@ def parse_restaurants(text: str) -> list[dict]:
                 "address": address,
                 "city": "Singapore",
                 "country": "Singapore",
-                "phone": " / ".join(phones),
-                "opening_hours": "; ".join(hours) if hours else "",
-                "notes": " ".join(notes) if notes else "",
+                "phone": normalize_inline_text(" / ".join(phones)),
+                "opening_hours": normalize_inline_text("; ".join(hours) if hours else ""),
+                "notes": normalize_inline_text(" ".join(notes) if notes else ""),
                 "source": "Amex Love Dining",
                 "source_url": RESTAURANTS_URL,
             }
@@ -307,8 +360,7 @@ def parse_hotels(text: str) -> list[dict]:
                     notes.append(l)
                 i += 1
 
-            address = " ".join(address_lines).strip() or current_hotel_address
-            address = re.sub(r"\s+", " ", address)
+            address = normalize_inline_text(" ".join(address_lines)) or normalize_inline_text(current_hotel_address)
 
             slug = re.sub(r"[^a-z0-9]+", "-", f"{current_hotel}-{outlet_name}".lower()).strip("-")
             record: dict = {
@@ -320,9 +372,9 @@ def parse_hotels(text: str) -> list[dict]:
                 "address": address,
                 "city": "Singapore",
                 "country": "Singapore",
-                "phone": " / ".join(phones),
-                "opening_hours": "; ".join(hours) if hours else "",
-                "notes": " ".join(notes) if notes else "",
+                "phone": normalize_inline_text(" / ".join(phones)),
+                "opening_hours": normalize_inline_text("; ".join(hours) if hours else ""),
+                "notes": normalize_inline_text(" ".join(notes) if notes else ""),
                 "source": "Amex Love Dining",
                 "source_url": HOTELS_URL,
             }
@@ -404,6 +456,11 @@ def geocode_all(records: list[dict], skip: bool = False) -> list[dict]:
 
     total = len(records)
     for i, rec in enumerate(records, 1):
+        if rec.get("location_pin_hidden"):
+            rec.pop("lat", None)
+            rec.pop("lon", None)
+            print(f"  [{i}/{total}] {rec['name']} — multiple outlet bundle, skipping single-pin geocode")
+            continue
         if rec.get("lat") and rec.get("lon"):
             continue
         addr = rec.get("address", "")
@@ -474,6 +531,8 @@ def main() -> None:
     print(f"  → {len(hotels)} hotel outlets")
 
     all_records = restaurants + hotels
+    for record in all_records:
+        annotate_location_metadata(record)
     print(f"\nTotal: {len(all_records)} venues")
 
     if args.dry_run:
