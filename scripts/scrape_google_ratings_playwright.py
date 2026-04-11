@@ -8,13 +8,14 @@ Covers:
   - data/global-restaurants.json   (Global Dining Credit, ~2470 records)
   - data/japan-restaurants.json    (Pocket Concierge Japan, ~844 records)
   - data/love-dining.json          (Love Dining SG, 79 records)
+  - data/plat-stays.json           (Plat Stay hotels, 69 records)
 
 Usage:
     # Full run
     python3 scripts/scrape_google_ratings_playwright.py
 
     # Specific datasets
-    python3 scripts/scrape_google_ratings_playwright.py --datasets love japan
+    python3 scripts/scrape_google_ratings_playwright.py --datasets love japan stays
 
     # Only missing records
     python3 scripts/scrape_google_ratings_playwright.py --missing-only
@@ -54,8 +55,11 @@ UA = (
 
 # ─── Query generation ─────────────────────────────────────────────────────────
 
-def make_query(record: dict, dataset: str) -> str:
+def make_target(record: dict, dataset: str) -> str:
     name = record.get("name", "")
+    source_map = record.get("source_google_map_url")
+    if dataset == "global" and source_map:
+        return source_map
     if dataset == "japan":
         city = record.get("city", "")
         prefecture = record.get("prefecture", "")
@@ -68,6 +72,13 @@ def make_query(record: dict, dataset: str) -> str:
         if hotel:
             return f"{name} {hotel} Singapore"
         return f"{name} {addr_short} Singapore" if addr_short else f"{name} Singapore"
+    if dataset == "stays":
+        address = record.get("address", "")
+        country = record.get("country", "")
+        return " ".join(part for part in [name, address, country] if part).strip()
+    address = record.get("source_localized_address", "")
+    if address:
+        return f"{name} {address}"
     country = record.get("country", "")
     city = record.get("city", "")
     loc = f"{city}, {country}" if city and city != country else country
@@ -75,13 +86,13 @@ def make_query(record: dict, dataset: str) -> str:
 
 
 def build_queries(records: list[dict], dataset: str, skip_ids: set[str]) -> list[tuple[str, str]]:
-    """Return [(query, record_id), ...]."""
+    """Return [(target, record_id), ...]."""
     pairs = []
     for rec in records:
         rid = rec.get("id", "")
         if not rid or rid in skip_ids:
             continue
-        pairs.append((make_query(rec, dataset), rid))
+        pairs.append((make_target(rec, dataset), rid))
     return pairs
 
 
@@ -93,6 +104,7 @@ def load_datasets(names: list[str]) -> dict[str, list[dict]]:
         "global": DATA_DIR / "global-restaurants.json",
         "japan":  DATA_DIR / "japan-restaurants.json",
         "love":   DATA_DIR / "love-dining.json",
+        "stays":  DATA_DIR / "plat-stays.json",
     }
     for name in names:
         path = mapping.get(name)
@@ -106,9 +118,12 @@ def load_datasets(names: list[str]) -> dict[str, list[dict]]:
 
 # ─── Playwright scraper ────────────────────────────────────────────────────────
 
-async def scrape_one(page, query: str, rid: str) -> dict | None:
-    """Scrape Google Maps for a single query. Returns result dict or None."""
-    search_url = f"https://www.google.com/maps/search/{query.replace(' ', '+')}"
+async def scrape_one(page, target: str, rid: str) -> dict | None:
+    """Scrape Google Maps for a single query or direct map target. Returns result dict or None."""
+    if target.startswith("http://") or target.startswith("https://"):
+        search_url = target
+    else:
+        search_url = f"https://www.google.com/maps/search/{target.replace(' ', '+')}"
     try:
         await page.goto(search_url, wait_until="commit", timeout=30000)
         # Wait for place card rating to appear
@@ -118,8 +133,16 @@ async def scrape_one(page, query: str, rid: str) -> dict | None:
             pass
         await asyncio.sleep(3)
 
-        # If still on search results page (not redirected to place), click the first result
+        # Hotel cards often spend a few more seconds on a transient /search/ URL
+        # before resolving to the real place page.
         current_url = page.url
+        for _ in range(3):
+            if "/place/" in current_url:
+                break
+            await asyncio.sleep(2)
+            current_url = page.url
+
+        # If still on search results page (not redirected to place), click the first result.
         if "/search/" in current_url and "/place/" not in current_url:
             try:
                 # Click the first result link (usually an <a> with href containing /maps/place/)
@@ -169,11 +192,31 @@ async def scrape_one(page, query: str, rid: str) -> dict | None:
             const h1 = document.querySelector('h1');
             if (h1) name = h1.textContent.trim();
 
-            // Address: button with a digit (usually the address button)
-            for (const btn of document.querySelectorAll('button')) {
-                const t = btn.textContent.trim();
-                if (t.length > 10 && /\\d/.test(t) && !/^[0-9]/.test(t)) {
-                    address = t; break;
+            const addressSelectors = [
+                'button[data-item-id="address"]',
+                '[data-item-id="address"] button',
+                'button[aria-label^="Address:"]',
+            ];
+            for (const selector of addressSelectors) {
+                const el = document.querySelector(selector);
+                const t = (el?.textContent || '').trim();
+                if (t) {
+                    address = t;
+                    break;
+                }
+            }
+
+            // Fallback: button text with digits, excluding hotel price/date widgets.
+            if (!address) {
+                for (const btn of document.querySelectorAll('button')) {
+                    const t = btn.textContent.trim();
+                    if (!t) continue;
+                    if (t.startsWith('$')) continue;
+                    if (/\\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\\b/i.test(t)) continue;
+                    if (t.length > 10 && /\\d/.test(t) && !/^[0-9]/.test(t)) {
+                        address = t;
+                        break;
+                    }
                 }
             }
 
@@ -181,7 +224,8 @@ async def scrape_one(page, query: str, rid: str) -> dict | None:
         }""")
 
         rating = data.get("rating")
-        if rating is None:
+        google_name = (data.get("name") or "").strip()
+        if rating is None or google_name.lower() == "results" or not google_name:
             return None  # No useful data
 
         review_count_raw = data.get("reviewCount")
@@ -192,7 +236,7 @@ async def scrape_one(page, query: str, rid: str) -> dict | None:
         return {
             "rating": float(rating),
             "review_count": int(review_count_raw) if review_count_raw else None,
-            "google_name": data.get("name"),
+            "google_name": google_name,
             "google_address": clean_address,
             "maps_url": maps_url,
             "scraped_at": time.strftime("%Y-%m-%d"),
@@ -300,9 +344,11 @@ async def run_scraper(
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Scrape Google Maps ratings with Playwright")
-    p.add_argument("--datasets", nargs="+", default=["global", "japan", "love"],
-                   choices=["global", "japan", "love"])
+    p.add_argument("--datasets", nargs="+", default=["global", "japan", "love", "stays"],
+                   choices=["global", "japan", "love", "stays"])
     p.add_argument("--dry-run", action="store_true")
+    p.add_argument("--ids-file",
+                   help="Optional newline-delimited list of record IDs to refresh")
     p.add_argument("--missing-only", action="store_true",
                    help="Skip records already in ratings cache")
     p.add_argument("--concurrency", type=int, default=3,
@@ -322,6 +368,15 @@ def main() -> None:
 
     skip_ids = set(existing.keys()) if args.missing_only else set()
 
+    allowed_ids: set[str] | None = None
+    if args.ids_file:
+        allowed_ids = {
+            line.strip()
+            for line in Path(args.ids_file).read_text().splitlines()
+            if line.strip()
+        }
+        print(f"ID filter: {len(allowed_ids)} records from {args.ids_file}")
+
     print(f"\nLoading datasets: {args.datasets}")
     datasets = load_datasets(args.datasets)
     if not datasets:
@@ -330,6 +385,8 @@ def main() -> None:
 
     all_queries: list[tuple[str, str]] = []
     for name, records in datasets.items():
+        if allowed_ids is not None:
+            records = [rec for rec in records if rec.get("id") in allowed_ids]
         pairs = build_queries(records, name, skip_ids)
         print(f"  {name}: {len(pairs)} queries (of {len(records)} records)")
         all_queries.extend(pairs)
