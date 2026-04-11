@@ -706,6 +706,25 @@ function hasSourceCoordinates(record) {
   return record.lat != null && record.lng != null && record.coordinate_confidence === "source";
 }
 
+function hasVerifiedCoordinates(record) {
+  return (
+    record.lat != null
+    && record.lng != null
+    && ["address_validated", "manual_verified"].includes(record.coordinate_confidence)
+  );
+}
+
+function diningLocationBadge(record) {
+  if (record.lat == null || record.lng == null) return "";
+  if (record.coordinate_confidence === "approximate") {
+    return '<span class="badge amber">Approximate pin</span>';
+  }
+  if (hasVerifiedCoordinates(record)) {
+    return '<span class="badge green">Verified pin</span>';
+  }
+  return "";
+}
+
 function googleMapsSearchUrl(parts) {
   const query = parts.filter(Boolean).join(", ");
   if (!query) return null;
@@ -803,14 +822,18 @@ function diningGoogleMapsUrl(record) {
 
 function focusLocationNote(record) {
   if (record.lat == null || record.lng == null) {
-    return "This venue does not have a plotted pin yet. Use the official Pocket Concierge listing for location confirmation.";
+    return "This venue does not have a plotted pin yet. Use the official listing for location confirmation.";
   }
 
   if (hasSourceCoordinates(record)) {
     return "";
   }
 
-  return "Pin uses approximate fallback mapping. Confirm the official Pocket Concierge listing before travelling to the venue.";
+  if (hasVerifiedCoordinates(record)) {
+    return record.map_pin_note || "Pin was corrected against verified address data.";
+  }
+
+  return "Pin uses approximate fallback mapping. Confirm the official listing before travelling to the venue.";
 }
 
 function createMarker(record) {
@@ -1420,9 +1443,7 @@ function renderFocusCard() {
 
   const tags = [
     `<span class="badge gold">${escapeHtml(record.city)}</span>`,
-    record.lat != null && record.lng != null && !hasSourceCoordinates(record)
-      ? '<span class="badge amber">Approximate pin</span>'
-      : "",
+    diningLocationBadge(record),
     isJapan && record.price_dinner_band_tier && record.price_dinner_band_label
       ? `<span class="badge amber">${escapeHtml(priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label))}</span>`
       : "",
@@ -1452,9 +1473,13 @@ function renderFocusCard() {
 
   focusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(diningKicker(record))}</div>
-    <h3 class="focus-title">${escapeHtml(record.name)}</h3>
-    <div class="focus-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
-    ${ratingBadges}
+    <div class="focus-title-row">
+      <div class="focus-title-block">
+        <h3 class="focus-title">${escapeHtml(record.name)}</h3>
+        <div class="focus-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
+      </div>
+      ${ratingBadges}
+    </div>
     ${
       record.source_localized_address
         ? `<div class="focus-address">${escapeHtml(record.source_localized_address)}</div>`
@@ -2388,7 +2413,7 @@ function clearLoveDiningMarkers() {
 
 function createLoveDiningMarker(record) {
   if (!hasLeaflet || !loveMap) return null;
-  if (record.lat == null || record.lon == null) return null;
+  if (!loveDiningHasMapPin(record)) return null;
   const color = record.type === "hotel" ? "#9b6bd6" : "#e06b8b";
   const marker = L.circleMarker([record.lat, record.lon], {
     radius: 8,
@@ -2430,7 +2455,7 @@ function renderLoveDiningMarkers() {
 function fitLoveDiningMap() {
   if (!hasLeaflet || !loveMap) return;
   const latLngs = state.loveDiningFiltered
-    .filter((r) => r.lat != null && r.lon != null)
+    .filter((r) => loveDiningHasMapPin(r))
     .map((r) => [r.lat, r.lon]);
   if (!latLngs.length) return;
   if (latLngs.length === 1) {
@@ -2441,8 +2466,61 @@ function fitLoveDiningMap() {
 }
 
 function focusLoveDiningOnMap(record) {
-  if (!hasLeaflet || !loveMap || record.lat == null) return;
+  if (!hasLeaflet || !loveMap || !loveDiningHasMapPin(record)) return;
   loveMap.setView([record.lat, record.lon], 16);
+}
+
+function normalizeInlineText(value) {
+  return String(value || "")
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function loveDiningPhoneCount(record) {
+  const phone = normalizeInlineText(record.phone);
+  if (!phone) return 0;
+  return phone.split(/\s*\/\s*/).filter(Boolean).length;
+}
+
+function loveDiningRepeatsNameInNotes(record) {
+  const name = normalizeInlineText(record.name).toLowerCase();
+  const notes = normalizeInlineText(record.notes).toLowerCase();
+  if (!name || !notes) return false;
+  return notes.split(name).length - 1 >= 2;
+}
+
+function loveDiningAddressBlockCount(record) {
+  const address = normalizeInlineText(record.address);
+  if (!address) return 0;
+  const postalMatches = address.match(/\b\d{6}\b/g) || [];
+  const streetMatches = address.match(
+    /\b\d{1,4}[A-Z]?\s+(?:[A-Za-z0-9'.&/-]+\s+){0,7}(?:Road|Rd|Street|St|Avenue|Ave|Drive|Dr|Quay|Boulevard|Blvd|Turn|Way|Crescent|Close|Lane|Ln|Park|Place|Walk|View|Hill|Court|Centre|Center|Terrace|Link)\b/gi,
+  ) || [];
+  return Math.max(postalMatches.length, streetMatches.length);
+}
+
+function loveDiningHasMultipleLocations(record) {
+  if (record.multi_location === true) return true;
+  return loveDiningPhoneCount(record) > 1
+    && (loveDiningRepeatsNameInNotes(record) || loveDiningAddressBlockCount(record) > 1);
+}
+
+function loveDiningShouldHideMapPin(record) {
+  if (record.location_pin_hidden === true) return true;
+  return loveDiningAddressBlockCount(record) > 1;
+}
+
+function loveDiningHasMapPin(record) {
+  return record.lat != null && record.lon != null && !loveDiningShouldHideMapPin(record);
+}
+
+function loveDiningLocationNote(record) {
+  if (!loveDiningHasMultipleLocations(record)) return "";
+  if (loveDiningShouldHideMapPin(record)) {
+    return "This Love Dining entry bundles multiple outlets into one record, so the map pin and branch-specific Google rating are hidden until the locations are split cleanly.";
+  }
+  return "This Love Dining entry includes additional outlet details in the same record. Double-check the branch before booking or travelling.";
 }
 
 function refreshLoveDiningCuisineOptions() {
@@ -2504,21 +2582,30 @@ function renderLoveDiningCard() {
   const hotelLine = record.hotel ? `<div class="focus-kicker">${escapeHtml(record.hotel)}</div>` : "";
   const typeBadge = `<span class="badge ${record.type === "hotel" ? "love-hotel" : "love-rest"}">${record.type === "hotel" ? "Hotel outlet" : "Restaurant"}</span>`;
   const cuisineBadge = record.cuisine ? `<span class="badge">${escapeHtml(record.cuisine)}</span>` : "";
+  const multiLocationBadge = loveDiningHasMultipleLocations(record)
+    ? '<span class="badge amber">Multiple locations</span>'
+    : "";
   const closingNote = record.closing_note
     ? `<div class="focus-note focus-note-warn">${escapeHtml(record.closing_note)}</div>` : "";
   const halal = record.notes && (record.notes.includes("Halal") || record.notes.includes("Muslim"))
     ? `<div class="focus-note">Halal certified</div>` : "";
+  const locationNote = loveDiningLocationNote(record)
+    ? `<div class="focus-note">${escapeHtml(loveDiningLocationNote(record))}</div>`
+    : "";
 
   const descriptionHtml = record.summary_ai
     ? `<p class="focus-summary focus-summary-ai">${escapeHtml(record.summary_ai)}</p>` : "";
 
   const scrapedRating = googleRating(record);
-  const googleMapsUrl = (scrapedRating && scrapedRating.maps_url)
-    ? scrapedRating.maps_url
-    : record.lat != null
-      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(record.name + " " + (record.address || "Singapore"))}`
-      : null;
-  const gBadge = googleRatingBadge(record);
+  const googleMapsUrl = loveDiningShouldHideMapPin(record)
+    ? googleMapsSearchUrl([record.name, "Singapore"])
+    : (scrapedRating && scrapedRating.maps_url)
+      ? scrapedRating.maps_url
+      : record.address
+        ? googleMapsSearchUrl([record.name, record.address, "Singapore"])
+        : null;
+  const gBadge = loveDiningShouldHideMapPin(record) ? "" : googleRatingBadge(record);
+  const googleMapsLabel = loveDiningShouldHideMapPin(record) ? "Search in Google Maps" : "Open in Google Maps";
 
   loveFocusCard.innerHTML = `
     <div class="focus-head">
@@ -2527,10 +2614,11 @@ function renderLoveDiningCard() {
         <div class="focus-name">${escapeHtml(record.name)}</div>
         ${gBadge ? `<div class="focus-ratings">${gBadge}</div>` : ""}
       </div>
-      <div class="venue-tags" style="margin-top:6px">${typeBadge}${cuisineBadge}</div>
+      <div class="venue-tags" style="margin-top:6px">${typeBadge}${cuisineBadge}${multiLocationBadge}</div>
     </div>
     ${closingNote}
     ${halal}
+    ${locationNote}
     ${descriptionHtml}
     <div class="focus-section">
       ${record.address ? `<div class="focus-row"><span class="focus-label">Address</span><span>${escapeHtml(record.address)}</span></div>` : ""}
@@ -2538,9 +2626,9 @@ function renderLoveDiningCard() {
       ${record.opening_hours ? `<div class="focus-row"><span class="focus-label">Hours</span><span>${escapeHtml(record.opening_hours)}</span></div>` : ""}
     </div>
     <div class="focus-actions">
-      ${googleMapsUrl ? `<a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Open in Google Maps</a>` : ""}
+      ${googleMapsUrl ? `<a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">${googleMapsLabel}</a>` : ""}
       <a class="inline-link subtle" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">View on Amex SG</a>
-      ${record.lat != null ? `<button type="button" class="ghost-btn secondary" data-love-focus-map="true">Center on map</button>` : ""}
+      ${loveDiningHasMapPin(record) ? `<button type="button" class="ghost-btn secondary" data-love-focus-map="true">Center on map</button>` : ""}
     </div>
   `;
 
@@ -2562,7 +2650,7 @@ function renderLoveDiningMobileList() {
   state.loveDiningFiltered.forEach((record) => {
     const card = document.createElement("article");
     card.className = `mobile-card${record.id === state.loveDiningActiveId ? " active" : ""}`;
-    const g = googleRating(record);
+    const g = loveDiningShouldHideMapPin(record) ? null : googleRating(record);
     const ratingStr = g && g.rating != null
       ? `<span class="card-google-rating">★ ${g.rating}${g.review_count ? ` (${Number(g.review_count).toLocaleString()})` : ""}</span>`
       : "";
@@ -2584,7 +2672,7 @@ function renderLoveDiningMobileList() {
       renderLoveDiningCard();
       renderLoveDiningMobileList();
       updateLoveDiningMarkerStyles();
-      if (record.lat != null) focusLoveDiningOnMap(record);
+      if (loveDiningHasMapPin(record)) focusLoveDiningOnMap(record);
     });
     loveMobileResultsList.appendChild(card);
   });
