@@ -23,7 +23,7 @@ ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
 GLOBAL_PATH = DATA_DIR / "global-restaurants.json"
 
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = "llama-3.1-8b-instant"
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 UA = "Mozilla/5.0 (compatible; amex-dining-map/1.0)"
 
@@ -44,12 +44,13 @@ def load_api_key() -> str:
 def groq_generate(prompt: str, api_key: str) -> str:
     """Call Groq chat completions API and return the text content."""
     import urllib.request
+    import urllib.error
 
     body = json.dumps({
         "model": GROQ_MODEL,
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.7,
-        "max_tokens": 1024,
+        "temperature": 0.6,
+        "max_tokens": 2048,
     }).encode()
 
     req = urllib.request.Request(
@@ -62,9 +63,19 @@ def groq_generate(prompt: str, api_key: str) -> str:
         },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        result = json.loads(resp.read())
-    return result["choices"][0]["message"]["content"].strip()
+    for attempt in range(5):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                result = json.loads(resp.read())
+            return result["choices"][0]["message"]["content"].strip()
+        except urllib.error.HTTPError as exc:
+            if exc.code == 429:
+                wait = 30 * (2 ** attempt)
+                print(f"  Groq 429 (rate limit) — waiting {wait}s (attempt {attempt + 1}/5)...")
+                time.sleep(wait)
+            else:
+                raise
+    raise RuntimeError("Groq rate limit: gave up after 5 retries")
 
 
 def build_batch_prompt(records: list[dict]) -> str:
@@ -74,12 +85,37 @@ def build_batch_prompt(records: list[dict]) -> str:
         city = r.get("city") or ""
         country = r.get("country") or ""
         name = r.get("name") or ""
-        items.append(f"{i}. {name} ({cuisines}) — {city}, {country}")
+        website = r.get("website_url") or ""
+        known_for = ", ".join(r.get("known_for_tags") or [])
+        signature = ", ".join(r.get("signature_dish_tags") or [])
+
+        line = f"{i}. {name} | {cuisines} | {city}, {country}"
+        if website:
+            line += f" | {website}"
+        if known_for:
+            line += f" | known for: {known_for}"
+        if signature:
+            line += f" | signature: {signature}"
+        items.append(line)
 
     return (
-        "Write a one-sentence (max 20 words) food-focused description for each of these restaurants. "
-        "Focus on the cuisine style and what makes it worth visiting. Be specific and vivid, not generic. "
-        "Reply with ONLY a JSON array of strings in the same order, no extra text.\n\n"
+        "You are a food writer for a luxury dining guide. For each restaurant, write 2 sentences (40–60 words total) "
+        "that capture its cooking style, philosophy, and what makes it worth visiting.\n\n"
+        "IMPORTANT RULES to avoid hallucination:\n"
+        "- Only name specific dishes or chefs if you are genuinely confident they are real and correct for this restaurant.\n"
+        "- For restaurants you are not certain about, describe the cuisine approach, key ingredients, or atmosphere — "
+        "do NOT invent dish names.\n"
+        "- Use language like 'focuses on', 'is known for its approach to', 'draws on', 'built around' rather than "
+        "asserting specific menu items you are unsure of.\n"
+        "- For globally famous restaurants (Nobu, Hakkasan, Zuma, Alain Ducasse, etc.) you may cite known signature items.\n\n"
+        "Examples:\n"
+        "- (famous) \"Nobu's black cod with miso — marinated three days then oven-roasted — is one of the most imitated "
+        "dishes in modern Japanese cuisine. The menu blends traditional Japanese technique with Peruvian ingredients, "
+        "a fusion born from chef Nobu Matsuhisa's time in Lima.\"\n"
+        "- (less known) \"Pilot. centres its menu on native Australian ingredients — wild herbs, foraged greens, and "
+        "sustainably caught seafood — prepared with quiet technical precision. The intimate room and natural wine list "
+        "make it a favourite among Canberra's serious diners.\"\n\n"
+        "Reply with ONLY a JSON array of strings in the same order as the input list, no extra text.\n\n"
         + "\n".join(items)
     )
 
@@ -110,10 +146,13 @@ def parse_batch_response(text: str, count: int) -> list[str | None]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate AI descriptions for global restaurants")
-    parser.add_argument("--batch-size", type=int, default=25)
+    parser.add_argument("--batch-size", type=int, default=20)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--country", help="Filter to a specific country")
     parser.add_argument("--limit", type=int, help="Max records to process (for testing)")
+    parser.add_argument("--force", action="store_true", help="Regenerate even if description exists")
+    parser.add_argument("--min-words", type=int, default=0,
+                        help="Regenerate descriptions shorter than N words (e.g. --min-words 10)")
     args = parser.parse_args()
 
     api_key = load_api_key()
@@ -124,10 +163,20 @@ def main() -> None:
     data = json.loads(GLOBAL_PATH.read_text())
     print(f"Loaded {len(data)} global records.")
 
+    def needs_description(r: dict) -> bool:
+        if r.get("summary_official"):
+            return False  # always keep official descriptions
+        existing = r.get("summary_ai", "")
+        if args.force:
+            return True
+        if args.min_words and existing and len(existing.split()) < args.min_words:
+            return True
+        return not existing
+
     # Filter records that need descriptions
     todo = [
         r for r in data
-        if not r.get("summary_official") and not r.get("summary_ai")
+        if needs_description(r)
         and (not args.country or r.get("country") == args.country)
     ]
     if args.limit:
@@ -138,8 +187,16 @@ def main() -> None:
         print("Nothing to do.")
         return
 
-    # Index data by id for quick update
-    by_id = {r["id"]: r for r in data}
+    # Deduplicate todo by ID — chain restaurants share IDs, generate one description then fan out
+    seen_ids: set[str] = set()
+    deduped: list[dict] = []
+    for r in todo:
+        if r["id"] not in seen_ids:
+            seen_ids.add(r["id"])
+            deduped.append(r)
+    if len(deduped) < len(todo):
+        print(f"Deduplicated {len(todo)} → {len(deduped)} unique IDs.")
+    todo = deduped
 
     batches = [todo[i:i + args.batch_size] for i in range(0, len(todo), args.batch_size)]
     total_done = 0
@@ -165,7 +222,10 @@ def main() -> None:
         written = 0
         for record, desc in zip(batch, descriptions):
             if desc:
-                by_id[record["id"]]["summary_ai"] = desc
+                # Update ALL records with this ID (chain restaurants share the same name/ID pattern)
+                for r in data:
+                    if r["id"] == record["id"]:
+                        r["summary_ai"] = desc
                 print(f"  ✓ {record['name']}: {desc[:70]}...")
                 written += 1
             else:
@@ -177,9 +237,10 @@ def main() -> None:
         GLOBAL_PATH.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
         print(f"  Saved. Total done so far: {total_done}")
 
-        # Rate limiting — Groq allows ~6000 TPM on free tier
+        # Rate limiting — Groq free tier: ~6000 TPM, ~30 RPM
+        # Each batch of 20 uses ~1800 tokens; sleep 15s keeps us under 6000 TPM
         if batch_num < len(batches):
-            time.sleep(2)
+            time.sleep(15)
 
     print(f"\nDone. Added descriptions for {total_done} restaurants.")
     print(f"Output → {GLOBAL_PATH}")

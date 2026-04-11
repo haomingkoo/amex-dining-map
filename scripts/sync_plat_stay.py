@@ -187,12 +187,44 @@ def extract_pdf_contact_links(pdf_path: Path) -> tuple[list[str], str | None]:
     return mailto_links, booking_url
 
 
+def is_hotel_header_line(line: str) -> bool:
+    """Return True if this line starts a new hotel entry.
+
+    A hotel header has a name in the name column AND a street address
+    (1–4 digit house number + word, e.g. "30 Beach Road") in the address column.
+    Continuation lines have city/postal values (5+ digit postal codes like
+    "11100 Teluk" or "Singapore 189763") in the address column — excluded
+    by the 1–4 digit constraint.
+    """
+    segs = line_segments(line)
+    has_name = any(start < 16 for start, _ in segs)
+    address_texts = [text for start, text in segs if 16 <= start < 40]
+    # Match house numbers (1-4 digits) but NOT postal codes (5+ digits)
+    has_street = any(re.match(r"\d{1,4}\s+[A-Za-z]", text) for text in address_texts)
+    return has_name and has_street
+
+
 def split_property_blocks(text: str) -> list[list[str]]:
     lines = text.splitlines()
-    start_index = next((i for i, line in enumerate(lines) if "The Fullerton" in line), None)
+
+    # Find the table header row — "Participating ... Eligible Room Type"
+    header_index = next(
+        (i for i, line in enumerate(lines)
+         if "Participating" in line and "Eligible Room Type" in line),
+        None,
+    )
+    # Fallback to old hardcoded anchor if header not found
+    if header_index is None:
+        header_index = next((i for i, line in enumerate(lines) if "The Fullerton" in line), None)
+
     end_index = next((i for i, line in enumerate(lines) if line.startswith("Terms and Conditions")), None)
-    if start_index is None or end_index is None or end_index <= start_index:
+    if header_index is None or end_index is None or end_index <= header_index:
         raise RuntimeError("Could not isolate the Plat Stay property table from the PDF text.")
+
+    # Skip the 2-line header block and any trailing blank lines before data begins
+    start_index = header_index + 2
+    while start_index < end_index and not lines[start_index].strip():
+        start_index += 1
 
     table_lines = lines[start_index:end_index]
     blocks: list[list[str]] = []
@@ -205,6 +237,11 @@ def split_property_blocks(text: str) -> list[list[str]]:
                 blocks.append(current)
                 current = []
             continue
+        # When a new hotel header line appears inside an existing block (no blank separator),
+        # flush the current block and start a new one.
+        if current and is_hotel_header_line(line):
+            blocks.append(current)
+            current = []
         current.append(line.rstrip())
 
     if current:
@@ -502,9 +539,20 @@ def geocode_query(query: str) -> dict | None:
             "Accept-Language": "en-US,en;q=0.9",
         },
     )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        payload = json.loads(response.read().decode("utf-8"))
-    return payload[0] if payload else None
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            return payload[0] if payload else None
+        except urllib.error.HTTPError as exc:
+            if exc.code == 429:
+                wait = 30 * (2 ** attempt)
+                print(f"  Nominatim 429 — waiting {wait}s before retry {attempt + 1}/3...")
+                time.sleep(wait)
+            else:
+                raise
+    print(f"  Nominatim giving up after retries for: {query!r}")
+    return None
 
 
 def country_code_for_name(country: str | None) -> str | None:
@@ -965,10 +1013,16 @@ def build_records(pdf_bytes: bytes, resolved_url: str, fetched_at: str, page_cou
     finally:
         pdf_path.unlink(missing_ok=True)
 
+    # Keywords that identify repeated column header rows (not real hotels)
+    _HEADER_NAMES = {"participating properties", "participating", "eligible room type"}
+
     records: list[dict] = []
     for block in split_property_blocks(text):
         parsed = parse_block(block)
         if not parsed.name or not parsed.address:
+            continue
+        # Skip repeated column headers that appear at the top of each PDF page
+        if parsed.name.lower().strip() in _HEADER_NAMES:
             continue
 
         exact_blackouts, blackout_notes = blackout_structures(parsed.blackout_items)
