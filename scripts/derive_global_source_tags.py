@@ -191,9 +191,72 @@ def description_mentions_record_cuisine(record: dict, description: str) -> bool:
     return False
 
 
+_ENGLISH_STOPWORDS = frozenset({
+    "the", "is", "in", "of", "and", "for", "at", "by", "with", "an", "a",
+    "it", "this", "that", "from", "or", "are", "has", "have", "its",
+    "their", "our", "we", "you", "as", "on", "to", "be", "was", "were",
+    "which", "where", "when", "who", "its", "been", "not", "but", "also",
+})
+
+
+def is_primarily_english(text: str) -> bool:
+    """Return True if the text is predominantly English.
+
+    Uses two signals:
+    1. High non-ASCII ratio → CJK, Arabic, Cyrillic → definitely not English
+    2. Low English function-word density → Italian/French/German/Spanish text
+       uses mostly ASCII but has almost no English stop-words
+    """
+    if not text:
+        return False
+    # Signal 1: character-level non-ASCII (catches CJK, Arabic, etc.)
+    non_ascii = sum(1 for c in text if ord(c) > 127)
+    if non_ascii / max(len(text), 1) >= 0.2:
+        return False
+    # Signal 2: English stop-word density (catches European non-English)
+    words = re.findall(r"\b[a-z]+\b", text.lower())
+    if len(words) >= 8:
+        hits = sum(1 for w in words if w in _ENGLISH_STOPWORDS)
+        # English text typically has ≥1 function word per 8 content words
+        if hits < len(words) / 8:
+            return False
+    return True
+
+
+def strip_pipe_navigation(text: str) -> str:
+    """Strip leading pipe-separated nav items from website meta descriptions.
+
+    Some sites (e.g. Hong Kong/Taiwan) put their nav menu in the meta description:
+    'Official Website | Restaurant | Cuisine | Reservation | Actual description...'
+    Detect this pattern and return only the substantive trailing content.
+    """
+    for sep in ("｜", " | "):
+        if text.count(sep) >= 3:
+            parts = [p.strip() for p in text.split(sep)]
+            # Find the first part that looks like a real sentence (>6 words, ends with punctuation
+            # or is substantially longer than the preceding nav tokens)
+            nav_end = 0
+            for i, part in enumerate(parts):
+                word_count = len(part.split())
+                if word_count > 6 or (i > 0 and word_count > len(parts[i - 1].split()) * 2):
+                    nav_end = i
+                    break
+            if nav_end > 0:
+                return compact_space(" ".join(parts[nav_end:]))
+    return text
+
+
 def cleaned_source_summary(record: dict, known_for: list[str], specialties: list[str]) -> str | None:
     description = filtered_site_description(record)
     if not description:
+        return None
+
+    # Strip pipe-separated navigation prefixes (common on HK/TW sites)
+    description = strip_pipe_navigation(description)
+
+    # Only show non-English text as an official summary if it's mostly Latin characters.
+    # Non-English descriptions are still useful as AI context but shouldn't display raw.
+    if not is_primarily_english(description):
         return None
 
     description = re.sub(r"\bBook your table.*$", "", description, flags=re.IGNORECASE).strip(" .")

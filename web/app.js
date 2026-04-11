@@ -938,28 +938,8 @@ function diningSummaryPayload(record) {
   }
 
   const ai = (record.summary_ai || "").trim();
-  if (!ai) {
-    return null;
-  }
-
-  const signals = record.external_signals || {};
-  if (record.country !== "Japan") {
-    const sourceType = (signals.official_site_description_source || "").trim();
-    if (!["meta", "og:description", "twitter:description", "jsonld"].includes(sourceType)) {
-      return null;
-    }
-  }
-
-  const siteDescription = (
-    signals.official_site_description ||
-    signals.official_site_meta_description ||
-    ""
-  ).trim();
-  if (siteDescription.split(/\s+/).filter(Boolean).length >= 8) {
-    return { text: ai, isAi: true };
-  }
-
-  return null;
+  if (!ai) return null;
+  return { text: ai, isAi: true };
 }
 
 function createMarker(record) {
