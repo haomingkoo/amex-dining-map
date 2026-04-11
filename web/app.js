@@ -556,6 +556,22 @@ function tagSection(title, tags, tone = "") {
   `;
 }
 
+function labeledBadge(label, value, tone = "") {
+  if (!value) return "";
+  const className = ["badge", tone].filter(Boolean).join(" ");
+  return `<span class="${className}">${escapeHtml(`${label}: ${value}`)}</span>`;
+}
+
+function pushLabeledBadge(entries, seen, label, value, tone = "") {
+  if (!value) return;
+  const text = String(value).trim();
+  if (!text) return;
+  const normalized = text.toLowerCase();
+  if (seen.has(normalized)) return;
+  seen.add(normalized);
+  entries.push(labeledBadge(label, text, tone));
+}
+
 function sourceConfidenceLabel(value) {
   const labels = {
     manual_verified: "Verified listing",
@@ -710,7 +726,14 @@ function hasVerifiedCoordinates(record) {
   return (
     record.lat != null
     && record.lng != null
-    && ["address_validated", "manual_verified"].includes(record.coordinate_confidence)
+    && [
+      "address_validated",
+      "address_matched",
+      "manual_verified",
+      "poi_address_matched",
+      "source_map_verified",
+      "google_place_verified",
+    ].includes(record.coordinate_confidence)
   );
 }
 
@@ -718,6 +741,18 @@ function diningLocationBadge(record) {
   if (record.lat == null || record.lng == null) return "";
   if (record.coordinate_confidence === "approximate") {
     return '<span class="badge amber">Approximate pin</span>';
+  }
+  if (record.coordinate_confidence === "source_map_verified") {
+    return '<span class="badge green">Source map verified</span>';
+  }
+  if (record.coordinate_confidence === "google_place_verified") {
+    return '<span class="badge blue">Google place verified</span>';
+  }
+  if (record.coordinate_confidence === "address_validated") {
+    return '<span class="badge green">Address verified</span>';
+  }
+  if (record.coordinate_confidence === "manual_verified") {
+    return '<span class="badge green">Verified pin</span>';
   }
   if (hasVerifiedCoordinates(record)) {
     return '<span class="badge green">Verified pin</span>';
@@ -744,7 +779,8 @@ function bestGoogleMapsUrl(record) {
 function googleRatingBadge(record) {
   const g = googleRating(record);
   if (!g || g.rating == null) return "";
-  const url = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
+  const url = bestGoogleMapsUrl(record)
+    || (record.dataset === "plat_stay" ? stayGoogleMapsUrl(record) : diningGoogleMapsUrl(record));
   const countStr = g.review_count ? ` · ${Number(g.review_count).toLocaleString()} reviews` : "";
   const tag = url ? "a" : "span";
   const attrs = url
@@ -820,13 +856,51 @@ function diningGoogleMapsUrl(record) {
   return fallback || record.source_google_map_url;
 }
 
+function diningLocationTags(record) {
+  const entries = [];
+  const seen = new Set();
+  if (record.country && record.country !== "Japan") {
+    pushLabeledBadge(entries, seen, "Country", record.country, "gold");
+  }
+  pushLabeledBadge(entries, seen, "City", record.city, record.country === "Japan" ? "gold" : "");
+  if (record.district) {
+    pushLabeledBadge(entries, seen, "District", record.district);
+  } else if (record.area_title) {
+    pushLabeledBadge(entries, seen, "Area", record.area_title);
+  } else if (record.prefecture) {
+    pushLabeledBadge(entries, seen, "Prefecture", record.prefecture);
+  } else if (record.region) {
+    pushLabeledBadge(entries, seen, "Region", record.region);
+  }
+  return entries;
+}
+
+function stayLocationTags(record) {
+  const entries = [];
+  const seen = new Set();
+  pushLabeledBadge(entries, seen, "Country", record.country, "gold");
+  pushLabeledBadge(entries, seen, "City", record.city);
+  return entries;
+}
+
 function focusLocationNote(record) {
   if (record.lat == null || record.lng == null) {
+    if (record.coordinate_confidence === "location_conflict" && record.map_pin_note) {
+      return record.map_pin_note;
+    }
     return "This venue does not have a plotted pin yet. Use the official listing for location confirmation.";
   }
 
   if (hasSourceCoordinates(record)) {
     return "";
+  }
+
+  if (record.coordinate_confidence === "source_map_verified") {
+    return record.map_pin_note || "Pin follows the official source map for this venue.";
+  }
+
+  if (record.coordinate_confidence === "google_place_verified") {
+    return record.map_pin_note || "Pin is confirmed by the official source map and Google place.";
   }
 
   if (hasVerifiedCoordinates(record)) {
@@ -836,12 +910,65 @@ function focusLocationNote(record) {
   return "Pin uses approximate fallback mapping. Confirm the official listing before travelling to the venue.";
 }
 
+function naturalList(items) {
+  const values = (items || []).filter(Boolean);
+  if (!values.length) return "";
+  if (values.length === 1) return values[0];
+  if (values.length === 2) return `${values[0]} and ${values[1]}`;
+  return `${values.slice(0, -1).join(", ")}, and ${values[values.length - 1]}`;
+}
+
+function diningSummaryPayload(record) {
+  const official = (record.summary_official || "").trim();
+  if (official) {
+    return { text: official, isAi: false };
+  }
+
+  const knownFor = Array.isArray(record.known_for_tags) ? record.known_for_tags.filter(Boolean) : [];
+  const specialties = Array.isArray(record.signature_dish_tags) ? record.signature_dish_tags.filter(Boolean) : [];
+  if (knownFor.length || specialties.length) {
+    const parts = [];
+    if (knownFor.length) {
+      parts.push(`Known for ${naturalList(knownFor)}.`);
+    }
+    if (specialties.length) {
+      parts.push(`${specialties.length === 1 ? "Verified specialty" : "Verified specialties"} include ${naturalList(specialties)}.`);
+    }
+    return { text: parts.join(" "), isAi: false };
+  }
+
+  const ai = (record.summary_ai || "").trim();
+  if (!ai) {
+    return null;
+  }
+
+  const signals = record.external_signals || {};
+  if (record.country !== "Japan") {
+    const sourceType = (signals.official_site_description_source || "").trim();
+    if (!["meta", "og:description", "twitter:description", "jsonld"].includes(sourceType)) {
+      return null;
+    }
+  }
+
+  const siteDescription = (
+    signals.official_site_description ||
+    signals.official_site_meta_description ||
+    ""
+  ).trim();
+  if (siteDescription.split(/\s+/).filter(Boolean).length >= 8) {
+    return { text: ai, isAi: true };
+  }
+
+  return null;
+}
+
 function createMarker(record) {
   if (!hasLeaflet) return null;
   if (record.lat == null || record.lng == null) return null;
 
   const dinnerBand = priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label);
   const lunchBand = priceBandLabel(record.price_lunch_band_tier, record.price_lunch_band_label);
+  const summary = diningSummaryPayload(record);
   const marker = L.circleMarker([record.lat, record.lng], {
     radius: 8,
     fillColor: markerColor(record),
@@ -860,7 +987,7 @@ function createMarker(record) {
       ${yens(record.price_dinner_min_jpy, record.price_dinner_max_jpy) ? `<div>${escapeHtml(`Dinner: ${yens(record.price_dinner_min_jpy, record.price_dinner_max_jpy)}`)}</div>` : ""}
       ${lunchBand ? `<div>${escapeHtml(`Lunch band: ${lunchBand}`)}</div>` : ""}
       ${yens(record.price_lunch_min_jpy, record.price_lunch_max_jpy) ? `<div>${escapeHtml(`Lunch: ${yens(record.price_lunch_min_jpy, record.price_lunch_max_jpy)}`)}</div>` : ""}
-      ${(record.summary_official || record.summary_ai) ? `<p>${escapeHtml(record.summary_official || record.summary_ai)}</p>` : ""}
+      ${summary ? `<p>${escapeHtml(summary.text)}</p>` : ""}
       ${focusLocationNote(record) ? `<div>${escapeHtml(focusLocationNote(record))}</div>` : ""}
       ${
         diningGoogleMapsUrl(record)
@@ -1442,7 +1569,7 @@ function renderFocusCard() {
   const kidPolicyKnown = isJapan && record.child_policy_norm && record.child_policy_norm !== "unknown";
 
   const tags = [
-    `<span class="badge gold">${escapeHtml(record.city)}</span>`,
+    ...diningLocationTags(record),
     diningLocationBadge(record),
     isJapan && record.price_dinner_band_tier && record.price_dinner_band_label
       ? `<span class="badge amber">${escapeHtml(priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label))}</span>`
@@ -1470,6 +1597,7 @@ function renderFocusCard() {
   const ratingBadges = tabelogBadge || gBadge ? `<div class="focus-ratings">${tabelogBadge}${gBadge}</div>` : "";
   const googleMapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
   const tSearchUrl = tabelogSignal && tabelogSignal.url ? tabelogSignal.url : tabelogSearchUrl(record);
+  const summary = diningSummaryPayload(record);
 
   focusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(diningKicker(record))}</div>
@@ -1493,12 +1621,7 @@ function renderFocusCard() {
     <div class="focus-tags">${tags}</div>
     ${tagSection("Known for", record.known_for_tags, "gold")}
     ${tagSection("Specialties", record.signature_dish_tags, "blue")}
-    ${(() => {
-      const summary = record.summary_official || record.summary_ai;
-      if (!summary) return "";
-      const isAi = !record.summary_official && record.summary_ai;
-      return `<p class="focus-summary${isAi ? " focus-summary-ai" : ""}">${escapeHtml(summary)}</p>`;
-    })()}
+    ${summary ? `<p class="focus-summary${summary.isAi ? " focus-summary-ai" : ""}">${escapeHtml(summary.text)}</p>` : ""}
     ${showPriceGrid ? `
     <div class="price-grid">
       ${hasDinnerPrice ? `<div class="price-card">
@@ -1629,7 +1752,7 @@ function renderMobileCards(resetPage = true) {
       ? `<span class="card-google-rating">★ ${gMobile.rating}${gMobile.review_count ? ` · ${Number(gMobile.review_count).toLocaleString()}` : ""}</span>`
       : "";
     const regionDot = `<span class="card-region-dot" style="background:${markerColor(record)}" aria-hidden="true"></span>`;
-    const cardSummary = record.summary_official || record.summary_ai;
+    const cardSummary = diningSummaryPayload(record);
 
     card.innerHTML = `
       <div class="mobile-card-top">
@@ -1642,7 +1765,7 @@ function renderMobileCards(resetPage = true) {
           </div>
         </div>
       </div>
-      ${cardSummary ? `<p class="mobile-card-desc">${escapeHtml(cardSummary)}</p>` : ""}
+      ${cardSummary ? `<p class="mobile-card-desc">${escapeHtml(cardSummary.text)}</p>` : ""}
       ${
         record.source_localized_address
           ? `<div class="mobile-card-address">${escapeHtml(record.source_localized_address)}</div>`
@@ -1789,8 +1912,52 @@ function focusActiveRecordOnMap() {
 }
 
 function stayGoogleMapsUrl(record) {
+  const scraped = bestGoogleMapsUrl(record);
+  if (scraped) return scraped;
   const query = [record.name, record.address, record.country].filter(Boolean).join(", ");
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+function stayLocationBadge(record) {
+  if (record.coordinate_confidence === "location_conflict") {
+    return '<span class="badge amber">Location conflict</span>';
+  }
+  if (record.lat == null || record.lng == null) return "";
+  if (record.coordinate_confidence === "google_place_verified") {
+    return '<span class="badge blue">Google place verified</span>';
+  }
+  if (record.coordinate_confidence === "poi_address_matched" || record.coordinate_confidence === "address_matched") {
+    return '<span class="badge green">Address verified</span>';
+  }
+  if (record.coordinate_confidence === "poi_matched") {
+    return '<span class="badge blue">POI matched</span>';
+  }
+  if (record.coordinate_confidence === "manual_verified") {
+    return '<span class="badge green">Verified pin</span>';
+  }
+  if (record.coordinate_confidence === "approximate") {
+    return '<span class="badge amber">Approximate pin</span>';
+  }
+  return "";
+}
+
+function stayLocationNote(record) {
+  if (record.coordinate_confidence === "location_conflict" && record.map_pin_note) {
+    return record.map_pin_note;
+  }
+  if (record.lat == null || record.lng == null) {
+    return record.map_pin_note || "This property does not have a plotted pin yet. Confirm the official property address before travelling.";
+  }
+  if (record.coordinate_confidence === "google_place_verified") {
+    return record.map_pin_note || "Pin follows the matched Google place for this hotel.";
+  }
+  if (record.coordinate_confidence === "poi_address_matched" || record.coordinate_confidence === "address_matched") {
+    return record.map_pin_note || "Pin is based on a matched hotel address.";
+  }
+  if (record.coordinate_confidence === "manual_verified") {
+    return record.map_pin_note || "Pin is manually verified for this property.";
+  }
+  return record.map_pin_note || "Pin uses approximate fallback mapping. Confirm the official property address before travelling.";
 }
 
 function stayReservationPrimaryLabel(record) {
@@ -2074,6 +2241,8 @@ function createStayMarker(record) {
   if (!hasLeaflet) return null;
   if (record.lat == null || record.lng == null) return null;
   const status = stayAvailability(record);
+  const gBadge = googleRatingBadge(record);
+  const mapsUrl = stayGoogleMapsUrl(record);
   const marker = L.circleMarker([record.lat, record.lng], {
     radius: 8,
     fillColor: status.key === "blocked" ? "#d6a44c" : "#5fb9a6",
@@ -2088,17 +2257,20 @@ function createStayMarker(record) {
       <div>${escapeHtml(record.city || "City unknown")} / ${escapeHtml(record.country || "Country unknown")}</div>
       <div>${escapeHtml(record.address)}</div>
       <div>${escapeHtml(record.eligible_room_type)}</div>
+      ${gBadge ? `<div class="focus-ratings">${gBadge}</div>` : ""}
       <div>${escapeHtml(status.label)}</div>
       ${
         record.blackout_raw
           ? `<div>${escapeHtml(`Blackouts: ${record.blackout_raw}`)}</div>`
           : ""
       }
+      ${stayLocationNote(record) ? `<div>${escapeHtml(stayLocationNote(record))}</div>` : ""}
       ${
         record.reservation_raw
           ? `<div>Reservation: ${stayReservationSummaryHtml(record)}</div>`
           : ""
       }
+      ${mapsUrl ? `<p><a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps</a></p>` : ""}
       ${!record.reservation_primary_url && record.source_url ? `<p><a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Official details</a></p>` : ""}
     </div>
   `);
@@ -2209,21 +2381,22 @@ function renderStayFocusCard() {
   }
 
   const status = stayAvailability(record);
+  const locationBadge = stayLocationBadge(record);
+  const gBadge = googleRatingBadge(record);
   const tags = [
-    record.country ? `<span class="badge gold">${escapeHtml(record.country)}</span>` : "",
-    record.city ? `<span class="badge">${escapeHtml(record.city)}</span>` : "",
+    ...stayLocationTags(record),
     record.breakfast_included ? "" : '<span class="badge blue">Room only</span>',
-    record.coordinate_confidence === "approximate"
-      ? '<span class="badge amber">Approximate pin</span>'
-      : "",
+    locationBadge,
   ]
     .filter(Boolean)
     .join("");
   const summary = stayFocusSummary(record, status);
+  const locationNote = stayLocationNote(record);
 
   staysFocusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(record.city || "City unknown")} / ${escapeHtml(record.country || "Country unknown")}</div>
     <h3 class="focus-title">${escapeHtml(record.name)}</h3>
+    ${gBadge ? `<div class="focus-ratings">${gBadge}</div>` : ""}
     <div class="focus-subtitle">${escapeHtml(record.eligible_room_type || "Eligible room type not listed")}</div>
     <div class="focus-address">${escapeHtml(record.address)}</div>
     <div class="focus-tags">${tags}</div>
@@ -2241,7 +2414,7 @@ function renderStayFocusCard() {
       </div>
     </div>
     ${summary ? `<p class="focus-summary">${escapeHtml(summary)}</p>` : ""}
-    <div class="focus-note">${escapeHtml(record.map_pin_note)}</div>
+    ${locationNote ? `<div class="focus-note">${escapeHtml(locationNote)}</div>` : ""}
     <div class="focus-actions">
       <a class="inline-link" href="${escapeHtml(stayGoogleMapsUrl(record))}" target="_blank" rel="noopener">Open in Google Maps</a>
       ${stayOfficialSourceAction(record)}
@@ -2300,6 +2473,11 @@ function renderStayMobileCards() {
   staysMobileResultsList.innerHTML = "";
   state.stayFiltered.forEach((record) => {
     const status = stayAvailability(record);
+    const g = googleRating(record);
+    const googleRatingInline = g && g.rating != null
+      ? `<span class="badge blue">★ ${g.rating}${g.review_count ? ` · ${Number(g.review_count).toLocaleString()}` : ""}</span>`
+      : "";
+    const locationBadge = stayLocationBadge(record);
     const card = document.createElement("article");
     card.className = `mobile-card${record.id === state.stayActiveId ? " active" : ""}`;
     card.innerHTML = `
@@ -2314,6 +2492,8 @@ function renderStayMobileCards() {
       <div class="venue-tags">
         <span class="badge ${stayAvailabilityBadgeClass(status)}">${escapeHtml(status.label)}</span>
         ${record.breakfast_included ? "" : '<span class="badge blue">Room only</span>'}
+        ${locationBadge}
+        ${googleRatingInline}
       </div>
       <p class="focus-summary">${escapeHtml(status.detail)}</p>
       <div class="mobile-card-actions">
