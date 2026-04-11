@@ -618,6 +618,19 @@
 
     </div><!-- /page-shell -->
 
+    <!-- Mobile venue bottom sheet (appears on small screens when a venue is selected) -->
+    <div id="mobile-venue-sheet" class="mobile-venue-sheet" hidden aria-live="polite">
+      <div class="mvs-bar">
+        <div class="mvs-region-dot" id="mvs-region-dot"></div>
+        <div class="mvs-info">
+          <div class="mvs-name" id="mvs-name"></div>
+          <div class="mvs-meta" id="mvs-meta"></div>
+        </div>
+        <button class="mvs-dismiss ghost-btn secondary" id="mvs-dismiss" aria-label="Dismiss">×</button>
+      </div>
+      <div class="mvs-actions" id="mvs-actions"></div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="./app.js"></script>
   </body>

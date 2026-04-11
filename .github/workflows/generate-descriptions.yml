@@ -1,0 +1,57 @@
+name: Generate AI Descriptions
+
+on:
+  schedule:
+    # Runs on the 1st of every month at 02:00 UTC
+    - cron: "0 2 1 * *"
+  workflow_dispatch:
+    inputs:
+      min_words:
+        description: "Regenerate descriptions shorter than N words (default: 20)"
+        required: false
+        default: "20"
+      country:
+        description: "Limit to a specific country (leave blank for all)"
+        required: false
+        default: ""
+      batch_size:
+        description: "Batch size per Groq request (default: 20)"
+        required: false
+        default: "20"
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run description generator
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          # On scheduled runs use defaults; on manual runs use inputs
+          MIN_WORDS="${{ github.event.inputs.min_words || '20' }}"
+          BATCH_SIZE="${{ github.event.inputs.batch_size || '20' }}"
+          COUNTRY="${{ github.event.inputs.country }}"
+          ARGS="--min-words $MIN_WORDS --batch-size $BATCH_SIZE"
+          if [ -n "$COUNTRY" ]; then
+            ARGS="$ARGS --country \"$COUNTRY\""
+          fi
+          eval python3 scripts/generate_global_descriptions.py $ARGS
+
+      - name: Commit updated descriptions
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/global-restaurants.json
+          git diff --staged --quiet || git commit -m "chore: regenerate AI descriptions for global restaurants"
+          git push

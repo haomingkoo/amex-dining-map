@@ -321,43 +321,37 @@ const ROUTES = {
     id: "10xcelerator",
     programId: "10xcelerator",
     label: "Overview",
-    eyebrow: "10Xcelerator / Planned",
-    title: "10Xcelerator Explorer",
+    eyebrow: "Singapore · 10X Accelerator",
+    title: "10X Accelerator",
     description:
-      "Partner and points-earning planner for bonus merchants and categories. This will start as a verified partner directory, then add outlet mapping only where the location data is dependable.",
-    briefTitle: "10Xcelerator Buildout",
+      "Earn 10X Membership Rewards points at partner merchants across dining, shopping, travel, and more in Singapore.",
+    briefTitle: "10X Accelerator — Coming Soon",
     briefSummary:
-      "10Xcelerator is valuable, but it is less map-ready than the other programs because the official page is much stronger on partner and offer data than on outlet-level addresses.",
+      "Earn 10X Membership Rewards points at AMEX partner merchants in Singapore. A searchable partner directory is being added to this app.",
     briefCards: [
       {
-        kicker: "Primary source",
-        title: "Official partner page first",
+        kicker: "What is it",
+        title: "10X points at partner merchants",
         body:
-          "Start from the official Amex page to capture partner brands, categories, and earn structure before attempting outlet mapping or partner-site enrichment.",
+          "The 10X Accelerator programme lets eligible Amex cardholders earn 10 Membership Rewards points per S$1 spent at participating merchants across dining, retail, travel, and lifestyle categories.",
         links: [
           {
-            label: "10Xcelerator page",
+            label: "View official partner list",
             href: "https://www.americanexpress.com/sg/benefits/promotions/shopping/10Xcelerator/10Xcelerator.html",
           },
         ],
       },
       {
-        kicker: "What ships first",
-        title: "Searchable partner directory",
+        kicker: "Categories",
+        title: "Dining, shopping, travel & more",
         body:
-          "The first useful version is a partner and category explorer with earn-rule summaries, then a map for outlets only where there is verified location data.",
+          "Partner categories include restaurants, hotels, airlines, retail brands, and online merchants. Check the official Amex SG page for the current enrolled partners and any spending caps that apply.",
       },
       {
-        kicker: "Trust model",
-        title: "Brand-level before outlet-level",
+        kicker: "Coming soon",
+        title: "Partner directory in progress",
         body:
-          "If the official source confirms a partner but not every store location, the app should present that honestly as a partner listing rather than pretending every outlet is verified.",
-      },
-      {
-        kicker: "Next milestone",
-        title: "Verified outlet mapping",
-        body:
-          "After the partner directory is stable, add mapped outlets only when there is a dependable second source for addresses and live merchant coverage.",
+          "A searchable directory of 10X partners with categories and locations is being added here. For now, the full and up-to-date partner list is on the official Amex SG page.",
       },
     ],
   },
@@ -494,6 +488,12 @@ const tableSummary = document.getElementById("table-summary");
 const mobileSummary = document.getElementById("mobile-summary");
 const resultsTableBody = document.getElementById("results-table-body");
 const mobileResultsList = document.getElementById("mobile-results-list");
+const mobileVenueSheet = document.getElementById("mobile-venue-sheet");
+const mvsName = document.getElementById("mvs-name");
+const mvsMeta = document.getElementById("mvs-meta");
+const mvsActions = document.getElementById("mvs-actions");
+const mvsRegionDot = document.getElementById("mvs-region-dot");
+const mvsDismiss = document.getElementById("mvs-dismiss");
 const staysExplorer = document.getElementById("stays-explorer");
 const staysMapFilterShell = document.getElementById("stays-map-filter-shell");
 const staysToolbar = document.getElementById("stays-filter-toolbar");
@@ -1380,8 +1380,8 @@ function renderStats() {
   resultsText.textContent = state.activeId ? `Selected venue · ${route.label}` : `Click a dot to select · ${route.label}`;
   tableSummary.textContent =
     filterCount > 0 ? "Current filtered shortlist in table form." : "Current route list in table form.";
-  mobileSummary.textContent = tableSummary.textContent;
-  mapSummary.textContent = route.mapSummary;
+  mobileSummary.textContent = `${state.filtered.length} venues${state.filtered.length > MOBILE_PAGE_SIZE ? ` — scroll to browse all` : ""}`;
+  mapSummary.textContent = window.innerWidth <= 820 ? "Tap a dot to explore a restaurant" : route.mapSummary;
   renderToolbarToggle();
   renderTableToggle();
 }
@@ -1452,11 +1452,9 @@ function renderFocusCard() {
 
   focusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(diningKicker(record))}</div>
-    <div class="focus-title-row">
-      <h3 class="focus-title">${escapeHtml(record.name)}</h3>
-      ${ratingBadges}
-    </div>
+    <h3 class="focus-title">${escapeHtml(record.name)}</h3>
     <div class="focus-subtitle">${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
+    ${ratingBadges}
     ${
       record.source_localized_address
         ? `<div class="focus-address">${escapeHtml(record.source_localized_address)}</div>`
@@ -1578,15 +1576,23 @@ function renderTable() {
   });
 }
 
-function renderMobileCards() {
+const MOBILE_PAGE_SIZE = 50;
+let mobileCardPage = 1;
+
+function renderMobileCards(resetPage = true) {
+  if (resetPage) mobileCardPage = 1;
   if (!state.filtered.length) {
     mobileResultsList.innerHTML =
       '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
     return;
   }
 
+  const pageLimit = mobileCardPage * MOBILE_PAGE_SIZE;
+  const visible = state.filtered.slice(0, pageLimit);
+  const remaining = state.filtered.length - visible.length;
+
   mobileResultsList.innerHTML = "";
-  state.filtered.forEach((record) => {
+  visible.forEach((record) => {
     const card = document.createElement("article");
     card.className = `mobile-card${record.id === state.activeId ? " active" : ""}`;
     const isJapan = record.country === "Japan";
@@ -1682,13 +1688,70 @@ function renderMobileCards() {
 
     mobileResultsList.appendChild(card);
   });
+
+  if (remaining > 0) {
+    const showMore = document.createElement("button");
+    showMore.className = "mobile-show-more";
+    showMore.textContent = `Show ${Math.min(MOBILE_PAGE_SIZE, remaining).toLocaleString()} more of ${remaining.toLocaleString()} remaining`;
+    showMore.addEventListener("click", () => {
+      mobileCardPage += 1;
+      renderMobileCards(false);
+    });
+    mobileResultsList.appendChild(showMore);
+  }
+
+  // Scroll active card into view after render
+  requestAnimationFrame(() => {
+    const activeCard = mobileResultsList.querySelector(".mobile-card.active");
+    if (activeCard) activeCard.scrollIntoView({ block: "nearest" });
+  });
 }
 
 function setActiveRecord(id) {
   state.activeId = id;
   renderFocusCard();
   renderTable();
-  renderMobileCards();
+  // Ensure the active card's page is loaded on mobile
+  if (id) {
+    const idx = state.filtered.findIndex((r) => r.id === id);
+    if (idx >= 0) {
+      const neededPage = Math.ceil((idx + 1) / MOBILE_PAGE_SIZE);
+      if (neededPage > mobileCardPage) mobileCardPage = neededPage;
+    }
+  }
+  renderMobileCards(false);
+  renderMobileSheet();
+}
+
+function renderMobileSheet() {
+  if (!mobileVenueSheet) return;
+  const isMobile = window.innerWidth <= 820;
+  const record = activeRecord();
+  if (!isMobile || !record) {
+    mobileVenueSheet.classList.remove("sheet-visible");
+    return;
+  }
+  mvsRegionDot.style.background = markerColor(record);
+  mvsName.textContent = record.name;
+  const gRating = googleRating(record);
+  const ratingStr = gRating && gRating.rating != null
+    ? `★ ${gRating.rating}${gRating.review_count ? ` · ${Number(gRating.review_count).toLocaleString()} reviews` : ""}  ·  `
+    : "";
+  const cuisine = (record.cuisines || []).join(", ") || record.cuisine || "";
+  mvsMeta.textContent = `${ratingStr}${cuisine}`;
+
+  const mapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
+  mvsActions.innerHTML = `
+    <button type="button" class="ghost-btn secondary" id="mvs-scroll-btn">Full details ↓</button>
+    ${mapsUrl ? `<a class="ghost-btn secondary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps</a>` : ""}
+  `;
+  mvsActions.querySelector("#mvs-scroll-btn")?.addEventListener("click", () => {
+    const activeCard = mobileResultsList.querySelector(".mobile-card.active");
+    if (activeCard) activeCard.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  mobileVenueSheet.hidden = false;
+  requestAnimationFrame(() => mobileVenueSheet.classList.add("sheet-visible"));
 }
 function focusActiveRecordOnMap() {
   if (!hasLeaflet || !map) return;
@@ -2446,6 +2509,9 @@ function renderLoveDiningCard() {
   const halal = record.notes && (record.notes.includes("Halal") || record.notes.includes("Muslim"))
     ? `<div class="focus-note">Halal certified</div>` : "";
 
+  const descriptionHtml = record.summary_ai
+    ? `<p class="focus-summary focus-summary-ai">${escapeHtml(record.summary_ai)}</p>` : "";
+
   const scrapedRating = googleRating(record);
   const googleMapsUrl = (scrapedRating && scrapedRating.maps_url)
     ? scrapedRating.maps_url
@@ -2465,6 +2531,7 @@ function renderLoveDiningCard() {
     </div>
     ${closingNote}
     ${halal}
+    ${descriptionHtml}
     <div class="focus-section">
       ${record.address ? `<div class="focus-row"><span class="focus-label">Address</span><span>${escapeHtml(record.address)}</span></div>` : ""}
       ${record.phone ? `<div class="focus-row"><span class="focus-label">Phone</span><span>${escapeHtml(record.phone)}</span></div>` : ""}
@@ -2524,7 +2591,7 @@ function renderLoveDiningMobileList() {
 }
 
 function setLoveToolbarOpen(open) {
-  loveToolbar.hidden = !open;
+  loveToolbar.classList.toggle("is-open", open);
   loveToolbarToggle.setAttribute("aria-expanded", String(open));
   loveToolbarToggle.querySelector(".toolbar-toggle-icon").textContent = open ? "−" : "+";
 }
@@ -2798,11 +2865,18 @@ window.addEventListener("resize", () => {
     fitStayMapToVisibleMarkers();
     return;
   }
-
   if (isDiningRoute()) {
     map.invalidateSize();
     fitDiningMapToVisibleMarkers();
   }
+  // Hide sheet if resized to desktop
+  if (window.innerWidth > 820 && mobileVenueSheet) {
+    mobileVenueSheet.classList.remove("sheet-visible");
+  }
+});
+
+mvsDismiss?.addEventListener("click", () => {
+  mobileVenueSheet.classList.remove("sheet-visible");
 });
 
 init().catch((error) => {

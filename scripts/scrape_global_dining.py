@@ -30,6 +30,7 @@ DATA_DIR = ROOT / "data"
 OUTPUT_PATH = DATA_DIR / "global-restaurants.json"
 SNAPSHOT_PATH = DATA_DIR / "global-dining-snapshot.json"
 SOURCE_META_PATH = DATA_DIR / "global-dining-source.json"
+OVERRIDES_PATH = DATA_DIR / "coordinate-overrides.json"
 
 BASE_URL = "https://platinumdining.caffeinesoftware.com"
 SITEMAP_URL = f"{BASE_URL}/sitemap.xml"
@@ -206,8 +207,13 @@ def build_record(url: str, json_ld: dict[str, Any]) -> dict[str, Any]:
         else:
             city = state or region
 
-    # Build full address string
-    address_parts = [p for p in [street, locality, state, postal] if p]
+    # Build full address string — deduplicate consecutive identical segments
+    # (some JSON-LD records repeat the region in both addressLocality and addressRegion)
+    raw_parts = [p for p in [street, locality, state, postal] if p]
+    address_parts: list[str] = []
+    for part in raw_parts:
+        if not address_parts or part != address_parts[-1]:
+            address_parts.append(part)
     full_address = ", ".join(address_parts)
     if addr_country and addr_country not in full_address:
         full_address = f"{full_address}, {addr_country}" if full_address else addr_country
@@ -404,6 +410,19 @@ def main() -> None:
 
     # ── 5. Write output files ─────────────────────────────────────────
     fetched_at = datetime.datetime.utcnow().isoformat() + "Z"
+
+    # ── Apply coordinate overrides (manually verified fixes that survive re-scrapes) ──
+    if OVERRIDES_PATH.exists():
+        overrides = json.loads(OVERRIDES_PATH.read_text())
+        applied = 0
+        for r in records:
+            if r["id"] in overrides:
+                fix = overrides[r["id"]]
+                r["lat"] = fix["lat"]
+                r["lng"] = fix["lng"]
+                applied += 1
+        if applied:
+            print(f"Applied {applied} coordinate override(s) from {OVERRIDES_PATH.name}")
 
     OUTPUT_PATH.write_text(json.dumps(records, indent=2, ensure_ascii=False) + "\n")
     print(f"\nWrote {len(records)} records → {OUTPUT_PATH}")
