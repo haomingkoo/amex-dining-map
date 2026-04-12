@@ -8,6 +8,7 @@ const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
 const LOVE_FIT_OPTIONS = { padding: [48, 48], maxZoom: 15 };
 const INTRO_STORAGE_KEY = "amex-benefits-intro-v3";
+const MOBILE_BREAKPOINT = 820;
 
 const LUNCH_BANDS = [
   { key: "under-5k", label: "Under JPY 5k", tier: "$" },
@@ -1466,7 +1467,7 @@ function renderStats() {
   tableSummary.textContent =
     filterCount > 0 ? "Current filtered shortlist in table form." : "Current route list in table form.";
   mobileSummary.textContent = `${state.filtered.length} venues${state.filtered.length > MOBILE_PAGE_SIZE ? ` — scroll to browse all` : ""}`;
-  mapSummary.textContent = window.innerWidth <= 820 ? "Tap a dot to explore a restaurant" : route.mapSummary;
+  mapSummary.textContent = window.innerWidth <= MOBILE_BREAKPOINT ? "Tap a dot to explore a restaurant" : route.mapSummary;
   renderToolbarToggle();
   renderTableToggle();
 }
@@ -1762,7 +1763,7 @@ function renderMobileCards(resetPage = true) {
       focusButton.addEventListener("click", () => {
         setActiveRecord(record.id);
         focusActiveRecordOnMap();
-        if (window.innerWidth <= 820 && hasLeaflet && map) {
+        if (window.innerWidth <= MOBILE_BREAKPOINT && hasLeaflet && map) {
           const mapTop = map.getContainer().getBoundingClientRect().top + window.scrollY - 16;
           window.scrollTo({ top: Math.max(mapTop, 0), behavior: "smooth" });
         }
@@ -1808,7 +1809,7 @@ function setActiveRecord(id) {
 
 function renderMobileSheet() {
   if (!mobileVenueSheet) return;
-  const isMobile = window.innerWidth <= 820;
+  const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
   const record = activeRecord();
   if (!isMobile || !record) {
     mobileVenueSheet.classList.remove("sheet-visible");
@@ -2444,7 +2445,7 @@ function renderStayMobileCards() {
       focusButton.addEventListener("click", () => {
         setActiveStayRecord(record.id);
         focusActiveStayOnMap();
-        if (window.innerWidth <= 820 && hasLeaflet && staysMap) {
+        if (window.innerWidth <= MOBILE_BREAKPOINT && hasLeaflet && staysMap) {
           const mapTop = staysMap.getContainer().getBoundingClientRect().top + window.scrollY - 16;
           window.scrollTo({ top: Math.max(mapTop, 0), behavior: "smooth" });
         }
@@ -2893,6 +2894,7 @@ async function init() {
     fetch(LOVE_DINING_DATA_URL).catch(() => null),
     fetch(GOOGLE_RATINGS_URL).catch(() => null),
   ]);
+  if (!restaurantResponse.ok) throw new Error(`Failed to load restaurant data: ${restaurantResponse.status}`);
   state.restaurants = await restaurantResponse.json();
   if (globalResponse && globalResponse.ok) {
     const globalRecs = await globalResponse.json();
@@ -2901,7 +2903,7 @@ async function init() {
   state.restaurants.forEach((record) => {
     record.search_text = (record.search_text || "").toLowerCase();
   });
-  if (staysResponse.ok) {
+  if (staysResponse && staysResponse.ok) {
     state.stays = await staysResponse.json();
     state.stays.forEach((record) => {
       record.search_text = (record.search_text || "").toLowerCase();
@@ -2917,6 +2919,11 @@ async function init() {
   if (ratingsResponse && ratingsResponse.ok) {
     state.googleRatings = await ratingsResponse.json();
   }
+
+  // Set min date on stays date inputs to today
+  const today = new Date().toISOString().split("T")[0];
+  staysCheckinInput.min = today;
+  staysCheckoutInput.min = today;
 
   setToolbarOpen(false);
   setTableOpen(false);
@@ -3073,7 +3080,7 @@ window.addEventListener("resize", () => {
     fitDiningMapToVisibleMarkers();
   }
   // Hide sheet if resized to desktop
-  if (window.innerWidth > 820 && mobileVenueSheet) {
+  if (window.innerWidth > MOBILE_BREAKPOINT && mobileVenueSheet) {
     mobileVenueSheet.classList.remove("sheet-visible");
   }
 });
@@ -3082,12 +3089,11 @@ mvsDismiss?.addEventListener("click", () => {
   mobileVenueSheet.classList.remove("sheet-visible");
 });
 
-init().catch((error) => {
-  console.error(error);
+init().catch(() => {
   focusCard.innerHTML =
-    '<div class="empty-state">Data failed to load. Run the sync script and serve this folder over HTTP.</div>';
+    '<div class="empty-state">Data failed to load. Please refresh the page.</div>';
   staysFocusCard.innerHTML =
-    '<div class="empty-state">Data failed to load. Run the sync script and serve this folder over HTTP.</div>';
+    '<div class="empty-state">Data failed to load. Please refresh the page.</div>';
   resultsText.textContent = "Load failed";
   staysResultsText.textContent = "Load failed";
   tableSummary.textContent = "Load failed";
