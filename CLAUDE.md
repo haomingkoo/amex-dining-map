@@ -126,6 +126,53 @@ Output: `data/google-maps-ratings.json` — `{id: {rating, review_count, google_
 
 ---
 
+## Global Dining Description Pipeline
+
+```
+scrape_global_dining.py          ← scrape source data
+        │
+        ▼
+enrich_global_website_signals.py ← scrape each restaurant's official website
+        │
+        ▼
+enrich_from_web_search.py        ← fetch Michelin inspector descriptions (Algolia)
+        │
+        ▼
+derive_global_source_tags.py     ← derive known_for/signature tags + summary_official
+        │
+        ▼
+generate_global_descriptions.py  ← generate AI descriptions (Groq) for remaining records
+```
+
+### Michelin Enrichment (`enrich_from_web_search.py`)
+
+Queries Michelin's public Algolia index (`prod-restaurants-en`) directly — no browser needed.
+Credentials stored in `.env` as `MICHELIN_ALGOLIA_APP_ID` and `MICHELIN_ALGOLIA_API_KEY`.
+These are public read-only keys embedded in Michelin's frontend JS (visible in browser Network
+tab on guide.michelin.com). Requires `Referer: guide.michelin.com` header.
+
+```bash
+# Initial seed (run once, ~10 min for full 2440-restaurant dataset)
+python3 scripts/enrich_from_web_search.py --force --delay 0.2
+
+# Incremental update (skips fresh cached entries, retries no_result after 90 days)
+python3 scripts/enrich_from_web_search.py
+
+# Single country
+python3 scripts/enrich_from_web_search.py --country France
+```
+
+**Coverage**: Countries with Michelin Guide coverage get real inspector descriptions.
+Australia and New Zealand have no Michelin Guide → correct `no_result`, retried after 90 days.
+
+**Match verification**: name token overlap ≥ 0.6 (excluding generic words like "restaurant",
+"bar", "grill") + country cname match. Prevents cross-country false matches.
+
+**Cache**: `data/web-search-signals-cache.json` — `michelin` hits kept forever,
+`no_result` retried after 90 days, `error` always retried.
+
+---
+
 ## Correct Run Order (Japan)
 
 ```bash
@@ -201,8 +248,7 @@ When new restaurants are added to `japan-restaurants.json`:
 ## Environment Variables (`.env`)
 
 ```
-GROQ_API_KEY=...        # LLM judge (free tier sufficient)
-BRAVE_API_KEY=...       # Optional: Brave Search for URL discovery
+GROQ_API_KEY=...        # LLM judge for Japan matching + AI description generation
 ```
 
 ---
