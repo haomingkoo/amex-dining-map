@@ -48,14 +48,6 @@ const PROGRAMS = {
       "Singapore dining benefits. Up to 50% off at participating restaurants and hotel outlets.",
     defaultRoute: "love-dining",
   },
-  "10xcelerator": {
-    id: "10xcelerator",
-    label: "10X Accelerator",
-    title: "10X Accelerator",
-    description:
-      "Bonus points with partner brands. A searchable directory of where your spend earns more.",
-    defaultRoute: "10xcelerator",
-  },
   alerts: {
     id: "alerts",
     label: "Alerts",
@@ -317,44 +309,6 @@ const ROUTES = {
       },
     ],
   },
-  "10xcelerator": {
-    id: "10xcelerator",
-    programId: "10xcelerator",
-    label: "Overview",
-    eyebrow: "Singapore · 10X Accelerator",
-    title: "10X Accelerator",
-    description:
-      "Earn 10X Membership Rewards points at partner merchants across dining, shopping, travel, and more in Singapore.",
-    briefTitle: "10X Accelerator — Coming Soon",
-    briefSummary:
-      "Earn 10X Membership Rewards points at AMEX partner merchants in Singapore. A searchable partner directory is being added to this app.",
-    briefCards: [
-      {
-        kicker: "What is it",
-        title: "10X points at partner merchants",
-        body:
-          "The 10X Accelerator programme lets eligible Amex cardholders earn 10 Membership Rewards points per S$1 spent at participating merchants across dining, retail, travel, and lifestyle categories.",
-        links: [
-          {
-            label: "View official partner list",
-            href: "https://www.americanexpress.com/sg/benefits/promotions/shopping/10Xcelerator/10Xcelerator.html",
-          },
-        ],
-      },
-      {
-        kicker: "Categories",
-        title: "Dining, shopping, travel & more",
-        body:
-          "Partner categories include restaurants, hotels, airlines, retail brands, and online merchants. Check the official Amex SG page for the current enrolled partners and any spending caps that apply.",
-      },
-      {
-        kicker: "Coming soon",
-        title: "Partner directory in progress",
-        body:
-          "A searchable directory of 10X partners with categories and locations is being added here. For now, the full and up-to-date partner list is on the official Amex SG page.",
-      },
-    ],
-  },
 };
 
 const state = {
@@ -447,6 +401,7 @@ const scopeStrip = document.getElementById("scope-strip");
 const scopeNote = document.getElementById("scope-note");
 const scopeNav = document.getElementById("scope-nav");
 const routeLinks = [...scopeNav.querySelectorAll("[data-route]")];
+const mobileScopeSelect = document.getElementById("mobile-scope-select");
 const dataExplorer = document.getElementById("data-explorer");
 const programBrief = document.getElementById("program-brief");
 const programBriefTitle = document.getElementById("program-brief-title");
@@ -1187,7 +1142,6 @@ function resolveRouteFromHash() {
     osaka: "dining/japan",
     dining: "dining/world",
     "plat-stay": "stays",
-    accelerator: "10xcelerator",
     alerts: "alerts",
   };
 
@@ -1278,6 +1232,7 @@ function renderScopeShell(route) {
     link.classList.toggle("active", link.dataset.route === route.id);
   });
 
+  if (mobileScopeSelect) mobileScopeSelect.value = route.id;
 }
 
 function renderProgramBrief(route) {
@@ -3038,8 +2993,8 @@ document.getElementById("intro-start-love")?.addEventListener("click", (e) => {
   jumpIntoExplorer(e.currentTarget.dataset.introRoute);
 });
 
-document.getElementById("intro-start-10x")?.addEventListener("click", (e) => {
-  jumpIntoExplorer(e.currentTarget.dataset.introRoute);
+mobileScopeSelect?.addEventListener("change", (e) => {
+  window.location.hash = "/" + e.target.value;
 });
 
 replayGuideButton?.addEventListener("click", () => {

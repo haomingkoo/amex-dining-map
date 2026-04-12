@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Figtree:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap"
       rel="stylesheet"
     />
     <link
@@ -69,15 +69,6 @@
             <span class="choice-desc">Singapore dining offers. Up to 50% off at partners.</span>
           </button>
 
-          <button
-            class="intro-choice"
-            id="intro-start-10x"
-            type="button"
-            data-intro-route="#/10xcelerator"
-          >
-            <span class="choice-label">10X Accelerator</span>
-            <span class="choice-desc">Bonus points at partner brands. Know where to spend.</span>
-          </button>
         </div>
 
         <button class="intro-skip-bottom" id="intro-skip-bottom" type="button">
@@ -121,9 +112,6 @@
           <a class="primary-link" href="#/love-dining" data-program="love-dining">
             Love Dining
           </a>
-          <a class="primary-link" href="#/10xcelerator" data-program="10xcelerator">
-            10X Accelerator
-          </a>
         </nav>
 
         <!-- Scope nav: city sub-tabs (only visible on dining routes) -->
@@ -143,6 +131,22 @@
             <a class="scope-link" href="#/dining/mexico" data-route="dining/mexico">Mexico</a>
             <a class="scope-link" href="#/dining/thailand" data-route="dining/thailand">Thailand</a>
           </nav>
+          <!-- Mobile dropdown replacing pill nav -->
+          <select id="mobile-scope-select" class="mobile-scope-select" aria-label="Select country">
+            <option value="dining/world">All markets</option>
+            <option value="dining/japan">Japan</option>
+            <option value="dining/singapore">Singapore</option>
+            <option value="dining/hong-kong">Hong Kong</option>
+            <option value="dining/taiwan">Taiwan</option>
+            <option value="dining/australia">Australia</option>
+            <option value="dining/united-kingdom">United Kingdom</option>
+            <option value="dining/france">France</option>
+            <option value="dining/germany">Germany</option>
+            <option value="dining/united-states">USA</option>
+            <option value="dining/canada">Canada</option>
+            <option value="dining/mexico">Mexico</option>
+            <option value="dining/thailand">Thailand</option>
+          </select>
           <p class="scope-hint" id="scope-note"></p>
         </div>
       </section>
