@@ -205,7 +205,7 @@ input,
   margin: 6px 0 0;
   font-family: "Syne", sans-serif;
   font-size: clamp(28px, 4.5vw, 50px);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.05em;
   line-height: 1.02;
 }
@@ -323,7 +323,7 @@ input,
   margin: 0;
   font-family: "Syne", sans-serif;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.04em;
   color: var(--text);
   line-height: 1.2;
@@ -504,7 +504,7 @@ input,
   margin: 0 0 2px;
   font-family: "Syne", sans-serif;
   font-size: clamp(22px, 2.8vw, 34px);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.045em;
   line-height: 1.05;
 }
@@ -630,6 +630,31 @@ input,
   top: 0;
   z-index: 10;
   background: var(--surface-strong);
+}
+
+.table-search-wrap {
+  flex-shrink: 0;
+}
+
+.table-search-input {
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-xs);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font: 13px/1 "Figtree", sans-serif;
+  width: 180px;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.table-search-input:focus {
+  outline: none;
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px rgba(201, 165, 90, 0.1);
+}
+
+.table-search-input::placeholder {
+  color: var(--text-dim);
 }
 
 
@@ -1257,7 +1282,7 @@ a.google-badge:hover {
   margin: 0;
   font-family: "Syne", sans-serif;
   font-size: 23px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.12;
   min-width: 0;
@@ -1679,22 +1704,25 @@ a.google-badge:hover {
 /* ═══════════════════════════════════════════════════════════
    LEAFLET POPUP
 ════════════════════════════════════════════════════════════ */
+.leaflet-popup .leaflet-popup-content-wrapper,
 .leaflet-popup-content-wrapper {
-  background: var(--surface-strong) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-sm) !important;
-  color: var(--text) !important;
+  background: #0d1c2e !important;
+  border: 1px solid rgba(183, 155, 105, 0.18) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45) !important;
+  color: #f2ede5 !important;
 }
 
+.leaflet-popup .leaflet-popup-tip,
 .leaflet-popup-tip {
-  background: var(--surface-strong) !important;
+  background: #0d1c2e !important;
 }
 
+.leaflet-popup .leaflet-popup-content,
 .leaflet-popup-content {
   margin: 12px 16px !important;
   font: 13px/1.5 "Figtree", sans-serif !important;
-  color: var(--text) !important;
+  color: #f2ede5 !important;
 }
 
 .popup-card {
