@@ -83,6 +83,20 @@ def groq_generate(prompt: str, api_key: str) -> str:
     raise RuntimeError("Groq rate limit: gave up after 5 retries")
 
 
+_JUNK_SIGNAL_TOKENS = frozenset({
+    "sevenrooms", "bistrochat", "reservation system", "table management",
+    "booking software", "venue management", "pos integration",
+    "guest experience platform", "hospitality operators",
+    "streamline operations", "drive revenue",
+})
+
+
+def _is_junk_signal(text: str) -> bool:
+    """Return True if text is from a third-party venue-management platform, not the restaurant."""
+    low = text.lower()
+    return any(tok in low for tok in _JUNK_SIGNAL_TOKENS)
+
+
 def build_batch_prompt(records: list[dict]) -> str:
     items = []
     for i, r in enumerate(records, 1):
@@ -95,13 +109,20 @@ def build_batch_prompt(records: list[dict]) -> str:
         signature = ", ".join(r.get("signature_dish_tags") or [])
         source_summary = (r.get("summary_official") or "").strip()
         signals = r.get("external_signals") or {}
-        site_summary = (
+        # Web search description (Michelin/press) is the highest-quality input
+        web_search_desc = (signals.get("web_search_description") or "").strip()
+        web_search_source = (signals.get("web_search_description_source") or "").strip()
+        raw_site_summary = (
             signals.get("official_site_description")
             or signals.get("official_site_meta_description")
             or ""
         ).strip()
+        # Exclude third-party venue/booking platform content — it describes the software,
+        # not the restaurant, and causes the model to hallucinate about "reservation systems".
+        site_summary = "" if _is_junk_signal(raw_site_summary) else raw_site_summary
         # Extra specificity signals from website enrichment
-        headings = "; ".join(signals.get("official_site_headings") or [])
+        raw_headings = signals.get("official_site_headings") or []
+        headings = "; ".join(h for h in raw_headings if not _is_junk_signal(h))
         keywords = ", ".join(signals.get("official_site_keywords") or [])
         serves_cuisine = ", ".join(signals.get("official_site_serves_cuisine") or [])
 
@@ -118,10 +139,16 @@ def build_batch_prompt(records: list[dict]) -> str:
             line += f" | keywords: {keywords}"
         if headings:
             line += f" | headings: {headings}"
+        # Web search result (Michelin/press) is the richest input — put it last so the
+        # model sees it as the authoritative anchor for the description
         if source_summary:
             line += f" | official source: {source_summary}"
         if site_summary and site_summary != source_summary:
             line += f" | official site: {site_summary}"
+        if web_search_desc:
+            label = f"michelin guide" if web_search_source == "michelin" else \
+                    f"press review" if web_search_source == "press" else "web search"
+            line += f" | {label}: {web_search_desc}"
         items.append(line)
 
     return (
@@ -154,8 +181,63 @@ def build_batch_prompt(records: list[dict]) -> str:
     )
 
 
-def parse_batch_response(text: str, count: int) -> list[str | None]:
-    """Extract list of descriptions from model response."""
+def parse_batch_response(text: str, count: int, batch_names: list[str] | None = None) -> list[str | None]:
+    """Extract list of descriptions from model response.
+
+    ``batch_names`` is the list of restaurant names in batch order (1-based index
+    corresponds to position in the list).  When provided, dict elements whose key
+    contains a slot-number prefix (``"N. ..."`` or ``"N) ..."``) or a recognisable
+    restaurant name are re-assigned to the correct slot rather than used positionally.
+    This fixes the model quirk where it uses the *next* restaurant's input line as
+    the dict key, causing an off-by-one shift in positional assignment.
+    """
+    def _slot_from_key(key: str) -> int | None:
+        """Extract a 1-based slot index from a dict key."""
+        # Numeric prefix: "2. Agli Amici 1887 | ..." or "2) ..."
+        m = re.match(r"^(\d+)[.)]\s*", str(key).strip())
+        if m:
+            n = int(m.group(1))
+            if 1 <= n <= count:
+                return n
+        # Fallback: match key against batch_names
+        if batch_names:
+            key_lower = str(key).lower()
+            for idx, name in enumerate(batch_names, 1):
+                if name and name.lower() in key_lower:
+                    return idx
+        return None
+
+    def unwrap_value(s: object) -> tuple[str | None, int | None]:
+        """Recursively unwrap a parsed JSON value to (plain_string, slot_override).
+
+        Returns a slot override (1-based) when the model encoded the target slot
+        in the element key — e.g. ``{"2. Restaurant B": "description of B"}``.
+        """
+        import ast
+        if s is None:
+            return None, None
+        if isinstance(s, list):
+            return (unwrap_value(s[0]) if s else (None, None))
+        if isinstance(s, dict):
+            if "description" in s:
+                val, _ = unwrap_value(s["description"])
+                return val, None
+            if not s:
+                return None, None
+            key = next(iter(s))
+            val, _ = unwrap_value(next(iter(s.values())))
+            slot = _slot_from_key(key)
+            return val, slot
+        # Handle strings that are Python-style serialised dicts/lists (single-quoted)
+        # e.g. "{'name': 'Aska', 'description': 'Compact sushi...'}"
+        if isinstance(s, str) and s.strip().startswith(("{", "[")):
+            try:
+                parsed = ast.literal_eval(s.strip())
+                return unwrap_value(parsed)
+            except (ValueError, SyntaxError):
+                pass
+        return str(s), None
+
     def clean_desc(value: str | None) -> str | None:
         if not value:
             return None
@@ -164,22 +246,63 @@ def parse_batch_response(text: str, count: int) -> list[str | None]:
         cleaned = cleaned.removeprefix("- ").strip()
         cleaned = re.sub(r"^\d+[.)]\s*", "", cleaned).strip()
         cleaned = cleaned.strip('"').strip("'").strip()
+        # Strip any residual leading bracket/brace from mis-serialised arrays
+        cleaned = re.sub(r"^[\[{][\"']*", "", cleaned).strip()
+        cleaned = cleaned.strip('"').strip("'").strip()
         return cleaned or None
+
+    def _try_parse_list(candidate: str) -> list | None:
+        """Try to parse candidate as a JSON array, falling back to ast.literal_eval."""
+        try:
+            parsed = json.loads(candidate)
+            if isinstance(parsed, list):
+                return parsed
+        except json.JSONDecodeError:
+            pass
+        # Handle Python-style dict/list literals (single-quoted strings)
+        import ast
+        try:
+            parsed = ast.literal_eval(candidate)
+            if isinstance(parsed, list):
+                return parsed
+        except (ValueError, SyntaxError):
+            pass
+        return None
+
+    def _apply_parsed_list(parsed: list) -> list[str | None]:
+        """Convert a parsed list of mixed items into a list of descriptions."""
+        slot_map: dict[int, str] = {}
+        plain_descs: list[str | None] = []
+        for item in parsed:
+            val, slot = unwrap_value(item)
+            cleaned = clean_desc(val)
+            if slot is not None:
+                slot_map[slot] = cleaned or ""
+            else:
+                plain_descs.append(cleaned)
+
+        if slot_map:
+            plain_iter = iter(plain_descs)
+            result: list[str | None] = []
+            for i in range(1, count + 1):
+                if i in slot_map:
+                    result.append(slot_map[i] or None)
+                else:
+                    result.append(next(plain_iter, None))
+            return result
+
+        positional = plain_descs
+        if len(positional) < count:
+            positional.extend([None] * (count - len(positional)))
+        return positional[:count]
 
     # Try to find JSON array in response
     start = text.find("[")
     end = text.rfind("]") + 1
     if start >= 0 and end > start:
-        try:
-            parsed = json.loads(text[start:end])
-            if isinstance(parsed, list):
-                # Pad or truncate to match count
-                result = [clean_desc(str(s)) if s else None for s in parsed]
-                if len(result) < count:
-                    result.extend([None] * (count - len(result)))
-                return result[:count]
-        except json.JSONDecodeError:
-            pass
+        parsed = _try_parse_list(text[start:end])
+        if parsed is not None:
+            return _apply_parsed_list(parsed)
 
     # Fallback: parse [N. Name]\nDescription format, matching by NUMBER not position.
     # This handles the case where the model outputs descriptions under named headers
@@ -227,6 +350,12 @@ def has_description_evidence(record: dict) -> bool:
         return True
 
     signals = record.get("external_signals") or {}
+
+    # Web search result (Michelin/press) is the strongest evidence
+    web_desc = compact_space(signals.get("web_search_description"))
+    if len(web_desc.split()) >= 8:
+        return True
+
     site_description = compact_space(
         signals.get("official_site_description")
         or signals.get("official_site_meta_description")
@@ -326,12 +455,17 @@ def main() -> None:
             time.sleep(5)
             continue
 
-        descriptions = parse_batch_response(response, len(batch))
+        batch_names = [r.get("name") or "" for r in batch]
+        descriptions = parse_batch_response(response, len(batch), batch_names)
         written = 0
         for record, desc in zip(batch, descriptions):
             # Reject clearly malformed descriptions (stray numbers, parser artifacts)
             if desc and len(desc.split()) < 10:
                 print(f"  – {record['name']}: rejected short description ({desc!r})")
+                desc = None
+            # Reject descriptions that look like prompt input echoed back (contain " | ")
+            if desc and desc.count(" | ") >= 2:
+                print(f"  – {record['name']}: rejected prompt-echo ({desc[:60]!r})")
                 desc = None
             if desc:
                 # Fan out to all records sharing the same ID OR the same name+country
