@@ -323,6 +323,7 @@ const state = {
   routeId: "dining/world",
   mobileToolbarOpen: false,
   tableOpen: false,
+  tableSearchQuery: "",
   stayScopeRecords: [],
   stayFiltered: [],
   stayMarkers: new Map(),
@@ -840,30 +841,28 @@ function stayLocationTags(record) {
 }
 
 function focusLocationNote(record) {
-  if (record.lat == null || record.lng == null) {
-    if (record.coordinate_confidence === "location_conflict" && record.map_pin_note) {
-      return record.map_pin_note;
-    }
-    return "This venue does not have a plotted pin yet. Use the official listing for location confirmation.";
+  if (record.coordinate_confidence === "location_conflict") {
+    return "Location may be imprecise — verify the address before visiting.";
   }
-
-  if (hasSourceCoordinates(record)) {
-    return "";
+  if (record.coordinate_confidence === "approximate") {
+    return "Location is approximate — confirm the address before visiting.";
   }
+  return "";
+}
 
-  if (record.coordinate_confidence === "source_map_verified") {
-    return record.map_pin_note || "Pin follows the official source map for this venue.";
+function formatAddress(raw, country) {
+  if (!raw) return "";
+  // Replace " / " separators from scraper, remove trailing country
+  let addr = raw.replace(/\s*\/\s*/g, ", ");
+  // Remove country from end if present
+  if (country) {
+    const trailingCountry = new RegExp(",?\\s*" + country.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*$", "i");
+    addr = addr.replace(trailingCountry, "");
   }
-
-  if (record.coordinate_confidence === "google_place_verified") {
-    return record.map_pin_note || "Pin is confirmed by the official source map and Google place.";
-  }
-
-  if (hasVerifiedCoordinates(record)) {
-    return record.map_pin_note || "Pin was corrected against verified address data.";
-  }
-
-  return "Pin uses approximate fallback mapping. Confirm the official listing before travelling to the venue.";
+  // Deduplicate consecutive repeated segments (e.g. "Wellington, Wellington")
+  const parts = addr.split(",").map(p => p.trim()).filter(Boolean);
+  const deduped = parts.filter((p, i) => i === 0 || p.toLowerCase() !== parts[i - 1].toLowerCase());
+  return deduped.join(", ");
 }
 
 function naturalList(items) {
@@ -917,7 +916,7 @@ function createMarker(record) {
     <div class="popup-card">
       <div class="popup-name">${escapeHtml(record.name)}</div>
       <div>${escapeHtml(diningKicker(record))}</div>
-      ${record.source_localized_address ? `<div>${escapeHtml(record.source_localized_address)}</div>` : ""}
+      ${record.source_localized_address ? `<div>${escapeHtml(formatAddress(record.source_localized_address, record.country))}</div>` : ""}
       <div>${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
       ${dinnerBand ? `<div>${escapeHtml(`Dinner band: ${dinnerBand}`)}</div>` : ""}
       ${yens(record.price_dinner_min_jpy, record.price_dinner_max_jpy) ? `<div>${escapeHtml(`Dinner: ${yens(record.price_dinner_min_jpy, record.price_dinner_max_jpy)}`)}</div>` : ""}
@@ -1546,7 +1545,7 @@ function renderFocusCard() {
     </div>
     ${
       record.source_localized_address
-        ? `<div class="focus-address">${escapeHtml(record.source_localized_address)}</div>`
+        ? `<div class="focus-address">${escapeHtml(formatAddress(record.source_localized_address, record.country))}</div>`
         : ""
     }
     ${
@@ -1611,8 +1610,24 @@ function renderTable() {
     return;
   }
 
+  const tq = state.tableSearchQuery.toLowerCase();
+  const tableRows = tq
+    ? state.filtered.filter((r) =>
+        (r.name || "").toLowerCase().includes(tq) ||
+        (r.city || "").toLowerCase().includes(tq) ||
+        (r.country || "").toLowerCase().includes(tq) ||
+        (r.cuisines || []).join(" ").toLowerCase().includes(tq)
+      )
+    : state.filtered;
+
   resultsTableBody.innerHTML = "";
-  state.filtered.forEach((record) => {
+  if (!tableRows.length) {
+    resultsTableBody.innerHTML =
+      '<tr><td colspan="8" class="empty-table">No matches in table. Try a different search.</td></tr>';
+    return;
+  }
+
+  tableRows.forEach((record) => {
     const row = document.createElement("tr");
     row.className = record.id === state.activeId ? "active" : "";
     row.addEventListener("click", () => {
@@ -1637,7 +1652,7 @@ function renderTable() {
       </td>
       <td>
         <div>${escapeHtml(record.country !== "Japan" ? record.country + " / " + record.city : record.city)}</div>
-        <div class="table-sub">${escapeHtml(record.source_localized_address || record.district || record.region || record.area_title || "")}</div>
+        <div class="table-sub">${escapeHtml(formatAddress(record.source_localized_address, record.country) || record.district || record.region || record.area_title || "")}</div>
       </td>
       <td>${escapeHtml((record.cuisines || []).join(", ") || "Unknown")}</td>
       <td>${isJapanRow ? priceMarkup(
@@ -1704,7 +1719,7 @@ function renderMobileCards(resetPage = true) {
       ${cardSummary ? `<p class="mobile-card-desc">${escapeHtml(cardSummary.text)}</p>` : ""}
       ${
         record.source_localized_address
-          ? `<div class="mobile-card-address">${escapeHtml(record.source_localized_address)}</div>`
+          ? `<div class="mobile-card-address">${escapeHtml(formatAddress(record.source_localized_address, record.country))}</div>`
           : ""
       }
       ${
@@ -1878,22 +1893,13 @@ function stayLocationBadge(record) {
 }
 
 function stayLocationNote(record) {
-  if (record.coordinate_confidence === "location_conflict" && record.map_pin_note) {
-    return record.map_pin_note;
+  if (record.coordinate_confidence === "location_conflict") {
+    return "Location may be imprecise — verify the property address before booking.";
   }
-  if (record.lat == null || record.lng == null) {
-    return record.map_pin_note || "This property does not have a plotted pin yet. Confirm the official property address before travelling.";
+  if (record.coordinate_confidence === "approximate") {
+    return "Location is approximate — confirm the address before travelling.";
   }
-  if (record.coordinate_confidence === "google_place_verified") {
-    return record.map_pin_note || "Pin follows the matched Google place for this hotel.";
-  }
-  if (record.coordinate_confidence === "poi_address_matched" || record.coordinate_confidence === "address_matched") {
-    return record.map_pin_note || "Pin is based on a matched hotel address.";
-  }
-  if (record.coordinate_confidence === "manual_verified") {
-    return record.map_pin_note || "Pin is manually verified for this property.";
-  }
-  return record.map_pin_note || "Pin uses approximate fallback mapping. Confirm the official property address before travelling.";
+  return "";
 }
 
 function stayReservationPrimaryLabel(record) {
@@ -3015,6 +3021,11 @@ toolbarToggle.addEventListener("click", () => {
 tableToggle.addEventListener("click", () => {
   setTableOpen(!state.tableOpen);
   renderTableToggle();
+});
+
+document.getElementById("table-search-input")?.addEventListener("input", (e) => {
+  state.tableSearchQuery = e.target.value.trim();
+  renderTable();
 });
 
 staysToolbarToggle.addEventListener("click", () => {
