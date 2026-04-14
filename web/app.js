@@ -1903,17 +1903,26 @@ function focusActiveRecordOnMap() {
   const targetZoom = Math.max(map.getZoom(), 13);
   const latlng = marker.getLatLng();
 
-  // On desktop the focus panel is ~380px on the right — shift the flyTo target
-  // east so the marker lands centered in the visible (left) portion of the map.
+  // Pan to show venue + info panel without overlap.
+  // Desktop: shift right for ~380px panel, shift down if venue is in top portion.
+  // Mobile: center the venue with bottom clearance for sheet.
   if (window.innerWidth > MOBILE_BREAKPOINT) {
     const markerPx = map.project(latlng, targetZoom);
-    const adjustedPx = markerPx.add([PANEL_W / 2, 0]);
+    const panelOffset = PANEL_W / 2;
+    const topClearance = 150; // Prevent venue popups from hiding below top controls
+
+    // Shift right for panel, and down if marker is near top
+    let adjustY = 0;
+    if (markerPx.y < topClearance) {
+      adjustY = topClearance - markerPx.y;
+    }
+
+    const adjustedPx = markerPx.add([panelOffset, adjustY]);
     const adjustedLatLng = map.unproject(adjustedPx, targetZoom);
     map.flyTo(adjustedLatLng, targetZoom, { duration: 0.6 });
   } else {
     map.flyTo(latlng, targetZoom, { duration: 0.6 });
   }
-
 
   marker.openPopup();
 }
