@@ -17,6 +17,26 @@ from datetime import datetime
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
+# Geographic bounds for all 16 countries
+COUNTRY_BOUNDS = {
+    "Australia": {"lat_min": -45, "lat_max": -10, "lng_min": 113, "lng_max": 154},
+    "Austria": {"lat_min": 46.4, "lat_max": 49.0, "lng_min": 9.5, "lng_max": 17.2},
+    "Belgium": {"lat_min": 49.5, "lat_max": 51.5, "lng_min": 2.4, "lng_max": 6.4},
+    "Canada": {"lat_min": 42, "lat_max": 84, "lng_min": -141, "lng_max": -52},
+    "France": {"lat_min": 42, "lat_max": 51, "lng_min": -5, "lng_max": 8},
+    "Germany": {"lat_min": 47.3, "lat_max": 55.9, "lng_min": 5.9, "lng_max": 15.0},
+    "Hong Kong": {"lat_min": 22.2, "lat_max": 22.6, "lng_min": 113.8, "lng_max": 114.4},
+    "Japan": {"lat_min": 24, "lat_max": 46, "lng_min": 123, "lng_max": 146},
+    "Mexico": {"lat_min": 14, "lat_max": 33, "lng_min": -118, "lng_max": -86},
+    "Netherlands": {"lat_min": 50.8, "lat_max": 53.5, "lng_min": 3.4, "lng_max": 7.2},
+    "New Zealand": {"lat_min": -47, "lat_max": -34, "lng_min": 166, "lng_max": 179},
+    "Spain": {"lat_min": 36, "lat_max": 43, "lng_min": -9, "lng_max": 4},
+    "Switzerland": {"lat_min": 45.8, "lat_max": 47.8, "lng_min": 5.9, "lng_max": 10.5},
+    "Taiwan": {"lat_min": 21.9, "lat_max": 25.3, "lng_min": 120.0, "lng_max": 121.9},
+    "Thailand": {"lat_min": 5.6, "lat_max": 20.5, "lng_min": 97.3, "lng_max": 105.6},
+    "United Kingdom": {"lat_min": 50, "lat_max": 59, "lng_min": -2, "lng_max": 2},
+}
+
 
 def load_dataset(name: str) -> tuple[bool, list]:
     """Load dataset, return (success, records)."""
@@ -117,7 +137,28 @@ def test_global() -> bool:
         print(f"  ❌ Missing countries: only {len(countries)} found")
         return False
 
-    print(f"  ✅ Global data OK ({len(records)} restaurants)")
+    # Test 5: GPS bounds check - coordinates within country bounds
+    out_of_bounds = 0
+    for rec in records:
+        country = rec.get("country")
+        lat = rec.get("lat")
+        lng = rec.get("lng")
+
+        if not country or lat is None or lng is None:
+            continue
+
+        bounds = COUNTRY_BOUNDS.get(country)
+        if bounds:
+            lat_ok = bounds["lat_min"] <= lat <= bounds["lat_max"]
+            lng_ok = bounds["lng_min"] <= lng <= bounds["lng_max"]
+            if not (lat_ok and lng_ok):
+                out_of_bounds += 1
+
+    if out_of_bounds > 0:
+        print(f"  ❌ {out_of_bounds} venues outside country GPS bounds (wrong country matches)")
+        return False
+
+    print(f"  ✅ Global data OK ({len(records)} restaurants, GPS validated)")
     return True
 
 
