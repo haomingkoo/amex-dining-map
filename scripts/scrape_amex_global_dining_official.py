@@ -284,56 +284,85 @@ def scrape_amex_global_dining(dry_run: bool = False, limit_countries: int = None
                     # Wait for restaurant list to load
                     time.sleep(0.5)
 
-                    # Extract all restaurant listings
-                    # Selector varies by page structure, try multiple approaches
+                    # Extract all restaurant listings using VERIFIED selectors
+                    # Real selectors discovered from actual AMEX HTML:
+                    # - Card: div.shuffle-card
+                    # - Name: div.sc-dCFHLb (text after flags)
+                    # - Address: div.sc-fhzFiK
+                    # - Cuisine: div.sc-jxOSlx (text after SVG)
+                    # - Maps: a[href*="google.com/maps"]
+
                     restaurants = []
 
-                    # Attempt 1: Standard card layout
-                    restaurant_cards = page.query_selector_all("div[class*='restaurant'], article[class*='card']")
-
-                    if not restaurant_cards:
-                        # Attempt 2: List items
-                        restaurant_cards = page.query_selector_all("li[data-restaurant], div[data-id]")
+                    # Use the validated selectors
+                    restaurant_cards = page.query_selector_all("div.shuffle-card")
 
                     print(f"  Found {len(restaurant_cards)} restaurant cards")
 
                     for card_idx, card in enumerate(restaurant_cards):
                         try:
-                            # Extract restaurant data from card
-                            name_elem = card.query_selector("h2, h3, [class*='name']")
-                            name = name_elem.text_content().strip() if name_elem else None
+                            # Extract restaurant name from sc-dCFHLb div
+                            name_elem = card.query_selector("div.sc-dCFHLb")
+                            if name_elem:
+                                # Get text content and filter
+                                name = name_elem.text_content().strip()
+                                # Name is usually after the flags div, first line
+                                name = name.split('\n')[0].strip() if name else None
+                            else:
+                                name = None
 
-                            if not name:
+                            if not name or len(name) < 2:
                                 continue
 
-                            # Parse address (multiple lines, separated by <br> or line breaks)
-                            address_elem = card.query_selector("[class*='address'], p[class*='location']")
-                            address = address_elem.text_content().strip() if address_elem else None
+                            # Extract address from sc-fhzFiK div
+                            address_elem = card.query_selector("div.sc-fhzFiK")
+                            if address_elem:
+                                address = address_elem.text_content().strip()
+                                address = ' '.join(address.split())  # Normalize whitespace
+                            else:
+                                address = "Unknown"
 
-                            # Extract city from address if present
-                            city = None
-                            if address:
-                                # City is usually on the first line
-                                city_match = re.search(r"([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)", address)
-                                if city_match:
-                                    city = city_match.group(1)
+                            # Extract cuisine from sc-jxOSlx div (text after SVG)
+                            cuisine_elem = card.query_selector("div.sc-jxOSlx")
+                            cuisine = None
+                            if cuisine_elem:
+                                cuisine_text = cuisine_elem.text_content().strip()
+                                # Cuisine is usually the last word/item
+                                cuisine = cuisine_text.split()[-1] if cuisine_text else None
 
-                            # Cuisine type
-                            cuisine_elem = card.query_selector("[class*='cuisine'], span[class*='type']")
-                            cuisine = cuisine_elem.text_content().strip() if cuisine_elem else None
-
-                            # Google Maps link (href from "View on map" button)
-                            maps_link = card.query_selector("a[href*='google.com/maps'], a[title*='map']")
+                            # Extract Google Maps link and coordinates
+                            maps_link = card.query_selector("a[href*='google.com/maps']")
                             maps_url = maps_link.get_attribute("href") if maps_link else None
+
+                            # Extract coordinates from maps URL
+                            lat, lng = None, None
+                            if maps_url:
+                                coords_match = re.search(r'@([-\d.]+),([-\d.]+)', maps_url)
+                                if coords_match:
+                                    try:
+                                        lat = float(coords_match.group(1))
+                                        lng = float(coords_match.group(2))
+                                    except (ValueError, IndexError):
+                                        pass
+
+                            # Extract city from address (usually last line)
+                            city = "Unknown"
+                            if address and address != "Unknown":
+                                addr_lines = address.split(' ')
+                                if len(addr_lines) >= 2:
+                                    city = addr_lines[-1]
 
                             # Create record
                             record = {
                                 "name": name,
                                 "country": country,
-                                "city": city or "Unknown",
+                                "city": city,
                                 "address": address,
                                 "cuisine": cuisine,
+                                "lat": lat,
+                                "lng": lng,
                                 "maps_url": maps_url,
+                                "coordinate_source": "maps_url" if (lat and lng) else "unknown",
                             }
 
                             restaurants.append(record)
