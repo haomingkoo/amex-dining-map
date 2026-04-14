@@ -18,9 +18,16 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+
+    <!-- Loading overlay — removed by JS once all data fetches complete -->
+    <div id="loading-overlay" aria-live="polite" aria-label="Loading data">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <p class="loading-label">Loading…</p>
+    </div>
 
     <!-- ═══════════════════════════════════════════════════════════
          ONBOARDING GATE — shown on first visit, hidden after
@@ -46,7 +53,7 @@
             data-intro-route="#/stays"
           >
             <span class="choice-label">Plat Stay</span>
-            <span class="choice-desc">69 hotel partnerships worldwide with live blackout date checking.</span>
+            <span class="choice-desc" id="intro-stay-count">Loading...</span>
           </button>
 
           <button
@@ -56,7 +63,7 @@
             data-intro-route="#/dining/world"
           >
             <span class="choice-label">Dining</span>
-            <span class="choice-desc">2,470 partners across 17 markets — from Tokyo kaiseki to London Michelin tables.</span>
+            <span class="choice-desc" id="intro-dining-count">Loading...</span>
           </button>
 
           <button
@@ -66,7 +73,7 @@
             data-intro-route="#/love-dining"
           >
             <span class="choice-label">Love Dining</span>
-            <span class="choice-desc">79 Singapore partners with up to 50% off at premier hotels and restaurants.</span>
+            <span class="choice-desc" id="intro-love-count">Loading...</span>
           </button>
 
         </div>
@@ -242,6 +249,29 @@
                   <span class="label">Cuisine</span>
                   <select id="cuisine-filter">
                     <option value="">All cuisines</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap" id="google-rating-filter-wrap">
+                  <span class="label">Google rating</span>
+                  <select id="google-rating-filter">
+                    <option value="">Any rating</option>
+                    <option value="has_rating">Has rating</option>
+                    <option value="3_5plus">3.5+</option>
+                    <option value="4plus">4.0+</option>
+                    <option value="4_3plus">4.3+</option>
+                    <option value="4_5plus">4.5+</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap" id="review-count-filter-wrap">
+                  <span class="label">Min reviews</span>
+                  <select id="review-count-filter">
+                    <option value="">Any</option>
+                    <option value="100">100+</option>
+                    <option value="500">500+</option>
+                    <option value="1000">1,000+</option>
+                    <option value="5000">5,000+</option>
                   </select>
                 </label>
 
@@ -443,17 +473,10 @@
                   </select>
                 </label>
 
-                <div class="filter-date-group">
-                  <label class="filter-wrap">
-                    <span class="label">Check-in</span>
-                    <input id="stays-checkin-input" type="date" />
-                  </label>
-                  <label class="filter-wrap">
-                    <span class="label">Check-out</span>
-                    <input id="stays-checkout-input" type="date" />
-                  </label>
-                  <!-- min dates set dynamically by JS to today -->
-                </div>
+                <label class="filter-wrap filter-date-range">
+                  <span class="label">Travel dates</span>
+                  <input id="stays-date-input" type="text" placeholder="Check-in  →  Check-out" readonly />
+                </label>
 
                 <div class="filter-actions">
                   <button type="button" class="ghost-btn secondary" data-stay-preset="clear-dates">
@@ -589,6 +612,18 @@
                   </select>
                 </label>
 
+                <label class="filter-wrap">
+                  <span class="label">Google rating</span>
+                  <select id="love-google-rating-filter">
+                    <option value="">Any rating</option>
+                    <option value="has_rating">Has rating</option>
+                    <option value="3_5plus">3.5+</option>
+                    <option value="4plus">4.0+</option>
+                    <option value="4_3plus">4.3+</option>
+                    <option value="4_5plus">4.5+</option>
+                  </select>
+                </label>
+
                 <div class="filter-actions">
                   <button id="love-reset-filters" type="button" class="ghost-btn">Clear filters</button>
                 </div>
@@ -639,7 +674,14 @@
       <div class="mvs-actions" id="mvs-actions"></div>
     </div>
 
+    <footer class="site-footer">
+      <p class="site-footer-text">
+        Unofficial fan project — not affiliated with American Express. Venue locations are best-effort and may be inaccurate. Always verify details directly with the venue or on the official Amex programme pages before making reservations. Use at your own discretion.
+      </p>
+    </footer>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="./app.js"></script>
   </body>
 </html>

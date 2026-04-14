@@ -9,6 +9,9 @@ const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
 const LOVE_FIT_OPTIONS = { padding: [48, 48], maxZoom: 15 };
 const INTRO_STORAGE_KEY = "amex-benefits-intro-v3";
 const MOBILE_BREAKPOINT = 820;
+const PANEL_W = 380;       // Width of the right focus panel — must match CSS minmax(0, 380px)
+const MARKER_RADIUS = 8;
+const MARKER_RADIUS_ACTIVE = 11;
 
 const LUNCH_BANDS = [
   { key: "under-5k", label: "Under JPY 5k", tier: "$" },
@@ -330,11 +333,12 @@ const state = {
   stayActiveId: null,
   stayToolbarOpen: false,
   stayTableOpen: false,
-  stayBlockedCount: 0,
+  dateFp: null,
   loveDining: [],
   loveDiningFiltered: [],
   loveDiningMarkers: new Map(),
   loveDiningActiveId: null,
+  loveToolbarOpen: false,
   googleRatings: {},
 };
 
@@ -422,6 +426,8 @@ const countryFilterWrap = document.getElementById("country-filter-wrap");
 const cityFilter = document.getElementById("city-filter");
 const districtFilter = document.getElementById("district-filter");
 const districtFilterWrap = document.getElementById("district-filter-wrap");
+const googleRatingFilterWrap = document.getElementById("google-rating-filter-wrap");
+const reviewCountFilterWrap = document.getElementById("review-count-filter-wrap");
 const tabelogFilterWrap = document.getElementById("tabelog-filter-wrap");
 const lunchFilterWrap = document.getElementById("lunch-filter-wrap");
 const dinnerFilterWrap = document.getElementById("dinner-filter-wrap");
@@ -430,6 +436,8 @@ const menuFilterWrap = document.getElementById("menu-filter-wrap");
 const reservationFilterWrap = document.getElementById("reservation-filter-wrap");
 const JAPAN_ONLY_FILTER_WRAPS = [tabelogFilterWrap, lunchFilterWrap, dinnerFilterWrap, kidsFilterWrap, menuFilterWrap, reservationFilterWrap];
 const cuisineFilter = document.getElementById("cuisine-filter");
+const googleRatingFilter = document.getElementById("google-rating-filter");
+const reviewCountFilter = document.getElementById("review-count-filter");
 const tabelogFilter = document.getElementById("tabelog-filter");
 const lunchFilter = document.getElementById("lunch-filter");
 const dinnerFilter = document.getElementById("dinner-filter");
@@ -462,8 +470,7 @@ const staysTableToggleMeta = document.getElementById("stays-table-toggle-meta");
 const staysSearchInput = document.getElementById("stays-search-input");
 const staysCountryFilter = document.getElementById("stays-country-filter");
 const staysCityFilter = document.getElementById("stays-city-filter");
-const staysCheckinInput = document.getElementById("stays-checkin-input");
-const staysCheckoutInput = document.getElementById("stays-checkout-input");
+const staysDateInput = document.getElementById("stays-date-input");
 const staysResetFiltersButton = document.getElementById("stays-reset-filters");
 const staysSummaryStripText = document.getElementById("stays-summary-strip-text");
 const staysDownloadsSection = document.getElementById("stays-downloads-section");
@@ -486,6 +493,7 @@ const loveToolbarToggleMeta = document.getElementById("love-toolbar-toggle-meta"
 const loveSearchInput = document.getElementById("love-search-input");
 const loveTypeFilter = document.getElementById("love-type-filter");
 const loveCuisineFilter = document.getElementById("love-cuisine-filter");
+const loveGoogleRatingFilter = document.getElementById("love-google-rating-filter");
 const loveResetFiltersBtn = document.getElementById("love-reset-filters");
 const loveResultsText = document.getElementById("love-results-text");
 const loveFocusCard = document.getElementById("love-focus-card");
@@ -636,13 +644,15 @@ function kidLabel(value) {
   return labels[value] || "No child policy listed";
 }
 
+// Colors pulled from CSS variables — single source of truth in styles.css :root
+const _css = getComputedStyle(document.documentElement);
 const REGION_COLORS = {
-  "east-asia":     "#e8a235",  // warm amber  — Japan, Hong Kong, Taiwan
-  "southeast-asia":"#e07248",  // coral       — Singapore, Thailand
-  "europe":        "#9b7ee8",  // violet      — UK, France, Germany, Austria, Italy, Spain, Monaco
-  "americas":      "#4b95e0",  // sky blue    — USA, Canada, Mexico
-  "oceania":       "#5ec9aa",  // mint teal   — Australia, New Zealand
-  "other":         "#8899aa",  // muted gray
+  "east-asia":      _css.getPropertyValue("--color-east-asia").trim()     || "#e8a235",
+  "southeast-asia": _css.getPropertyValue("--color-southeast-asia").trim()|| "#e07248",
+  "europe":         _css.getPropertyValue("--color-europe").trim()        || "#9b7ee8",
+  "americas":       _css.getPropertyValue("--color-americas").trim()      || "#4b95e0",
+  "oceania":        _css.getPropertyValue("--color-oceania").trim()       || "#5ec9aa",
+  "other":          "#8899aa",
 };
 
 function regionForRecord(record) {
@@ -725,6 +735,19 @@ function googleMapsSearchUrl(parts) {
 
 function googleRating(record) {
   return state.googleRatings[record.id] || null;
+}
+
+// Shared Google Rating filter helper — used by filterRestaurants and filterLoveDining
+function matchesGoogleRating(record, gRatingVal) {
+  if (!gRatingVal) return true;
+  const g = googleRating(record);
+  const gScore = g ? g.rating : null;
+  if (gRatingVal === "has_rating") return gScore != null;
+  if (gRatingVal === "3_5plus")   return gScore != null && gScore >= 3.5;
+  if (gRatingVal === "4plus")     return gScore != null && gScore >= 4.0;
+  if (gRatingVal === "4_3plus")   return gScore != null && gScore >= 4.3;
+  if (gRatingVal === "4_5plus")   return gScore != null && gScore >= 4.5;
+  return true;
 }
 
 function bestGoogleMapsUrl(record) {
@@ -905,7 +928,7 @@ function createMarker(record) {
   const lunchBand = priceBandLabel(record.price_lunch_band_tier, record.price_lunch_band_label);
   const summary = diningSummaryPayload(record);
   const marker = L.circleMarker([record.lat, record.lng], {
-    radius: 8,
+    radius: MARKER_RADIUS,
     fillColor: markerColor(record),
     fillOpacity: 0.92,
     color: "#091018",
@@ -943,6 +966,7 @@ function createMarker(record) {
   `);
   marker.on("click", () => {
     setActiveRecord(record.id);
+    focusActiveRecordOnMap();
   });
   return marker;
 }
@@ -1085,6 +1109,8 @@ function activeFilterCount() {
   if (!route.fixedCity && cityFilter.value) count += 1;
   if (districtFilter.value) count += 1;
   if (cuisineFilter.value) count += 1;
+  if (googleRatingFilter.value) count += 1;
+  if (reviewCountFilter.value) count += 1;
   if (tabelogFilter.value) count += 1;
   if (lunchFilter.value) count += 1;
   if (dinnerFilter.value) count += 1;
@@ -1297,6 +1323,8 @@ function resetFilterControls() {
   countryFilter.value = "";
   districtFilter.value = "";
   cuisineFilter.value = "";
+  googleRatingFilter.value = "";
+  reviewCountFilter.value = "";
   tabelogFilter.value = "";
   lunchFilter.value = "";
   dinnerFilter.value = "";
@@ -1355,7 +1383,7 @@ function refreshFilterOptions() {
   );
   fillSelect(
     cuisineFilter,
-    uniqueValues(scopeRecords.flatMap((record) => record.cuisines || [])),
+    uniqueValues(countryPool.flatMap((record) => record.cuisines || [])),
     "All cuisines"
   );
   fillBandSelect(
@@ -1395,6 +1423,8 @@ function filterRestaurants() {
   const city = route.fixedCity || cityFilter.value;
   const district = districtFilter.value;
   const cuisine = cuisineFilter.value;
+  const gRatingVal = googleRatingFilter.value;
+  const gReviewMin = reviewCountFilter.value ? parseInt(reviewCountFilter.value, 10) : null;
   const tabelog = tabelogFilter.value;
   const lunchBand = lunchFilter.value;
   const dinnerBand = dinnerFilter.value;
@@ -1407,6 +1437,15 @@ function filterRestaurants() {
     if (city && record.city !== city) return false;
     if (district && (record.district || record.region || record.area_title) !== district) return false;
     if (cuisine && !(record.cuisines || []).includes(cuisine)) return false;
+
+    // Google Maps rating / review count filters
+    if (!matchesGoogleRating(record, gRatingVal)) return false;
+    if (gReviewMin != null) {
+      const g = googleRating(record);
+      const gCount = g ? (g.review_count ?? null) : null;
+      if (!(gCount != null && gCount >= gReviewMin)) return false;
+    }
+
     const tabelogSignal = qualitySignals(record).tabelog;
     if (tabelog === "available" && !tabelogSignal) return false;
     const tScore = tabelogSignal ? (tabelogSignal.score_raw ?? tabelogSignal.honest_stars) : null;
@@ -1473,6 +1512,7 @@ function renderStats() {
 
 function renderMarkers() {
   if (!hasLeaflet || !map) return;
+  map.closePopup();
   state.markers.forEach((marker) => map.removeLayer(marker));
   state.markers.clear();
 
@@ -1677,6 +1717,7 @@ function renderTable() {
 
 const MOBILE_PAGE_SIZE = 50;
 let mobileCardPage = 1;
+let loveMobileCardPage = 1;
 
 function renderMobileCards(resetPage = true) {
   if (resetPage) mobileCardPage = 1;
@@ -1858,7 +1899,22 @@ function focusActiveRecordOnMap() {
   if (!record) return;
   const marker = state.markers.get(record.id);
   if (!marker) return;
-  map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 13), { duration: 0.6 });
+
+  const targetZoom = Math.max(map.getZoom(), 13);
+  const latlng = marker.getLatLng();
+
+  // On desktop the focus panel is ~380px on the right — shift the flyTo target
+  // east so the marker lands centered in the visible (left) portion of the map.
+  if (window.innerWidth > MOBILE_BREAKPOINT) {
+    const markerPx = map.project(latlng, targetZoom);
+    const adjustedPx = markerPx.add([PANEL_W / 2, 0]);
+    const adjustedLatLng = map.unproject(adjustedPx, targetZoom);
+    map.flyTo(adjustedLatLng, targetZoom, { duration: 0.6 });
+  } else {
+    map.flyTo(latlng, targetZoom, { duration: 0.6 });
+  }
+
+
   marker.openPopup();
 }
 
@@ -1966,14 +2022,12 @@ function stayReservationModeLabel(mode) {
 }
 
 function stayDateRange() {
-  if (!staysCheckinInput.value || !staysCheckoutInput.value) {
-    return null;
-  }
-  const start = new Date(`${staysCheckinInput.value}T00:00:00Z`);
-  const end = new Date(`${staysCheckoutInput.value}T00:00:00Z`);
-  if (Number.isNaN(start.valueOf()) || Number.isNaN(end.valueOf()) || end <= start) {
-    return null;
-  }
+  const dates = state.dateFp ? state.dateFp.selectedDates : [];
+  if (dates.length < 2) return null;
+  const [a, b] = dates;
+  const start = new Date(Date.UTC(a.getFullYear(), a.getMonth(), a.getDate()));
+  const end = new Date(Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()));
+  if (end <= start) return null;
   return { start, end };
 }
 
@@ -2079,25 +2133,22 @@ function stayAvailabilityBadgeClass(status) {
   return "blue";
 }
 
-function stayFocusSummary(record, status) {
-  const boardNote = record.breakfast_included ? "" : record.breakfast_note || "Room only.";
-  const raw = (record.blackout_raw || "").trim();
-  if (!raw) {
-    return boardNote;
-  }
+function stayFocusSummary(record) {
+  return record.breakfast_included ? "" : record.breakfast_note || "Room only.";
+}
 
-  if (raw.toLowerCase() === "subject to availability") {
-    return boardNote;
-  }
-
-  if (status.detail && raw === status.detail) {
-    return "";
-  }
-
-  const prefix = (record.blackout_exact_ranges || []).length
-    ? "Official blackout dates: "
-    : "Official blackout notes: ";
-  return `${prefix}${raw}`;
+function stayBlackoutHtml(record) {
+  const exactRanges = record.blackout_exact_ranges || [];
+  const notes = record.blackout_notes || [];
+  if (!exactRanges.length && !notes.length) return "";
+  const items = [...exactRanges.map((r) => escapeHtml(r.label)), ...notes.map((n) => escapeHtml(n))];
+  return `
+    <div class="focus-terms">
+      <div class="focus-terms-label">Listed blackout dates</div>
+      <ul class="blackout-list">
+        ${items.map((item) => `<li>${item}</li>`).join("")}
+      </ul>
+    </div>`;
 }
 
 function activeStayFilterCount() {
@@ -2105,8 +2156,7 @@ function activeStayFilterCount() {
   if (staysSearchInput.value.trim()) count += 1;
   if (staysCountryFilter.value) count += 1;
   if (staysCityFilter.value) count += 1;
-  if (staysCheckinInput.value) count += 1;
-  if (staysCheckoutInput.value) count += 1;
+  if (state.dateFp && state.dateFp.selectedDates.length >= 2) count += 1;
   return count;
 }
 
@@ -2147,8 +2197,7 @@ function resetStayFilterControls() {
   staysSearchInput.value = "";
   staysCountryFilter.value = "";
   staysCityFilter.value = "";
-  staysCheckinInput.value = "";
-  staysCheckoutInput.value = "";
+  if (state.dateFp) state.dateFp.clear();
 }
 
 function refreshStayFilterOptions() {
@@ -2186,8 +2235,9 @@ function createStayMarker(record) {
   const gBadge = googleRatingBadge(record);
   const mapsUrl = stayGoogleMapsUrl(record);
   const marker = L.circleMarker([record.lat, record.lng], {
-    radius: 8,
-    fillColor: status.key === "blocked" ? "#d6a44c" : "#5fb9a6",
+    radius: MARKER_RADIUS,
+    fillColor: status.key === "blocked" ? _css.getPropertyValue("--gold").trim() || "#d6a44c"
+                                        : _css.getPropertyValue("--color-marker-stay").trim() || "#5fb9a6",
     fillOpacity: 0.92,
     color: "#091018",
     weight: 2,
@@ -2201,11 +2251,6 @@ function createStayMarker(record) {
       <div>${escapeHtml(record.eligible_room_type)}</div>
       ${gBadge ? `<div class="focus-ratings">${gBadge}</div>` : ""}
       <div>${escapeHtml(status.label)}</div>
-      ${
-        record.blackout_raw
-          ? `<div>${escapeHtml(`Blackouts: ${record.blackout_raw}`)}</div>`
-          : ""
-      }
       ${stayLocationNote(record) ? `<div>${escapeHtml(stayLocationNote(record))}</div>` : ""}
       ${
         record.reservation_raw
@@ -2227,18 +2272,11 @@ function filterStays() {
   const country = staysCountryFilter.value;
   const city = staysCityFilter.value;
 
-  state.stayBlockedCount = 0;
   state.stayFiltered = state.stays.filter((record) => {
     if (country && record.country !== country) return false;
     if (city && record.city !== city) return false;
     if (search && !(record.search_text || "").includes(search)) return false;
-
-    const status = stayAvailability(record);
-    if (status.blocked) {
-      state.stayBlockedCount += 1;
-      return false;
-    }
-    return true;
+    return !stayAvailability(record).blocked;
   });
 
   state.stayScopeRecords = state.stays;
@@ -2332,7 +2370,7 @@ function renderStayFocusCard() {
   ]
     .filter(Boolean)
     .join("");
-  const summary = stayFocusSummary(record, status);
+  const summary = stayFocusSummary(record);
   const locationNote = stayLocationNote(record);
 
   staysFocusCard.innerHTML = `
@@ -2356,6 +2394,7 @@ function renderStayFocusCard() {
       </div>
     </div>
     ${summary ? `<p class="focus-summary">${escapeHtml(summary)}</p>` : ""}
+    ${stayBlackoutHtml(record)}
     ${locationNote ? `<div class="focus-note">${escapeHtml(locationNote)}</div>` : ""}
     <div class="focus-actions">
       <a class="inline-link" href="${escapeHtml(stayGoogleMapsUrl(record))}" target="_blank" rel="noopener">Open in Google Maps</a>
@@ -2536,9 +2575,11 @@ function clearLoveDiningMarkers() {
 function createLoveDiningMarker(record) {
   if (!hasLeaflet || !loveMap) return null;
   if (!loveDiningHasMapPin(record)) return null;
-  const color = record.type === "hotel" ? "#9b6bd6" : "#e06b8b";
-  const marker = L.circleMarker([record.lat, record.lon], {
-    radius: 8,
+  const color = record.type === "hotel"
+    ? _css.getPropertyValue("--color-love-hotel").trim() || "#9b6bd6"
+    : _css.getPropertyValue("--color-love-rest").trim()  || "#e06b8b";
+  const marker = L.circleMarker([record.lat, record.lng], {
+    radius: MARKER_RADIUS,
     fillColor: color,
     fillOpacity: 0.9,
     color: "#091018",
@@ -2557,7 +2598,7 @@ function updateLoveDiningMarkerStyles() {
   state.loveDiningMarkers.forEach((marker, id) => {
     const isActive = id === state.loveDiningActiveId;
     marker.setStyle({
-      radius: isActive ? 11 : 8,
+      radius: isActive ? MARKER_RADIUS_ACTIVE : MARKER_RADIUS,
       weight: isActive ? 2.5 : 1.5,
     });
   });
@@ -2578,7 +2619,7 @@ function fitLoveDiningMap() {
   if (!hasLeaflet || !loveMap) return;
   const latLngs = state.loveDiningFiltered
     .filter((r) => loveDiningHasMapPin(r))
-    .map((r) => [r.lat, r.lon]);
+    .map((r) => [r.lat, r.lng]);
   if (!latLngs.length) return;
   if (latLngs.length === 1) {
     loveMap.setView(latLngs[0], 15);
@@ -2589,7 +2630,7 @@ function fitLoveDiningMap() {
 
 function focusLoveDiningOnMap(record) {
   if (!hasLeaflet || !loveMap || !loveDiningHasMapPin(record)) return;
-  loveMap.setView([record.lat, record.lon], 16);
+  loveMap.setView([record.lat, record.lng], 16);
 }
 
 function normalizeInlineText(value) {
@@ -2634,7 +2675,7 @@ function loveDiningShouldHideMapPin(record) {
 }
 
 function loveDiningHasMapPin(record) {
-  return record.lat != null && record.lon != null && !loveDiningShouldHideMapPin(record);
+  return record.lat != null && record.lng != null && !loveDiningShouldHideMapPin(record);
 }
 
 function loveDiningLocationNote(record) {
@@ -2662,10 +2703,12 @@ function filterLoveDining() {
   const search = (loveSearchInput.value || "").trim().toLowerCase();
   const type = loveTypeFilter.value;
   const cuisine = loveCuisineFilter.value;
+  const gRatingVal = loveGoogleRatingFilter.value;
 
   state.loveDiningFiltered = state.loveDining.filter((r) => {
     if (type && r.type !== type) return false;
     if (cuisine && r.cuisine !== cuisine) return false;
+    if (!matchesGoogleRating(r, gRatingVal)) return false;
     if (search) {
       const hay = [r.name, r.hotel, r.cuisine, r.address].filter(Boolean).join(" ").toLowerCase();
       if (!hay.includes(search)) return false;
@@ -2677,12 +2720,14 @@ function filterLoveDining() {
   const total = state.loveDining.length;
   loveSummaryStripText.textContent = n === total
     ? `${total} venues · Up to 50% off your food bill`
-    : `${n} of ${total} venues`;
-  loveResultsText.textContent = `${n} venue${n === 1 ? "" : "s"} shown`;
+    : n === 0
+      ? "No venues match the current filters."
+      : `${n} of ${total} venues`;
+  loveResultsText.textContent = n === 0 ? "No matches — adjust filters" : `${n} venue${n === 1 ? "" : "s"} shown`;
   loveMobileSummary.textContent = `${n} venue${n === 1 ? "" : "s"}`;
 
   // Active filters summary
-  const active = [type && (type === "hotel" ? "Hotels" : "Restaurants"), cuisine].filter(Boolean);
+  const active = [type && (type === "hotel" ? "Hotels" : "Restaurants"), cuisine, gRatingVal && `Google ${gRatingVal}`].filter(Boolean);
   loveToolbarToggleMeta.textContent = active.length ? active.join(", ") : "All filters off";
 
   renderLoveDiningMarkers();
@@ -2709,10 +2754,16 @@ function renderLoveDiningCard() {
     : "";
   const closingNote = record.closing_note
     ? `<div class="focus-note focus-note-warn">${escapeHtml(record.closing_note)}</div>` : "";
-  const halal = record.notes && (record.notes.includes("Halal") || record.notes.includes("Muslim"))
-    ? `<div class="focus-note">Halal certified</div>` : "";
+  const isHalal = record.notes && (record.notes.includes("Halal") || record.notes.includes("Muslim"));
+  const halalBadge = isHalal ? `<span class="badge">Halal certified</span>` : "";
   const locationNote = loveDiningLocationNote(record)
     ? `<div class="focus-note">${escapeHtml(loveDiningLocationNote(record))}</div>`
+    : "";
+  const termsHtml = record.notes
+    ? `<div class="focus-terms">
+        <div class="focus-terms-label">Conditions &amp; T&amp;Cs</div>
+        <div class="focus-terms-body">${escapeHtml(record.notes)}</div>
+      </div>`
     : "";
 
   const descriptionHtml = record.summary_ai
@@ -2736,12 +2787,12 @@ function renderLoveDiningCard() {
         <div class="focus-name">${escapeHtml(record.name)}</div>
         ${gBadge ? `<div class="focus-ratings">${gBadge}</div>` : ""}
       </div>
-      <div class="venue-tags" style="margin-top:6px">${typeBadge}${cuisineBadge}${multiLocationBadge}</div>
+      <div class="venue-tags" style="margin-top:6px">${typeBadge}${cuisineBadge}${multiLocationBadge}${halalBadge}</div>
     </div>
     ${closingNote}
-    ${halal}
     ${locationNote}
     ${descriptionHtml}
+    ${termsHtml}
     <div class="focus-section">
       ${record.address ? `<div class="focus-row"><span class="focus-label">Address</span><span>${escapeHtml(record.address)}</span></div>` : ""}
       ${record.phone ? `<div class="focus-row"><span class="focus-label">Phone</span><span>${escapeHtml(record.phone)}</span></div>` : ""}
@@ -2763,13 +2814,19 @@ function renderLoveDiningCard() {
   }
 }
 
-function renderLoveDiningMobileList() {
+function renderLoveDiningMobileList(resetPage = true) {
+  if (resetPage) loveMobileCardPage = 1;
   if (!state.loveDiningFiltered.length) {
     loveMobileResultsList.innerHTML = '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
     return;
   }
+
+  const pageLimit = loveMobileCardPage * MOBILE_PAGE_SIZE;
+  const visible = state.loveDiningFiltered.slice(0, pageLimit);
+  const remaining = state.loveDiningFiltered.length - visible.length;
+
   loveMobileResultsList.innerHTML = "";
-  state.loveDiningFiltered.forEach((record) => {
+  visible.forEach((record) => {
     const card = document.createElement("article");
     card.className = `mobile-card${record.id === state.loveDiningActiveId ? " active" : ""}`;
     const g = loveDiningShouldHideMapPin(record) ? null : googleRating(record);
@@ -2792,15 +2849,32 @@ function renderLoveDiningMobileList() {
     card.addEventListener("click", () => {
       state.loveDiningActiveId = record.id;
       renderLoveDiningCard();
-      renderLoveDiningMobileList();
+      renderLoveDiningMobileList(false);
       updateLoveDiningMarkerStyles();
       if (loveDiningHasMapPin(record)) focusLoveDiningOnMap(record);
     });
     loveMobileResultsList.appendChild(card);
   });
+
+  if (remaining > 0) {
+    const showMore = document.createElement("button");
+    showMore.className = "mobile-show-more";
+    showMore.textContent = `Show ${Math.min(MOBILE_PAGE_SIZE, remaining).toLocaleString()} more of ${remaining.toLocaleString()} remaining`;
+    showMore.addEventListener("click", () => {
+      loveMobileCardPage += 1;
+      renderLoveDiningMobileList(false);
+    });
+    loveMobileResultsList.appendChild(showMore);
+  }
+
+  requestAnimationFrame(() => {
+    const activeCard = loveMobileResultsList.querySelector(".mobile-card.active");
+    if (activeCard) activeCard.scrollIntoView({ block: "nearest" });
+  });
 }
 
 function setLoveToolbarOpen(open) {
+  state.loveToolbarOpen = open;
   loveToolbar.classList.toggle("is-open", open);
   loveToolbarToggle.setAttribute("aria-expanded", String(open));
   loveToolbarToggle.querySelector(".toolbar-toggle-icon").textContent = open ? "−" : "+";
@@ -2919,22 +2993,54 @@ async function init() {
     state.staysSourceMeta = await staysMetaResponse.json();
   }
   if (loveDiningResponse && loveDiningResponse.ok) {
-    state.loveDining = await loveDiningResponse.json();
+    const loveDiningRaw = await loveDiningResponse.json();
+    // Normalize lon → lng to match all other data sources
+    state.loveDining = loveDiningRaw.map((r) => {
+      if (r.lon != null && r.lng == null) { r.lng = r.lon; }
+      return r;
+    });
     refreshLoveDiningCuisineOptions();
   }
   if (ratingsResponse && ratingsResponse.ok) {
     state.googleRatings = await ratingsResponse.json();
   }
 
-  // Set min date on stays date inputs to today
-  const today = new Date().toISOString().split("T")[0];
-  staysCheckinInput.min = today;
-  staysCheckoutInput.min = today;
+  // Update intro card counts from actual loaded data
+  const diningEl = document.getElementById("intro-dining-count");
+  const stayEl = document.getElementById("intro-stay-count");
+  const loveEl = document.getElementById("intro-love-count");
+  if (diningEl) {
+    const n = state.restaurants.length.toLocaleString();
+    const countries = new Set(state.restaurants.map((r) => r.country)).size;
+    diningEl.textContent = `${n} partners across ${countries} markets — from Tokyo kaiseki to London Michelin tables.`;
+  }
+  if (stayEl) {
+    stayEl.textContent = `${state.stays.length} hotel partnerships worldwide with live blackout date checking.`;
+  }
+  if (loveEl) {
+    loveEl.textContent = `${state.loveDining.length} Singapore partners with up to 50% off at premier hotels and restaurants.`;
+  }
+
+  // Single range date picker — user picks any two dates, earlier becomes check-in
+  if (typeof flatpickr !== "undefined") {
+    state.dateFp = flatpickr(staysDateInput, {
+      mode: "range",
+      minDate: "today",
+      dateFormat: "d M Y",
+      disableMobile: false,
+      onChange(selectedDates) {
+        if (selectedDates.length === 2 || selectedDates.length === 0) {
+          filterStays();
+        }
+      },
+    });
+  }
 
   setToolbarOpen(false);
   setTableOpen(false);
   setStayToolbarOpen(false);
   setLoveToolbarOpen(false);
+  document.getElementById("loading-overlay")?.remove();
   handleHashRoute();
   if (!window.location.hash) {
     window.location.hash = "#/dining/world";
@@ -2956,6 +3062,8 @@ cityFilter.addEventListener("change", () => {
 [
   districtFilter,
   cuisineFilter,
+  googleRatingFilter,
+  reviewCountFilter,
   tabelogFilter,
   lunchFilter,
   dinnerFilter,
@@ -2976,14 +3084,16 @@ resetFiltersButton.addEventListener("click", () => {
 loveSearchInput.addEventListener("input", filterLoveDining);
 loveTypeFilter.addEventListener("change", filterLoveDining);
 loveCuisineFilter.addEventListener("change", filterLoveDining);
+loveGoogleRatingFilter.addEventListener("change", filterLoveDining);
 loveResetFiltersBtn.addEventListener("click", () => {
   loveSearchInput.value = "";
   loveTypeFilter.value = "";
   loveCuisineFilter.value = "";
+  loveGoogleRatingFilter.value = "";
   filterLoveDining();
 });
 loveToolbarToggle.addEventListener("click", () => {
-  setLoveToolbarOpen(loveToolbar.hidden);
+  setLoveToolbarOpen(!state.loveToolbarOpen);
 });
 
 introSkipTopButton?.addEventListener("click", () => {
@@ -3043,8 +3153,6 @@ staysCountryFilter.addEventListener("change", () => {
   filterStays();
 });
 staysCityFilter.addEventListener("change", filterStays);
-staysCheckinInput.addEventListener("change", filterStays);
-staysCheckoutInput.addEventListener("change", filterStays);
 staysResetFiltersButton.addEventListener("click", () => {
   resetStayFilterControls();
   refreshStayFilterOptions();
@@ -3053,8 +3161,7 @@ staysResetFiltersButton.addEventListener("click", () => {
 
 stayPresetButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    staysCheckinInput.value = "";
-    staysCheckoutInput.value = "";
+    if (state.dateFp) state.dateFp.clear();
     filterStays();
   });
 });
@@ -3101,6 +3208,7 @@ mvsDismiss?.addEventListener("click", () => {
 });
 
 init().catch(() => {
+  document.getElementById("loading-overlay")?.remove();
   focusCard.innerHTML =
     '<div class="empty-state">Data failed to load. Please refresh the page.</div>';
   staysFocusCard.innerHTML =

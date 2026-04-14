@@ -29,6 +29,15 @@
   --nav-h: 52px;
   --serif: "Cormorant Garamond", "Georgia", serif;
   --sans: "Figtree", system-ui, sans-serif;
+  /* Region marker / legend colors — single source of truth */
+  --color-east-asia:     #e8a235;
+  --color-southeast-asia:#e07248;
+  --color-europe:        #9b7ee8;
+  --color-americas:      #4b95e0;
+  --color-oceania:       #5ec9aa;
+  --color-love-rest:     #e06b8b;
+  --color-love-hotel:    #9b6bd6;
+  --color-marker-stay:   #5fb9a6;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -62,6 +71,38 @@ body {
 
 body.intro-active {
   overflow: hidden;
+}
+
+/* ── Loading overlay ──────────────────────────────────────────── */
+#loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255,255,255,0.08);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-label {
+  font: 13px/1 var(--sans);
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
 }
 
 /* Subtle diagonal grid overlay */
@@ -669,10 +710,10 @@ input,
 
 .panel-head h2 {
   margin: 0 0 2px;
-  font-family: var(--serif);
-  font-size: 18px;
-  font-weight: 500;
-  letter-spacing: 0;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .panel-head p {
@@ -787,13 +828,13 @@ input,
   flex-shrink: 0;
 }
 
-.legend-east-asia  { background: #e8a235; }
-.legend-se-asia    { background: #e07248; }
-.legend-europe     { background: #9b7ee8; }
-.legend-americas   { background: #4b95e0; }
-.legend-oceania    { background: #5ec9aa; }
-.legend-love-rest  { background: #e06b8b; }
-.legend-love-hotel { background: #9b6bd6; }
+.legend-east-asia  { background: var(--color-east-asia); }
+.legend-se-asia    { background: var(--color-southeast-asia); }
+.legend-europe     { background: var(--color-europe); }
+.legend-americas   { background: var(--color-americas); }
+.legend-oceania    { background: var(--color-oceania); }
+.legend-love-rest  { background: var(--color-love-rest); }
+.legend-love-hotel { background: var(--color-love-hotel); }
 
 .focus-panel {
   display: flex;
@@ -884,12 +925,15 @@ input,
   }
 }
 
-/* Date filters side by side */
-.filter-date-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+/* Range date picker — full width across the filter grid */
+.filter-date-range {
   grid-column: span 2;
+}
+
+@media (min-width: 1100px) {
+  .filter-date-range {
+    grid-column: span 3;
+  }
 }
 
 .filter-actions {
@@ -1444,6 +1488,46 @@ a.google-badge:hover {
   background: rgba(224, 107, 139, 0.06);
 }
 
+.focus-terms {
+  margin: 14px 0 10px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.focus-terms-label {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.focus-terms-body {
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+
+.blackout-list {
+  margin: 0;
+  padding: 0 0 0 14px;
+  list-style: disc;
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.blackout-list li + li {
+  margin-top: 3px;
+}
+
 .focus-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1777,10 +1861,10 @@ a.google-badge:hover {
 .leaflet-popup .leaflet-popup-content-wrapper,
 .leaflet-popup-content-wrapper {
   background: #0d1c2e !important;
-  border: 1px solid rgba(183, 155, 105, 0.18) !important;
-  border-radius: 14px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45) !important;
-  color: #f2ede5 !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  color: var(--text) !important;
 }
 
 .leaflet-popup .leaflet-popup-tip,
@@ -1791,8 +1875,8 @@ a.google-badge:hover {
 .leaflet-popup .leaflet-popup-content,
 .leaflet-popup-content {
   margin: 12px 16px !important;
-  font: 13px/1.5 "Figtree", sans-serif !important;
-  color: #f2ede5 !important;
+  font: 13px/1.5 var(--sans) !important;
+  color: var(--text) !important;
 }
 
 .popup-card {
@@ -2153,4 +2237,92 @@ h1, h2, h3 {
 
 .mobile-show-more:hover {
   background: rgba(77, 184, 166, 0.06);
+}
+
+/* ════════════════════════════════════════════════════════════
+   FLATPICKR — dark theme
+   Higher-specificity selectors so !important is not needed.
+════════════════════════════════════════════════════════════ */
+.flatpickr-calendar.flatpickr-calendar {
+  background: #111c2b;
+  border: 1px solid rgba(201, 165, 90, 0.35);
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
+  font-family: var(--sans);
+  color: var(--text);
+}
+.flatpickr-calendar.flatpickr-calendar.arrowTop::before,
+.flatpickr-calendar.flatpickr-calendar.arrowTop::after { display: none; }
+
+.flatpickr-calendar .flatpickr-months { padding: 6px 0 2px; }
+.flatpickr-calendar .flatpickr-month { color: var(--text); fill: var(--text); }
+.flatpickr-calendar .flatpickr-current-month { font-family: var(--sans); font-size: 13px; font-weight: 700; }
+.flatpickr-calendar .flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-calendar .flatpickr-current-month input.cur-year {
+  color: var(--text);
+  background: transparent;
+  font-family: var(--sans);
+}
+.flatpickr-calendar .flatpickr-prev-month,
+.flatpickr-calendar .flatpickr-next-month { fill: var(--gold); }
+.flatpickr-calendar .flatpickr-prev-month:hover,
+.flatpickr-calendar .flatpickr-next-month:hover { background: var(--gold-glow); border-radius: 50%; }
+
+.flatpickr-calendar .flatpickr-weekdays { background: transparent; }
+.flatpickr-calendar .flatpickr-weekday {
+  background: transparent;
+  color: rgba(240, 235, 226, 0.4);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.flatpickr-calendar .flatpickr-day {
+  color: var(--text);
+  border-radius: var(--radius-xs);
+  font-family: var(--sans);
+  font-size: 13px;
+}
+.flatpickr-calendar .flatpickr-day:hover {
+  background: var(--gold-glow);
+  border-color: transparent;
+}
+.flatpickr-calendar .flatpickr-day.selected,
+.flatpickr-calendar .flatpickr-day.startRange,
+.flatpickr-calendar .flatpickr-day.endRange {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg);
+  font-weight: 700;
+}
+.flatpickr-calendar .flatpickr-day.today { border-color: rgba(201, 165, 90, 0.4); }
+.flatpickr-calendar .flatpickr-day.today:hover { background: var(--gold-soft); }
+.flatpickr-calendar .flatpickr-day.disabled,
+.flatpickr-calendar .flatpickr-day.disabled:hover,
+.flatpickr-calendar .flatpickr-day.prevMonthDay,
+.flatpickr-calendar .flatpickr-day.nextMonthDay {
+  color: rgba(240, 235, 226, 0.18);
+  background: transparent;
+}
+.flatpickr-calendar .flatpickr-day.inRange {
+  background: var(--gold-soft);
+  border-color: transparent;
+  box-shadow: -5px 0 0 var(--gold-soft), 5px 0 0 var(--gold-soft);
+  color: var(--text);
+}
+.flatpickr-calendar .flatpickr-day.startRange,
+.flatpickr-calendar .flatpickr-day.endRange { border-radius: var(--radius-xs); }
+
+/* ── Site footer ──────────────────────────────────────────────── */
+.site-footer {
+  padding: 24px 32px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.site-footer-text {
+  font: 11px/1.6 var(--sans);
+  color: var(--text-dim);
+  max-width: 720px;
+  margin: 0 auto;
 }
