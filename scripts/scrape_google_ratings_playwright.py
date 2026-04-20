@@ -226,8 +226,11 @@ async def scrape_one(page, target: str, rid: str) -> dict | None:
 
         rating = data.get("rating")
         google_name = (data.get("name") or "").strip()
-        if rating is None or google_name.lower() == "results" or not google_name:
-            return None  # No useful data
+
+        # Accept result if we have a rating, even if still on search results page
+        # (where name might be "Results"). Search results can show valid ratings.
+        if rating is None:
+            return None  # No useful data without a rating
 
         review_count_raw = data.get("reviewCount")
         raw_address = data.get("address") or ""
@@ -237,7 +240,7 @@ async def scrape_one(page, target: str, rid: str) -> dict | None:
         return {
             "rating": float(rating),
             "review_count": int(review_count_raw) if review_count_raw else None,
-            "google_name": google_name,
+            "google_name": google_name if google_name.lower() != "results" else None,
             "google_address": clean_address,
             "maps_url": maps_url,
             "scraped_at": time.strftime("%Y-%m-%d"),
