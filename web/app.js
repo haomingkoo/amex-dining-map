@@ -428,9 +428,13 @@ const dinnerFilterWrap = document.getElementById("dinner-filter-wrap");
 const kidsFilterWrap = document.getElementById("kids-filter-wrap");
 const menuFilterWrap = document.getElementById("menu-filter-wrap");
 const reservationFilterWrap = document.getElementById("reservation-filter-wrap");
+const googleRatingFilterWrap = document.getElementById("google-rating-filter-wrap");
+const sortFilterWrap = document.getElementById("sort-filter-wrap");
 const JAPAN_ONLY_FILTER_WRAPS = [tabelogFilterWrap, lunchFilterWrap, dinnerFilterWrap, kidsFilterWrap, menuFilterWrap, reservationFilterWrap];
 const cuisineFilter = document.getElementById("cuisine-filter");
 const tabelogFilter = document.getElementById("tabelog-filter");
+const googleRatingFilter = document.getElementById("google-rating-filter");
+const sortFilter = document.getElementById("sort-filter");
 const lunchFilter = document.getElementById("lunch-filter");
 const dinnerFilter = document.getElementById("dinner-filter");
 const kidsFilter = document.getElementById("kids-filter");
@@ -1298,6 +1302,8 @@ function resetFilterControls() {
   districtFilter.value = "";
   cuisineFilter.value = "";
   tabelogFilter.value = "";
+  googleRatingFilter.value = "";
+  sortFilter.value = "";
   lunchFilter.value = "";
   dinnerFilter.value = "";
   kidsFilter.value = "";
@@ -1396,6 +1402,8 @@ function filterRestaurants() {
   const district = districtFilter.value;
   const cuisine = cuisineFilter.value;
   const tabelog = tabelogFilter.value;
+  const googleRatingFilterValue = googleRatingFilter.value;
+  const sort = sortFilter.value;
   const lunchBand = lunchFilter.value;
   const dinnerBand = dinnerFilter.value;
   const kids = kidsFilter.value;
@@ -1414,6 +1422,15 @@ function filterRestaurants() {
     if (tabelog === "3_8plus" && !(tScore != null && tScore >= 3.8)) return false;
     if (tabelog === "4plus" && !(tScore != null && tScore >= 4.0)) return false;
     if (tabelog === "4_5plus" && !(tScore != null && tScore >= 4.5)) return false;
+
+    // Google Maps rating filter
+    const gRating = googleRating(record);
+    if (googleRatingFilterValue === "has_rating" && !gRating) return false;
+    if (googleRatingFilterValue === "3plus" && !(gRating && gRating.rating >= 3.0)) return false;
+    if (googleRatingFilterValue === "3_5plus" && !(gRating && gRating.rating >= 3.5)) return false;
+    if (googleRatingFilterValue === "4plus" && !(gRating && gRating.rating >= 4.0)) return false;
+    if (googleRatingFilterValue === "4_5plus" && !(gRating && gRating.rating >= 4.5)) return false;
+
     if (lunchBand && record.price_lunch_band_key !== lunchBand) return false;
     if (dinnerBand && record.price_dinner_band_key !== dinnerBand) return false;
     if (kids === "older_kids_only" && !["older_children_only", "teens_only"].includes(record.child_policy_norm)) {
@@ -1426,6 +1443,23 @@ function filterRestaurants() {
     if (search && !(record.search_text || "").includes(search)) return false;
     return true;
   });
+
+  // Apply sorting
+  if (sort === "rating_high") {
+    state.filtered.sort((a, b) => {
+      const aRating = googleRating(a)?.rating ?? -1;
+      const bRating = googleRating(b)?.rating ?? -1;
+      return bRating - aRating;
+    });
+  } else if (sort === "reviews_high") {
+    state.filtered.sort((a, b) => {
+      const aCount = googleRating(a)?.review_count ?? 0;
+      const bCount = googleRating(b)?.review_count ?? 0;
+      return bCount - aCount;
+    });
+  } else if (sort === "name_a") {
+    state.filtered.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  }
 
   ensureActiveRecord();
   renderStats();
@@ -2957,6 +2991,8 @@ cityFilter.addEventListener("change", () => {
   districtFilter,
   cuisineFilter,
   tabelogFilter,
+  googleRatingFilter,
+  sortFilter,
   lunchFilter,
   dinnerFilter,
   kidsFilter,
