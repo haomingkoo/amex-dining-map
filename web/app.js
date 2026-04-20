@@ -8,7 +8,50 @@ const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
 const LOVE_FIT_OPTIONS = { padding: [48, 48], maxZoom: 15 };
 const INTRO_STORAGE_KEY = "amex-benefits-intro-v3";
+const THEME_STORAGE_KEY = "theme-preference";
 const MOBILE_BREAKPOINT = 820;
+const THEME_TILE_URLS = {
+  dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+  light: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+};
+const TILE_OPTS = {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains: "abcd",
+  maxZoom: 20,
+};
+
+function normalizeTheme(theme) {
+  return theme === "light" ? "light" : "dark";
+}
+
+function resolveThemePreference() {
+  try {
+    const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (storedTheme === "light" || storedTheme === "dark") {
+      return storedTheme;
+    }
+  } catch {
+    // Ignore storage errors and fall back to the system setting.
+  }
+
+  return typeof window.matchMedia === "function" && window.matchMedia("(prefers-color-scheme: light)").matches
+    ? "light"
+    : "dark";
+}
+
+let currentTheme = normalizeTheme(resolveThemePreference());
+
+function setDocumentTheme(theme) {
+  currentTheme = normalizeTheme(theme);
+  document.documentElement.setAttribute("data-theme", currentTheme);
+  document.documentElement.style.colorScheme = currentTheme;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute(
+    "content",
+    currentTheme === "light" ? "#f5f5f5" : "#070d16",
+  );
+}
+
+setDocumentTheme(currentTheme);
 
 const LUNCH_BANDS = [
   { key: "under-5k", label: "Under JPY 5k", tier: "$" },
@@ -343,6 +386,7 @@ const hasLeaflet = typeof window !== "undefined" && typeof window.L !== "undefin
 const mapElement = document.getElementById("map");
 const staysMapElement = document.getElementById("stays-map");
 const loveDiningMapElement = document.getElementById("love-map");
+let themedTileLayers = [];
 
 const map = hasLeaflet
   ? L.map("map", {
@@ -365,16 +409,24 @@ const loveMap = hasLeaflet
     }).setView([1.3521, 103.8198], 12)
   : null;
 
+function syncMapTheme(theme) {
+  if (!hasLeaflet) return;
+
+  themedTileLayers.forEach(({ instance, layer }) => {
+    instance.removeLayer(layer);
+  });
+
+  const tileUrl = THEME_TILE_URLS[normalizeTheme(theme)];
+  themedTileLayers = [map, staysMap, loveMap]
+    .filter(Boolean)
+    .map((instance) => ({
+      instance,
+      layer: L.tileLayer(tileUrl, TILE_OPTS).addTo(instance),
+    }));
+}
+
 if (hasLeaflet) {
-  const TILE_URL = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
-  const TILE_OPTS = {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: "abcd",
-    maxZoom: 20,
-  };
-  L.tileLayer(TILE_URL, TILE_OPTS).addTo(map);
-  L.tileLayer(TILE_URL, TILE_OPTS).addTo(staysMap);
-  L.tileLayer(TILE_URL, TILE_OPTS).addTo(loveMap);
+  syncMapTheme(currentTheme);
 } else {
   mapElement.innerHTML =
     '<div class="empty-state">Map library failed to load. Dining results are still available below.</div>';
@@ -392,6 +444,9 @@ const introSkipTopButton = document.getElementById("intro-skip-top");
 const introSkipBottomButton = document.getElementById("intro-skip-bottom");
 const introStartTravelButton = document.getElementById("intro-start-travel");
 const introStartDiningButton = document.getElementById("intro-start-dining");
+const themeToggleButton = document.getElementById("theme-toggle");
+const themeToggleIcon = document.getElementById("theme-toggle-icon");
+const themeToggleLabel = document.getElementById("theme-toggle-label");
 const replayGuideButton = document.getElementById("replay-guide");
 const programTitle = document.getElementById("program-title");
 const programDescription = document.getElementById("program-description");
@@ -493,6 +548,50 @@ const loveResultsText = document.getElementById("love-results-text");
 const loveFocusCard = document.getElementById("love-focus-card");
 const loveMobileSummary = document.getElementById("love-mobile-summary");
 const loveMobileResultsList = document.getElementById("love-mobile-results-list");
+
+function updateThemeToggle(theme) {
+  if (!themeToggleButton) return;
+
+  const normalizedTheme = normalizeTheme(theme);
+  const isLightTheme = normalizedTheme === "light";
+  themeToggleButton.setAttribute("aria-pressed", String(isLightTheme));
+  themeToggleButton.setAttribute(
+    "aria-label",
+    isLightTheme ? "Switch to dark theme" : "Switch to light theme",
+  );
+
+  if (themeToggleIcon) {
+    themeToggleIcon.textContent = isLightTheme ? "☀" : "☾";
+  }
+  if (themeToggleLabel) {
+    themeToggleLabel.textContent = isLightTheme ? "Light" : "Dark";
+  }
+}
+
+function applyTheme(theme, { persist = false } = {}) {
+  const normalizedTheme = normalizeTheme(theme);
+  setDocumentTheme(normalizedTheme);
+  syncMapTheme(normalizedTheme);
+  updateThemeToggle(normalizedTheme);
+
+  if (!persist) return;
+
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, normalizedTheme);
+  } catch {
+    // Ignore storage errors; the theme still applies for this session.
+  }
+}
+
+function initTheme() {
+  const preferredTheme = normalizeTheme(resolveThemePreference());
+  applyTheme(preferredTheme);
+
+  themeToggleButton?.addEventListener("click", () => {
+    const nextTheme = currentTheme === "light" ? "dark" : "light";
+    applyTheme(nextTheme, { persist: true });
+  });
+}
 
 function fuzzyMatchSearch(text, query) {
   const normalizedText = String(text || "").toLowerCase();
@@ -3004,6 +3103,8 @@ function handleHashRoute() {
 }
 
 async function init() {
+  initTheme();
+
   const [restaurantResponse, globalResponse, staysResponse, staysMetaResponse, loveDiningResponse, ratingsResponse] = await Promise.all([
     fetch(DATA_URL),
     fetch(GLOBAL_DATA_URL).catch(() => null),
