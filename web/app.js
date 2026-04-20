@@ -34,9 +34,8 @@ function resolveThemePreference() {
     // Ignore storage errors and fall back to the system setting.
   }
 
-  return typeof window.matchMedia === "function" && window.matchMedia("(prefers-color-scheme: light)").matches
-    ? "light"
-    : "dark";
+  // Dark mode is the default
+  return "dark";
 }
 
 let currentTheme = normalizeTheme(resolveThemePreference());
