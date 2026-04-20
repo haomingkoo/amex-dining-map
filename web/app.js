@@ -916,35 +916,22 @@ function createMarker(record) {
     weight: 2,
   });
 
+  // Simple popup: just name + rating + Google Maps link
+  const gRating = googleRating(record);
+  const ratingHtml = gRating && gRating.rating != null
+    ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
+    : "";
+  const mapsLink = diningGoogleMapsUrl(record)
+    ? `<a href="${escapeHtml(diningGoogleMapsUrl(record))}" target="_blank" rel="noopener" style="font-size:0.9em">Google Maps →</a>`
+    : "";
+
   marker.bindPopup(`
-    <div class="popup-card">
-      <div class="popup-name">${escapeHtml(record.name)}</div>
-      <div>${escapeHtml(diningKicker(record))}</div>
-      ${record.source_localized_address ? `<div>${escapeHtml(formatAddress(record.source_localized_address, record.country))}</div>` : ""}
-      <div>${escapeHtml((record.cuisines || []).join(", ") || "Cuisine unknown")}</div>
-      ${dinnerBand ? `<div>${escapeHtml(`Dinner band: ${dinnerBand}`)}</div>` : ""}
-      ${yens(record.price_dinner_min_jpy, record.price_dinner_max_jpy) ? `<div>${escapeHtml(`Dinner: ${yens(record.price_dinner_min_jpy, record.price_dinner_max_jpy)}`)}</div>` : ""}
-      ${lunchBand ? `<div>${escapeHtml(`Lunch band: ${lunchBand}`)}</div>` : ""}
-      ${yens(record.price_lunch_min_jpy, record.price_lunch_max_jpy) ? `<div>${escapeHtml(`Lunch: ${yens(record.price_lunch_min_jpy, record.price_lunch_max_jpy)}`)}</div>` : ""}
-      ${summary ? `<p>${escapeHtml(summary.text)}</p>` : ""}
-      ${focusLocationNote(record) ? `<div>${escapeHtml(focusLocationNote(record))}</div>` : ""}
-      ${
-        diningGoogleMapsUrl(record)
-          ? `<p><a href="${escapeHtml(diningGoogleMapsUrl(record))}" target="_blank" rel="noopener">Google Maps</a></p>`
-          : ""
-      }
-      ${
-        record.country === "Japan" && tabelogSearchUrl(record)
-          ? `<p><a href="${escapeHtml(tabelogSearchUrl(record))}" target="_blank" rel="noopener">Search Tabelog</a></p>`
-          : ""
-      }
-      ${
-        record.source_url && record.source !== "Amex Platinum Dining"
-          ? `<p><a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Pocket Concierge</a></p>`
-          : ""
-      }
+    <div style="font-size:0.95em; min-width:140px">
+      <strong>${escapeHtml(record.name)}</strong>
+      ${ratingHtml}
+      ${mapsLink ? `<div style="margin-top:4px">${mapsLink}</div>` : ""}
     </div>
-  `);
+  `, { maxWidth: 200 });
   marker.on("click", () => {
     setActiveRecord(record.id);
   });
@@ -2227,29 +2214,15 @@ function createStayMarker(record) {
     weight: 2,
   });
 
+  // Simple popup: just name + rating + Google Maps link
   marker.bindPopup(`
-    <div class="popup-card">
-      <div class="popup-name">${escapeHtml(record.name)}</div>
-      <div>${escapeHtml(record.city || "City unknown")} / ${escapeHtml(record.country || "Country unknown")}</div>
-      <div>${escapeHtml(record.address)}</div>
-      <div>${escapeHtml(record.eligible_room_type)}</div>
-      ${gBadge ? `<div class="focus-ratings">${gBadge}</div>` : ""}
-      <div>${escapeHtml(status.label)}</div>
-      ${
-        record.blackout_raw
-          ? `<div>${escapeHtml(`Blackouts: ${record.blackout_raw}`)}</div>`
-          : ""
-      }
-      ${stayLocationNote(record) ? `<div>${escapeHtml(stayLocationNote(record))}</div>` : ""}
-      ${
-        record.reservation_raw
-          ? `<div>Reservation: ${stayReservationSummaryHtml(record)}</div>`
-          : ""
-      }
-      ${mapsUrl ? `<p><a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps</a></p>` : ""}
-      ${!record.reservation_primary_url && record.source_url ? `<p><a href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Official details</a></p>` : ""}
+    <div style="font-size:0.95em; min-width:140px">
+      <strong>${escapeHtml(record.name)}</strong>
+      <div style="margin-top:4px; font-size:0.9em">${escapeHtml(record.city || "City")} / ${escapeHtml(record.country || "Country")}</div>
+      ${gBadge ? `<div style="margin-top:4px">${gBadge}</div>` : ""}
+      ${mapsUrl ? `<div style="margin-top:4px"><a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener" style="font-size:0.9em">Google Maps →</a></div>` : ""}
     </div>
-  `);
+  `, { maxWidth: 200 });
   marker.on("click", () => {
     setActiveStayRecord(record.id);
   });
@@ -2578,6 +2551,24 @@ function createLoveDiningMarker(record) {
     color: "#091018",
     weight: 1.5,
   });
+
+  // Simple popup: name + rating + Google Maps link
+  const gRating = googleRating(record);
+  const ratingHtml = gRating && gRating.rating != null
+    ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
+    : "";
+  const mapsLink = record.maps_url
+    ? `<a href="${escapeHtml(record.maps_url)}" target="_blank" rel="noopener" style="font-size:0.9em">Google Maps →</a>`
+    : "";
+
+  marker.bindPopup(`
+    <div style="font-size:0.95em; min-width:140px">
+      <strong>${escapeHtml(record.name)}</strong>
+      ${ratingHtml}
+      ${mapsLink ? `<div style="margin-top:4px">${mapsLink}</div>` : ""}
+    </div>
+  `, { maxWidth: 200 });
+
   marker.on("click", () => {
     state.loveDiningActiveId = record.id;
     renderLoveDiningCard();
