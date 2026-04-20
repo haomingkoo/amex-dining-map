@@ -2321,7 +2321,7 @@ function focusActiveRecordOnMap() {
   const marker = state.markers.get(record.id);
   if (!marker) return;
 
-  const targetZoom = Math.max(map.getZoom(), 13);
+  const targetZoom = Math.max(map.getZoom(), 15); // Zoom in closer
   const latlng = marker.getLatLng();
 
   // Pan to show venue + info panel without overlap.
