@@ -335,6 +335,7 @@ const state = {
   loveDiningFiltered: [],
   loveDiningMarkers: new Map(),
   loveDiningActiveId: null,
+  loveToolbarOpen: false,
   googleRatings: {},
 };
 
@@ -1478,14 +1479,13 @@ function renderStats() {
     ? `${filteredCountries.length} ${filteredCountries.length === 1 ? "country" : "countries"}, ${filteredCities.length} ${filteredCities.length === 1 ? "city" : "cities"}`
     : `${filteredCities.length} ${filteredCities.length === 1 ? "city" : "cities"}`;
 
+  const mappedText = filteredMapped === state.filtered.length ? "" : `, ${filteredMapped} mapped`;
+  const scopeMappedText = filteredMapped === state.scopeRecords.length ? "" : `, ${filteredMapped} mapped`;
+
   summaryStripText.textContent =
     filterCount > 0
-      ? `${state.filtered.length} of ${state.scopeRecords.length} venues shown across ${filteredLoc}, ${
-          filteredMapped === state.filtered.length ? "all mapped" : `${filteredMapped} mapped`
-        }.`
-      : `${state.scopeRecords.length} venues across ${scopeLoc}, ${
-          filteredMapped === state.scopeRecords.length ? "all mapped" : `${filteredMapped} mapped`
-        }.`;
+      ? `${state.filtered.length} of ${state.scopeRecords.length} venues shown across ${filteredLoc}${mappedText}.`
+      : `${state.scopeRecords.length} venues across ${scopeLoc}${scopeMappedText}.`;
 
   resultsText.textContent = state.activeId ? `Selected venue · ${route.label}` : `Click a dot to select · ${route.label}`;
   tableSummary.textContent =
@@ -2300,18 +2300,14 @@ function renderStayStats() {
   const filterCount = activeStayFilterCount();
 
   if (filterCount > 0) {
+    const mappedText = mapped === state.stayFiltered.length ? "" : `, ${mapped} mapped`;
     const filterSummary = selected
-      ? `${state.stayFiltered.length} of ${state.stays.length} properties remain after date and location filters, across ${filteredCountries.length} countries, ${
-          mapped === state.stayFiltered.length ? "all mapped" : `${mapped} mapped`
-        }.`
-      : `${state.stayFiltered.length} of ${state.stays.length} properties shown after filters, across ${filteredCountries.length} countries, ${
-          mapped === state.stayFiltered.length ? "all mapped" : `${mapped} mapped`
-        }.`;
+      ? `${state.stayFiltered.length} of ${state.stays.length} properties remain after date and location filters, across ${filteredCountries.length} countries${mappedText}.`
+      : `${state.stayFiltered.length} of ${state.stays.length} properties shown after filters, across ${filteredCountries.length} countries${mappedText}.`;
     staysSummaryStripText.textContent = filterSummary;
   } else {
-    staysSummaryStripText.textContent = `${state.stays.length} properties across ${scopeCountries.length} countries, ${
-      mapped === state.stays.length ? "all mapped" : `${mapped} mapped`
-    }.`;
+    const mappedText = mapped === state.stays.length ? "" : `, ${mapped} mapped`;
+    staysSummaryStripText.textContent = `${state.stays.length} properties across ${scopeCountries.length} countries${mappedText}.`;
   }
 
   staysResultsText.textContent = state.stayActiveId ? "Selected property · Plat Stay" : "Click a pin to select · Plat Stay";
@@ -2862,6 +2858,7 @@ function renderLoveDiningMobileList() {
 }
 
 function setLoveToolbarOpen(open) {
+  state.loveToolbarOpen = open;
   loveToolbar.classList.toggle("is-open", open);
   loveToolbarToggle.setAttribute("aria-expanded", String(open));
   loveToolbarToggle.querySelector(".toolbar-toggle-icon").textContent = open ? "−" : "+";
@@ -3046,7 +3043,7 @@ loveResetFiltersBtn.addEventListener("click", () => {
   filterLoveDining();
 });
 loveToolbarToggle.addEventListener("click", () => {
-  setLoveToolbarOpen(loveToolbar.hidden);
+  setLoveToolbarOpen(!state.loveToolbarOpen);
 });
 
 introSkipTopButton?.addEventListener("click", () => {
@@ -3135,12 +3132,17 @@ document.addEventListener("click", (event) => {
   if (state.stayToolbarOpen && staysMapFilterShell && !staysMapFilterShell.contains(target)) {
     setStayToolbarOpen(false);
   }
+
+  if (state.loveToolbarOpen && loveMapFilterShell && !loveMapFilterShell.contains(target)) {
+    setLoveToolbarOpen(false);
+  }
 });
 
 window.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
   if (state.mobileToolbarOpen) setToolbarOpen(false);
   if (state.stayToolbarOpen) setStayToolbarOpen(false);
+  if (state.loveToolbarOpen) setLoveToolbarOpen(false);
 });
 
 window.addEventListener("hashchange", handleHashRoute);

@@ -117,8 +117,8 @@
         </nav>
 
         <!-- Scope nav: city sub-tabs (only visible on dining routes) -->
-        <div id="scope-strip">
-          <nav class="scope-nav" id="scope-nav" aria-label="Country navigation">
+        <div id="scope-strip" hidden>
+          <nav class="scope-nav" id="scope-nav" aria-label="Country navigation" hidden>
             <a class="scope-link" href="#/dining/world" data-route="dining/world">All</a>
             <a class="scope-link" href="#/dining/japan" data-route="dining/japan">Japan</a>
             <a class="scope-link" href="#/dining/singapore" data-route="dining/singapore">Singapore</a>
@@ -134,7 +134,7 @@
             <a class="scope-link" href="#/dining/thailand" data-route="dining/thailand">Thailand</a>
           </nav>
           <!-- Mobile dropdown replacing pill nav -->
-          <select id="mobile-scope-select" class="mobile-scope-select" aria-label="Select country">
+          <select id="mobile-scope-select" class="mobile-scope-select" aria-label="Select country" hidden>
             <option value="dining/world">All markets</option>
             <option value="dining/japan">Japan</option>
             <option value="dining/singapore">Singapore</option>
