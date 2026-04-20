@@ -918,8 +918,9 @@ function createMarker(record) {
     weight: 2,
   });
 
-  // Simple popup: just name + rating + Google Maps link
+  // Simple popup: name + cuisine + rating + Google Maps link
   const gRating = googleRating(record);
+  const cuisine = (record.cuisines || []).join(", ") || "";
   const ratingHtml = gRating && gRating.rating != null
     ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
     : "";
@@ -928,8 +929,9 @@ function createMarker(record) {
     : "";
 
   marker.bindPopup(`
-    <div style="font-size:0.95em; min-width:140px">
+    <div style="font-size:0.95em; min-width:160px">
       <strong>${escapeHtml(record.name)}</strong>
+      ${cuisine ? `<div style="margin-top:2px; font-size:0.85em; color:#888">${escapeHtml(cuisine)}</div>` : ""}
       ${ratingHtml}
       ${mapsLink ? `<div style="margin-top:4px">${mapsLink}</div>` : ""}
     </div>
@@ -2584,8 +2586,9 @@ function createLoveDiningMarker(record) {
     weight: 1.5,
   });
 
-  // Simple popup: name + rating + Google Maps link
+  // Simple popup: name + cuisine + rating + Google Maps link
   const gRating = googleRating(record);
+  const cuisine = record.cuisine || "";
   const ratingHtml = gRating && gRating.rating != null
     ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
     : "";
@@ -2594,8 +2597,9 @@ function createLoveDiningMarker(record) {
     : "";
 
   marker.bindPopup(`
-    <div style="font-size:0.95em; min-width:140px">
+    <div style="font-size:0.95em; min-width:160px">
       <strong>${escapeHtml(record.name)}</strong>
+      ${cuisine ? `<div style="margin-top:2px; font-size:0.85em; color:#888">${escapeHtml(cuisine)}</div>` : ""}
       ${ratingHtml}
       ${mapsLink ? `<div style="margin-top:4px">${mapsLink}</div>` : ""}
     </div>
