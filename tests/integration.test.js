@@ -146,7 +146,7 @@ describe('Integration Tests - Filtering & Search', () => {
     const result = filterByCountry(restaurants, 'Japan');
     expect(result).toHaveLength(2);
     expect(result[0].name).toBe('Resto A');
-    expect(result[2].name).toBe('Resto C');
+    expect(result[1].name).toBe('Resto C');
   });
 
   it('should filter restaurants by cuisine', () => {
@@ -188,7 +188,8 @@ describe('Integration Tests - Filtering & Search', () => {
     };
 
     const result = searchByName(restaurants, 'Tokyo');
-    expect(result).toHaveLength(2);
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Tokyo Tower');
   });
 });
 

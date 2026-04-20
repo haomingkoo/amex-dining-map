@@ -3,7 +3,7 @@ module.exports = {
   testMatch: ['**/tests/**/*.test.js'],
   collectCoverageFrom: [
     'web/app.js',
-    'scripts/**/*.py',
+    'web/**/*.js',
     '!node_modules/**'
   ],
   coverageThreshold: {
