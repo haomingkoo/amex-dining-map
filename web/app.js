@@ -13,6 +13,107 @@ const PANEL_W = 380;       // Width of the right focus panel — must match CSS 
 const MARKER_RADIUS = 8;
 const MARKER_RADIUS_ACTIVE = 11;
 
+// Exchange rates (base: JPY) — update these periodically
+const EXCHANGE_RATES = {
+  JPY: 1.0,
+  USD: 0.0067,    // 1 JPY ≈ 0.0067 USD
+  EUR: 0.0062,    // 1 JPY ≈ 0.0062 EUR
+  GBP: 0.0053,    // 1 JPY ≈ 0.0053 GBP
+  AUD: 0.0102,    // 1 JPY ≈ 0.0102 AUD
+  SGD: 0.0089,    // 1 JPY ≈ 0.0089 SGD
+};
+
+const CURRENCY_SYMBOLS = {
+  JPY: "¥",
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+  AUD: "$",
+  SGD: "S$",
+};
+
+function convertCurrency(amountJpy, toCurrency) {
+  if (!amountJpy || isNaN(amountJpy)) return "--";
+  const rate = EXCHANGE_RATES[toCurrency] || EXCHANGE_RATES.JPY;
+  const converted = amountJpy * rate;
+  return converted.toFixed(0);
+}
+
+function formatPrice(amountJpy, currency = "JPY") {
+  const converted = convertCurrency(amountJpy, currency);
+  if (converted === "--") return "--";
+  const symbol = CURRENCY_SYMBOLS[currency] || currency;
+  return `${symbol}${Number(converted).toLocaleString()}`;
+}
+
+// Debounce utility for performance
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Progressive Web App (PWA) Support
+let deferredPrompt;
+let pwaInstallButton;
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    console.log('Service Worker registered:', reg);
+  }).catch(err => {
+    console.log('Service Worker registration failed:', err);
+  });
+}
+
+// Listen for beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  // Show install button if not already installed
+  if (!navigator.standalone) {
+    const header = document.querySelector('.app-header');
+    if (header && !pwaInstallButton) {
+      pwaInstallButton = document.createElement('button');
+      pwaInstallButton.className = 'ghost-btn secondary';
+      pwaInstallButton.textContent = '📱 Install App';
+      pwaInstallButton.id = 'pwa-install-button';
+      pwaInstallButton.setAttribute('aria-label', 'Install app on home screen');
+
+      const headerActions = header.querySelector('.app-header-actions');
+      if (headerActions) {
+        headerActions.insertBefore(pwaInstallButton, headerActions.firstChild);
+
+        pwaInstallButton.addEventListener('click', async () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+              deferredPrompt = null;
+              pwaInstallButton.style.display = 'none';
+            }
+          }
+        });
+      }
+    }
+  }
+});
+
+// Detect app installation
+window.addEventListener('appinstalled', () => {
+  console.log('PWA installed successfully');
+  if (pwaInstallButton) {
+    pwaInstallButton.style.display = 'none';
+  }
+  deferredPrompt = null;
+});
+
 const LUNCH_BANDS = [
   { key: "under-5k", label: "Under JPY 5k", tier: "$" },
   { key: "5k-10k", label: "JPY 5k-10k", tier: "$$" },
@@ -342,7 +443,105 @@ const state = {
   googleRatings: {},
   favorites: new Set(), // Store favorite venue IDs
   showFavoritesOnly: false,
+  sortBy: "name_asc", // Default sort for dining
+  staySortBy: "name_asc", // Default sort for stays
+  loveSortBy: "name_asc", // Default sort for love dining
+  trips: [], // Array of trip objects {id, name, startDate, endDate, items: [{id, type, ...}]}
+  currentTrip: null, // Currently active trip ID
+  currency: "JPY", // Current display currency
 };
+
+/* ═══════════════════════════════════════════════════════════
+   TRIP PLANNING SYSTEM
+════════════════════════════════════════════════════════════ */
+
+function loadTrips() {
+  const stored = localStorage.getItem("amex-trips");
+  if (stored) {
+    try {
+      state.trips = JSON.parse(stored);
+    } catch (e) {
+      console.warn("Failed to load trips:", e);
+      state.trips = [];
+    }
+  }
+}
+
+function saveTrips() {
+  localStorage.setItem("amex-trips", JSON.stringify(state.trips));
+}
+
+function createTrip(name, startDate, endDate) {
+  const trip = {
+    id: `trip-${Date.now()}`,
+    name,
+    startDate,
+    endDate,
+    items: [],
+    createdAt: new Date().toISOString()
+  };
+  state.trips.push(trip);
+  saveTrips();
+  state.currentTrip = trip.id;
+  return trip;
+}
+
+function addToTrip(tripId, item) {
+  const trip = state.trips.find(t => t.id === tripId);
+  if (!trip) return false;
+
+  // Avoid duplicates
+  if (trip.items.some(i => i.id === item.id)) return false;
+
+  trip.items.push({
+    ...item,
+    addedAt: new Date().toISOString()
+  });
+  saveTrips();
+  return true;
+}
+
+function removeFromTrip(tripId, itemId) {
+  const trip = state.trips.find(t => t.id === tripId);
+  if (!trip) return false;
+
+  trip.items = trip.items.filter(i => i.id !== itemId);
+  saveTrips();
+  return true;
+}
+
+function deleteTrip(tripId) {
+  state.trips = state.trips.filter(t => t.id !== tripId);
+  if (state.currentTrip === tripId) {
+    state.currentTrip = null;
+  }
+  saveTrips();
+}
+
+function getTrip(tripId) {
+  return state.trips.find(t => t.id === tripId);
+}
+
+function exportTripItinerary(tripId) {
+  const trip = getTrip(tripId);
+  if (!trip) return "";
+
+  let itinerary = `${trip.name}\n`;
+  itinerary += `${trip.startDate} to ${trip.endDate}\n\n`;
+  itinerary += `═══════════════════════════════════════════\n\n`;
+
+  trip.items.forEach((item, idx) => {
+    itinerary += `${idx + 1}. ${item.name}\n`;
+    if (item.type) itinerary += `   Type: ${item.type}\n`;
+    if (item.address) itinerary += `   Address: ${item.address}\n`;
+    if (item.phone) itinerary += `   Phone: ${item.phone}\n`;
+    if (item.city) itinerary += `   City: ${item.city}\n`;
+    if (item.country) itinerary += `   Country: ${item.country}\n`;
+    itinerary += "\n";
+  });
+
+  return itinerary;
+}
 
 /* ═══════════════════════════════════════════════════════════
    FAVORITES SYSTEM
@@ -388,6 +587,55 @@ function isFavorite(venueId) {
 
 function getFavoriteCount() {
   return state.favorites.size;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EXPORT & SHARE SYSTEM
+════════════════════════════════════════════════════════════ */
+
+function exportToCSV(records, filename = "export.csv") {
+  if (!records.length) {
+    alert("No results to export");
+    return;
+  }
+
+  // Get all keys from first record
+  const keys = Object.keys(records[0]);
+  const headers = keys.map((k) => `"${k.replace(/"/g, '""')}"`).join(",");
+
+  const rows = records.map((record) =>
+    keys.map((k) => {
+      const value = record[k];
+      if (value == null) return '""';
+      const str = String(value);
+      return `"${str.replace(/"/g, '""')}"`;
+    }).join(",")
+  );
+
+  const csv = [headers, ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function getShareableUrl() {
+  const baseUrl = window.location.origin + window.location.pathname;
+  return baseUrl + window.location.hash;
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Link copied to clipboard!");
+  }).catch(() => {
+    prompt("Copy this URL:", text);
+  });
 }
 
 const hasLeaflet = typeof window !== "undefined" && typeof window.L !== "undefined";
@@ -444,6 +692,11 @@ const introSkipBottomButton = document.getElementById("intro-skip-bottom");
 const introStartTravelButton = document.getElementById("intro-start-travel");
 const introStartDiningButton = document.getElementById("intro-start-dining");
 const replayGuideButton = document.getElementById("replay-guide");
+const tripsBtn = document.getElementById("trips-btn");
+const tripsModal = document.getElementById("trips-modal");
+const tripsModalClose = document.getElementById("trips-modal-close");
+const tripsListContainer = document.getElementById("trips-list-container");
+const newTripBtn = document.getElementById("new-trip-btn");
 const programTitle = document.getElementById("program-title");
 const programDescription = document.getElementById("program-description");
 const journeyNav = document.getElementById("journey-nav");
@@ -493,8 +746,19 @@ const kidsFilter = document.getElementById("kids-filter");
 const menuFilter = document.getElementById("menu-filter");
 const reservationFilter = document.getElementById("reservation-filter");
 const resetFiltersButton = document.getElementById("reset-filters");
+const exportCsvBtn = document.getElementById("export-csv-btn");
+const shareLinkBtn = document.getElementById("share-link-btn");
+const staysExportCsvBtn = document.getElementById("stays-export-csv-btn");
+const staysShareLinkBtn = document.getElementById("stays-share-link-btn");
+const loveExportCsvBtn = document.getElementById("love-export-csv-btn");
+const loveShareLinkBtn = document.getElementById("love-share-link-btn");
 const favoritesFilter = document.getElementById("favorites-filter");
 const favoritesCount = document.getElementById("favorites-count");
+const sortFilter = document.getElementById("sort-filter");
+const staysSortFilter = document.getElementById("stays-sort-filter");
+const loveSortFilter = document.getElementById("love-sort-filter");
+const currencyFilter = document.getElementById("currency-filter");
+const languageSelector = document.getElementById("language-selector");
 const summaryStripText = document.getElementById("summary-strip-text");
 const mapSummary = document.getElementById("map-summary");
 const resultsText = document.getElementById("results-text");
@@ -1520,6 +1784,21 @@ function filterRestaurants() {
     return true;
   });
 
+  // Apply sorting
+  state.filtered.sort((a, b) => {
+    switch (state.sortBy) {
+      case "name_desc":
+        return (b.name || "").localeCompare(a.name || "");
+      case "rating_desc":
+        return (googleRating(b)?.rating || 0) - (googleRating(a)?.rating || 0);
+      case "rating_asc":
+        return (googleRating(a)?.rating || 0) - (googleRating(b)?.rating || 0);
+      case "name_asc":
+      default:
+        return (a.name || "").localeCompare(b.name || "");
+    }
+  });
+
   // Update favorites count
   if (favoritesCount) {
     favoritesCount.textContent = getFavoriteCount();
@@ -1532,6 +1811,43 @@ function filterRestaurants() {
   renderFocusCard();
   renderTable();
   renderMobileCards();
+}
+
+function renderTripsList() {
+  if (!tripsListContainer) return;
+
+  if (!state.trips.length) {
+    tripsListContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No trips yet</p>';
+    return;
+  }
+
+  tripsListContainer.innerHTML = state.trips.map(trip => `
+    <div style="padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+        <div>
+          <h3 style="margin: 0 0 4px 0; color: var(--text);">${escapeHtml(trip.name)}</h3>
+          <p style="margin: 0; font-size: 13px; color: var(--text-secondary);">${trip.startDate} → ${trip.endDate}</p>
+        </div>
+        <button class="ghost-btn secondary" onclick="state.currentTrip = '${trip.id}'; renderTripsList();" style="padding: 4px 8px; font-size: 12px;">
+          ${state.currentTrip === trip.id ? '✓ Active' : 'Select'}
+        </button>
+      </div>
+      <p style="margin: 8px 0 4px 0; font-size: 13px; color: var(--text-secondary);">${trip.items.length} item${trip.items.length !== 1 ? 's' : ''}</p>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+        <button class="ghost-btn" style="padding: 4px 8px; font-size: 12px;" onclick="
+          const itinerary = exportTripItinerary('${trip.id}');
+          const blob = new Blob([itinerary], {type: 'text/plain'});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = '${escapeHtml(trip.name)}-itinerary.txt';
+          a.click();
+          URL.revokeObjectURL(url);
+        ">📥 Export</button>
+        <button class="ghost-btn secondary" style="padding: 4px 8px; font-size: 12px;" onclick="deleteTrip('${trip.id}'); renderTripsList();">Delete</button>
+      </div>
+    </div>
+  `).join('');
 }
 
 function renderStats() {
@@ -1575,12 +1891,21 @@ function renderMarkers() {
   state.markers.forEach((marker) => map.removeLayer(marker));
   state.markers.clear();
 
-  state.filtered.forEach((record) => {
+  // Limit initial markers for performance (render first 500, rest on demand)
+  const MAX_INITIAL_MARKERS = 500;
+  const recordsToRender = state.filtered.slice(0, MAX_INITIAL_MARKERS);
+
+  recordsToRender.forEach((record) => {
     const marker = createMarker(record);
     if (!marker) return;
     marker.addTo(map);
     state.markers.set(record.id, marker);
   });
+
+  // Log if we're limiting markers
+  if (state.filtered.length > MAX_INITIAL_MARKERS) {
+    console.log(`Rendering ${MAX_INITIAL_MARKERS} of ${state.filtered.length} markers for performance`);
+  }
 }
 
 function renderFocusCard() {
@@ -1756,7 +2081,10 @@ function renderTable() {
 
     row.innerHTML = `
       <td>
-        <div class="table-title">${escapeHtml(record.name)}</div>
+        <div class="table-title">
+          <button type="button" class="heart-btn${isFavorite(record.id) ? " favorited" : ""}" data-favorite-id="${escapeHtml(record.id)}" title="Add to favorites" style="margin-right: 8px;">❤️</button>
+          ${escapeHtml(record.name)}
+        </div>
         ${
           record.nearest_stations && record.nearest_stations.length
             ? `<div class="table-sub">${escapeHtml(record.nearest_stations[0])}</div>`
@@ -1784,6 +2112,16 @@ function renderTable() {
       <td>${isJapanRow ? (record.english_menu ? "Yes" : "No") : "—"}</td>
       <td>${gRatingCell}</td>
     `;
+
+    const heartBtn = row.querySelector("[data-favorite-id]");
+    if (heartBtn) {
+      heartBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFavorite(record.id);
+        heartBtn.classList.toggle("favorited");
+      });
+    }
+
     resultsTableBody.appendChild(row);
   });
 }
@@ -1829,6 +2167,7 @@ function renderMobileCards(resetPage = true) {
             ${googleRatingInline}
           </div>
         </div>
+        <button type="button" class="heart-btn${isFavorite(record.id) ? " favorited" : ""}" data-favorite-id="${escapeHtml(record.id)}" title="Add to favorites">❤️</button>
       </div>
       ${cardSummary ? `<p class="mobile-card-desc">${escapeHtml(cardSummary.text)}</p>` : ""}
       ${
@@ -1896,6 +2235,15 @@ function renderMobileCards(resetPage = true) {
           const mapTop = map.getContainer().getBoundingClientRect().top + window.scrollY - 16;
           window.scrollTo({ top: Math.max(mapTop, 0), behavior: "smooth" });
         }
+      });
+    }
+
+    const heartBtn = card.querySelector("[data-favorite-id]");
+    if (heartBtn) {
+      heartBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFavorite(record.id);
+        heartBtn.classList.toggle("favorited");
       });
     }
 
@@ -2358,7 +2706,23 @@ function filterStays() {
     if (country && record.country !== country) return false;
     if (city && record.city !== city) return false;
     if (search && !(record.search_text || "").includes(search)) return false;
+    if (state.showFavoritesOnly && !isFavorite(record.id)) return false;
     return !stayAvailability(record).blocked;
+  });
+
+  // Apply sorting
+  state.stayFiltered.sort((a, b) => {
+    switch (state.staySortBy) {
+      case "name_desc":
+        return (b.name || "").localeCompare(a.name || "");
+      case "rating_desc":
+        return (googleRating(b)?.rating || 0) - (googleRating(a)?.rating || 0);
+      case "rating_asc":
+        return (googleRating(a)?.rating || 0) - (googleRating(b)?.rating || 0);
+      case "name_asc":
+      default:
+        return (a.name || "").localeCompare(b.name || "");
+    }
   });
 
   state.stayScopeRecords = state.stays;
@@ -2421,7 +2785,11 @@ function renderStayMarkers() {
   if (!hasLeaflet || !staysMap) return;
   clearStayMarkers();
 
-  state.stayFiltered.forEach((record) => {
+  // Limit initial markers for performance
+  const MAX_INITIAL_MARKERS = 500;
+  const recordsToRender = state.stayFiltered.slice(0, MAX_INITIAL_MARKERS);
+
+  recordsToRender.forEach((record) => {
     const marker = createStayMarker(record);
     if (!marker) return;
     marker.addTo(staysMap);
@@ -2527,7 +2895,10 @@ function renderStayTable() {
       focusActiveStayOnMap();
     });
     row.innerHTML = `
-      <td><div class="table-title">${escapeHtml(record.name)}</div></td>
+      <td><div class="table-title">
+        <button type="button" class="heart-btn${isFavorite(record.id) ? " favorited" : ""}" data-favorite-id="${escapeHtml(record.id)}" title="Add to favorites" style="margin-right: 8px;">❤️</button>
+        ${escapeHtml(record.name)}
+      </div></td>
       <td>
         <div>${escapeHtml(record.country || "Country unknown")}</div>
         <div class="table-sub">${escapeHtml(record.city || record.address)}</div>
@@ -2536,6 +2907,16 @@ function renderStayTable() {
       <td>${escapeHtml(record.blackout_raw || "Subject to availability")}</td>
       <td>${escapeHtml(record.reservation_raw || "See official source")}</td>
     `;
+
+    const heartBtn = row.querySelector("[data-favorite-id]");
+    if (heartBtn) {
+      heartBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFavorite(record.id);
+        heartBtn.classList.toggle("favorited");
+      });
+    }
+
     staysResultsTableBody.appendChild(row);
   });
 }
@@ -2564,6 +2945,7 @@ function renderStayMobileCards() {
           <h3 class="mobile-card-title">${escapeHtml(record.name)}</h3>
           <div class="mobile-card-subtitle">${escapeHtml(record.eligible_room_type || "Eligible room type not listed")}</div>
         </div>
+        <button type="button" class="heart-btn${isFavorite(record.id) ? " favorited" : ""}" data-favorite-id="${escapeHtml(record.id)}" title="Add to favorites">❤️</button>
       </div>
       <div class="mobile-card-address">${escapeHtml(record.address)}</div>
       <div class="venue-tags">
@@ -2592,6 +2974,16 @@ function renderStayMobileCards() {
         }
       });
     }
+
+    const heartBtn = card.querySelector("[data-favorite-id]");
+    if (heartBtn) {
+      heartBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFavorite(record.id);
+        heartBtn.classList.toggle("favorited");
+      });
+    }
+
     staysMobileResultsList.appendChild(card);
   });
 }
@@ -2703,7 +3095,12 @@ function updateLoveDiningMarkerStyles() {
 function renderLoveDiningMarkers() {
   if (!hasLeaflet || !loveMap) return;
   clearLoveDiningMarkers();
-  state.loveDiningFiltered.forEach((record) => {
+
+  // Limit initial markers for performance
+  const MAX_INITIAL_MARKERS = 500;
+  const recordsToRender = state.loveDiningFiltered.slice(0, MAX_INITIAL_MARKERS);
+
+  recordsToRender.forEach((record) => {
     const marker = createLoveDiningMarker(record);
     if (!marker) return;
     marker.addTo(loveMap);
@@ -2805,11 +3202,27 @@ function filterLoveDining() {
     if (type && r.type !== type) return false;
     if (cuisine && r.cuisine !== cuisine) return false;
     if (!matchesGoogleRating(r, gRatingVal)) return false;
+    if (state.showFavoritesOnly && !isFavorite(r.id)) return false;
     if (search) {
       const hay = [r.name, r.hotel, r.cuisine, r.address].filter(Boolean).join(" ").toLowerCase();
       if (!hay.includes(search)) return false;
     }
     return true;
+  });
+
+  // Apply sorting
+  state.loveDiningFiltered.sort((a, b) => {
+    switch (state.loveSortBy) {
+      case "name_desc":
+        return (b.name || "").localeCompare(a.name || "");
+      case "rating_desc":
+        return (googleRating(b)?.rating || 0) - (googleRating(a)?.rating || 0);
+      case "rating_asc":
+        return (googleRating(a)?.rating || 0) - (googleRating(b)?.rating || 0);
+      case "name_asc":
+      default:
+        return (a.name || "").localeCompare(b.name || "");
+    }
   });
 
   const n = state.loveDiningFiltered.length;
@@ -2950,12 +3363,22 @@ function renderLoveDiningMobileList(resetPage = true) {
           <div class="mobile-card-title">${escapeHtml(record.name)}</div>
           <div class="mobile-card-sub">${escapeHtml(record.cuisine || "")} · ${record.type === "hotel" ? "Hotel outlet" : "Restaurant"} ${ratingStr}</div>
         </div>
+        <button type="button" class="heart-btn${isFavorite(record.id) ? " favorited" : ""}" data-favorite-id="${escapeHtml(record.id)}" title="Add to favorites">❤️</button>
       </div>
       <div class="mobile-card-meta">
         ${record.address ? `<span>${escapeHtml(record.address)}</span>` : ""}
         ${record.phone ? `<span>${escapeHtml(record.phone)}</span>` : ""}
       </div>
     `;
+    const heartBtn = card.querySelector("[data-favorite-id]");
+    if (heartBtn) {
+      heartBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFavorite(record.id);
+        heartBtn.classList.toggle("favorited");
+      });
+    }
+
     card.addEventListener("click", () => {
       state.loveDiningActiveId = record.id;
       renderLoveDiningCard();
@@ -3076,6 +3499,10 @@ function handleHashRoute() {
 }
 
 async function init() {
+  // Load favorites and trips from localStorage
+  loadFavorites();
+  loadTrips();
+
   const [restaurantResponse, globalResponse, staysResponse, staysMetaResponse, loveDiningResponse, ratingsResponse] = await Promise.all([
     fetch(DATA_URL),
     fetch(GLOBAL_DATA_URL).catch(() => null),
@@ -3158,7 +3585,7 @@ async function init() {
   showIntroGate();
 }
 
-searchInput.addEventListener("input", filterRestaurants);
+searchInput.addEventListener("input", debounce(filterRestaurants, 300));
 countryFilter.addEventListener("change", () => {
   cityFilter.value = "";
   refreshFilterOptions();
@@ -3190,14 +3617,91 @@ resetFiltersButton.addEventListener("click", () => {
   filterRestaurants();
 });
 
+// Export CSV
+exportCsvBtn?.addEventListener("click", () => {
+  const route = currentRoute();
+  const programName = currentProgram().id;
+  exportToCSV(state.filtered, `${programName}-${new Date().toISOString().split("T")[0]}.csv`);
+});
+
+// Share link
+shareLinkBtn?.addEventListener("click", () => {
+  const url = getShareableUrl();
+  copyToClipboard(url);
+});
+
+// Stays export
+staysExportCsvBtn?.addEventListener("click", () => {
+  exportToCSV(state.stayFiltered, `plat-stays-${new Date().toISOString().split("T")[0]}.csv`);
+});
+
+// Stays share
+staysShareLinkBtn?.addEventListener("click", () => {
+  const url = getShareableUrl();
+  copyToClipboard(url);
+});
+
+// Love Dining export
+loveExportCsvBtn?.addEventListener("click", () => {
+  exportToCSV(state.loveDiningFiltered, `love-dining-${new Date().toISOString().split("T")[0]}.csv`);
+});
+
+// Love Dining share
+loveShareLinkBtn?.addEventListener("click", () => {
+  const url = getShareableUrl();
+  copyToClipboard(url);
+});
+
 // Favorites filter
 favoritesFilter?.addEventListener("change", () => {
   state.showFavoritesOnly = favoritesFilter.checked;
   filterRestaurants();
 });
 
+// Sort filter
+sortFilter?.addEventListener("change", () => {
+  state.sortBy = sortFilter.value;
+  filterRestaurants();
+});
+
+staysSortFilter?.addEventListener("change", () => {
+  state.staySortBy = staysSortFilter.value;
+  filterStays();
+});
+
+loveSortFilter?.addEventListener("change", () => {
+  state.loveSortBy = loveSortFilter.value;
+  filterLoveDining();
+});
+
+currencyFilter?.addEventListener("change", () => {
+  state.currency = currencyFilter.value;
+  localStorage.setItem("amex-currency", state.currency);
+  // Re-render to update prices
+  filterRestaurants();
+  renderFocusCard();
+});
+
+// Load saved currency preference
+const savedCurrency = localStorage.getItem("amex-currency");
+if (savedCurrency) {
+  state.currency = savedCurrency;
+  if (currencyFilter) currencyFilter.value = savedCurrency;
+}
+
+// Language selector
+languageSelector?.addEventListener("change", () => {
+  setLanguage(languageSelector.value);
+  updatePageLanguage();
+});
+
+// Set initial language
+if (languageSelector) {
+  languageSelector.value = currentLanguage;
+}
+
 // Love Dining events
-loveSearchInput.addEventListener("input", filterLoveDining);
+loveSearchInput.addEventListener("input", debounce(filterLoveDining, 300));
 loveTypeFilter.addEventListener("change", filterLoveDining);
 loveCuisineFilter.addEventListener("change", filterLoveDining);
 loveGoogleRatingFilter.addEventListener("change", filterLoveDining);
@@ -3239,6 +3743,193 @@ mobileScopeSelect?.addEventListener("change", (e) => {
 replayGuideButton?.addEventListener("click", () => {
   showIntroGate(true);
 });
+
+// Trip planning
+tripsBtn?.addEventListener("click", () => {
+  tripsModal.hidden = false;
+  renderTripsList();
+});
+
+tripsModalClose?.addEventListener("click", () => {
+  tripsModal.hidden = true;
+});
+
+newTripBtn?.addEventListener("click", () => {
+  const name = prompt("Trip name (e.g., Tokyo 2024):");
+  if (!name) return;
+  const startDate = prompt("Start date (YYYY-MM-DD):");
+  if (!startDate) return;
+  const endDate = prompt("End date (YYYY-MM-DD):");
+  if (!endDate) return;
+
+  createTrip(name, startDate, endDate);
+  renderTripsList();
+});
+
+tripsModal?.addEventListener("click", (e) => {
+  if (e.target === tripsModal) {
+    tripsModal.hidden = true;
+  }
+});
+
+// Collections
+const collectionsBtn = document.getElementById("collections-btn");
+const collectionsModal = document.getElementById("collections-modal");
+const collectionsModalClose = document.getElementById("collections-modal-close");
+const collectionsGrid = document.getElementById("collections-grid");
+
+collectionsBtn?.addEventListener("click", () => {
+  collectionsModal.hidden = false;
+  renderCollections();
+});
+
+collectionsModalClose?.addEventListener("click", () => {
+  collectionsModal.hidden = true;
+});
+
+collectionsModal?.addEventListener("click", (e) => {
+  if (e.target === collectionsModal) {
+    collectionsModal.hidden = true;
+  }
+});
+
+function renderCollections() {
+  if (!collectionsGrid) return;
+  collectionsGrid.innerHTML = COLLECTIONS.map(collection => `
+    <div class="collection-card" data-collection-id="${collection.id}">
+      <div class="collection-icon">${collection.icon}</div>
+      <h3 class="collection-title">${collection.title}</h3>
+      <p class="collection-description">${collection.description}</p>
+      <p class="collection-highlight">${collection.highlight}</p>
+    </div>
+  `).join("");
+
+  document.querySelectorAll(".collection-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const collectionId = card.dataset.collectionId;
+      applyCollectionFilter(collectionId);
+      collectionsModal.hidden = true;
+    });
+  });
+}
+
+function applyCollectionFilter(collectionId) {
+  const collection = getCollectionInfo(collectionId);
+  if (!collection) return;
+
+  // Show restaurants that match the collection filters
+  const filtered = state.restaurants.filter(r => {
+    if (collection.filters.country && r.country !== collection.filters.country) return false;
+    if (collection.filters.cuisine) {
+      const cuisines = Array.isArray(collection.filters.cuisine) ? collection.filters.cuisine : [collection.filters.cuisine];
+      if (!cuisines.includes(r.cuisine)) return false;
+    }
+    return true;
+  });
+
+  state.filteredData = filtered;
+  state.mobileToolbarOpen = false;
+  renderMarkers();
+  renderTable();
+  renderSummary();
+}
+
+// Blog
+const blogBtn = document.getElementById("blog-btn");
+const blogModal = document.getElementById("blog-modal");
+const blogModalClose = document.getElementById("blog-modal-close");
+const blogPostsContainer = document.getElementById("blog-posts-container");
+const blogPostDetail = document.getElementById("blog-post-detail");
+const blogSearch = document.getElementById("blog-search");
+const blogCategoryFilter = document.getElementById("blog-category-filter");
+
+blogBtn?.addEventListener("click", () => {
+  blogModal.hidden = false;
+  renderBlogPosts();
+});
+
+blogModalClose?.addEventListener("click", () => {
+  blogModal.hidden = true;
+});
+
+blogModal?.addEventListener("click", (e) => {
+  if (e.target === blogModal) {
+    blogModal.hidden = true;
+  }
+});
+
+blogSearch?.addEventListener("input", (e) => {
+  const query = e.target.value.trim();
+  if (query) {
+    const results = searchBlogPosts(query);
+    renderBlogPostsList(results);
+  } else {
+    renderBlogPosts();
+  }
+});
+
+blogCategoryFilter?.addEventListener("change", (e) => {
+  const category = e.target.value;
+  if (category) {
+    const results = getPostsByCategory(category);
+    renderBlogPostsList(results);
+  } else {
+    renderBlogPosts();
+  }
+});
+
+function renderBlogPosts() {
+  renderBlogPostsList(BLOG_POSTS);
+}
+
+function renderBlogPostsList(posts) {
+  if (!blogPostsContainer) return;
+
+  blogPostsContainer.innerHTML = posts.map(post => `
+    <div class="blog-post-item" data-post-id="${post.id}">
+      <div class="blog-post-header">
+        <h3 class="blog-post-title">${post.title}</h3>
+      </div>
+      <div class="blog-post-meta">
+        <span class="blog-post-date">${new Date(post.date).toLocaleDateString()}</span>
+        <span class="blog-post-category">${post.category}</span>
+        <span class="blog-post-author">by ${post.author}</span>
+      </div>
+      <p class="blog-post-excerpt">${post.excerpt}</p>
+    </div>
+  `).join("");
+
+  document.querySelectorAll(".blog-post-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const postId = item.dataset.postId;
+      showBlogPostDetail(postId);
+    });
+  });
+}
+
+function showBlogPostDetail(postId) {
+  const post = getBlogPost(postId);
+  if (!post) return;
+
+  blogPostsContainer.hidden = true;
+  blogPostDetail.hidden = false;
+
+  blogPostDetail.innerHTML = `
+    <button class="blog-back-button">← Back to all articles</button>
+    <h2>${post.title}</h2>
+    <div class="blog-post-detail-meta">
+      <span><strong>Published:</strong> ${new Date(post.date).toLocaleDateString()}</span>
+      <span><strong>Author:</strong> ${post.author}</span>
+      <span class="blog-post-category">${post.category}</span>
+    </div>
+    <div class="blog-post-content">${post.content}</div>
+  `;
+
+  blogPostDetail.querySelector(".blog-back-button")?.addEventListener("click", () => {
+    blogPostDetail.hidden = true;
+    blogPostsContainer.hidden = false;
+  });
+}
 
 toolbarToggle.addEventListener("click", () => {
   setToolbarOpen(!state.mobileToolbarOpen);
@@ -3284,7 +3975,7 @@ staysTableToggle.addEventListener("click", () => {
   renderStayTableToggle();
 });
 
-staysSearchInput.addEventListener("input", filterStays);
+staysSearchInput.addEventListener("input", debounce(filterStays, 300));
 staysCountryFilter.addEventListener("change", () => {
   refreshStayFilterOptions();
   filterStays();

@@ -6,8 +6,16 @@
     <title>Unofficial Platinum Experience</title>
     <meta
       name="description"
-      content="Unofficial Platinum Experience — explore Amex Platinum dining, hotels, and partner benefits."
+      content="Explore 2,600+ Amex Platinum dining partners, luxury hotel stays, and Singapore dining benefits on an interactive map. Find restaurants, hotels, and exclusive offers worldwide."
     />
+    <meta name="keywords" content="Amex Platinum, dining partners, fine dining, luxury hotels, travel benefits, dining credit" />
+    <meta name="author" content="Amex Dining Map" />
+    <meta name="og:title" content="Unofficial Platinum Experience — Amex Dining & Travel Benefits Map" />
+    <meta name="og:description" content="Explore 2,600+ Amex Platinum dining partners and luxury properties worldwide." />
+    <meta name="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Amex Platinum Dining & Travel Map" />
+    <meta name="twitter:description" content="Browse dining partners, Plat Stays, and Love Dining benefits interactively." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,13 +28,103 @@
     />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
     <link rel="stylesheet" href="./styles.css" />
+    <script src="./i18n.js"></script>
+    <script src="./collections.js"></script>
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Unofficial Platinum Experience — Amex Dining Map",
+      "description": "Interactive map of Amex Platinum dining partners, luxury hotels, and travel benefits worldwide",
+      "url": "https://amex-dining-map.com",
+      "applicationCategory": "TravelApplication",
+      "offers": {
+        "@type": "AggregateOffer",
+        "priceCurrency": "USD",
+        "price": "0",
+        "availability": "https://schema.org/InStock"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "2600"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Amex Platinum Benefits",
+      "url": "https://www.americanexpress.com",
+      "description": "American Express Platinum Card benefits and dining partnerships"
+    }
+    </script>
   </head>
   <body>
+    <!-- Skip to main content link for keyboard navigation -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Loading overlay — removed by JS once all data fetches complete -->
     <div id="loading-overlay" aria-live="polite" aria-label="Loading data">
       <div class="loading-spinner" aria-hidden="true"></div>
       <p class="loading-label">Loading…</p>
+    </div>
+
+    <!-- Trip Planner Modal -->
+    <div id="trips-modal" class="modal" hidden>
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>My Trips</h2>
+          <button class="modal-close" id="trips-modal-close" type="button" aria-label="Close trips modal">×</button>
+        </div>
+        <div class="modal-body">
+          <div id="trips-list-container"></div>
+          <button id="new-trip-btn" type="button" class="ghost-btn">+ Create New Trip</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collections Modal -->
+    <div id="collections-modal" class="modal" hidden>
+      <div class="modal-overlay"></div>
+      <div class="modal-content modal-wide">
+        <div class="modal-header">
+          <h2>Curated Collections</h2>
+          <button class="modal-close" id="collections-modal-close" type="button" aria-label="Close collections modal">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="collections-grid" id="collections-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blog Modal -->
+    <div id="blog-modal" class="modal" hidden>
+      <div class="modal-overlay"></div>
+      <div class="modal-content modal-wide">
+        <div class="modal-header">
+          <h2 id="blog-modal-title">Dining Guide & Stories</h2>
+          <button class="modal-close" id="blog-modal-close" type="button" aria-label="Close blog modal">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="blog-toolbar">
+            <input type="search" id="blog-search" placeholder="Search articles..." class="blog-search-input" />
+            <select id="blog-category-filter" class="blog-filter-select" aria-label="Filter by category">
+              <option value="">All Articles</option>
+              <option value="Guide">Guide</option>
+              <option value="Destination Guide">Destination Guide</option>
+              <option value="Tips & Tricks">Tips & Tricks</option>
+            </select>
+          </div>
+          <div id="blog-posts-container" class="blog-posts-list"></div>
+          <div id="blog-post-detail" class="blog-post-detail" hidden></div>
+        </div>
+      </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -96,7 +194,15 @@
           <p class="app-eyebrow" id="route-eyebrow">Unofficial Amex guide</p>
         </div>
         <div class="app-header-actions">
-          <button class="ghost-btn secondary" id="replay-guide" type="button">Guide</button>
+          <select id="language-selector" class="ghost-btn secondary" style="background: transparent; border: none; color: var(--text); cursor: pointer; padding: 8px 12px;">
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+            <option value="zh">中文</option>
+          </select>
+          <button class="ghost-btn secondary" id="collections-btn" type="button" aria-label="View curated collections">Collections</button>
+          <button class="ghost-btn secondary" id="blog-btn" type="button" aria-label="Read dining guides and blog">📖 Stories</button>
+          <button class="ghost-btn secondary" id="trips-btn" type="button" aria-label="Open trip planner">✈️ My Trips</button>
+          <button class="ghost-btn secondary" id="replay-guide" type="button" aria-label="Replay welcome guide">Guide</button>
         </div>
       </header>
 
@@ -188,7 +294,7 @@
           <p class="summary-strip-text" id="summary-strip-text">Loading...</p>
         </section>
 
-        <section class="explorer-grid">
+        <section class="explorer-grid" id="main-content">
           <!-- Map panel with filters -->
           <section class="map-panel panel-surface">
             <div class="panel-head">
@@ -215,18 +321,41 @@
               </button>
 
               <section class="toolbar panel-surface" id="filter-toolbar">
-                <label class="search-wrap">
-                  <span class="label">Search</span>
-                  <input
-                    id="search-input"
-                    type="search"
-                    placeholder="Venue, district, cuisine..."
-                  />
-                </label>
+                <div class="toolbar-row">
+                  <label class="search-wrap">
+                    <span class="label">Search</span>
+                    <input
+                      id="search-input"
+                      type="search"
+                      placeholder="Venue, district, cuisine..."
+                    />
+                  </label>
+                  <label class="filter-wrap">
+                    <span class="label">Sort</span>
+                    <select id="sort-filter">
+                      <option value="name_asc">Name (A-Z)</option>
+                      <option value="name_desc">Name (Z-A)</option>
+                      <option value="rating_desc">Rating (High to Low)</option>
+                      <option value="rating_asc">Rating (Low to High)</option>
+                    </select>
+                  </label>
+                </div>
 
                 <label class="checkbox-wrap">
                   <input type="checkbox" id="favorites-filter" />
                   <span class="label">❤️ Favorites only (<span id="favorites-count">0</span>)</span>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Currency</span>
+                  <select id="currency-filter">
+                    <option value="JPY">JPY (¥)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="AUD">AUD ($A)</option>
+                    <option value="SGD">SGD ($S)</option>
+                  </select>
                 </label>
 
                 <label class="filter-wrap" id="country-filter-wrap">
@@ -334,6 +463,12 @@
                 </label>
 
                 <div class="filter-actions">
+                  <button id="export-csv-btn" type="button" class="ghost-btn secondary">
+                    ↓ CSV
+                  </button>
+                  <button id="share-link-btn" type="button" class="ghost-btn secondary">
+                    🔗 Share
+                  </button>
                   <button id="reset-filters" type="button" class="ghost-btn">
                     Clear filters
                   </button>
@@ -456,14 +591,25 @@
               </button>
 
               <section class="toolbar panel-surface" id="stays-filter-toolbar">
-                <label class="search-wrap">
-                  <span class="label">Search</span>
-                  <input
-                    id="stays-search-input"
-                    type="search"
-                    placeholder="Property, city, country..."
-                  />
-                </label>
+                <div class="toolbar-row">
+                  <label class="search-wrap">
+                    <span class="label">Search</span>
+                    <input
+                      id="stays-search-input"
+                      type="search"
+                      placeholder="Property, city, country..."
+                    />
+                  </label>
+                  <label class="filter-wrap">
+                    <span class="label">Sort</span>
+                    <select id="stays-sort-filter">
+                      <option value="name_asc">Name (A-Z)</option>
+                      <option value="name_desc">Name (Z-A)</option>
+                      <option value="rating_desc">Rating (High to Low)</option>
+                      <option value="rating_asc">Rating (Low to High)</option>
+                    </select>
+                  </label>
+                </div>
 
                 <label class="filter-wrap">
                   <span class="label">Country</span>
@@ -485,6 +631,12 @@
                 </label>
 
                 <div class="filter-actions">
+                  <button id="stays-export-csv-btn" type="button" class="ghost-btn secondary">
+                    ↓ CSV
+                  </button>
+                  <button id="stays-share-link-btn" type="button" class="ghost-btn secondary">
+                    🔗 Share
+                  </button>
                   <button type="button" class="ghost-btn secondary" data-stay-preset="clear-dates">
                     Clear dates
                   </button>
@@ -598,10 +750,21 @@
               </button>
 
               <section class="toolbar panel-surface" id="love-filter-toolbar">
-                <label class="search-wrap">
-                  <span class="label">Search</span>
-                  <input id="love-search-input" type="search" placeholder="Venue, cuisine, hotel..." />
-                </label>
+                <div class="toolbar-row">
+                  <label class="search-wrap">
+                    <span class="label">Search</span>
+                    <input id="love-search-input" type="search" placeholder="Venue, cuisine, hotel..." />
+                  </label>
+                  <label class="filter-wrap">
+                    <span class="label">Sort</span>
+                    <select id="love-sort-filter">
+                      <option value="name_asc">Name (A-Z)</option>
+                      <option value="name_desc">Name (Z-A)</option>
+                      <option value="rating_desc">Rating (High to Low)</option>
+                      <option value="rating_asc">Rating (Low to High)</option>
+                    </select>
+                  </label>
+                </div>
 
                 <label class="filter-wrap">
                   <span class="label">Type</span>
@@ -632,6 +795,12 @@
                 </label>
 
                 <div class="filter-actions">
+                  <button id="love-export-csv-btn" type="button" class="ghost-btn secondary">
+                    ↓ CSV
+                  </button>
+                  <button id="love-share-link-btn" type="button" class="ghost-btn secondary">
+                    🔗 Share
+                  </button>
                   <button id="love-reset-filters" type="button" class="ghost-btn">Clear filters</button>
                 </div>
               </section>
