@@ -2229,9 +2229,9 @@ function createStayMarker(record) {
     : "";
 
   marker.bindPopup(`
-    <div style="font-size:0.95em; min-width:140px">
+    <div style="font-size:0.95em; min-width:160px">
       <strong>${escapeHtml(record.name)}</strong>
-      <div style="margin-top:4px; font-size:0.9em">${escapeHtml(record.city || "City")} / ${escapeHtml(record.country || "Country")}</div>
+      ${record.city || record.country ? `<div style="margin-top:2px; font-size:0.85em; color:#888">${escapeHtml((record.city || "") + (record.city && record.country ? " / " : "") + (record.country || ""))}</div>` : ""}
       ${ratingHtml}
       ${mapsLink ? `<div style="margin-top:4px">${mapsLink}</div>` : ""}
     </div>
