@@ -6,12 +6,12 @@
     <title>Unofficial Platinum Experience</title>
     <meta
       name="description"
-      content="Explore 2,600+ Amex Platinum dining partners, luxury hotel stays, and Singapore dining benefits on an interactive map. Find restaurants, hotels, and exclusive offers worldwide."
+      content="Explore 3,430+ Amex Platinum dining partners, luxury hotel stays, and Singapore dining benefits on an interactive map. Find restaurants, hotels, and exclusive offers worldwide."
     />
     <meta name="keywords" content="Amex Platinum, dining partners, fine dining, luxury hotels, travel benefits, dining credit" />
     <meta name="author" content="Amex Dining Map" />
     <meta name="og:title" content="Unofficial Platinum Experience — Amex Dining & Travel Benefits Map" />
-    <meta name="og:description" content="Explore 2,600+ Amex Platinum dining partners and luxury properties worldwide." />
+    <meta name="og:description" content="Explore 3,430+ Amex Platinum dining partners, hotels, and exclusive benefits worldwide." />
     <meta name="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Amex Platinum Dining & Travel Map" />
@@ -29,7 +29,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
     <link rel="stylesheet" href="./styles.css" />
     <script src="./i18n.js"></script>
-    <script src="./collections.js"></script>
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -89,43 +88,6 @@
       </div>
     </div>
 
-    <!-- Collections Modal -->
-    <div id="collections-modal" class="modal" hidden>
-      <div class="modal-overlay"></div>
-      <div class="modal-content modal-wide">
-        <div class="modal-header">
-          <h2>Curated Collections</h2>
-          <button class="modal-close" id="collections-modal-close" type="button" aria-label="Close collections modal">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="collections-grid" id="collections-grid"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Blog Modal -->
-    <div id="blog-modal" class="modal" hidden>
-      <div class="modal-overlay"></div>
-      <div class="modal-content modal-wide">
-        <div class="modal-header">
-          <h2 id="blog-modal-title">Dining Guide & Stories</h2>
-          <button class="modal-close" id="blog-modal-close" type="button" aria-label="Close blog modal">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="blog-toolbar">
-            <input type="search" id="blog-search" placeholder="Search articles..." class="blog-search-input" />
-            <select id="blog-category-filter" class="blog-filter-select" aria-label="Filter by category">
-              <option value="">All Articles</option>
-              <option value="Guide">Guide</option>
-              <option value="Destination Guide">Destination Guide</option>
-              <option value="Tips & Tricks">Tips & Tricks</option>
-            </select>
-          </div>
-          <div id="blog-posts-container" class="blog-posts-list"></div>
-          <div id="blog-post-detail" class="blog-post-detail" hidden></div>
-        </div>
-      </div>
-    </div>
 
     <!-- ═══════════════════════════════════════════════════════════
          ONBOARDING GATE — shown on first visit, hidden after
@@ -199,8 +161,6 @@
             <option value="ja">日本語</option>
             <option value="zh">中文</option>
           </select>
-          <button class="ghost-btn secondary" id="collections-btn" type="button" aria-label="View curated collections">Collections</button>
-          <button class="ghost-btn secondary" id="blog-btn" type="button" aria-label="Read dining guides and blog">📖 Stories</button>
           <button class="ghost-btn secondary" id="trips-btn" type="button" aria-label="Open trip planner">✈️ My Trips</button>
           <button class="ghost-btn secondary" id="replay-guide" type="button" aria-label="Replay welcome guide">Guide</button>
         </div>
