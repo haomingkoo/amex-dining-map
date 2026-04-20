@@ -73,9 +73,10 @@ def make_target(record: dict, dataset: str) -> str:
             return f"{name} {hotel} Singapore"
         return f"{name} {addr_short} Singapore" if addr_short else f"{name} Singapore"
     if dataset == "stays":
-        address = record.get("address", "")
+        # For hotels, use simple query first (name + country only)
+        # This avoids long addresses that may cause timeouts or mismatches
         country = record.get("country", "")
-        return " ".join(part for part in [name, address, country] if part).strip()
+        return f"{name} {country}".strip()
     address = record.get("source_localized_address", "")
     if address:
         return f"{name} {address}"
