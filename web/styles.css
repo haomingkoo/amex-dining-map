@@ -2219,6 +2219,44 @@ h1, h2, h3 {
   .mobile-results-panel .panel-head h2 {
     font-size: 16px;
   }
+
+  /* Sticky header with close button for mobile venue details */
+  .mobile-results-panel .panel-head {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-surface);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .mobile-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 32px;
+    font-weight: 300;
+    cursor: pointer;
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -4px;
+    transition: color 0.18s;
+    flex-shrink: 0;
+  }
+
+  .mobile-close-btn:hover {
+    color: var(--text);
+  }
+
+  .mobile-close-btn:active {
+    opacity: 0.7;
+  }
 }
 
 /* Mobile card list "show more" button */

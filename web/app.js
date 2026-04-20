@@ -453,6 +453,7 @@ const tableSummary = document.getElementById("table-summary");
 const mobileSummary = document.getElementById("mobile-summary");
 const resultsTableBody = document.getElementById("results-table-body");
 const mobileResultsList = document.getElementById("mobile-results-list");
+const mobileCloseBtn = document.getElementById("mobile-close-btn");
 const mobileVenueSheet = document.getElementById("mobile-venue-sheet");
 const mvsName = document.getElementById("mvs-name");
 const mvsMeta = document.getElementById("mvs-meta");
@@ -482,6 +483,7 @@ const staysTableSummary = document.getElementById("stays-table-summary");
 const staysMobileSummary = document.getElementById("stays-mobile-summary");
 const staysResultsTableBody = document.getElementById("stays-results-table-body");
 const staysMobileResultsList = document.getElementById("stays-mobile-results-list");
+const staysCloseBtn = document.getElementById("stays-mobile-close-btn");
 const stayPresetButtons = [...document.querySelectorAll("[data-stay-preset]")];
 
 const loveDiningExplorer = document.getElementById("love-dining-explorer");
@@ -499,6 +501,7 @@ const loveResultsText = document.getElementById("love-results-text");
 const loveFocusCard = document.getElementById("love-focus-card");
 const loveMobileSummary = document.getElementById("love-mobile-summary");
 const loveMobileResultsList = document.getElementById("love-mobile-results-list");
+const loveCloseBtn = document.getElementById("love-mobile-close-btn");
 
 function escapeHtml(value) {
   return String(value)
@@ -1534,7 +1537,21 @@ function renderFocusCard() {
           <p class="map-cta-sub">or select a venue from the list below to see details here</p>
         </div>`
       : '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
+    // Hide close button on mobile when no venue selected
+    if (mobileCloseBtn) {
+      mobileCloseBtn.hidden = true;
+    }
     return;
+  }
+
+  // Show close button on mobile and scroll to top when venue is selected
+  if (mobileCloseBtn) {
+    mobileCloseBtn.hidden = false;
+    // Scroll mobile results panel to top
+    const panel = mobileResultsList.closest('.mobile-results-panel');
+    if (panel && window.innerWidth <= 820) {
+      panel.scrollTop = 0;
+    }
   }
 
   const isJapan = record.country === "Japan";
@@ -2366,7 +2383,21 @@ function renderStayFocusCard() {
           <p class="map-cta-sub">or select a property from the list below</p>
         </div>`
       : '<div class="empty-state">No matches. Adjust filters or dates to expand results.</div>';
+    // Hide close button on mobile when no stay selected
+    if (staysCloseBtn) {
+      staysCloseBtn.hidden = true;
+    }
     return;
+  }
+
+  // Show close button on mobile and scroll to top when stay is selected
+  if (staysCloseBtn) {
+    staysCloseBtn.hidden = false;
+    // Scroll mobile results panel to top
+    const panel = staysMobileResultsList.closest('.mobile-results-panel');
+    if (panel && window.innerWidth <= 820) {
+      panel.scrollTop = 0;
+    }
   }
 
   const status = stayAvailability(record);
@@ -2752,7 +2783,21 @@ function renderLoveDiningCard() {
       <p class="map-cta-heading">Click any dot on the map</p>
       <p class="map-cta-sub">or select a venue from the list below to see details here</p>
     </div>`;
+    // Hide close button on mobile when no love dining venue selected
+    if (loveCloseBtn) {
+      loveCloseBtn.hidden = true;
+    }
     return;
+  }
+
+  // Show close button on mobile and scroll to top when love dining venue is selected
+  if (loveCloseBtn) {
+    loveCloseBtn.hidden = false;
+    // Scroll mobile results panel to top
+    const panel = loveMobileResultsList.closest('.mobile-results-panel');
+    if (panel && window.innerWidth <= 820) {
+      panel.scrollTop = 0;
+    }
   }
 
   const hotelLine = record.hotel ? `<div class="focus-kicker">${escapeHtml(record.hotel)}</div>` : "";
@@ -3140,6 +3185,27 @@ toolbarToggle.addEventListener("click", () => {
 tableToggle.addEventListener("click", () => {
   setTableOpen(!state.tableOpen);
   renderTableToggle();
+});
+
+mobileCloseBtn?.addEventListener("click", () => {
+  // Deselect the current venue when close button is clicked
+  state.activeRecordId = null;
+  renderFocusCard();
+  renderMobileList();
+});
+
+staysCloseBtn?.addEventListener("click", () => {
+  // Deselect the current stay when close button is clicked
+  state.stayActiveRecordId = null;
+  renderStayFocusCard();
+  renderStayMobileList();
+});
+
+loveCloseBtn?.addEventListener("click", () => {
+  // Deselect the current love dining venue when close button is clicked
+  state.loveDiningActiveId = null;
+  renderLoveDiningCard();
+  renderLoveDiningMobileList();
 });
 
 document.getElementById("table-search-input")?.addEventListener("input", (e) => {
