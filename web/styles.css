@@ -93,7 +93,6 @@ button,
 select,
 input,
 .primary-link,
-.scope-link,
 .toolbar-toggle,
 .ghost-btn,
 .download-btn,
@@ -441,101 +440,6 @@ input,
 
 .primary-link.active::after {
   transform: scaleX(1);
-}
-
-/* Scope / city sub-nav */
-#scope-strip {
-  margin-top: 0;
-  padding: 11px 2px 13px;
-}
-
-#scope-strip[hidden] {
-  display: none !important;
-}
-
-body.route-dining #scope-strip,
-body.route-dining #scope-nav,
-body.route-dining #mobile-scope-select {
-  display: none !important;
-}
-
-.mobile-scope-select {
-  display: none;
-  width: 100%;
-  padding: 9px 12px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  background: var(--surface-strong);
-  color: var(--text);
-  font: 600 14px/1 "Figtree", system-ui, sans-serif;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9a55a' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-  cursor: pointer;
-  margin-bottom: 6px;
-}
-
-.mobile-scope-select:focus {
-  outline: none;
-  border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(201, 165, 90, 0.12);
-}
-
-.scope-nav {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 5px;
-  margin-bottom: 6px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding-bottom: 2px;
-}
-
-.scope-nav::-webkit-scrollbar {
-  display: none;
-}
-
-.scope-link {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px 12px;
-  border: 1px solid rgba(183, 155, 105, 0.10);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text-dim);
-  text-decoration: none;
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease;
-}
-
-.scope-link:hover {
-  border-color: rgba(183, 155, 105, 0.22);
-  color: var(--text-secondary);
-}
-
-.scope-link.active {
-  border-color: rgba(77, 184, 166, 0.42);
-  background: rgba(77, 184, 166, 0.10);
-  color: var(--teal);
-  font-weight: 700;
-}
-
-.scope-hint {
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-dim);
 }
 
 
@@ -2107,19 +2011,6 @@ h1, h2, h3 {
   }
 
   /* Reduce context title size on mobile — already handled above */
-
-  /* Scope nav: swap pills → dropdown on mobile */
-  #scope-strip {
-    position: relative;
-  }
-
-  .scope-nav {
-    display: none;
-  }
-
-  .mobile-scope-select {
-    display: block;
-  }
 
   /* Increase map height on mobile for better visibility */
   #map,

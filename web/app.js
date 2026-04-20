@@ -400,11 +400,6 @@ const journeyLinks = [...journeyNav.querySelectorAll("[data-journey]")];
 const programStrip = document.querySelector(".app-nav");
 const programNav = document.getElementById("program-nav");
 const programLinks = [...programNav.querySelectorAll("[data-program]")];
-const scopeStrip = document.getElementById("scope-strip");
-const scopeNote = document.getElementById("scope-note");
-const scopeNav = document.getElementById("scope-nav");
-const routeLinks = [...scopeNav.querySelectorAll("[data-route]")];
-const mobileScopeSelect = document.getElementById("mobile-scope-select");
 const dataExplorer = document.getElementById("data-explorer");
 const programBrief = document.getElementById("program-brief");
 const programBriefTitle = document.getElementById("program-brief-title");
@@ -1273,19 +1268,8 @@ function jumpIntoExplorer(routeHash) {
 }
 
 function renderScopeShell(route) {
-  // Country quick buttons are hidden; use Country filter in toolbar instead
-  scopeStrip.hidden = true;
-  scopeNav.hidden = true;
-  if (mobileScopeSelect) mobileScopeSelect.hidden = true;
   routeTitle.textContent = route.label;
-  scopeNote.textContent = route.note;
   mapSummary.textContent = route.mapSummary;
-
-  routeLinks.forEach((link) => {
-    link.classList.toggle("active", link.dataset.route === route.id);
-  });
-
-  if (mobileScopeSelect) mobileScopeSelect.value = route.id;
 }
 
 function renderProgramBrief(route) {
@@ -3149,10 +3133,6 @@ introStartDiningButton?.addEventListener("click", () => {
 
 document.getElementById("intro-start-love")?.addEventListener("click", (e) => {
   jumpIntoExplorer(e.currentTarget.dataset.introRoute);
-});
-
-mobileScopeSelect?.addEventListener("change", (e) => {
-  window.location.hash = "/" + e.target.value;
 });
 
 replayGuideButton?.addEventListener("click", () => {
