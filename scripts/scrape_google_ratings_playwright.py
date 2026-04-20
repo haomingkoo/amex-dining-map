@@ -150,7 +150,12 @@ async def scrape_one(page, target: str, rid: str) -> dict | None:
                 first_place = await page.query_selector('a[href*="/maps/place/"]')
                 if first_place:
                     await first_place.click()
-                    await asyncio.sleep(3)
+                    # Wait for place page to fully load (h1 should change from "Results")
+                    for _ in range(5):
+                        await asyncio.sleep(1)
+                        h1_text = await page.evaluate("document.querySelector('h1')?.textContent.trim() || ''")
+                        if h1_text and h1_text.lower() != "results":
+                            break
                     current_url = page.url
             except Exception:
                 pass
