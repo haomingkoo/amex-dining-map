@@ -1163,6 +1163,10 @@ function resolveRouteFromHash() {
 }
 
 function renderProgramShell(program, route) {
+  document.body.classList.toggle("route-dining", route.programId === "dining");
+  document.body.classList.toggle("route-stays", route.programId === "stays");
+  document.body.classList.toggle("route-love-dining", route.programId === "love-dining");
+  document.body.classList.toggle("route-alerts", route.programId === "alerts");
   if (routeEyebrow) routeEyebrow.textContent = route.eyebrow;
   if (routeDescription) routeDescription.textContent = route.description;
   programTitle.textContent = program.title;
@@ -1216,6 +1220,8 @@ function jumpIntoExplorer(routeHash) {
 function renderScopeShell(route) {
   // Country quick buttons are hidden; use Country filter in toolbar instead
   scopeStrip.hidden = true;
+  scopeNav.hidden = true;
+  if (mobileScopeSelect) mobileScopeSelect.hidden = true;
   routeTitle.textContent = route.label;
   scopeNote.textContent = route.note;
   mapSummary.textContent = route.mapSummary;
@@ -1382,11 +1388,12 @@ function ensureActiveRecord() {
   }
 }
 
-function filterRestaurants() {
+function filterRestaurants(options = {}) {
   const search = searchInput.value.trim().toLowerCase();
   const route = currentRoute();
   const country = countryFilter.value;
-  const city = route.fixedCity || cityFilter.value;
+  const hasSelectedCity = Object.prototype.hasOwnProperty.call(options, "selectedCity");
+  const city = route.fixedCity || (hasSelectedCity ? options.selectedCity : cityFilter.value);
   const district = districtFilter.value;
   const cuisine = cuisineFilter.value;
   const tabelog = tabelogFilter.value;
@@ -3018,8 +3025,13 @@ countryFilter.addEventListener("change", () => {
   filterRestaurants();
 });
 cityFilter.addEventListener("change", () => {
+  const route = currentRoute();
+  const selectedCity = cityFilter.value;
   refreshFilterOptions();
-  filterRestaurants();
+  if (!route.fixedCity && selectedCity && Array.from(cityFilter.options).some((option) => option.value === selectedCity)) {
+    cityFilter.value = selectedCity;
+  }
+  filterRestaurants({ selectedCity });
 });
 
 [
