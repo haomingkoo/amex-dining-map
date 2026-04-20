@@ -468,6 +468,8 @@ const staysCountryFilter = document.getElementById("stays-country-filter");
 const staysCityFilter = document.getElementById("stays-city-filter");
 const staysCheckinInput = document.getElementById("stays-checkin-input");
 const staysCheckoutInput = document.getElementById("stays-checkout-input");
+const staysGoogleRatingFilter = document.getElementById("stays-google-rating-filter");
+const staysSortFilter = document.getElementById("stays-sort-filter");
 const staysResetFiltersButton = document.getElementById("stays-reset-filters");
 const staysSummaryStripText = document.getElementById("stays-summary-strip-text");
 const staysDownloadsSection = document.getElementById("stays-downloads-section");
@@ -2170,6 +2172,8 @@ function resetStayFilterControls() {
   staysCityFilter.value = "";
   staysCheckinInput.value = "";
   staysCheckoutInput.value = "";
+  staysGoogleRatingFilter.value = "";
+  staysSortFilter.value = "";
 }
 
 function refreshStayFilterOptions() {
@@ -2233,6 +2237,8 @@ function filterStays() {
   const search = staysSearchInput.value.trim().toLowerCase();
   const country = staysCountryFilter.value;
   const city = staysCityFilter.value;
+  const googleRatingFilterValue = staysGoogleRatingFilter.value;
+  const sort = staysSortFilter.value;
 
   state.stayBlockedCount = 0;
   state.stayFiltered = state.stays.filter((record) => {
@@ -2245,8 +2251,34 @@ function filterStays() {
       state.stayBlockedCount += 1;
       return false;
     }
+
+    // Google Maps rating filter
+    const gRating = googleRating(record);
+    if (googleRatingFilterValue === "has_rating" && !gRating) return false;
+    if (googleRatingFilterValue === "3plus" && !(gRating && gRating.rating >= 3.0)) return false;
+    if (googleRatingFilterValue === "3_5plus" && !(gRating && gRating.rating >= 3.5)) return false;
+    if (googleRatingFilterValue === "4plus" && !(gRating && gRating.rating >= 4.0)) return false;
+    if (googleRatingFilterValue === "4_5plus" && !(gRating && gRating.rating >= 4.5)) return false;
+
     return true;
   });
+
+  // Apply sorting
+  if (sort === "rating_high") {
+    state.stayFiltered.sort((a, b) => {
+      const aRating = googleRating(a)?.rating ?? -1;
+      const bRating = googleRating(b)?.rating ?? -1;
+      return bRating - aRating;
+    });
+  } else if (sort === "reviews_high") {
+    state.stayFiltered.sort((a, b) => {
+      const aCount = googleRating(a)?.review_count ?? 0;
+      const bCount = googleRating(b)?.review_count ?? 0;
+      return bCount - aCount;
+    });
+  } else if (sort === "name_a") {
+    state.stayFiltered.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  }
 
   state.stayScopeRecords = state.stays;
   ensureActiveStayRecord();
@@ -3072,6 +3104,8 @@ staysCountryFilter.addEventListener("change", () => {
 staysCityFilter.addEventListener("change", filterStays);
 staysCheckinInput.addEventListener("change", filterStays);
 staysCheckoutInput.addEventListener("change", filterStays);
+staysGoogleRatingFilter.addEventListener("change", filterStays);
+staysSortFilter.addEventListener("change", filterStays);
 staysResetFiltersButton.addEventListener("click", () => {
   resetStayFilterControls();
   refreshStayFilterOptions();

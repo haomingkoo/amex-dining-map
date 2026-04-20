@@ -479,6 +479,28 @@
                   <!-- min dates set dynamically by JS to today -->
                 </div>
 
+                <label class="filter-wrap">
+                  <span class="label">Google rating</span>
+                  <select id="stays-google-rating-filter">
+                    <option value="">Any rating</option>
+                    <option value="has_rating">Has rating</option>
+                    <option value="3plus">3.0+</option>
+                    <option value="3_5plus">3.5+</option>
+                    <option value="4plus">4.0+</option>
+                    <option value="4_5plus">4.5+</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Sort by</span>
+                  <select id="stays-sort-filter">
+                    <option value="">Default</option>
+                    <option value="rating_high">Rating (highest)</option>
+                    <option value="reviews_high">Reviews (most)</option>
+                    <option value="name_a">Name (A-Z)</option>
+                  </select>
+                </label>
+
                 <div class="filter-actions">
                   <button type="button" class="ghost-btn secondary" data-stay-preset="clear-dates">
                     Clear dates
