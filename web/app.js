@@ -340,7 +340,55 @@ const state = {
   loveDiningActiveId: null,
   loveToolbarOpen: false,
   googleRatings: {},
+  favorites: new Set(), // Store favorite venue IDs
+  showFavoritesOnly: false,
 };
+
+/* ═══════════════════════════════════════════════════════════
+   FAVORITES SYSTEM
+════════════════════════════════════════════════════════════ */
+
+function loadFavorites() {
+  const stored = localStorage.getItem("amex-favorites");
+  if (stored) {
+    try {
+      state.favorites = new Set(JSON.parse(stored));
+    } catch (e) {
+      console.warn("Failed to load favorites:", e);
+      state.favorites = new Set();
+    }
+  }
+}
+
+function saveFavorites() {
+  localStorage.setItem("amex-favorites", JSON.stringify([...state.favorites]));
+}
+
+function toggleFavorite(venueId) {
+  if (state.favorites.has(venueId)) {
+    state.favorites.delete(venueId);
+  } else {
+    state.favorites.add(venueId);
+  }
+  saveFavorites();
+  // Trigger re-render of the current view
+  const route = currentRoute();
+  if (route && route.programId === "dining") {
+    filterRestaurants();
+  } else if (route && route.programId === "stays") {
+    filterStays();
+  } else if (route && route.programId === "love-dining") {
+    filterLoveDining();
+  }
+}
+
+function isFavorite(venueId) {
+  return state.favorites.has(venueId);
+}
+
+function getFavoriteCount() {
+  return state.favorites.size;
+}
 
 const hasLeaflet = typeof window !== "undefined" && typeof window.L !== "undefined";
 const mapElement = document.getElementById("map");
@@ -445,6 +493,8 @@ const kidsFilter = document.getElementById("kids-filter");
 const menuFilter = document.getElementById("menu-filter");
 const reservationFilter = document.getElementById("reservation-filter");
 const resetFiltersButton = document.getElementById("reset-filters");
+const favoritesFilter = document.getElementById("favorites-filter");
+const favoritesCount = document.getElementById("favorites-count");
 const summaryStripText = document.getElementById("summary-strip-text");
 const mapSummary = document.getElementById("map-summary");
 const resultsText = document.getElementById("results-text");
@@ -1466,8 +1516,14 @@ function filterRestaurants() {
     if (menu === "no" && record.english_menu) return false;
     if (reservation && record.reservation_type !== reservation) return false;
     if (search && !(record.search_text || "").includes(search)) return false;
+    if (state.showFavoritesOnly && !isFavorite(record.id)) return false;
     return true;
   });
+
+  // Update favorites count
+  if (favoritesCount) {
+    favoritesCount.textContent = getFavoriteCount();
+  }
 
   ensureActiveRecord();
   renderStats();
@@ -3131,6 +3187,12 @@ cityFilter.addEventListener("change", () => {
 resetFiltersButton.addEventListener("click", () => {
   resetFilterControls();
   refreshFilterOptions();
+  filterRestaurants();
+});
+
+// Favorites filter
+favoritesFilter?.addEventListener("change", () => {
+  state.showFavoritesOnly = favoritesFilter.checked;
   filterRestaurants();
 });
 

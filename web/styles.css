@@ -1039,6 +1039,54 @@ input,
   letter-spacing: 0.10em;
 }
 
+/* Checkbox filter for favorites */
+.checkbox-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-wrap input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--gold);
+}
+
+.checkbox-wrap .label {
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Heart button for favoriting venues */
+.heart-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.heart-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.heart-btn.favorited {
+  opacity: 1;
+  color: #e74c3c;
+}
+
 
 /* ═══════════════════════════════════════════════════════════
    TABLE PANEL
