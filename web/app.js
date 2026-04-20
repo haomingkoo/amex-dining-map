@@ -1214,12 +1214,8 @@ function jumpIntoExplorer(routeHash) {
 }
 
 function renderScopeShell(route) {
-  if (!isDiningRoute(route)) {
-    scopeStrip.hidden = true;
-    return;
-  }
-
-  scopeStrip.hidden = false;
+  // Country quick buttons are hidden; use Country filter in toolbar instead
+  scopeStrip.hidden = true;
   routeTitle.textContent = route.label;
   scopeNote.textContent = route.note;
   mapSummary.textContent = route.mapSummary;
