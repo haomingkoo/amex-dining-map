@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import json
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
 import csv
 import io
