@@ -2210,7 +2210,7 @@ function createStayMarker(record) {
   if (!hasLeaflet) return null;
   if (record.lat == null || record.lng == null) return null;
   const status = stayAvailability(record);
-  const gBadge = googleRatingBadge(record);
+  const gRating = googleRating(record);
   const mapsUrl = stayGoogleMapsUrl(record);
   const marker = L.circleMarker([record.lat, record.lng], {
     radius: 8,
@@ -2220,13 +2220,20 @@ function createStayMarker(record) {
     weight: 2,
   });
 
-  // Simple popup: just name + rating + Google Maps link
+  // Simple popup: just name + location + rating + Google Maps link (matching Dining style)
+  const ratingHtml = gRating && gRating.rating != null
+    ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
+    : "";
+  const mapsLink = mapsUrl
+    ? `<a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener" style="font-size:0.9em">Google Maps →</a>`
+    : "";
+
   marker.bindPopup(`
     <div style="font-size:0.95em; min-width:140px">
       <strong>${escapeHtml(record.name)}</strong>
       <div style="margin-top:4px; font-size:0.9em">${escapeHtml(record.city || "City")} / ${escapeHtml(record.country || "Country")}</div>
-      ${gBadge ? `<div style="margin-top:4px">${gBadge}</div>` : ""}
-      ${mapsUrl ? `<div style="margin-top:4px"><a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener" style="font-size:0.9em">Google Maps →</a></div>` : ""}
+      ${ratingHtml}
+      ${mapsLink ? `<div style="margin-top:4px">${mapsLink}</div>` : ""}
     </div>
   `, { maxWidth: 200 });
   marker.on("click", () => {
@@ -2864,6 +2871,14 @@ function setLoveToolbarOpen(open) {
   loveToolbarToggle.querySelector(".toolbar-toggle-icon").textContent = open ? "−" : "+";
 }
 
+function eventOccurredWithin(event, container) {
+  if (!container) return false;
+  if (typeof event.composedPath === "function") {
+    return event.composedPath().includes(container);
+  }
+  return event.target instanceof Node && container.contains(event.target);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 function applyRoute(routeId) {
@@ -3042,7 +3057,8 @@ loveResetFiltersBtn.addEventListener("click", () => {
   loveCuisineFilter.value = "";
   filterLoveDining();
 });
-loveToolbarToggle.addEventListener("click", () => {
+loveToolbarToggle.addEventListener("click", (event) => {
+  event.stopPropagation();
   setLoveToolbarOpen(!state.loveToolbarOpen);
 });
 
@@ -3133,7 +3149,7 @@ document.addEventListener("click", (event) => {
     setStayToolbarOpen(false);
   }
 
-  if (state.loveToolbarOpen && loveMapFilterShell && !loveMapFilterShell.contains(target)) {
+  if (state.loveToolbarOpen && !eventOccurredWithin(event, loveMapFilterShell)) {
     setLoveToolbarOpen(false);
   }
 });
