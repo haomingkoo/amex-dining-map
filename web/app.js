@@ -499,6 +499,61 @@ const loveFocusCard = document.getElementById("love-focus-card");
 const loveMobileSummary = document.getElementById("love-mobile-summary");
 const loveMobileResultsList = document.getElementById("love-mobile-results-list");
 
+function fuzzyMatchSearch(text, query) {
+  const normalizedText = String(text || "").toLowerCase();
+  const normalizedQuery = String(query || "").trim().toLowerCase();
+
+  if (!normalizedQuery) return true;
+  if (normalizedText.includes(normalizedQuery)) return true;
+
+  const textWords = normalizedText.match(/[\p{L}\p{N}]+/gu) || [];
+  const queryWords = normalizedQuery.match(/[\p{L}\p{N}]+/gu) || [];
+
+  if (!queryWords.length) return true;
+  if (!textWords.length) return false;
+
+  const levenshteinWithinThreshold = (source, target, maxDistance) => {
+    if (source === target) return true;
+    if (Math.abs(source.length - target.length) > maxDistance) return false;
+
+    let previousRow = Array.from({ length: target.length + 1 }, (_, index) => index);
+    let currentRow = new Array(target.length + 1);
+
+    for (let i = 1; i <= source.length; i += 1) {
+      currentRow[0] = i;
+      let rowMin = currentRow[0];
+      const sourceChar = source.charCodeAt(i - 1);
+
+      for (let j = 1; j <= target.length; j += 1) {
+        const cost = sourceChar === target.charCodeAt(j - 1) ? 0 : 1;
+        currentRow[j] = Math.min(
+          previousRow[j] + 1,
+          currentRow[j - 1] + 1,
+          previousRow[j - 1] + cost
+        );
+        if (currentRow[j] < rowMin) rowMin = currentRow[j];
+      }
+
+      if (rowMin > maxDistance) return false;
+      [previousRow, currentRow] = [currentRow, previousRow];
+    }
+
+    return previousRow[target.length] <= maxDistance;
+  };
+
+  return queryWords.every((queryWord) => {
+    if (queryWord.length < 3) {
+      return textWords.some((textWord) => textWord.includes(queryWord));
+    }
+
+    const maxDistance = Math.floor(queryWord.length * 0.3);
+    return textWords.some((textWord) => {
+      if (textWord.includes(queryWord)) return true;
+      return levenshteinWithinThreshold(queryWord, textWord, maxDistance);
+    });
+  });
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -1435,7 +1490,7 @@ function filterRestaurants(options = {}) {
     if (menu === "yes" && !record.english_menu) return false;
     if (menu === "no" && record.english_menu) return false;
     if (reservation && record.reservation_type !== reservation) return false;
-    if (search && !(record.search_text || "").includes(search)) return false;
+    if (search && !fuzzyMatchSearch(record.search_text || "", search)) return false;
     return true;
   });
 
@@ -2256,7 +2311,7 @@ function filterStays() {
   state.stayFiltered = state.stays.filter((record) => {
     if (country && record.country !== country) return false;
     if (city && record.city !== city) return false;
-    if (search && !(record.search_text || "").includes(search)) return false;
+    if (search && !fuzzyMatchSearch(record.search_text || "", search)) return false;
 
     const status = stayAvailability(record);
     if (status.blocked) {
@@ -2730,13 +2785,10 @@ function filterLoveDining() {
   const type = loveTypeFilter.value;
   const cuisine = loveCuisineFilter.value;
 
-  state.loveDiningFiltered = state.loveDining.filter((r) => {
-    if (type && r.type !== type) return false;
-    if (cuisine && r.cuisine !== cuisine) return false;
-    if (search) {
-      const hay = [r.name, r.hotel, r.cuisine, r.address].filter(Boolean).join(" ").toLowerCase();
-      if (!hay.includes(search)) return false;
-    }
+  state.loveDiningFiltered = state.loveDining.filter((record) => {
+    if (type && record.type !== type) return false;
+    if (cuisine && record.cuisine !== cuisine) return false;
+    if (search && !fuzzyMatchSearch(record.search_text || "", search)) return false;
     return true;
   });
 
@@ -2996,6 +3048,15 @@ async function init() {
   }
   if (loveDiningResponse && loveDiningResponse.ok) {
     state.loveDining = await loveDiningResponse.json();
+    state.loveDining.forEach((record) => {
+      record.search_text = [
+        record.search_text,
+        record.name,
+        record.hotel,
+        record.cuisine,
+        record.address,
+      ].filter(Boolean).join(" ").toLowerCase();
+    });
     refreshLoveDiningCuisineOptions();
   }
   if (ratingsResponse && ratingsResponse.ok) {
