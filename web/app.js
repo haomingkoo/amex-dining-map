@@ -387,35 +387,50 @@ const staysMapElement = document.getElementById("stays-map");
 const loveDiningMapElement = document.getElementById("love-map");
 let themedTileLayers = [];
 
-const map = hasLeaflet
-  ? L.map("map", {
-      zoomControl: true,
-      scrollWheelZoom: true,
-    }).setView([25, 15], 2)
-  : null;
+// Maps are initialized in init() after DOM is ready
+let map = null;
+let staysMap = null;
+let loveMap = null;
 
-const staysMap = hasLeaflet
-  ? L.map("stays-map", {
-      zoomControl: true,
-      scrollWheelZoom: true,
-    }).setView([20, 10], 2)
-  : null;
-
-const loveMap = hasLeaflet
-  ? L.map("love-map", {
-      zoomControl: true,
-      scrollWheelZoom: true,
-    }).setView([1.3521, 103.8198], 12)
-  : null;
-
-function syncMapTheme(theme) {
+function initMaps() {
   if (!hasLeaflet) return;
 
+  // Create Leaflet map instances now that DOM is ready
+  if (mapElement && !map) {
+    map = L.map("map", {
+      zoomControl: true,
+      scrollWheelZoom: true,
+    }).setView([25, 15], 2);
+  }
+
+  if (staysMapElement && !staysMap) {
+    staysMap = L.map("stays-map", {
+      zoomControl: true,
+      scrollWheelZoom: true,
+    }).setView([20, 10], 2);
+  }
+
+  if (loveDiningMapElement && !loveMap) {
+    loveMap = L.map("love-map", {
+      zoomControl: true,
+      scrollWheelZoom: true,
+    }).setView([1.3521, 103.8198], 12);
+  }
+
+  // Set up tile layers for all maps
+  setupTileLayers();
+}
+
+function setupTileLayers() {
+  if (!hasLeaflet) return;
+
+  // Remove existing tile layers
   themedTileLayers.forEach(({ instance, layer }) => {
-    instance.removeLayer(layer);
+    if (instance && layer) instance.removeLayer(layer);
   });
 
-  const tileUrl = THEME_TILE_URLS[normalizeTheme(theme)];
+  // Add new tile layers for current theme
+  const tileUrl = THEME_TILE_URLS[normalizeTheme(currentTheme)];
   themedTileLayers = [map, staysMap, loveMap]
     .filter(Boolean)
     .map((instance) => ({
@@ -424,14 +439,20 @@ function syncMapTheme(theme) {
     }));
 }
 
-if (hasLeaflet) {
-  syncMapTheme(currentTheme);
-} else {
-  mapElement.innerHTML =
+function syncMapTheme(theme) {
+  if (!hasLeaflet) return;
+  currentTheme = normalizeTheme(theme);
+  setupTileLayers();
+}
+
+// Note: Maps are initialized in init() after DOM is ready
+// Tile layers are set up in setupTileLayers() called from initMaps()
+if (!hasLeaflet) {
+  if (mapElement) mapElement.innerHTML =
     '<div class="empty-state">Map library failed to load. Dining results are still available below.</div>';
-  staysMapElement.innerHTML =
+  if (staysMapElement) staysMapElement.innerHTML =
     '<div class="empty-state">Map library failed to load. Plat Stay results are still available below.</div>';
-  loveDiningMapElement.innerHTML =
+  if (loveDiningMapElement) loveDiningMapElement.innerHTML =
     '<div class="empty-state">Map library failed to load. Venue list is still available below.</div>';
 }
 
@@ -3156,6 +3177,10 @@ async function init() {
   setTableOpen(false);
   setStayToolbarOpen(false);
   setLoveToolbarOpen(false);
+
+  // Initialize Leaflet maps now that DOM is fully ready
+  initMaps();
+
   handleHashRoute();
   if (!window.location.hash) {
     window.location.hash = "#/dining/world";
