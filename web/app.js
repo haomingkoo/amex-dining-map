@@ -3305,45 +3305,63 @@ document.addEventListener("click", (event) => {
 
 // ─── Mobile Bottom Sheet Handling ───────────────────────────────────────────
 // Expand/collapse focus panels on mobile as bottom sheets
+let bottomSheetInitialized = false;
+
 function initBottomSheet() {
   if (window.innerWidth > MOBILE_BREAKPOINT) return; // Desktop only
 
-  const focusPanels = document.querySelectorAll('.focus-panel');
-
-  focusPanels.forEach(panel => {
-    // Click on panel handle or anywhere to toggle
-    panel.addEventListener('click', (e) => {
-      // Don't expand if clicking on interactive elements
-      if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
-
-      panel.classList.toggle('expanded');
-    });
-  });
-
-  // Close sheet if clicking outside
-  document.addEventListener('click', (e) => {
-    focusPanels.forEach(panel => {
-      if (panel.classList.contains('expanded') &&
-          !panel.contains(e.target) &&
-          !e.target.closest('.map-panel') &&
-          !e.target.closest('[id*="map"]')) {
-        panel.classList.remove('expanded');
-      }
-    });
-  });
+  // Use event delegation to avoid listener leaks
+  document.addEventListener('click', handleBottomSheetClick, true); // Capture phase
+  bottomSheetInitialized = true;
 }
 
-// Initialize on load
+function handleBottomSheetClick(e) {
+  const focusPanel = e.target.closest('.focus-panel');
+  const mapPanel = e.target.closest('.map-panel');
+  const mapElement = e.target.closest('[id*="map"]');
+
+  if (!focusPanel && !mapPanel && !mapElement) {
+    // Clicked outside all panels - collapse expanded sheets
+    document.querySelectorAll('.focus-panel.expanded').forEach(panel => {
+      panel.classList.remove('expanded');
+    });
+  }
+
+  if (focusPanel) {
+    e.stopPropagation(); // Prevent bubbling to document listener
+
+    // Don't toggle if clicking on interactive elements
+    if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' ||
+        e.target.closest('a') || e.target.closest('button')) {
+      return;
+    }
+
+    focusPanel.classList.toggle('expanded');
+  }
+}
+
+// Initialize when DOM is ready
+function ensureBottomSheetInit() {
+  if (!bottomSheetInitialized && window.innerWidth <= MOBILE_BREAKPOINT) {
+    initBottomSheet();
+  }
+}
+
+// Check if DOM is already loaded
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initBottomSheet);
+  document.addEventListener('DOMContentLoaded', ensureBottomSheetInit);
 } else {
-  initBottomSheet();
+  ensureBottomSheetInit();
 }
 
 // Re-initialize on hash route change (when switching between dining/stays/love)
 const originalHashChange = window.onhashchange;
 window.addEventListener("hashchange", () => {
-  setTimeout(initBottomSheet, 100);
+  // Collapse all sheets when changing routes
+  document.querySelectorAll('.focus-panel.expanded').forEach(panel => {
+    panel.classList.remove('expanded');
+  });
+  ensureBottomSheetInit();
   if (originalHashChange) originalHashChange();
 });
 
