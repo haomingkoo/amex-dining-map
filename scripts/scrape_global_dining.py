@@ -55,6 +55,15 @@ HEADERS = {
 
 SOURCE_MAP_ALIGNMENT_KM = 0.35
 GOOGLE_PLACE_ALIGNMENT_KM = 0.35
+HEX_SLUG_SUFFIX_RE = re.compile(r"-[0-9a-f]{8}$", re.IGNORECASE)
+POSTCODE_TOKEN_RE = re.compile(
+    r"^(?:"
+    r"\d{4,6}|"
+    r"[a-z]\d[a-z]\d[a-z]\d|"
+    r"[a-z]{1,2}\d[a-z\d]?\d[a-z]{2}"
+    r")$",
+    re.IGNORECASE,
+)
 
 
 def http_get(url: str, retries: int = 3, timeout: int = 15) -> str:
@@ -104,7 +113,7 @@ def fetch_sitemap_urls() -> list[str]:
             if not sub_xml:
                 continue
             sub_root = ET.fromstring(sub_xml)
-            for url_el in sub_root.findall("sm:url/sm:loc", sub_xml):
+            for url_el in sub_root.findall("sm:url/sm:loc", ns):
                 all_urls.append(remap_url(url_el.text or ""))
             time.sleep(0.3)
         return all_urls
@@ -312,6 +321,11 @@ def normalized_ascii(value: str | None) -> str:
     text = re.sub(r"\broad\b", "rd", text)
     text = re.sub(r"\bstreet\b", "st", text)
     text = re.sub(r"\bavenue\b", "ave", text)
+    text = re.sub(r"\bwest\b", "w", text)
+    text = re.sub(r"\beast\b", "e", text)
+    text = re.sub(r"\bnorth\b", "n", text)
+    text = re.sub(r"\bsouth\b", "s", text)
+    text = re.sub(r"(\d+)(?:st|nd|rd|th)\b", r"\1", text)
     text = re.sub(r"[^a-z0-9]+", " ", text)
     return compact_space(text)
 
@@ -421,6 +435,142 @@ def validated_fallback_coordinates(record: dict[str, Any], cache: dict[str, Any]
             return lat, lng, source_label
 
     return None
+
+
+def count_duplicate_values(values: list[str]) -> int:
+    counts: dict[str, int] = {}
+    duplicates = 0
+    for value in values:
+        if not value:
+            continue
+        counts[value] = counts.get(value, 0) + 1
+        if counts[value] == 2:
+            duplicates += 1
+    return duplicates
+
+
+def canonical_restaurant_slug(url: str | None) -> str:
+    slug = (url or "").rstrip("/").split("/")[-1]
+    slug = HEX_SLUG_SUFFIX_RE.sub("", slug)
+    return normalized_ascii(slug)
+
+
+def canonical_address(value: str | None, country: str | None) -> str:
+    text = normalized_ascii(value)
+    if not text:
+        return ""
+
+    country_norm = normalized_ascii(country)
+    filtered_tokens: list[str] = []
+    for token in text.split():
+        if country_norm and token in country_norm.split():
+            continue
+        if POSTCODE_TOKEN_RE.fullmatch(token):
+            continue
+        filtered_tokens.append(token)
+    return compact_space(" ".join(filtered_tokens))
+
+
+def venue_fingerprint(record: dict[str, Any]) -> tuple[str, ...]:
+    country = normalized_ascii(record.get("country"))
+    name = normalized_ascii(record.get("name"))
+    address = canonical_address(record.get("source_localized_address"), record.get("country"))
+    website = normalized_ascii(record.get("website_url"))
+    city = normalized_ascii(record.get("city"))
+
+    if name and address:
+        return ("name_address", country, name, address)
+    if name and website and city:
+        return ("name_website_city", country, name, website, city)
+    return ("canonical_slug", country, canonical_restaurant_slug(record.get("source_url")))
+
+
+def record_quality_score(record: dict[str, Any]) -> tuple[int, int, int, int]:
+    slug = (record.get("source_url") or "").rstrip("/").split("/")[-1]
+    is_plain_slug = int(not HEX_SLUG_SUFFIX_RE.search(slug))
+    has_website = int(bool(record.get("website_url")))
+    has_map = int(bool(record.get("source_google_map_url")))
+    has_coordinates = int(record.get("lat") is not None and record.get("lng") is not None)
+    return (is_plain_slug, has_website, has_map, has_coordinates)
+
+
+def dedupe_records(records: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    by_url: dict[str, dict[str, Any]] = {}
+    duplicate_urls = 0
+    for record in records:
+        url = record.get("source_url")
+        if url in by_url:
+            duplicate_urls += 1
+            continue
+        by_url[url] = record
+
+    deduped: list[dict[str, Any]] = []
+    seen_fingerprints: dict[tuple[str, ...], int] = {}
+    duplicate_fingerprints = 0
+    replaced_with_better = 0
+    removed_by_country: dict[str, int] = {}
+
+    for record in by_url.values():
+        fingerprint = venue_fingerprint(record)
+        existing_idx = seen_fingerprints.get(fingerprint)
+        if existing_idx is None:
+            seen_fingerprints[fingerprint] = len(deduped)
+            deduped.append(record)
+            continue
+
+        duplicate_fingerprints += 1
+        country = record.get("country") or "Unknown"
+        removed_by_country[country] = removed_by_country.get(country, 0) + 1
+
+        existing = deduped[existing_idx]
+        if record_quality_score(record) > record_quality_score(existing):
+            deduped[existing_idx] = record
+            replaced_with_better += 1
+
+    stats = {
+        "raw_count": len(records),
+        "duplicate_source_urls": duplicate_urls,
+        "duplicate_fingerprints": duplicate_fingerprints,
+        "removed_count": len(records) - len(deduped),
+        "replaced_with_better": replaced_with_better,
+        "removed_by_country": dict(sorted(removed_by_country.items(), key=lambda item: (-item[1], item[0]))),
+    }
+    return deduped, stats
+
+
+def unique_record_id(record: dict[str, Any], include_region: bool = False) -> str:
+    path = (record.get("source_url") or "").replace(BASE_URL, "").replace(SITEMAP_DOMAIN, "").strip("/")
+    parts = path.split("/")
+    country_slug = parts[0] if len(parts) >= 1 else ""
+    region_slug = parts[1] if len(parts) >= 2 else ""
+    restaurant_slug = parts[2] if len(parts) >= 3 else ""
+    if include_region and region_slug:
+        return f"amex-global-{country_slug}-{region_slug}-{restaurant_slug}"
+    return f"amex-global-{country_slug}-{restaurant_slug}"
+
+
+def assign_unique_record_ids(records: list[dict[str, Any]]) -> int:
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for record in records:
+        groups.setdefault(record["id"], []).append(record)
+
+    reassigned = 0
+    used_ids = {record["id"] for record in records}
+    for record_id, group in groups.items():
+        if len(group) <= 1:
+            continue
+
+        used_ids.discard(record_id)
+        for record in group:
+            candidate = unique_record_id(record, include_region=True)
+            if not candidate or candidate in used_ids:
+                path = (record.get("source_url") or "").replace(BASE_URL, "").replace(SITEMAP_DOMAIN, "").strip("/")
+                short_hash = hashlib.sha1(path.encode()).hexdigest()[:8]
+                candidate = f"{unique_record_id(record, include_region=True)}-{short_hash}"
+            record["id"] = candidate
+            used_ids.add(candidate)
+            reassigned += 1
+    return reassigned
 
 
 def validate_record_coordinates(
@@ -788,6 +938,8 @@ def main() -> None:
         for u in failed[:10]:
             print(f"  {u}", file=sys.stderr)
 
+    records, dedupe_stats = dedupe_records(records)
+
     geocode_cache: dict[str, Any] = {}
     if GEOCODE_CACHE_PATH.exists():
         geocode_cache = json.loads(GEOCODE_CACHE_PATH.read_text())
@@ -810,6 +962,12 @@ def main() -> None:
     # ── 3. Apply manual overrides and compute stats ───────────────────
     fetched_at = datetime.datetime.utcnow().isoformat() + "Z"
 
+    # ── Disambiguate IDs first (before applying overrides) ──
+    from collections import Counter
+    raw_duplicate_ids = count_duplicate_values([r["id"] for r in records])
+    reassigned_ids = assign_unique_record_ids(records)
+    remaining_duplicate_ids = count_duplicate_values([r["id"] for r in records])
+
     # ── Apply coordinate overrides (manually verified fixes that survive re-scrapes) ──
     if OVERRIDES_PATH.exists():
         overrides = json.loads(OVERRIDES_PATH.read_text())
@@ -827,13 +985,30 @@ def main() -> None:
                 applied += 1
         if applied:
             print(f"Applied {applied} coordinate override(s) from {OVERRIDES_PATH.name}")
-
-    from collections import Counter
     by_country = Counter(r["country"] for r in records)
     mapped = sum(1 for r in records if r.get("lat") is not None and r.get("lng") is not None)
     print(f"\nCoverage: {mapped}/{len(records)} records have coordinates")
     if corrected or hidden:
         print(f"Coordinate validation: {corrected} corrected, {hidden} hidden pending verification")
+    if dedupe_stats["removed_count"]:
+        print(
+            "Deduplication: "
+            f"removed {dedupe_stats['removed_count']} records "
+            f"({dedupe_stats['duplicate_source_urls']} exact URL duplicates, "
+            f"{dedupe_stats['duplicate_fingerprints']} duplicate venue fingerprints)"
+        )
+        if dedupe_stats["removed_by_country"]:
+            top_countries = list(dedupe_stats["removed_by_country"].items())[:5]
+            print("Top dedupe countries:")
+            for country, count in top_countries:
+                print(f"  {country}: {count}")
+    if raw_duplicate_ids or reassigned_ids:
+        print(
+            "ID collisions: "
+            f"{raw_duplicate_ids} duplicate base ids before write, "
+            f"{reassigned_ids} records reassigned, "
+            f"{remaining_duplicate_ids} duplicate ids remain"
+        )
     print(f"\nBy country:")
     for country, count in sorted(by_country.items(), key=lambda x: -x[1]):
         print(f"  {country}: {count}")
