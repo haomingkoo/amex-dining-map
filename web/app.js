@@ -1,9 +1,9 @@
-const DATA_URL = "./data/japan-restaurants.json";
-const GLOBAL_DATA_URL = "./data/global-restaurants.json";
-const STAYS_DATA_URL = "./data/plat-stays.json";
-const STAYS_META_URL = "./data/plat-stay-source.json";
-const LOVE_DINING_DATA_URL = "./data/love-dining.json";
-const GOOGLE_RATINGS_URL = "./data/google-maps-ratings.json";
+const DATA_URL = "../data/japan-restaurants.json";
+const GLOBAL_DATA_URL = "../data/global-restaurants.json";
+const STAYS_DATA_URL = "../data/plat-stays.json";
+const STAYS_META_URL = "../data/plat-stay-source.json";
+const LOVE_DINING_DATA_URL = "../data/love-dining.json";
+const GOOGLE_RATINGS_URL = "../data/google-maps-ratings.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
 const LOVE_FIT_OPTIONS = { padding: [48, 48], maxZoom: 15 };
@@ -3304,55 +3304,8 @@ document.addEventListener("click", (event) => {
 });
 
 // ─── Mobile Bottom Sheet Handling ───────────────────────────────────────────
-// Expand/collapse focus panels on mobile as bottom sheets
-let bottomSheetInitialized = false;
-
-function initBottomSheet() {
-  if (window.innerWidth > MOBILE_BREAKPOINT) return; // Desktop only
-
-  // Use event delegation to avoid listener leaks
-  document.addEventListener('click', handleBottomSheetClick, true); // Capture phase
-  bottomSheetInitialized = true;
-}
-
-function handleBottomSheetClick(e) {
-  const focusPanel = e.target.closest('.focus-panel');
-  const mapPanel = e.target.closest('.map-panel');
-  const mapElement = e.target.closest('[id*="map"]');
-
-  if (!focusPanel && !mapPanel && !mapElement) {
-    // Clicked outside all panels - collapse expanded sheets
-    document.querySelectorAll('.focus-panel.expanded').forEach(panel => {
-      panel.classList.remove('expanded');
-    });
-  }
-
-  if (focusPanel) {
-    e.stopPropagation(); // Prevent bubbling to document listener
-
-    // Don't toggle if clicking on interactive elements
-    if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' ||
-        e.target.closest('a') || e.target.closest('button')) {
-      return;
-    }
-
-    focusPanel.classList.toggle('expanded');
-  }
-}
-
-// Initialize when DOM is ready
-function ensureBottomSheetInit() {
-  if (!bottomSheetInitialized && window.innerWidth <= MOBILE_BREAKPOINT) {
-    initBottomSheet();
-  }
-}
-
-// Check if DOM is already loaded
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', ensureBottomSheetInit);
-} else {
-  ensureBottomSheetInit();
-}
+// The mobile-venue-sheet is already rendered by renderMobileSheet() in setActiveRecord()
+// No additional JS needed - CSS handles the bottom sheet animation via sheet-visible class
 
 // Re-initialize on hash route change (when switching between dining/stays/love)
 const originalHashChange = window.onhashchange;
@@ -3361,7 +3314,6 @@ window.addEventListener("hashchange", () => {
   document.querySelectorAll('.focus-panel.expanded').forEach(panel => {
     panel.classList.remove('expanded');
   });
-  ensureBottomSheetInit();
   if (originalHashChange) originalHashChange();
 });
 
