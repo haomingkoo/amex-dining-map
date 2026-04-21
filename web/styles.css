@@ -2019,17 +2019,58 @@ h1, h2, h3 {
     font-size: clamp(15px, 4vw, 18px);
   }
 
-  /* On mobile: show both map and detail panel side-by-side */
+  /* Mobile: Map full screen with bottom sheet detail panel */
   .explorer-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: calc(100vh - 120px);
+    margin-bottom: 0;
+  }
+
+  .map-panel {
+    flex: 1;
+    min-height: 0;
+    order: 1;
   }
 
   .focus-panel {
     display: block;
-    min-width: 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 60vh;
+    height: auto;
+    border-radius: 16px 16px 0 0;
+    z-index: 40;
+    transform: translateY(calc(100% - 60px));
+    transition: transform 0.3s ease;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
+    overflow-y: auto;
+    order: 2;
+  }
+
+  .focus-panel.expanded {
+    transform: translateY(0);
+  }
+
+  /* Drag handle indicator */
+  .focus-panel::before {
+    content: '';
+    position: sticky;
+    top: 0;
+    display: block;
+    width: 40px;
+    height: 4px;
+    background: var(--gold-soft);
+    border-radius: 2px;
+    margin: 12px auto 16px;
+  }
+
+  .focus-panel .panel-head {
+    padding-top: 0;
   }
 
   .mobile-results-panel {
@@ -2043,10 +2084,10 @@ h1, h2, h3 {
   #map,
   #stays-map,
   #love-map {
-    min-height: 200px;
-    height: 50vh;
+    min-height: 300px;
+    height: 100%;
     max-height: 100%;
-    border-radius: var(--radius-md) !important;
+    border-radius: 0 !important;
   }
 
   .map-panel {

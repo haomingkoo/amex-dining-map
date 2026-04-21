@@ -3303,6 +3303,50 @@ document.addEventListener("click", (event) => {
   }
 });
 
+// ─── Mobile Bottom Sheet Handling ───────────────────────────────────────────
+// Expand/collapse focus panels on mobile as bottom sheets
+function initBottomSheet() {
+  if (window.innerWidth > MOBILE_BREAKPOINT) return; // Desktop only
+
+  const focusPanels = document.querySelectorAll('.focus-panel');
+
+  focusPanels.forEach(panel => {
+    // Click on panel handle or anywhere to toggle
+    panel.addEventListener('click', (e) => {
+      // Don't expand if clicking on interactive elements
+      if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
+
+      panel.classList.toggle('expanded');
+    });
+  });
+
+  // Close sheet if clicking outside
+  document.addEventListener('click', (e) => {
+    focusPanels.forEach(panel => {
+      if (panel.classList.contains('expanded') &&
+          !panel.contains(e.target) &&
+          !e.target.closest('.map-panel') &&
+          !e.target.closest('[id*="map"]')) {
+        panel.classList.remove('expanded');
+      }
+    });
+  });
+}
+
+// Initialize on load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initBottomSheet);
+} else {
+  initBottomSheet();
+}
+
+// Re-initialize on hash route change (when switching between dining/stays/love)
+const originalHashChange = window.onhashchange;
+window.addEventListener("hashchange", () => {
+  setTimeout(initBottomSheet, 100);
+  if (originalHashChange) originalHashChange();
+});
+
 window.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
   if (state.mobileToolbarOpen) setToolbarOpen(false);
