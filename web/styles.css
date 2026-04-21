@@ -2019,18 +2019,21 @@ h1, h2, h3 {
     font-size: clamp(15px, 4vw, 18px);
   }
 
-  /* On mobile: show map panel only (hide focus panel), then card list below */
+  /* On mobile: show both map and detail panel side-by-side */
   .explorer-grid {
-    display: block;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
     margin-bottom: 10px;
   }
 
   .focus-panel {
-    display: none;
+    display: block;
+    min-width: 0;
   }
 
   .mobile-results-panel {
-    display: block;
+    display: none;
   }
 
   .table-shell {
@@ -2040,9 +2043,9 @@ h1, h2, h3 {
   #map,
   #stays-map,
   #love-map {
-    min-height: 260px;
-    height: 46vw;
-    max-height: 340px;
+    min-height: 200px;
+    height: 50vh;
+    max-height: 100%;
     border-radius: var(--radius-md) !important;
   }
 
