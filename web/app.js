@@ -1080,12 +1080,15 @@ function createMarker(record) {
   const dinnerBand = priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label);
   const lunchBand = priceBandLabel(record.price_lunch_band_tier, record.price_lunch_band_label);
   const summary = diningSummaryPayload(record);
-  const marker = L.circleMarker([record.lat, record.lng], {
-    radius: 8,
-    fillColor: markerColor(record),
-    fillOpacity: 0.92,
-    color: "#091018",
-    weight: 2,
+
+  // Use a custom div icon instead of circleMarker which doesn't render reliably
+  const markerColor_val = markerColor(record);
+  const marker = L.marker([record.lat, record.lng], {
+    icon: L.divIcon({
+      html: `<div style="width: 16px; height: 16px; border-radius: 50%; background: ${markerColor_val}; border: 2px solid #091018; opacity: 0.92; cursor: pointer;"></div>`,
+      iconSize: [16, 16],
+      className: 'custom-marker-icon'
+    })
   });
 
   // Simple popup: name + cuisine + rating + Google Maps link
@@ -2373,12 +2376,15 @@ function createStayMarker(record) {
   const status = stayAvailability(record);
   const gRating = googleRating(record);
   const mapsUrl = stayGoogleMapsUrl(record);
-  const marker = L.circleMarker([record.lat, record.lng], {
-    radius: 8,
-    fillColor: status.key === "blocked" ? "#d6a44c" : "#5fb9a6",
-    fillOpacity: 0.92,
-    color: "#091018",
-    weight: 2,
+
+  // Use a custom div icon instead of circleMarker which doesn't render reliably
+  const color_val = status.key === "blocked" ? "#d6a44c" : "#5fb9a6";
+  const marker = L.marker([record.lat, record.lng], {
+    icon: L.divIcon({
+      html: `<div style="width: 16px; height: 16px; border-radius: 50%; background: ${color_val}; border: 2px solid #091018; opacity: 0.92; cursor: pointer;"></div>`,
+      iconSize: [16, 16],
+      className: 'custom-marker-icon'
+    })
   });
 
   // Simple popup: just name + location + rating + Google Maps link (matching Dining style)
@@ -2742,12 +2748,14 @@ function createLoveDiningMarker(record) {
   if (!hasLeaflet || !loveMap) return null;
   if (!loveDiningHasMapPin(record)) return null;
   const color = record.type === "hotel" ? "#9b6bd6" : "#e06b8b";
-  const marker = L.circleMarker([record.lat, record.lon], {
-    radius: 8,
-    fillColor: color,
-    fillOpacity: 0.9,
-    color: "#091018",
-    weight: 1.5,
+
+  // Use a custom div icon instead of circleMarker which doesn't render reliably
+  const marker = L.marker([record.lat, record.lon], {
+    icon: L.divIcon({
+      html: `<div style="width: 16px; height: 16px; border-radius: 50%; background: ${color}; border: 2px solid #091018; opacity: 0.9; cursor: pointer;"></div>`,
+      iconSize: [16, 16],
+      className: 'custom-marker-icon'
+    })
   });
 
   // Simple popup: name + cuisine + rating + Google Maps link
