@@ -1695,7 +1695,18 @@ function renderFocusCard() {
           <p class="map-cta-sub">or select a venue from the list below to see details here</p>
         </div>`
       : '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
+    // Hide focus-panel on mobile when no record
+    if (window.innerWidth <= MOBILE_BREAKPOINT) {
+      const fp = document.querySelector('.focus-panel');
+      if (fp) fp.style.display = 'none';
+    }
     return;
+  }
+
+  // Hide focus-panel on mobile when showing sheet instead
+  if (window.innerWidth <= MOBILE_BREAKPOINT) {
+    const fp = document.querySelector('.focus-panel');
+    if (fp) fp.style.display = 'none';
   }
 
   const isJapan = record.country === "Japan";
@@ -2069,9 +2080,9 @@ function renderMobileSheet(type, record) {
   requestAnimationFrame(() => sheet.classList.add("sheet-visible"));
 }
 
-/** Dining-specific sheet rendering */
+/** Dining-specific sheet rendering - RUTHLESSLY MINIMAL upfront */
 function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl) {
-  // Quick info row: All cuisine types + price + kid policy
+  // Quick info: cuisine + price + kid policy (upfront)
   const cuisines = (record.cuisines || []).join(", ") || "Cuisine";
   const priceLabel = record.price_dinner_band_label || "—";
   const kidPolicyLabel = record.child_policy_norm && record.child_policy_norm !== "unknown"
@@ -2085,15 +2096,12 @@ function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl
     ${kidPolicyLabel ? `<span class="divider">•</span><span class="quick-tag">${escapeHtml(kidPolicyLabel)}</span>` : ""}
   `;
 
-  // Comprehensive details section with all practical info
+  // UPFRONT details: address + phone + hours ONLY (what fits without scroll)
   const address = record.address || "—";
   const phone = record.phone;
   const hours = record.hours;
   const district = record.district || "";
-  const station = record.station;
-  const summary = diningSummaryPayload(record);
 
-  // Build details HTML - only show fields that have data
   let detailsHTML = `
     <div class="detail-line">
       <span class="detail-icon">📍</span>
@@ -2101,15 +2109,7 @@ function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl
     </div>
   `;
 
-  if (station) {
-    detailsHTML += `
-      <div class="detail-line">
-        <span class="detail-icon">🚇</span>
-        <span class="detail-text">${escapeHtml(station)}</span>
-      </div>
-    `;
-  }
-
+  // Only show phone/hours if they exist
   if (phone) {
     detailsHTML += `
       <div class="detail-line">
@@ -2128,41 +2128,58 @@ function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl
     `;
   }
 
-  // Add price tiers if available
-  if (record.price_lunch_min_jpy || record.price_lunch_max_jpy) {
-    const lunchMin = record.price_lunch_min_jpy || "—";
-    const lunchMax = record.price_lunch_max_jpy || "—";
-    detailsHTML += `
-      <div class="detail-line">
-        <span class="detail-icon">🍽️</span>
-        <span class="detail-text">Lunch: ¥${escapeHtml(String(lunchMin))}${lunchMin !== lunchMax ? `–¥${escapeHtml(String(lunchMax))}` : ""}</span>
-      </div>
-    `;
-  }
+  // SCROLLABLE SECTION: station, prices, summary (hidden until scroll)
+  const station = record.station;
+  const summary = diningSummaryPayload(record);
 
-  if (record.price_dinner_min_jpy || record.price_dinner_max_jpy) {
-    const dinnerMin = record.price_dinner_min_jpy || "—";
-    const dinnerMax = record.price_dinner_max_jpy || "—";
-    detailsHTML += `
-      <div class="detail-line">
-        <span class="detail-icon">🍷</span>
-        <span class="detail-text">Dinner: ¥${escapeHtml(String(dinnerMin))}${dinnerMin !== dinnerMax ? `–¥${escapeHtml(String(dinnerMax))}` : ""}</span>
-      </div>
-    `;
-  }
+  if (station || (record.price_lunch_min_jpy || record.price_lunch_max_jpy) || (record.price_dinner_min_jpy || record.price_dinner_max_jpy) || summary) {
+    detailsHTML += `<div class="detail-divider"></div>`;
 
-  // Add summary/description if available
-  if (summary) {
-    detailsHTML += `
-      <div class="detail-line" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
-        <span class="detail-text" style="font-size: 0.85em; color: var(--text-secondary);">${escapeHtml(summary)}</span>
-      </div>
-    `;
+    if (station) {
+      detailsHTML += `
+        <div class="detail-line">
+          <span class="detail-icon">🚇</span>
+          <span class="detail-text">${escapeHtml(station)}</span>
+        </div>
+      `;
+    }
+
+    // Price tiers
+    if (record.price_lunch_min_jpy || record.price_lunch_max_jpy) {
+      const lunchMin = record.price_lunch_min_jpy || "—";
+      const lunchMax = record.price_lunch_max_jpy || "—";
+      detailsHTML += `
+        <div class="detail-line">
+          <span class="detail-icon">🍽️</span>
+          <span class="detail-text">Lunch: ¥${escapeHtml(String(lunchMin))}${lunchMin !== lunchMax ? `–¥${escapeHtml(String(lunchMax))}` : ""}</span>
+        </div>
+      `;
+    }
+
+    if (record.price_dinner_min_jpy || record.price_dinner_max_jpy) {
+      const dinnerMin = record.price_dinner_min_jpy || "—";
+      const dinnerMax = record.price_dinner_max_jpy || "—";
+      detailsHTML += `
+        <div class="detail-line">
+          <span class="detail-icon">🍷</span>
+          <span class="detail-text">Dinner: ¥${escapeHtml(String(dinnerMin))}${dinnerMin !== dinnerMax ? `–¥${escapeHtml(String(dinnerMax))}` : ""}</span>
+        </div>
+      `;
+    }
+
+    // Summary at bottom
+    if (summary) {
+      detailsHTML += `
+        <div class="detail-line" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+          <span class="detail-text" style="font-size: 0.85em; color: var(--text-secondary);">${escapeHtml(summary)}</span>
+        </div>
+      `;
+    }
   }
 
   detailsEl.innerHTML = detailsHTML;
 
-  // Comprehensive warnings
+  // Warnings (scrollable section)
   const warningsList = [];
   if (record.only_kids_allowed) warningsList.push("👨‍👧‍👦 Kids only");
   if (record.no_kids_under_12) warningsList.push("⚠️ No kids under 12");
@@ -2176,32 +2193,21 @@ function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl
     warningsEl.classList.remove("active");
   }
 
-  // Actions: Google Maps + Expandable Full Details
+  // Actions: Only 2 buttons - Google Maps + Call
   const mapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
-  actionsEl.innerHTML = `
-    ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps →</a>` : ""}
-    <button class="btn secondary" id="dining-details-btn">Expand ↑</button>
-  `;
+  const phoneHref = phone ? `href="tel:${phone}"` : '';
 
-  // Expand sheet on button click
-  document.getElementById("dining-details-btn")?.addEventListener("click", () => {
-    const sheet = mobileDiningSheet;
-    const isExpanded = sheet.classList.contains("sheet-expanded");
-    if (isExpanded) {
-      sheet.classList.remove("sheet-expanded");
-    } else {
-      sheet.classList.add("sheet-expanded");
-    }
-  });
+  actionsEl.innerHTML = `
+    ${mapsUrl ? `<a class="btn primary" ${mapsUrl ? `href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener"` : ''}>📍 Maps</a>` : ""}
+    ${phone ? `<a class="btn secondary" ${phoneHref}>☎ Call</a>` : ""}
+  `;
 }
 
-/** Stays-specific sheet rendering */
+/** Stays-specific sheet rendering - RUTHLESSLY MINIMAL upfront */
 function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl) {
   const roomType = record.eligible_room_type || "Room";
   const availabilityStatus = stayAvailability(record);
   const pricePerNight = record.price_per_night ? `$${record.price_per_night}` : "—";
-  const nights = record.nights || 1;
-  const totalPrice = record.price_per_night ? `$${record.price_per_night * nights}` : "—";
 
   quickInfoEl.innerHTML = `
     <span class="quick-tag">${escapeHtml(roomType)}</span>
@@ -2211,13 +2217,10 @@ function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl)
     <span class="quick-status ${availabilityStatus.key === "available" ? "" : "closed"}">${escapeHtml(availabilityStatus.label)}</span>
   `;
 
-  // Comprehensive details
+  // UPFRONT details: address + city + phone ONLY
   const address = record.address || "Address not available";
   const city = record.city || "";
   const phone = record.phone;
-  const checkIn = record.check_in_date || "Flexible";
-  const checkOut = record.check_out_date || "Flexible";
-  const summary = record.summary || record.description || "";
 
   let detailsHTML = `
     <div class="detail-line">
@@ -2235,24 +2238,44 @@ function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl)
     `;
   }
 
-  detailsHTML += `
-    <div class="detail-line">
-      <span class="detail-icon">📅</span>
-      <span class="detail-text">Check-in: ${escapeHtml(checkIn)}</span>
-    </div>
-    <div class="detail-line">
-      <span class="detail-icon">📅</span>
-      <span class="detail-text">Check-out: ${escapeHtml(checkOut)}</span>
-    </div>
-    <div class="detail-line">
-      <span class="detail-icon">💰</span>
-      <span class="detail-text">Total: ${escapeHtml(totalPrice)} (${nights} night${nights !== 1 ? 's' : ''})</span>
-    </div>
-  `;
+  // SCROLLABLE SECTION: check-in/out, pricing, amenities, summary
+  const checkIn = record.check_in_date;
+  const checkOut = record.check_out_date;
+  const nights = record.nights || 1;
+  const totalPrice = record.price_per_night ? `$${record.price_per_night * nights}` : null;
+  const amenities = record.amenities ? (Array.isArray(record.amenities) ? record.amenities : [record.amenities]) : [];
+  const summary = record.summary || record.description || "";
 
-  // Add amenities if available
-  if (record.amenities) {
-    const amenities = Array.isArray(record.amenities) ? record.amenities : [record.amenities];
+  if (checkIn || checkOut || totalPrice || amenities.length > 0 || summary) {
+    detailsHTML += `<div class="detail-divider"></div>`;
+
+    if (checkIn) {
+      detailsHTML += `
+        <div class="detail-line">
+          <span class="detail-icon">📅</span>
+          <span class="detail-text">Check-in: ${escapeHtml(checkIn)}</span>
+        </div>
+      `;
+    }
+
+    if (checkOut) {
+      detailsHTML += `
+        <div class="detail-line">
+          <span class="detail-icon">📅</span>
+          <span class="detail-text">Check-out: ${escapeHtml(checkOut)}</span>
+        </div>
+      `;
+    }
+
+    if (totalPrice) {
+      detailsHTML += `
+        <div class="detail-line">
+          <span class="detail-icon">💰</span>
+          <span class="detail-text">Total: ${escapeHtml(totalPrice)} (${nights} night${nights !== 1 ? 's' : ''})</span>
+        </div>
+      `;
+    }
+
     if (amenities.length > 0) {
       detailsHTML += `
         <div class="detail-line" style="margin-top: 8px;">
@@ -2261,15 +2284,14 @@ function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl)
         </div>
       `;
     }
-  }
 
-  // Add summary if available
-  if (summary) {
-    detailsHTML += `
-      <div class="detail-line" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
-        <span class="detail-text" style="font-size: 0.85em; color: var(--text-secondary);">${escapeHtml(summary)}</span>
-      </div>
-    `;
+    if (summary) {
+      detailsHTML += `
+        <div class="detail-line" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+          <span class="detail-text" style="font-size: 0.85em; color: var(--text-secondary);">${escapeHtml(summary)}</span>
+        </div>
+      `;
+    }
   }
 
   detailsEl.innerHTML = detailsHTML;
@@ -2286,27 +2308,18 @@ function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl)
     warningsEl.classList.remove("active");
   }
 
-  // Actions
+  // Actions: Only 2 buttons - Google Maps + Call
   const mapsUrl = stayGoogleMapsUrl(record);
-  const reservationUrl = record.booking_url || record.reservation_url;
-  actionsEl.innerHTML = `
-    ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps →</a>` : ""}
-    <button class="btn secondary" id="stays-details-btn">Expand ↑</button>
-  `;
+  const phoneHref = phone ? `href="tel:${phone}"` : '';
 
-  // Expand sheet on button click
-  document.getElementById("stays-details-btn")?.addEventListener("click", () => {
-    const sheet = mobileStaysSheet;
-    const isExpanded = sheet.classList.contains("sheet-expanded");
-    if (isExpanded) {
-      sheet.classList.remove("sheet-expanded");
-    } else {
-      sheet.classList.add("sheet-expanded");
-    }
-  });
+  actionsEl.innerHTML = `
+    ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">📍 Maps</a>` : ""}
+    ${phone ? `<a class="btn secondary" ${phoneHref}>☎ Call</a>` : ""}
+  `;
 }
 
 /** Love Dining-specific sheet rendering */
+/** Love Dining-specific sheet rendering - RUTHLESSLY MINIMAL upfront */
 function renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl) {
   const venueType = record.type === "hotel" ? "Hotel" : "Restaurant";
   const cuisine = record.cuisine || "Venue";
@@ -2317,19 +2330,33 @@ function renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actio
     <span class="quick-tag">${escapeHtml(cuisine)}</span>
   `;
 
-  const address = record.address || "—";
-  const city = record.city || "—";
-  const phone = record.phone || "—";
-  detailsEl.innerHTML = `
-    <div class="detail-line">
-      <span class="detail-icon">📍</span>
-      <span class="detail-text">${escapeHtml(address)}, ${escapeHtml(city)}</span>
-    </div>
-    <div class="detail-line">
-      <span class="detail-icon">☎</span>
-      <span class="detail-text"><a href="tel:${escapeHtml(phone)}">${escapeHtml(phone)}</a></span>
-    </div>
-  `;
+  // UPFRONT: address only (essential for location)
+  const address = record.address;
+  const city = record.city;
+  const phone = record.phone;
+
+  let detailsHTML = "";
+
+  if (address || city) {
+    detailsHTML += `
+      <div class="detail-line">
+        <span class="detail-icon">📍</span>
+        <span class="detail-text">${escapeHtml(address)}${city ? `, ${escapeHtml(city)}` : ""}</span>
+      </div>
+    `;
+  }
+
+  // SCROLLABLE: phone only if it exists
+  if (phone) {
+    detailsHTML += `
+      <div class="detail-line">
+        <span class="detail-icon">☎</span>
+        <span class="detail-text"><a href="tel:${escapeHtml(phone)}">${escapeHtml(phone)}</a></span>
+      </div>
+    `;
+  }
+
+  detailsEl.innerHTML = detailsHTML;
 
   // Warnings
   const warningsList = [];
@@ -2342,21 +2369,14 @@ function renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actio
     warningsEl.classList.remove("active");
   }
 
-  // Actions
+  // Actions: Only 2 buttons - Google Maps + Call
   const mapsUrl = record.maps_url || record.google_maps_url;
+  const phoneHref = phone ? `href="tel:${phone}"` : '';
+
   actionsEl.innerHTML = `
-    ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps →</a>` : ""}
-    <button class="btn secondary" id="love-details-btn">Expand ↑</button>
+    ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">📍 Maps</a>` : ""}
+    ${phone ? `<a class="btn secondary" ${phoneHref}>☎ Call</a>` : ""}
   `;
-  document.getElementById("love-details-btn")?.addEventListener("click", () => {
-    const sheet = mobileLoveDiningSheet;
-    const isExpanded = sheet.classList.contains("sheet-expanded");
-    if (isExpanded) {
-      sheet.classList.remove("sheet-expanded");
-    } else {
-      sheet.classList.add("sheet-expanded");
-    }
-  });
 }
 function focusActiveRecordOnMap() {
   if (!hasLeaflet || !map) return;
@@ -3721,6 +3741,50 @@ window.addEventListener("resize", () => {
     });
   }
 });
+
+// Close mobile sheet when clicking on map (mobile only)
+function setupMobileSheetDismissal() {
+  if (window.innerWidth > MOBILE_BREAKPOINT) return;
+
+  const maps = [map, staysMap, loveMap].filter(Boolean);
+  maps.forEach(m => {
+    if (!m) return;
+    // Close sheet when user clicks on the map
+    m.on("click", () => {
+      [mobileDiningSheet, mobileStaysSheet, mobileLoveDiningSheet].forEach(sheet => {
+        if (sheet) sheet.classList.remove("sheet-visible");
+      });
+    });
+  });
+}
+
+setTimeout(setupMobileSheetDismissal, 500);
+
+// Hide header clutter on mobile to maximize map visibility
+function hideMobileClutter() {
+  if (window.innerWidth <= MOBILE_BREAKPOINT) {
+    const selectors = [
+      '.context-title',
+      '.context-strip',
+      '.summary-strip',
+      '.map-instructions',
+      '.refine-panel',
+      '#summary-strip-text',
+      '.focus-panel'
+    ];
+
+    selectors.forEach(selector => {
+      document.querySelectorAll(selector).forEach(el => {
+        el.style.display = 'none';
+      });
+    });
+  }
+}
+
+// Run on init and when content changes
+hideMobileClutter();
+window.addEventListener('resize', hideMobileClutter);
+document.addEventListener('readystatechange', hideMobileClutter);
 
 init().catch(() => {
   focusCard.innerHTML =

@@ -2019,12 +2019,21 @@ h1, h2, h3 {
     font-size: clamp(15px, 4vw, 18px);
   }
 
-  /* Mobile: Map full screen with bottom sheet detail panel */
+  /* Hide header clutter on mobile - map should fill screen */
+  .context-strip,
+  .context-title,
+  .summary-strip,
+  .map-instructions,
+  .refine-panel {
+    display: none !important;
+  }
+
+  /* Mobile: Map full screen with minimal bottom sheet */
   .explorer-grid {
     display: flex;
     flex-direction: column;
     position: relative;
-    height: calc(100vh - 120px);
+    height: calc(100vh - 50px);
     margin-bottom: 0;
   }
 
@@ -2035,27 +2044,8 @@ h1, h2, h3 {
   }
 
   .focus-panel {
-    display: block;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-height: 60vh;
-    height: auto;
-    border-radius: 16px 16px 0 0;
-    z-index: 50;
-    transform: translateY(calc(100% - 70px));
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
-    overflow-y: auto;
+    display: none !important;
     order: 2;
-    will-change: transform;
-  }
-
-  .focus-panel.expanded {
-    transform: translateY(0);
-    max-height: 85vh;
   }
 
   /* Drag handle indicator */
@@ -2069,10 +2059,6 @@ h1, h2, h3 {
     background: var(--gold-soft);
     border-radius: 2px;
     margin: 12px auto 16px;
-  }
-
-  .focus-panel .panel-head {
-    padding-top: 0;
   }
 
   .mobile-results-panel {
@@ -2325,7 +2311,6 @@ h1, h2, h3 {
    ============================================================================ */
 
 .mobile-sheet {
-  display: none;
   position: fixed;
   bottom: 0;
   left: 0;
@@ -2336,18 +2321,20 @@ h1, h2, h3 {
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(16px);
-  max-height: 50vh;
+  max-height: 40vh;
   overflow-y: auto;
   overflow-y: overlay;
   -webkit-overflow-scrolling: touch;
   transform: translateY(100%);
   transition: transform 0.3s ease-out;
-  padding-top: 12px;
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-top: 8px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  pointer-events: none;
 }
 
 .mobile-sheet.sheet-visible {
   transform: translateY(0);
+  pointer-events: auto;
 }
 
 .mobile-sheet.sheet-expanded {
@@ -2392,9 +2379,9 @@ h1, h2, h3 {
   position: relative;
   background: rgba(11, 22, 36, 0.5);
   border: 1px solid rgba(201, 165, 90, 0.15);
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 12px;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
 }
 
 .rating-badge {
@@ -2500,6 +2487,12 @@ h1, h2, h3 {
 
 .detail-text a:hover {
   border-bottom-color: #d4af37;
+}
+
+.detail-divider {
+  height: 1px;
+  background: linear-gradient(to right, rgba(201, 165, 90, 0.2), transparent);
+  margin: 12px 0;
 }
 
 .warnings {
