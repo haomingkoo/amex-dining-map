@@ -2065,7 +2065,14 @@ function renderMobileSheet(type, record) {
   }
 
   sheet.hidden = false;
-  requestAnimationFrame(() => sheet.classList.add("sheet-visible"));
+  requestAnimationFrame(() => {
+    sheet.classList.add("sheet-visible");
+    // Move focus to sheet for better a11y, focus the first interactive element
+    const closeBtn = sheet.querySelector(".sheet-close");
+    const firstBtn = sheet.querySelector(".btn");
+    if (closeBtn) closeBtn.focus();
+    else if (firstBtn) firstBtn.focus();
+  });
 }
 
 /** Dining-specific sheet rendering - RUTHLESSLY MINIMAL upfront */
