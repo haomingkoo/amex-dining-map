@@ -653,17 +653,60 @@
 
     </div><!-- /page-shell -->
 
-    <!-- Mobile venue bottom sheet (appears on small screens when a venue is selected) -->
-    <div id="mobile-venue-sheet" class="mobile-venue-sheet" hidden aria-live="polite">
-      <div class="mvs-bar">
-        <div class="mvs-region-dot" id="mvs-region-dot"></div>
-        <div class="mvs-info">
-          <div class="mvs-name" id="mvs-name"></div>
-          <div class="mvs-meta" id="mvs-meta"></div>
-        </div>
-        <button class="mvs-dismiss ghost-btn secondary" id="mvs-dismiss" aria-label="Dismiss">×</button>
+    <!-- Unified Mobile Bottom Sheets (redesigned) -->
+
+    <!-- Dining Sheet -->
+    <div id="mobile-dining-sheet" class="mobile-sheet dining" hidden aria-live="polite">
+      <div class="sheet-header">
+        <div class="sheet-handle"></div>
+        <button class="sheet-close" aria-label="Close dining details">×</button>
       </div>
-      <div class="mvs-actions" id="mvs-actions"></div>
+      <div class="sheet-content">
+        <div class="venue-card">
+          <div class="rating-badge">★ <span id="dining-sheet-rating">—</span> <span id="dining-sheet-reviews"></span></div>
+          <h2 id="dining-sheet-name" class="venue-name"></h2>
+          <div id="dining-sheet-quick-info" class="quick-info"></div>
+          <div id="dining-sheet-details" class="venue-details"></div>
+          <div id="dining-sheet-warnings" class="warnings"></div>
+        </div>
+      </div>
+      <div id="dining-sheet-actions" class="sheet-actions"></div>
+    </div>
+
+    <!-- Stays Sheet -->
+    <div id="mobile-stays-sheet" class="mobile-sheet stays" hidden aria-live="polite">
+      <div class="sheet-header">
+        <div class="sheet-handle"></div>
+        <button class="sheet-close" aria-label="Close accommodation details">×</button>
+      </div>
+      <div class="sheet-content">
+        <div class="venue-card">
+          <div class="rating-badge">★ <span id="stays-sheet-rating">—</span> <span id="stays-sheet-reviews"></span></div>
+          <h2 id="stays-sheet-name" class="venue-name"></h2>
+          <div id="stays-sheet-quick-info" class="quick-info"></div>
+          <div id="stays-sheet-details" class="venue-details"></div>
+          <div id="stays-sheet-warnings" class="warnings"></div>
+        </div>
+      </div>
+      <div id="stays-sheet-actions" class="sheet-actions"></div>
+    </div>
+
+    <!-- Love Dining Sheet -->
+    <div id="mobile-love-dining-sheet" class="mobile-sheet love-dining" hidden aria-live="polite">
+      <div class="sheet-header">
+        <div class="sheet-handle"></div>
+        <button class="sheet-close" aria-label="Close venue details">×</button>
+      </div>
+      <div class="sheet-content">
+        <div class="venue-card">
+          <div class="rating-badge">★ <span id="love-sheet-rating">—</span> <span id="love-sheet-reviews"></span></div>
+          <h2 id="love-sheet-name" class="venue-name"></h2>
+          <div id="love-sheet-quick-info" class="quick-info"></div>
+          <div id="love-sheet-details" class="venue-details"></div>
+          <div id="love-sheet-warnings" class="warnings"></div>
+        </div>
+      </div>
+      <div id="love-sheet-actions" class="sheet-actions"></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

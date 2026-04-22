@@ -520,12 +520,17 @@ const tableSummary = document.getElementById("table-summary");
 const mobileSummary = document.getElementById("mobile-summary");
 const resultsTableBody = document.getElementById("results-table-body");
 const mobileResultsList = document.getElementById("mobile-results-list");
-const mobileVenueSheet = document.getElementById("mobile-venue-sheet");
-const mvsName = document.getElementById("mvs-name");
-const mvsMeta = document.getElementById("mvs-meta");
-const mvsActions = document.getElementById("mvs-actions");
-const mvsRegionDot = document.getElementById("mvs-region-dot");
-const mvsDismiss = document.getElementById("mvs-dismiss");
+
+// New unified mobile sheets (redesigned)
+const mobileDiningSheet = document.getElementById("mobile-dining-sheet");
+const mobileStaysSheet = document.getElementById("mobile-stays-sheet");
+const mobileLoveDiningSheet = document.getElementById("mobile-love-dining-sheet");
+
+const sheetElements = {
+  dining: mobileDiningSheet,
+  stays: mobileStaysSheet,
+  loveDining: mobileLoveDiningSheet,
+};
 const staysExplorer = document.getElementById("stays-explorer");
 const staysMapFilterShell = document.getElementById("stays-map-filter-shell");
 const staysToolbar = document.getElementById("stays-filter-toolbar");
@@ -2008,38 +2013,207 @@ function setActiveRecord(id) {
     }
   }
   renderMobileCards(false);
-  renderMobileSheet();
+  const record = activeRecord();
+  if (record) renderMobileSheet("dining", record);
 }
 
-function renderMobileSheet() {
-  if (!mobileVenueSheet) return;
+/** Unified Mobile Sheet Renderer - works for all three venue types */
+function renderMobileSheet(type, record) {
   const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
-  const record = activeRecord();
-  if (!isMobile || !record) {
-    mobileVenueSheet.classList.remove("sheet-visible");
+  const sheet = sheetElements[type];
+
+  if (!isMobile || !sheet || !record) {
+    sheet?.classList.remove("sheet-visible");
     return;
   }
-  mvsRegionDot.style.background = markerColor(record);
-  mvsName.textContent = record.name;
+
+  // Get elements specific to this sheet type
+  const nameEl = sheet.querySelector(`#${type}-sheet-name`);
+  const ratingEl = sheet.querySelector(`#${type}-sheet-rating`);
+  const reviewsEl = sheet.querySelector(`#${type}-sheet-reviews`);
+  const quickInfoEl = sheet.querySelector(`#${type}-sheet-quick-info`);
+  const detailsEl = sheet.querySelector(`#${type}-sheet-details`);
+  const warningsEl = sheet.querySelector(`#${type}-sheet-warnings`);
+  const actionsEl = sheet.querySelector(`#${type}-sheet-actions`);
+
+  // Set name
+  nameEl.textContent = record.name;
+
+  // Set rating
   const gRating = googleRating(record);
-  const ratingStr = gRating && gRating.rating != null
-    ? `★ ${gRating.rating}${gRating.review_count ? ` · ${Number(gRating.review_count).toLocaleString()} reviews` : ""}  ·  `
-    : "";
-  const cuisine = (record.cuisines || []).join(", ") || record.cuisine || "";
-  mvsMeta.textContent = `${ratingStr}${cuisine}`;
+  if (gRating && gRating.rating != null) {
+    ratingEl.textContent = gRating.rating.toFixed(1);
+    reviewsEl.textContent = `(${Number(gRating.review_count || 0).toLocaleString()})`;
+  } else {
+    ratingEl.textContent = "—";
+    reviewsEl.textContent = "";
+  }
 
-  const mapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
-  mvsActions.innerHTML = `
-    <button type="button" class="ghost-btn secondary" id="mvs-scroll-btn">Full details ↓</button>
-    ${mapsUrl ? `<a class="ghost-btn secondary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps</a>` : ""}
+  // Type-specific rendering
+  if (type === "dining") {
+    renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl);
+  } else if (type === "stays") {
+    renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl);
+  } else if (type === "loveDining") {
+    renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl);
+  }
+
+  sheet.hidden = false;
+  requestAnimationFrame(() => sheet.classList.add("sheet-visible"));
+}
+
+/** Dining-specific sheet rendering */
+function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl) {
+  // Quick info: Cuisine + Price + Status
+  const cuisine = (record.cuisines || []).join(", ") || "Cuisine";
+  const priceLabel = record.price_dinner_band_label || "—";
+  quickInfoEl.innerHTML = `
+    <span class="quick-tag">${escapeHtml(cuisine)}</span>
+    <span class="divider">•</span>
+    <span class="quick-price">${escapeHtml(priceLabel)}</span>
+    <span class="divider">•</span>
+    <span class="quick-status open">Open</span>
   `;
-  mvsActions.querySelector("#mvs-scroll-btn")?.addEventListener("click", () => {
-    const activeCard = mobileResultsList.querySelector(".mobile-card.active");
-    if (activeCard) activeCard.scrollIntoView({ behavior: "smooth", block: "center" });
-  });
 
-  mobileVenueSheet.hidden = false;
-  requestAnimationFrame(() => mobileVenueSheet.classList.add("sheet-visible"));
+  // Details: Address + Phone + Hours
+  const address = record.address || "—";
+  const phone = record.phone || "—";
+  const hours = record.hours || "—";
+  detailsEl.innerHTML = `
+    <div class="detail-line">
+      <span class="detail-icon">📍</span>
+      <span class="detail-text">${escapeHtml(address)}</span>
+    </div>
+    <div class="detail-line">
+      <span class="detail-icon">☎</span>
+      <span class="detail-text">${escapeHtml(phone)}</span>
+    </div>
+    <div class="detail-line">
+      <span class="detail-icon">🕐</span>
+      <span class="detail-text">${escapeHtml(hours)}</span>
+    </div>
+  `;
+
+  // Warnings
+  const warningsList = [];
+  if (record.only_kids_allowed) warningsList.push("Kids only");
+  if (record.no_kids_under_12) warningsList.push("No kids under 12");
+  if (warningsList.length > 0) {
+    warningsEl.textContent = warningsList.join(" • ");
+    warningsEl.classList.add("active");
+  } else {
+    warningsEl.classList.remove("active");
+  }
+
+  // Actions
+  const mapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
+  actionsEl.innerHTML = `
+    ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps →</a>` : ""}
+    <button class="btn secondary" id="dining-details-btn">Full Details ↓</button>
+  `;
+  document.getElementById("dining-details-btn")?.addEventListener("click", () => {
+    setActiveRecord(record.id);
+    mobileDiningSheet.classList.remove("sheet-visible");
+  });
+}
+
+/** Stays-specific sheet rendering */
+function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl) {
+  const roomType = record.eligible_room_type || "Room";
+  const availabilityStatus = stayAvailability(record);
+  const pricePerNight = record.price_per_night ? `$${record.price_per_night}` : "—";
+
+  quickInfoEl.innerHTML = `
+    <span class="quick-tag">${escapeHtml(roomType)}</span>
+    <span class="divider">•</span>
+    <span class="quick-price">${escapeHtml(pricePerNight)}</span>
+    <span class="divider">•</span>
+    <span class="quick-status ${availabilityStatus.key === "available" ? "" : "closed"}">${escapeHtml(availabilityStatus.label)}</span>
+  `;
+
+  const address = record.address || "—";
+  const city = record.city || "—";
+  const phone = record.phone || "—";
+  detailsEl.innerHTML = `
+    <div class="detail-line">
+      <span class="detail-icon">📍</span>
+      <span class="detail-text">${escapeHtml(address)}, ${escapeHtml(city)}</span>
+    </div>
+    <div class="detail-line">
+      <span class="detail-icon">☎</span>
+      <span class="detail-text">${escapeHtml(phone)}</span>
+    </div>
+  `;
+
+  // Warnings
+  const warningsList = [];
+  if (record.is_closing_soon) warningsList.push("Closing soon");
+  if (warningsList.length > 0) {
+    warningsEl.textContent = warningsList.join(" • ");
+    warningsEl.classList.add("active");
+  } else {
+    warningsEl.classList.remove("active");
+  }
+
+  // Actions
+  const mapsUrl = stayGoogleMapsUrl(record);
+  actionsEl.innerHTML = `
+    ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps →</a>` : ""}
+    <button class="btn secondary" id="stays-details-btn">Full Details ↓</button>
+  `;
+  document.getElementById("stays-details-btn")?.addEventListener("click", () => {
+    setActiveStayRecord(record.id);
+    mobileStaysSheet.classList.remove("sheet-visible");
+  });
+}
+
+/** Love Dining-specific sheet rendering */
+function renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl) {
+  const venueType = record.type === "hotel" ? "Hotel" : "Restaurant";
+  const cuisine = record.cuisine || "Venue";
+
+  quickInfoEl.innerHTML = `
+    <span class="quick-tag">${escapeHtml(venueType)}</span>
+    <span class="divider">•</span>
+    <span class="quick-tag">${escapeHtml(cuisine)}</span>
+  `;
+
+  const address = record.address || "—";
+  const city = record.city || "—";
+  const phone = record.phone || "—";
+  detailsEl.innerHTML = `
+    <div class="detail-line">
+      <span class="detail-icon">📍</span>
+      <span class="detail-text">${escapeHtml(address)}, ${escapeHtml(city)}</span>
+    </div>
+    <div class="detail-line">
+      <span class="detail-icon">☎</span>
+      <span class="detail-text"><a href="tel:${escapeHtml(phone)}">${escapeHtml(phone)}</a></span>
+    </div>
+  `;
+
+  // Warnings
+  const warningsList = [];
+  if (record.is_closing) warningsList.push("⚠️ Permanently closed");
+  if (record.is_halal) warningsList.push("✓ Halal certified");
+  if (warningsList.length > 0) {
+    warningsEl.innerHTML = warningsList.join(" • ");
+    warningsEl.classList.add("active");
+  } else {
+    warningsEl.classList.remove("active");
+  }
+
+  // Actions
+  const mapsUrl = record.maps_url || record.google_maps_url;
+  actionsEl.innerHTML = `
+    ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps →</a>` : ""}
+    <button class="btn secondary" id="love-details-btn">Full Details ↓</button>
+  `;
+  document.getElementById("love-details-btn")?.addEventListener("click", () => {
+    state.loveDiningActiveId = record.id;
+    renderLoveDiningCard();
+    mobileLoveDiningSheet.classList.remove("sheet-visible");
+  });
 }
 function focusActiveRecordOnMap() {
   if (!hasLeaflet || !map) return;
@@ -2677,6 +2851,8 @@ function setActiveStayRecord(id) {
   renderStayFocusCard();
   renderStayTable();
   renderStayMobileCards();
+  const record = activeStayRecord();
+  if (record) renderMobileSheet("stays", record);
 }
 
 function focusActiveStayOnMap() {
@@ -2782,6 +2958,7 @@ function createLoveDiningMarker(record) {
     renderLoveDiningCard();
     renderLoveDiningMobileList();
     updateLoveDiningMarkerStyles();
+    renderMobileSheet("loveDining", record);
   });
   return marker;
 }
@@ -3369,14 +3546,21 @@ window.addEventListener("resize", () => {
     map.invalidateSize();
     fitDiningMapToVisibleMarkers();
   }
-  // Hide sheet if resized to desktop
-  if (window.innerWidth > MOBILE_BREAKPOINT && mobileVenueSheet) {
-    mobileVenueSheet.classList.remove("sheet-visible");
+  // Hide all sheets if resized to desktop
+  if (window.innerWidth > MOBILE_BREAKPOINT) {
+    mobileDiningSheet?.classList.remove("sheet-visible");
+    mobileStaysSheet?.classList.remove("sheet-visible");
+    mobileLoveDiningSheet?.classList.remove("sheet-visible");
   }
 });
 
-mvsDismiss?.addEventListener("click", () => {
-  mobileVenueSheet.classList.remove("sheet-visible");
+// Dismiss handlers for unified mobile sheets
+[mobileDiningSheet, mobileStaysSheet, mobileLoveDiningSheet].forEach(sheet => {
+  if (sheet) {
+    sheet.querySelector(".sheet-close")?.addEventListener("click", () => {
+      sheet.classList.remove("sheet-visible");
+    });
+  }
 });
 
 init().catch(() => {

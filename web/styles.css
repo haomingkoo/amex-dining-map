@@ -2300,3 +2300,333 @@ h1, h2, h3 {
 .mobile-show-more:hover {
   background: var(--teal-surface-hover);
 }
+
+/* ============================================================================
+   UNIFIED MOBILE BOTTOM SHEETS (Redesigned)
+   Dining, Stays, and Love Dining all use same template with theme variants
+   ============================================================================ */
+
+.mobile-sheet {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9000;
+  background: linear-gradient(to bottom, var(--surface-strong), var(--bg-dark));
+  border-top: 1px solid rgba(201, 165, 90, 0.2);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(16px);
+  max-height: 75vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding-top: 12px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.mobile-sheet.sheet-visible {
+  transform: translateY(0);
+}
+
+.sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px 8px;
+  margin-bottom: 8px;
+}
+
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: rgba(201, 165, 90, 0.3);
+  border-radius: 2px;
+}
+
+.sheet-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.sheet-close:hover {
+  color: var(--text);
+}
+
+.sheet-content {
+  padding: 0 16px;
+}
+
+.venue-card {
+  position: relative;
+  background: rgba(11, 22, 36, 0.5);
+  border: 1px solid rgba(201, 165, 90, 0.15);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.rating-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(201, 165, 90, 0.1);
+  border: 1px solid rgba(201, 165, 90, 0.2);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.rating-badge .sheet-rating {
+  color: #d4af37;
+  font-weight: 600;
+}
+
+.venue-name {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 0 0 8px;
+  padding-right: 60px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+.quick-info {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.quick-tag {
+  background: rgba(201, 165, 90, 0.1);
+  color: #d4af37;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.quick-price {
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.quick-status {
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.quick-status.closed {
+  color: #ef4444;
+}
+
+.venue-details {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.detail-line {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  color: var(--text-secondary);
+}
+
+.detail-icon {
+  color: #d4af37;
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.detail-text {
+  line-height: 1.4;
+  flex: 1;
+}
+
+.detail-text a {
+  color: #d4af37;
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(212, 175, 55, 0.3);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.detail-text a:hover {
+  border-bottom-color: #d4af37;
+}
+
+.warnings {
+  background: rgba(255, 107, 157, 0.1);
+  border: 1px solid rgba(255, 107, 157, 0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  color: #ff6b9d;
+  margin-top: 12px;
+  display: none;
+}
+
+.warnings.active {
+  display: block;
+}
+
+.sheet-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+
+.sheet-actions .btn {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 2px solid #d4af37;
+  background: transparent;
+  color: #d4af37;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  font-family: var(--font-body);
+}
+
+.sheet-actions .btn.primary {
+  background: #d4af37;
+  color: #0a0e1a;
+}
+
+.sheet-actions .btn:active {
+  transform: scale(0.95);
+}
+
+/* Theme Variants */
+
+/* Stays - Teal Accents */
+.mobile-sheet.stays .quick-tag {
+  background: rgba(77, 184, 166, 0.1);
+  color: #4db8a6;
+}
+
+.mobile-sheet.stays .rating-badge {
+  border-color: rgba(77, 184, 166, 0.2);
+  background: rgba(77, 184, 166, 0.1);
+}
+
+.mobile-sheet.stays .rating-badge .sheet-rating {
+  color: #4db8a6;
+}
+
+.mobile-sheet.stays .detail-icon {
+  color: #4db8a6;
+}
+
+.mobile-sheet.stays .detail-text a {
+  color: #4db8a6;
+  border-color: rgba(77, 184, 166, 0.3);
+}
+
+.mobile-sheet.stays .detail-text a:hover {
+  border-color: #4db8a6;
+}
+
+.mobile-sheet.stays .sheet-actions .btn {
+  border-color: #4db8a6;
+  color: #4db8a6;
+}
+
+.mobile-sheet.stays .sheet-actions .btn.primary {
+  background: #4db8a6;
+  color: white;
+}
+
+/* Love Dining - Rose/Purple Accents */
+.mobile-sheet.love-dining .quick-tag {
+  background: rgba(224, 107, 139, 0.1);
+  color: #e06b8b;
+}
+
+.mobile-sheet.love-dining .rating-badge {
+  border-color: rgba(224, 107, 139, 0.2);
+  background: rgba(224, 107, 139, 0.1);
+}
+
+.mobile-sheet.love-dining .rating-badge .sheet-rating {
+  color: #e06b8b;
+}
+
+.mobile-sheet.love-dining .detail-icon {
+  color: #e06b8b;
+}
+
+.mobile-sheet.love-dining .detail-text a {
+  color: #e06b8b;
+  border-color: rgba(224, 107, 139, 0.3);
+}
+
+.mobile-sheet.love-dining .detail-text a:hover {
+  border-color: #e06b8b;
+}
+
+.mobile-sheet.love-dining .sheet-actions .btn {
+  border-color: #e06b8b;
+  color: #e06b8b;
+}
+
+.mobile-sheet.love-dining .sheet-actions .btn.primary {
+  background: #e06b8b;
+  color: white;
+}
+
+/* Mobile Responsive */
+@media (max-width: 820px) {
+  .mobile-sheet {
+    display: block;
+  }
+
+  .mobile-sheet:not(.sheet-visible) {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .venue-name {
+    font-size: 1.25rem;
+  }
+
+  .sheet-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .sheet-actions .btn {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+}
