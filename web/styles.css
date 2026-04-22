@@ -2069,12 +2069,20 @@ h1, h2, h3 {
     display: none;
   }
 
-  /* Hide header clutter on mobile to maximize map visibility */
+  /* Hide ALL header clutter on mobile to maximize map visibility */
   .context-title,
   .context-strip,
-  .refine-panel,
+  .context-desc,
   .summary-strip,
-  .map-instructions {
+  .map-instructions,
+  .refine-panel {
+    display: none !important;
+  }
+
+  /* Hide results count text */
+  #results-text,
+  #stays-results-text,
+  #love-results-text {
     display: none !important;
   }
 
