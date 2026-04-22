@@ -2365,7 +2365,8 @@ function focusActiveRecordOnMap() {
   const marker = state.markers.get(record.id);
   if (!marker) return;
   map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 13), { duration: 0.6 });
-  marker.openPopup();
+  // Close popup - we're showing the full card instead
+  marker.closePopup();
 }
 
 function stayGoogleMapsUrl(record) {
@@ -3012,7 +3013,8 @@ function focusActiveStayOnMap() {
   const marker = state.stayMarkers.get(record.id);
   if (!marker) return;
   staysMap.flyTo(marker.getLatLng(), Math.max(staysMap.getZoom(), 8), { duration: 0.6 });
-  marker.openPopup();
+  // Close popup - we're showing the full card instead
+  marker.closePopup();
 }
 
 function fitDiningMapToVisibleMarkers() {
