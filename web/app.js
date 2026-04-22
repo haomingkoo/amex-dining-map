@@ -3724,6 +3724,8 @@ function setupMobileSheetDismissal() {
 setTimeout(setupMobileSheetDismissal, 500);
 
 // Hide header clutter on mobile to maximize map visibility
+let mobileClutterObserver = null;
+
 function hideMobileClutter() {
   if (window.innerWidth <= MOBILE_BREAKPOINT) {
     const selectors = [
@@ -3740,31 +3742,50 @@ function hideMobileClutter() {
 
     selectors.forEach(selector => {
       document.querySelectorAll(selector).forEach(el => {
-        el.style.display = 'none !important';
         el.hidden = true;
       });
     });
+
+    // Start observer only on mobile to catch dynamically inserted elements
+    startMobileClutterObserver();
+  } else {
+    // Disconnect observer on desktop to save CPU
+    stopMobileClutterObserver();
   }
 }
 
-// Use MutationObserver to continuously enforce hiding
-const observer = new MutationObserver(() => {
-  if (window.innerWidth <= MOBILE_BREAKPOINT) {
+function startMobileClutterObserver() {
+  if (mobileClutterObserver) return;
+  mobileClutterObserver = new MutationObserver(() => {
     hideMobileClutter();
-  }
-});
+  });
+  mobileClutterObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+}
 
-// Start observing for changes
-observer.observe(document.body, {
-  childList: true,
-  subtree: true,
-  attributes: false
-});
+function stopMobileClutterObserver() {
+  if (mobileClutterObserver) {
+    mobileClutterObserver.disconnect();
+    mobileClutterObserver = null;
+  }
+}
+
+// Debounced resize handler to avoid excessive calls
+let resizeTimeout;
+function onResizeDebounced() {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(hideMobileClutter, 150);
+}
 
 // Run on init and when content changes
 hideMobileClutter();
-window.addEventListener('resize', hideMobileClutter);
+window.addEventListener('resize', onResizeDebounced);
 document.addEventListener('readystatechange', hideMobileClutter);
+
+// Cleanup on page unload to prevent memory leaks
+window.addEventListener('beforeunload', stopMobileClutterObserver);
 
 init().catch(() => {
   focusCard.innerHTML =
