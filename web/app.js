@@ -1102,18 +1102,6 @@ function createMarker(record) {
   const ratingHtml = gRating && gRating.rating != null
     ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
     : "";
-  const mapsLink = diningGoogleMapsUrl(record)
-    ? `<a href="${escapeHtml(diningGoogleMapsUrl(record))}" target="_blank" rel="noopener" style="font-size:0.9em">Google Maps →</a>`
-    : "";
-
-  marker.bindPopup(`
-    <div style="font-size:0.95em; min-width:160px">
-      <strong>${escapeHtml(record.name)}</strong>
-      ${cuisine ? `<div style="margin-top:2px; font-size:0.85em; color:#888">${escapeHtml(cuisine)}</div>` : ""}
-      ${ratingHtml}
-      ${mapsLink ? `<div style="margin-top:4px">${mapsLink}</div>` : ""}
-    </div>
-  `, { maxWidth: 200 });
   marker.on("click", () => {
     setActiveRecord(record.id);
     // Zoom in slightly when marker is clicked for visual feedback
@@ -2170,8 +2158,8 @@ function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl
     // Summary at bottom
     if (summary) {
       detailsHTML += `
-        <div class="detail-line" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
-          <span class="detail-text" style="font-size: 0.85em; color: var(--text-secondary);">${escapeHtml(summary)}</span>
+        <div class="detail-line detail-summary-divider">
+          <span class="detail-text detail-summary-text">${escapeHtml(summary.text)}</span>
         </div>
       `;
     }
@@ -2287,8 +2275,8 @@ function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl)
 
     if (summary) {
       detailsHTML += `
-        <div class="detail-line" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
-          <span class="detail-text" style="font-size: 0.85em; color: var(--text-secondary);">${escapeHtml(summary)}</span>
+        <div class="detail-line detail-summary-divider">
+          <span class="detail-text detail-summary-text">${escapeHtml(summary)}</span>
         </div>
       `;
     }
@@ -2729,18 +2717,6 @@ function createStayMarker(record) {
   const ratingHtml = gRating && gRating.rating != null
     ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
     : "";
-  const mapsLink = mapsUrl
-    ? `<a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener" style="font-size:0.9em">Google Maps →</a>`
-    : "";
-
-  marker.bindPopup(`
-    <div style="font-size:0.95em; min-width:160px">
-      <strong>${escapeHtml(record.name)}</strong>
-      ${record.city || record.country ? `<div style="margin-top:2px; font-size:0.85em; color:#888">${escapeHtml((record.city || "") + (record.city && record.country ? " / " : "") + (record.country || ""))}</div>` : ""}
-      ${ratingHtml}
-      ${mapsLink ? `<div style="margin-top:4px">${mapsLink}</div>` : ""}
-    </div>
-  `, { maxWidth: 200 });
   marker.on("click", () => {
     setActiveStayRecord(record.id);
     // Zoom in slightly when marker is clicked for visual feedback
@@ -3112,19 +3088,6 @@ function createLoveDiningMarker(record) {
   const ratingHtml = gRating && gRating.rating != null
     ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
     : "";
-  const mapsLink = record.maps_url
-    ? `<a href="${escapeHtml(record.maps_url)}" target="_blank" rel="noopener" style="font-size:0.9em">Google Maps →</a>`
-    : "";
-
-  marker.bindPopup(`
-    <div style="font-size:0.95em; min-width:160px">
-      <strong>${escapeHtml(record.name)}</strong>
-      ${cuisine ? `<div style="margin-top:2px; font-size:0.85em; color:#888">${escapeHtml(cuisine)}</div>` : ""}
-      ${ratingHtml}
-      ${mapsLink ? `<div style="margin-top:4px">${mapsLink}</div>` : ""}
-    </div>
-  `, { maxWidth: 200 });
-
   marker.on("click", () => {
     state.loveDiningActiveId = record.id;
     renderLoveDiningCard();
@@ -3761,6 +3724,8 @@ function setupMobileSheetDismissal() {
 setTimeout(setupMobileSheetDismissal, 500);
 
 // Hide header clutter on mobile to maximize map visibility
+let mobileClutterObserver = null;
+
 function hideMobileClutter() {
   if (window.innerWidth <= MOBILE_BREAKPOINT) {
     const selectors = [
@@ -3770,21 +3735,57 @@ function hideMobileClutter() {
       '.map-instructions',
       '.refine-panel',
       '#summary-strip-text',
-      '.focus-panel'
+      '.focus-panel',
+      '.map-panel .panel-head',
+      '.toolbar-toggle-meta'
     ];
 
     selectors.forEach(selector => {
       document.querySelectorAll(selector).forEach(el => {
-        el.style.display = 'none';
+        el.hidden = true;
       });
     });
+
+    // Start observer only on mobile to catch dynamically inserted elements
+    startMobileClutterObserver();
+  } else {
+    // Disconnect observer on desktop to save CPU
+    stopMobileClutterObserver();
   }
+}
+
+function startMobileClutterObserver() {
+  if (mobileClutterObserver) return;
+  mobileClutterObserver = new MutationObserver(() => {
+    hideMobileClutter();
+  });
+  mobileClutterObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+}
+
+function stopMobileClutterObserver() {
+  if (mobileClutterObserver) {
+    mobileClutterObserver.disconnect();
+    mobileClutterObserver = null;
+  }
+}
+
+// Debounced resize handler to avoid excessive calls
+let resizeTimeout;
+function onResizeDebounced() {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(hideMobileClutter, 150);
 }
 
 // Run on init and when content changes
 hideMobileClutter();
-window.addEventListener('resize', hideMobileClutter);
+window.addEventListener('resize', onResizeDebounced);
 document.addEventListener('readystatechange', hideMobileClutter);
+
+// Cleanup on page unload to prevent memory leaks
+window.addEventListener('beforeunload', stopMobileClutterObserver);
 
 init().catch(() => {
   focusCard.innerHTML =
