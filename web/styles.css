@@ -2069,21 +2069,48 @@ h1, h2, h3 {
     display: none;
   }
 
-  /* Hide ALL header clutter on mobile to maximize map visibility */
-  .context-title,
-  .context-strip,
-  .context-desc,
-  .summary-strip,
-  .map-instructions,
-  .refine-panel {
+  /* Hide map panel header (Property map, Browse properties...) */
+  .map-panel .panel-head {
     display: none !important;
   }
 
-  /* Hide results count text */
-  #results-text,
-  #stays-results-text,
-  #love-results-text {
+  /* Hide refine count text (All filters off) */
+  .toolbar-toggle-meta {
     display: none !important;
+  }
+
+  /* Make toolbar overlay the map instead of taking space */
+  .map-filter-shell .toolbar {
+    position: fixed;
+    top: 50px;
+    left: 0;
+    right: 0;
+    z-index: 2000;
+    background: rgba(7, 13, 22, 0.98);
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid rgba(201, 165, 90, 0.2);
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  /* Make toolbar button compact and top-left */
+  .toolbar-toggle {
+    position: fixed;
+    top: 50px;
+    left: 12px;
+    z-index: 2001;
+    background: rgba(7, 13, 22, 0.95) !important;
+    border: 1px solid rgba(201, 165, 90, 0.3) !important;
+    border-radius: 12px !important;
+    padding: 8px 12px !important;
+    width: auto;
+    margin: 0 !important;
+  }
+
+  .toolbar-toggle-title {
+    font-weight: 500;
+    font-size: 0.9rem;
   }
 
   #map,

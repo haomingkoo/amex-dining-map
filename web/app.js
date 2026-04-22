@@ -3733,16 +3733,33 @@ function hideMobileClutter() {
       '.map-instructions',
       '.refine-panel',
       '#summary-strip-text',
-      '.focus-panel'
+      '.focus-panel',
+      '.map-panel .panel-head',
+      '.toolbar-toggle-meta'
     ];
 
     selectors.forEach(selector => {
       document.querySelectorAll(selector).forEach(el => {
-        el.style.display = 'none';
+        el.style.display = 'none !important';
+        el.hidden = true;
       });
     });
   }
 }
+
+// Use MutationObserver to continuously enforce hiding
+const observer = new MutationObserver(() => {
+  if (window.innerWidth <= MOBILE_BREAKPOINT) {
+    hideMobileClutter();
+  }
+});
+
+// Start observing for changes
+observer.observe(document.body, {
+  childList: true,
+  subtree: true,
+  attributes: false
+});
 
 // Run on init and when content changes
 hideMobileClutter();
