@@ -2370,25 +2370,14 @@ h1, h2, h3 {
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(16px);
-  max-height: 20vh;
+  max-height: 70vh;
   overflow-y: auto;
-  overflow-y: overlay;
   -webkit-overflow-scrolling: touch;
   transform: translateY(100%);
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  padding-top: 20px;
+  padding-top: 12px;
   padding-bottom: max(12px, env(safe-area-inset-bottom));
   pointer-events: none;
-  background-image:
-    /* Drag handle at top */
-    radial-gradient(5px 2px at 50% 8px, rgba(201, 165, 90, 0.4) 0%, transparent 100%),
-    /* Scroll shadow overlay */
-    linear-gradient(to bottom,
-      rgba(0, 0, 0, 0.15) 0%,
-      transparent 24px);
-  background-repeat: no-repeat;
-  background-position: center, center;
-  background-size: 40px 4px, 100% 24px;
 }
 
 .mobile-sheet.sheet-visible {
@@ -2402,23 +2391,10 @@ h1, h2, h3 {
 
 .sheet-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  padding: 0 16px 8px;
-  margin-bottom: 8px;
-}
-
-.sheet-handle {
-  width: 40px;
-  height: 4px;
-  background: rgba(201, 165, 90, 0.5);
-  border-radius: 2px;
-  transition: background-color 0.3s ease;
-}
-
-.mobile-sheet:hover .sheet-handle,
-.mobile-sheet:focus-within .sheet-handle {
-  background: rgba(201, 165, 90, 0.7);
+  padding: 0 8px 8px;
+  margin-bottom: 4px;
 }
 
 .sheet-close {
@@ -2445,23 +2421,21 @@ h1, h2, h3 {
   background: rgba(11, 22, 36, 0.5);
   border: 1px solid rgba(201, 165, 90, 0.15);
   border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
 }
 
 .rating-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
+  display: inline-flex;
   background: rgba(201, 165, 90, 0.1);
   border: 1px solid rgba(201, 165, 90, 0.2);
   border-radius: 8px;
   padding: 4px 8px;
   font-size: 0.75rem;
   color: var(--text-secondary);
-  display: flex;
   gap: 4px;
   align-items: center;
+  margin-bottom: 8px;
 }
 
 .rating-badge .sheet-rating {
@@ -2473,8 +2447,7 @@ h1, h2, h3 {
   font-family: "Cormorant Garamond", serif;
   font-size: 1.5rem;
   font-weight: 500;
-  margin: 0 0 8px;
-  padding-right: 60px;
+  margin: 0 0 4px;
   color: var(--text);
   letter-spacing: -0.3px;
 }
