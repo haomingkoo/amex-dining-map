@@ -1102,18 +1102,6 @@ function createMarker(record) {
   const ratingHtml = gRating && gRating.rating != null
     ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
     : "";
-  const mapsLink = diningGoogleMapsUrl(record)
-    ? `<a href="${escapeHtml(diningGoogleMapsUrl(record))}" target="_blank" rel="noopener" style="font-size:0.9em">Google Maps →</a>`
-    : "";
-
-  marker.bindPopup(`
-    <div style="font-size:0.95em; min-width:160px">
-      <strong>${escapeHtml(record.name)}</strong>
-      ${cuisine ? `<div style="margin-top:2px; font-size:0.85em; color:#888">${escapeHtml(cuisine)}</div>` : ""}
-      ${ratingHtml}
-      ${mapsLink ? `<div style="margin-top:4px">${mapsLink}</div>` : ""}
-    </div>
-  `, { maxWidth: 200 });
   marker.on("click", () => {
     setActiveRecord(record.id);
     // Zoom in slightly when marker is clicked for visual feedback
@@ -2729,18 +2717,6 @@ function createStayMarker(record) {
   const ratingHtml = gRating && gRating.rating != null
     ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
     : "";
-  const mapsLink = mapsUrl
-    ? `<a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener" style="font-size:0.9em">Google Maps →</a>`
-    : "";
-
-  marker.bindPopup(`
-    <div style="font-size:0.95em; min-width:160px">
-      <strong>${escapeHtml(record.name)}</strong>
-      ${record.city || record.country ? `<div style="margin-top:2px; font-size:0.85em; color:#888">${escapeHtml((record.city || "") + (record.city && record.country ? " / " : "") + (record.country || ""))}</div>` : ""}
-      ${ratingHtml}
-      ${mapsLink ? `<div style="margin-top:4px">${mapsLink}</div>` : ""}
-    </div>
-  `, { maxWidth: 200 });
   marker.on("click", () => {
     setActiveStayRecord(record.id);
     // Zoom in slightly when marker is clicked for visual feedback
@@ -3112,19 +3088,6 @@ function createLoveDiningMarker(record) {
   const ratingHtml = gRating && gRating.rating != null
     ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
     : "";
-  const mapsLink = record.maps_url
-    ? `<a href="${escapeHtml(record.maps_url)}" target="_blank" rel="noopener" style="font-size:0.9em">Google Maps →</a>`
-    : "";
-
-  marker.bindPopup(`
-    <div style="font-size:0.95em; min-width:160px">
-      <strong>${escapeHtml(record.name)}</strong>
-      ${cuisine ? `<div style="margin-top:2px; font-size:0.85em; color:#888">${escapeHtml(cuisine)}</div>` : ""}
-      ${ratingHtml}
-      ${mapsLink ? `<div style="margin-top:4px">${mapsLink}</div>` : ""}
-    </div>
-  `, { maxWidth: 200 });
-
   marker.on("click", () => {
     state.loveDiningActiveId = record.id;
     renderLoveDiningCard();
