@@ -2069,6 +2069,15 @@ h1, h2, h3 {
     display: none;
   }
 
+  /* Hide header clutter on mobile to maximize map visibility */
+  .context-title,
+  .context-strip,
+  .refine-panel,
+  .summary-strip,
+  .map-instructions {
+    display: none !important;
+  }
+
   #map,
   #stays-map,
   #love-map {
@@ -2307,7 +2316,7 @@ h1, h2, h3 {
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(16px);
-  max-height: 30vh;
+  max-height: 20vh;
   overflow-y: auto;
   overflow-y: overlay;
   -webkit-overflow-scrolling: touch;
