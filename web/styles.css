@@ -2335,6 +2335,18 @@ h1, h2, h3 {
   background: var(--teal-surface-hover);
 }
 
+/* Summary divider and text styles (extracted from inline styles) */
+.detail-summary-divider {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-summary-text {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+}
+
 /* ============================================================================
    UNIFIED MOBILE BOTTOM SHEETS (Redesigned)
    Dining, Stays, and Love Dining all use same template with theme variants

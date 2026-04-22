@@ -2158,8 +2158,8 @@ function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl
     // Summary at bottom
     if (summary) {
       detailsHTML += `
-        <div class="detail-line" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
-          <span class="detail-text" style="font-size: 0.85em; color: var(--text-secondary);">${escapeHtml(summary.text)}</span>
+        <div class="detail-line detail-summary-divider">
+          <span class="detail-text detail-summary-text">${escapeHtml(summary.text)}</span>
         </div>
       `;
     }
@@ -2275,8 +2275,8 @@ function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl)
 
     if (summary) {
       detailsHTML += `
-        <div class="detail-line" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
-          <span class="detail-text" style="font-size: 0.85em; color: var(--text-secondary);">${escapeHtml(summary)}</span>
+        <div class="detail-line detail-summary-divider">
+          <span class="detail-text detail-summary-text">${escapeHtml(summary)}</span>
         </div>
       `;
     }
