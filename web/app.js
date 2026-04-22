@@ -1116,6 +1116,13 @@ function createMarker(record) {
   `, { maxWidth: 200 });
   marker.on("click", () => {
     setActiveRecord(record.id);
+    // Zoom in slightly when marker is clicked for visual feedback
+    if (map && hasLeaflet) {
+      const markerLatLng = marker.getLatLng();
+      const currentZoom = map.getZoom();
+      const targetZoom = Math.min(currentZoom + 2, map.getMaxZoom());
+      map.flyTo(markerLatLng, targetZoom, { duration: 0.6 });
+    }
   });
   return marker;
 }
@@ -2064,56 +2071,127 @@ function renderMobileSheet(type, record) {
 
 /** Dining-specific sheet rendering */
 function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl) {
-  // Quick info: Cuisine + Price + Status
-  const cuisine = (record.cuisines || []).join(", ") || "Cuisine";
+  // Quick info row: All cuisine types + price + kid policy
+  const cuisines = (record.cuisines || []).join(", ") || "Cuisine";
   const priceLabel = record.price_dinner_band_label || "—";
+  const kidPolicyLabel = record.child_policy_norm && record.child_policy_norm !== "unknown"
+    ? kidLabel(record.child_policy_norm)
+    : null;
+
   quickInfoEl.innerHTML = `
-    <span class="quick-tag">${escapeHtml(cuisine)}</span>
+    <span class="quick-tag">${escapeHtml(cuisines)}</span>
     <span class="divider">•</span>
     <span class="quick-price">${escapeHtml(priceLabel)}</span>
-    <span class="divider">•</span>
-    <span class="quick-status open">Open</span>
+    ${kidPolicyLabel ? `<span class="divider">•</span><span class="quick-tag">${escapeHtml(kidPolicyLabel)}</span>` : ""}
   `;
 
-  // Details: Address + Phone + Hours
+  // Comprehensive details section with all practical info
   const address = record.address || "—";
-  const phone = record.phone || "—";
-  const hours = record.hours || "—";
-  detailsEl.innerHTML = `
+  const phone = record.phone;
+  const hours = record.hours;
+  const district = record.district || "";
+  const station = record.station;
+  const summary = diningSummaryPayload(record);
+
+  // Build details HTML - only show fields that have data
+  let detailsHTML = `
     <div class="detail-line">
       <span class="detail-icon">📍</span>
-      <span class="detail-text">${escapeHtml(address)}</span>
-    </div>
-    <div class="detail-line">
-      <span class="detail-icon">☎</span>
-      <span class="detail-text">${escapeHtml(phone)}</span>
-    </div>
-    <div class="detail-line">
-      <span class="detail-icon">🕐</span>
-      <span class="detail-text">${escapeHtml(hours)}</span>
+      <span class="detail-text">${escapeHtml(address)}${district ? ` (${escapeHtml(district)})` : ""}</span>
     </div>
   `;
 
-  // Warnings
+  if (station) {
+    detailsHTML += `
+      <div class="detail-line">
+        <span class="detail-icon">🚇</span>
+        <span class="detail-text">${escapeHtml(station)}</span>
+      </div>
+    `;
+  }
+
+  if (phone) {
+    detailsHTML += `
+      <div class="detail-line">
+        <span class="detail-icon">☎</span>
+        <span class="detail-text">${escapeHtml(phone)}</span>
+      </div>
+    `;
+  }
+
+  if (hours) {
+    detailsHTML += `
+      <div class="detail-line">
+        <span class="detail-icon">🕐</span>
+        <span class="detail-text">${escapeHtml(hours)}</span>
+      </div>
+    `;
+  }
+
+  // Add price tiers if available
+  if (record.price_lunch_min_jpy || record.price_lunch_max_jpy) {
+    const lunchMin = record.price_lunch_min_jpy || "—";
+    const lunchMax = record.price_lunch_max_jpy || "—";
+    detailsHTML += `
+      <div class="detail-line">
+        <span class="detail-icon">🍽️</span>
+        <span class="detail-text">Lunch: ¥${escapeHtml(String(lunchMin))}${lunchMin !== lunchMax ? `–¥${escapeHtml(String(lunchMax))}` : ""}</span>
+      </div>
+    `;
+  }
+
+  if (record.price_dinner_min_jpy || record.price_dinner_max_jpy) {
+    const dinnerMin = record.price_dinner_min_jpy || "—";
+    const dinnerMax = record.price_dinner_max_jpy || "—";
+    detailsHTML += `
+      <div class="detail-line">
+        <span class="detail-icon">🍷</span>
+        <span class="detail-text">Dinner: ¥${escapeHtml(String(dinnerMin))}${dinnerMin !== dinnerMax ? `–¥${escapeHtml(String(dinnerMax))}` : ""}</span>
+      </div>
+    `;
+  }
+
+  // Add summary/description if available
+  if (summary) {
+    detailsHTML += `
+      <div class="detail-line" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <span class="detail-text" style="font-size: 0.85em; color: var(--text-secondary);">${escapeHtml(summary)}</span>
+      </div>
+    `;
+  }
+
+  detailsEl.innerHTML = detailsHTML;
+
+  // Comprehensive warnings
   const warningsList = [];
-  if (record.only_kids_allowed) warningsList.push("Kids only");
-  if (record.no_kids_under_12) warningsList.push("No kids under 12");
+  if (record.only_kids_allowed) warningsList.push("👨‍👧‍👦 Kids only");
+  if (record.no_kids_under_12) warningsList.push("⚠️ No kids under 12");
+  if (record.english_menu) warningsList.push("🇬🇧 English menu available");
+  if (record.reservation_type) warningsList.push(`📅 ${escapeHtml(record.reservation_type)}`);
+
   if (warningsList.length > 0) {
-    warningsEl.textContent = warningsList.join(" • ");
+    warningsEl.innerHTML = warningsList.join(" • ");
     warningsEl.classList.add("active");
   } else {
     warningsEl.classList.remove("active");
   }
 
-  // Actions
+  // Actions: Google Maps + Expandable Full Details
   const mapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
   actionsEl.innerHTML = `
     ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps →</a>` : ""}
-    <button class="btn secondary" id="dining-details-btn">Full Details ↓</button>
+    <button class="btn secondary" id="dining-details-btn">Expand ↑</button>
   `;
+
+  // Expand sheet on button click
   document.getElementById("dining-details-btn")?.addEventListener("click", () => {
-    setActiveRecord(record.id);
-    mobileDiningSheet.classList.remove("sheet-visible");
+    const sheet = mobileDiningSheet;
+    const isExpanded = sheet.classList.contains("sheet-expanded");
+    if (isExpanded) {
+      sheet.classList.remove("sheet-expanded");
+    } else {
+      sheet.classList.add("sheet-expanded");
+    }
   });
 }
 
@@ -2122,34 +2200,87 @@ function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl)
   const roomType = record.eligible_room_type || "Room";
   const availabilityStatus = stayAvailability(record);
   const pricePerNight = record.price_per_night ? `$${record.price_per_night}` : "—";
+  const nights = record.nights || 1;
+  const totalPrice = record.price_per_night ? `$${record.price_per_night * nights}` : "—";
 
   quickInfoEl.innerHTML = `
     <span class="quick-tag">${escapeHtml(roomType)}</span>
     <span class="divider">•</span>
-    <span class="quick-price">${escapeHtml(pricePerNight)}</span>
+    <span class="quick-price">${escapeHtml(pricePerNight)}/night</span>
     <span class="divider">•</span>
     <span class="quick-status ${availabilityStatus.key === "available" ? "" : "closed"}">${escapeHtml(availabilityStatus.label)}</span>
   `;
 
-  const address = record.address || "—";
-  const city = record.city || "—";
-  const phone = record.phone || "—";
-  detailsEl.innerHTML = `
+  // Comprehensive details
+  const address = record.address || "Address not available";
+  const city = record.city || "";
+  const phone = record.phone;
+  const checkIn = record.check_in_date || "Flexible";
+  const checkOut = record.check_out_date || "Flexible";
+  const summary = record.summary || record.description || "";
+
+  let detailsHTML = `
     <div class="detail-line">
       <span class="detail-icon">📍</span>
-      <span class="detail-text">${escapeHtml(address)}, ${escapeHtml(city)}</span>
-    </div>
-    <div class="detail-line">
-      <span class="detail-icon">☎</span>
-      <span class="detail-text">${escapeHtml(phone)}</span>
+      <span class="detail-text">${escapeHtml(address)}${city ? `, ${escapeHtml(city)}` : ""}</span>
     </div>
   `;
 
+  if (phone) {
+    detailsHTML += `
+      <div class="detail-line">
+        <span class="detail-icon">☎</span>
+        <span class="detail-text">${escapeHtml(phone)}</span>
+      </div>
+    `;
+  }
+
+  detailsHTML += `
+    <div class="detail-line">
+      <span class="detail-icon">📅</span>
+      <span class="detail-text">Check-in: ${escapeHtml(checkIn)}</span>
+    </div>
+    <div class="detail-line">
+      <span class="detail-icon">📅</span>
+      <span class="detail-text">Check-out: ${escapeHtml(checkOut)}</span>
+    </div>
+    <div class="detail-line">
+      <span class="detail-icon">💰</span>
+      <span class="detail-text">Total: ${escapeHtml(totalPrice)} (${nights} night${nights !== 1 ? 's' : ''})</span>
+    </div>
+  `;
+
+  // Add amenities if available
+  if (record.amenities) {
+    const amenities = Array.isArray(record.amenities) ? record.amenities : [record.amenities];
+    if (amenities.length > 0) {
+      detailsHTML += `
+        <div class="detail-line" style="margin-top: 8px;">
+          <span class="detail-icon">✨</span>
+          <span class="detail-text">${escapeHtml(amenities.join(", "))}</span>
+        </div>
+      `;
+    }
+  }
+
+  // Add summary if available
+  if (summary) {
+    detailsHTML += `
+      <div class="detail-line" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <span class="detail-text" style="font-size: 0.85em; color: var(--text-secondary);">${escapeHtml(summary)}</span>
+      </div>
+    `;
+  }
+
+  detailsEl.innerHTML = detailsHTML;
+
   // Warnings
   const warningsList = [];
-  if (record.is_closing_soon) warningsList.push("Closing soon");
+  if (record.is_closing_soon) warningsList.push("⚠️ Closing soon");
+  if (record.is_refurbishing) warningsList.push("🔨 Currently refurbishing");
+
   if (warningsList.length > 0) {
-    warningsEl.textContent = warningsList.join(" • ");
+    warningsEl.innerHTML = warningsList.join(" • ");
     warningsEl.classList.add("active");
   } else {
     warningsEl.classList.remove("active");
@@ -2157,13 +2288,21 @@ function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl)
 
   // Actions
   const mapsUrl = stayGoogleMapsUrl(record);
+  const reservationUrl = record.booking_url || record.reservation_url;
   actionsEl.innerHTML = `
     ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps →</a>` : ""}
-    <button class="btn secondary" id="stays-details-btn">Full Details ↓</button>
+    <button class="btn secondary" id="stays-details-btn">Expand ↑</button>
   `;
+
+  // Expand sheet on button click
   document.getElementById("stays-details-btn")?.addEventListener("click", () => {
-    setActiveStayRecord(record.id);
-    mobileStaysSheet.classList.remove("sheet-visible");
+    const sheet = mobileStaysSheet;
+    const isExpanded = sheet.classList.contains("sheet-expanded");
+    if (isExpanded) {
+      sheet.classList.remove("sheet-expanded");
+    } else {
+      sheet.classList.add("sheet-expanded");
+    }
   });
 }
 
@@ -2207,12 +2346,16 @@ function renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actio
   const mapsUrl = record.maps_url || record.google_maps_url;
   actionsEl.innerHTML = `
     ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">Google Maps →</a>` : ""}
-    <button class="btn secondary" id="love-details-btn">Full Details ↓</button>
+    <button class="btn secondary" id="love-details-btn">Expand ↑</button>
   `;
   document.getElementById("love-details-btn")?.addEventListener("click", () => {
-    state.loveDiningActiveId = record.id;
-    renderLoveDiningCard();
-    mobileLoveDiningSheet.classList.remove("sheet-visible");
+    const sheet = mobileLoveDiningSheet;
+    const isExpanded = sheet.classList.contains("sheet-expanded");
+    if (isExpanded) {
+      sheet.classList.remove("sheet-expanded");
+    } else {
+      sheet.classList.add("sheet-expanded");
+    }
   });
 }
 function focusActiveRecordOnMap() {
@@ -2579,6 +2722,13 @@ function createStayMarker(record) {
   `, { maxWidth: 200 });
   marker.on("click", () => {
     setActiveStayRecord(record.id);
+    // Zoom in slightly when marker is clicked for visual feedback
+    if (staysMap && hasLeaflet) {
+      const markerLatLng = marker.getLatLng();
+      const currentZoom = staysMap.getZoom();
+      const targetZoom = Math.min(currentZoom + 2, staysMap.getMaxZoom());
+      staysMap.flyTo(markerLatLng, targetZoom, { duration: 0.6 });
+    }
   });
   return marker;
 }
@@ -2959,6 +3109,13 @@ function createLoveDiningMarker(record) {
     renderLoveDiningMobileList();
     updateLoveDiningMarkerStyles();
     renderMobileSheet("loveDining", record);
+    // Zoom in slightly when marker is clicked for visual feedback
+    if (loveMap && hasLeaflet) {
+      const markerLatLng = marker.getLatLng();
+      const currentZoom = loveMap.getZoom();
+      const targetZoom = Math.min(currentZoom + 2, loveMap.getMaxZoom());
+      loveMap.flyTo(markerLatLng, targetZoom, { duration: 0.6 });
+    }
   });
   return marker;
 }
