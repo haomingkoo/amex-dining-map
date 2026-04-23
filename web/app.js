@@ -1104,14 +1104,8 @@ function createMarker(record) {
     : "";
   marker.on("click", () => {
     setActiveRecord(record.id);
-    // Zoom in slightly only if far out (smart zoom for convenience)
     if (map && hasLeaflet) {
-      const markerLatLng = marker.getLatLng();
-      const currentZoom = map.getZoom();
-      if (currentZoom < 12) {
-        const targetZoom = Math.min(currentZoom + 2, map.getMaxZoom());
-        map.flyTo(markerLatLng, targetZoom, { duration: 0.6 });
-      }
+      smartZoomToMarker(map, marker.getLatLng());
     }
   });
   return marker;
@@ -2091,6 +2085,24 @@ function renderMobileSheet(type, record) {
 
 // ─── Mobile Sheet Rendering Helpers ────────────────────────────────────────
 
+/** Centralized zoom configuration - single source of truth */
+const ZOOM_CONFIG = {
+  FAR_OUT_THRESHOLD: 12,     // If below this, zoom in
+  MARKER_TARGET_LEVEL: 16,   // Zoom level when clicking/focusing marker
+};
+
+/** Centralized smart zoom for all maps (dining, stays, love dining) */
+function smartZoomToMarker(map, latLng) {
+  if (!map || !latLng) return;
+  const currentZoom = map.getZoom();
+  // Only zoom if currently far out; otherwise just pan to marker
+  if (currentZoom < ZOOM_CONFIG.FAR_OUT_THRESHOLD) {
+    map.flyTo(latLng, ZOOM_CONFIG.MARKER_TARGET_LEVEL, { duration: 0.6 });
+  } else {
+    map.flyTo(latLng, currentZoom, { duration: 0.4 });
+  }
+}
+
 /** Build a single detail line with icon and text */
 function buildDetailLine(icon, text) {
   return `
@@ -2391,14 +2403,7 @@ function focusActiveRecordOnMap() {
   if (!record) return;
   const marker = state.markers.get(record.id);
   if (!marker) return;
-  // Smart zoom: only zoom if far out
-  const currentZoom = map.getZoom();
-  if (currentZoom < 12) {
-    map.flyTo(marker.getLatLng(), Math.max(currentZoom + 2, 13), { duration: 0.6 });
-  } else {
-    map.flyTo(marker.getLatLng(), currentZoom, { duration: 0.4 });
-  }
-  // Close popup - we're showing the full card instead
+  smartZoomToMarker(map, marker.getLatLng());
   marker.closePopup();
 }
 
@@ -2744,14 +2749,8 @@ function createStayMarker(record) {
     : "";
   marker.on("click", () => {
     setActiveStayRecord(record.id);
-    // Zoom in slightly only if far out (smart zoom for convenience)
     if (staysMap && hasLeaflet) {
-      const markerLatLng = marker.getLatLng();
-      const currentZoom = staysMap.getZoom();
-      if (currentZoom < 12) {
-        const targetZoom = Math.min(currentZoom + 2, staysMap.getMaxZoom());
-        staysMap.flyTo(markerLatLng, targetZoom, { duration: 0.6 });
-      }
+      smartZoomToMarker(staysMap, marker.getLatLng());
     }
   });
   return marker;
@@ -3035,14 +3034,7 @@ function focusActiveStayOnMap() {
   if (!record) return;
   const marker = state.stayMarkers.get(record.id);
   if (!marker) return;
-  // Smart zoom: only zoom if far out
-  const currentZoom = staysMap.getZoom();
-  if (currentZoom < 12) {
-    staysMap.flyTo(marker.getLatLng(), Math.max(currentZoom + 2, 8), { duration: 0.6 });
-  } else {
-    staysMap.flyTo(marker.getLatLng(), currentZoom, { duration: 0.4 });
-  }
-  // Close popup - we're showing the full card instead
+  smartZoomToMarker(staysMap, marker.getLatLng());
   marker.closePopup();
 }
 
@@ -3138,14 +3130,8 @@ function createLoveDiningMarker(record) {
     : "";
   marker.on("click", () => {
     setActiveLoveDiningRecord(record.id);
-    // Zoom in slightly only if far out (smart zoom for convenience)
     if (loveMap && hasLeaflet) {
-      const markerLatLng = marker.getLatLng();
-      const currentZoom = loveMap.getZoom();
-      if (currentZoom < 12) {
-        const targetZoom = Math.min(currentZoom + 2, loveMap.getMaxZoom());
-        loveMap.flyTo(markerLatLng, targetZoom, { duration: 0.6 });
-      }
+      smartZoomToMarker(loveMap, marker.getLatLng());
     }
   });
   return marker;
