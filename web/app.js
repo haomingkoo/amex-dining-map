@@ -2119,17 +2119,22 @@ function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl
   `;
 
   // UPFRONT details: address + phone + hours ONLY (what fits without scroll)
-  const address = record.source_localized_address || "—";
+  const address = record.source_localized_address;
   const phone = record.phone_number;
   const hours = record.hours;
   const district = record.district || "";
 
-  let detailsHTML = `
-    <div class="detail-line">
-      <span class="detail-icon">📍</span>
-      <span class="detail-text">${escapeHtml(address)}${district ? ` (${escapeHtml(district)})` : ""}</span>
-    </div>
-  `;
+  let detailsHTML = "";
+
+  // Only show address if it exists
+  if (address) {
+    detailsHTML += `
+      <div class="detail-line">
+        <span class="detail-icon">📍</span>
+        <span class="detail-text">${escapeHtml(address)}${district ? ` (${escapeHtml(district)})` : ""}</span>
+      </div>
+    `;
+  }
 
   // Only show phone/hours if they exist
   if (phone) {
