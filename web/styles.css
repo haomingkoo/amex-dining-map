@@ -2085,7 +2085,7 @@ h1, h2, h3 {
     top: 50px;
     left: 0;
     right: 0;
-    z-index: 2000;
+    z-index: 1999;
     background: rgba(7, 13, 22, 0.98);
     border-radius: 0;
     border: none;
@@ -2094,18 +2094,19 @@ h1, h2, h3 {
     overflow-y: auto;
   }
 
-  /* Make toolbar button compact and top-left */
+  /* Make toolbar button compact and top-left (map control position) */
   .toolbar-toggle {
     position: fixed;
-    top: 50px;
-    left: 12px;
+    top: 8px;
+    left: 8px;
     z-index: 2001;
     background: rgba(7, 13, 22, 0.95) !important;
     border: 1px solid rgba(201, 165, 90, 0.3) !important;
-    border-radius: 12px !important;
-    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    padding: 6px 8px !important;
     width: auto;
     margin: 0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   }
 
   .toolbar-toggle-title {

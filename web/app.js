@@ -2112,17 +2112,18 @@ function setupSheetGestureHandling(sheet) {
     if (isSwipeDown) {
       // Dismiss sheet
       sheet.classList.remove("sheet-visible", "sheet-expanded");
+      // Clear selection after animation completes
       setTimeout(() => {
         if (sheet.id.includes("dining")) {
           state.activeId = null;
-          renderMobileSheet("dining", activeRecord());
         } else if (sheet.id.includes("stays")) {
           state.stayActiveId = null;
-          renderMobileSheet("stays", activeStayRecord());
         } else if (sheet.id.includes("love")) {
           state.loveDiningActiveId = null;
-          renderMobileSheet("loveDining", activeLoveDiningRecord());
         }
+        updateDiningMarkerStyles();
+        updateStayMarkerStyles();
+        updateLoveDiningMarkerStyles();
       }, 400);
     } else if (isSwipeUp) {
       // Expand to full screen
