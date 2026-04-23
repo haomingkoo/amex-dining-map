@@ -3013,6 +3013,21 @@ function focusActiveStayOnMap() {
   marker.closePopup();
 }
 
+function activeLoveDiningRecord() {
+  return state.loveDining.find((r) => r.id === state.loveDiningActiveId) || null;
+}
+
+function setActiveLoveDiningRecord(id) {
+  state.loveDiningActiveId = id;
+  const record = activeLoveDiningRecord();
+  if (record) {
+    renderLoveDiningCard();
+    renderLoveDiningMobileList();
+    updateLoveDiningMarkerStyles();
+    renderMobileSheet("loveDining", record);
+  }
+}
+
 function fitDiningMapToVisibleMarkers() {
   if (!hasLeaflet || !map) return;
   const route = currentRoute();
@@ -3089,11 +3104,7 @@ function createLoveDiningMarker(record) {
     ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
     : "";
   marker.on("click", () => {
-    state.loveDiningActiveId = record.id;
-    renderLoveDiningCard();
-    renderLoveDiningMobileList();
-    updateLoveDiningMarkerStyles();
-    renderMobileSheet("loveDining", record);
+    setActiveLoveDiningRecord(record.id);
     // Zoom in slightly when marker is clicked for visual feedback
     if (loveMap && hasLeaflet) {
       const markerLatLng = marker.getLatLng();
@@ -3339,10 +3350,7 @@ function renderLoveDiningMobileList() {
       </div>
     `;
     card.addEventListener("click", () => {
-      state.loveDiningActiveId = record.id;
-      renderLoveDiningCard();
-      renderLoveDiningMobileList();
-      updateLoveDiningMarkerStyles();
+      setActiveLoveDiningRecord(record.id);
       if (loveDiningHasMapPin(record)) focusLoveDiningOnMap(record);
     });
     loveMobileResultsList.appendChild(card);
