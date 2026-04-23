@@ -3708,6 +3708,9 @@ window.addEventListener("resize", () => {
   if (sheet) {
     sheet.querySelector(".sheet-close")?.addEventListener("click", () => {
       sheet.classList.remove("sheet-visible");
+      state.activeId = null;
+      state.activeStayId = null;
+      state.activeLoveDiningId = null;
     });
   }
 });
@@ -3724,6 +3727,9 @@ function setupMobileSheetDismissal() {
       [mobileDiningSheet, mobileStaysSheet, mobileLoveDiningSheet].forEach(sheet => {
         if (sheet) sheet.classList.remove("sheet-visible");
       });
+      state.activeId = null;
+      state.activeStayId = null;
+      state.activeLoveDiningId = null;
     });
   });
 }
