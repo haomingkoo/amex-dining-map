@@ -2044,17 +2044,22 @@ function renderMobileSheet(type, record) {
   const warningsEl = sheet.querySelector(`#${type}-sheet-warnings`);
   const actionsEl = sheet.querySelector(`#${type}-sheet-actions`);
 
+  if (!nameEl || !quickInfoEl || !detailsEl) {
+    console.error(`Mobile sheet elements not found for type "${type}". Check that HTML IDs match the pattern: ${type}-sheet-*`);
+    return;
+  }
+
   // Set name
   nameEl.textContent = record.name;
 
   // Set rating
   const gRating = googleRating(record);
   if (gRating && gRating.rating != null) {
-    ratingEl.textContent = gRating.rating.toFixed(1);
-    reviewsEl.textContent = `(${Number(gRating.review_count || 0).toLocaleString()})`;
+    if (ratingEl) ratingEl.textContent = gRating.rating.toFixed(1);
+    if (reviewsEl) reviewsEl.textContent = `(${Number(gRating.review_count || 0).toLocaleString()})`;
   } else {
-    ratingEl.textContent = "—";
-    reviewsEl.textContent = "";
+    if (ratingEl) ratingEl.textContent = "—";
+    if (reviewsEl) reviewsEl.textContent = "";
   }
 
   // Type-specific rendering
@@ -2065,6 +2070,13 @@ function renderMobileSheet(type, record) {
   } else if (type === "loveDining") {
     renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl);
   }
+
+  // Dismiss any other visible sheets before showing this one
+  Object.values(sheetElements).forEach(otherSheet => {
+    if (otherSheet && otherSheet !== sheet) {
+      otherSheet.classList.remove("sheet-visible");
+    }
+  });
 
   sheet.hidden = false;
   requestAnimationFrame(() => {
@@ -2379,7 +2391,13 @@ function focusActiveRecordOnMap() {
   if (!record) return;
   const marker = state.markers.get(record.id);
   if (!marker) return;
-  map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 13), { duration: 0.6 });
+  // Smart zoom: only zoom if far out
+  const currentZoom = map.getZoom();
+  if (currentZoom < 12) {
+    map.flyTo(marker.getLatLng(), Math.max(currentZoom + 2, 13), { duration: 0.6 });
+  } else {
+    map.flyTo(marker.getLatLng(), currentZoom, { duration: 0.4 });
+  }
   // Close popup - we're showing the full card instead
   marker.closePopup();
 }
@@ -3017,7 +3035,13 @@ function focusActiveStayOnMap() {
   if (!record) return;
   const marker = state.stayMarkers.get(record.id);
   if (!marker) return;
-  staysMap.flyTo(marker.getLatLng(), Math.max(staysMap.getZoom(), 8), { duration: 0.6 });
+  // Smart zoom: only zoom if far out
+  const currentZoom = staysMap.getZoom();
+  if (currentZoom < 12) {
+    staysMap.flyTo(marker.getLatLng(), Math.max(currentZoom + 2, 8), { duration: 0.6 });
+  } else {
+    staysMap.flyTo(marker.getLatLng(), currentZoom, { duration: 0.4 });
+  }
   // Close popup - we're showing the full card instead
   marker.closePopup();
 }
@@ -3389,6 +3413,11 @@ function applyRoute(routeId) {
   state.routeId = ROUTES[routeId] ? routeId : PROGRAMS.dining.defaultRoute;
   const route = currentRoute();
   const program = currentProgram();
+
+  // Dismiss all mobile sheets when switching routes
+  Object.values(sheetElements).forEach(sheet => {
+    if (sheet) sheet.classList.remove("sheet-visible");
+  });
 
   document.title = `${route.title} | Unofficial Platinum Experience`;
   renderJourneyShell(route);
