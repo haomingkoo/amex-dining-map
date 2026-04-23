@@ -3709,8 +3709,8 @@ window.addEventListener("resize", () => {
     sheet.querySelector(".sheet-close")?.addEventListener("click", () => {
       sheet.classList.remove("sheet-visible");
       state.activeId = null;
-      state.activeStayId = null;
-      state.activeLoveDiningId = null;
+      state.stayActiveId = null;
+      state.loveDiningActiveId = null;
     });
   }
 });
@@ -3728,8 +3728,8 @@ function setupMobileSheetDismissal() {
         if (sheet) sheet.classList.remove("sheet-visible");
       });
       state.activeId = null;
-      state.activeStayId = null;
-      state.activeLoveDiningId = null;
+      state.stayActiveId = null;
+      state.loveDiningActiveId = null;
     });
   });
 }
