@@ -2455,13 +2455,21 @@ function updateDiningMarkerStyles() {
     const iconEl = marker.getElement()?.querySelector('.custom-marker-icon div');
     if (iconEl) {
       if (isActive) {
-        iconEl.style.boxShadow = "0 0 0 3px rgba(201, 165, 90, 0.4), 0 0 12px rgba(201, 165, 90, 0.3)";
+        // Selected: bright gold with glow
+        iconEl.style.background = "#c9a55a";
+        iconEl.style.boxShadow = "0 0 0 3px rgba(201, 165, 90, 0.4), 0 0 12px rgba(201, 165, 90, 0.5)";
         iconEl.style.width = "22px";
         iconEl.style.height = "22px";
+        iconEl.style.opacity = "0.95";
       } else {
+        // Unselected: restore original color and style
+        const record = state.filtered.find(r => r.id === id);
+        const originalColor = record ? markerColor(record) : "#8899aa";
+        iconEl.style.background = originalColor;
         iconEl.style.boxShadow = "none";
         iconEl.style.width = "16px";
         iconEl.style.height = "16px";
+        iconEl.style.opacity = "0.92";
       }
     }
   });
@@ -3106,13 +3114,19 @@ function updateStayMarkerStyles() {
     const iconEl = marker.getElement()?.querySelector('.custom-marker-icon div');
     if (iconEl) {
       if (isActive) {
-        iconEl.style.boxShadow = "0 0 0 3px rgba(77, 184, 166, 0.4), 0 0 12px rgba(77, 184, 166, 0.3)";
+        // Selected: bright gold with glow
+        iconEl.style.background = "#c9a55a";
+        iconEl.style.boxShadow = "0 0 0 3px rgba(201, 165, 90, 0.4), 0 0 12px rgba(201, 165, 90, 0.5)";
         iconEl.style.width = "22px";
         iconEl.style.height = "22px";
+        iconEl.style.opacity = "0.95";
       } else {
+        // Unselected: restore original teal
+        iconEl.style.background = "#5fb9a6";
         iconEl.style.boxShadow = "none";
         iconEl.style.width = "16px";
         iconEl.style.height = "16px";
+        iconEl.style.opacity = "0.92";
       }
     }
   });
@@ -3234,13 +3248,21 @@ function updateLoveDiningMarkerStyles() {
     const iconEl = marker.getElement()?.querySelector('.custom-marker-icon div');
     if (iconEl) {
       if (isActive) {
-        iconEl.style.boxShadow = "0 0 0 3px rgba(155, 107, 214, 0.4), 0 0 12px rgba(155, 107, 214, 0.3)";
+        // Selected: bright gold with glow
+        iconEl.style.background = "#c9a55a";
+        iconEl.style.boxShadow = "0 0 0 3px rgba(201, 165, 90, 0.4), 0 0 12px rgba(201, 165, 90, 0.5)";
         iconEl.style.width = "22px";
         iconEl.style.height = "22px";
+        iconEl.style.opacity = "0.95";
       } else {
+        // Unselected: restore original color (hotel = purple, restaurant = rose)
+        const record = state.loveDining.find(r => r.id === id);
+        const originalColor = record ? (record.type === "hotel" ? "#9b6bd6" : "#e06b8b") : "#9b6bd6";
+        iconEl.style.background = originalColor;
         iconEl.style.boxShadow = "none";
         iconEl.style.width = "16px";
         iconEl.style.height = "16px";
+        iconEl.style.opacity = "0.9";
       }
     }
   });
