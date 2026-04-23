@@ -1104,9 +1104,6 @@ function createMarker(record) {
     : "";
   marker.on("click", () => {
     setActiveRecord(record.id);
-    if (map && hasLeaflet) {
-      smartZoomToMarker(map, marker.getLatLng());
-    }
   });
   return marker;
 }
@@ -2015,6 +2012,7 @@ function setActiveRecord(id) {
     }
   }
   renderMobileCards(false);
+  updateDiningMarkerStyles();
   const record = activeRecord();
   if (record) renderMobileSheet("dining", record);
 }
@@ -2080,7 +2078,57 @@ function renderMobileSheet(type, record) {
     const firstBtn = sheet.querySelector(".btn");
     if (closeBtn) closeBtn.focus();
     else if (firstBtn) firstBtn.focus();
+
+    // Add swipe gesture listeners for peek/expanded state and dismissal
+    setupSheetGestureHandling(sheet);
   });
+}
+
+/** Set up touch gesture handling for mobile sheets (swipe up/down) */
+function setupSheetGestureHandling(sheet) {
+  let touchStartY = 0;
+  let touchStartTime = 0;
+
+  sheet.removeEventListener("touchstart", handleTouchStart);
+  sheet.removeEventListener("touchend", handleTouchEnd);
+
+  function handleTouchStart(e) {
+    touchStartY = e.touches[0].clientY;
+    touchStartTime = Date.now();
+  }
+
+  function handleTouchEnd(e) {
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaY = touchStartY - touchEndY; // negative = swipe down, positive = swipe up
+    const duration = Date.now() - touchStartTime;
+    const velocity = Math.abs(deltaY) / duration; // pixels per millisecond
+
+    const isSwipeUp = deltaY > 40 && (velocity > 0.3 || deltaY > 100);
+    const isSwipeDown = deltaY < -40 && (velocity > 0.3 || Math.abs(deltaY) > 100);
+
+    if (isSwipeDown) {
+      // Dismiss sheet
+      sheet.classList.remove("sheet-visible", "sheet-expanded");
+      setTimeout(() => {
+        if (sheet.id.includes("dining")) {
+          state.activeId = null;
+          renderMobileSheet("dining", activeRecord());
+        } else if (sheet.id.includes("stays")) {
+          state.stayActiveId = null;
+          renderMobileSheet("stays", activeStayRecord());
+        } else if (sheet.id.includes("love")) {
+          state.loveDiningActiveId = null;
+          renderMobileSheet("loveDining", activeLoveDiningRecord());
+        }
+      }, 400);
+    } else if (isSwipeUp) {
+      // Expand to full screen
+      sheet.classList.add("sheet-expanded");
+    }
+  }
+
+  sheet.addEventListener("touchstart", handleTouchStart, false);
+  sheet.addEventListener("touchend", handleTouchEnd, false);
 }
 
 // ─── Mobile Sheet Rendering Helpers ────────────────────────────────────────
@@ -2397,13 +2445,31 @@ function renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actio
   const mapsUrl = record.maps_url || record.google_maps_url;
   actionsEl.innerHTML = buildActionButtons(mapsUrl, phone);
 }
+function updateDiningMarkerStyles() {
+  if (!hasLeaflet || !map) return;
+  state.markers.forEach((marker, id) => {
+    const isActive = id === state.activeId;
+    const iconEl = marker.getElement()?.querySelector('.custom-marker-icon div');
+    if (iconEl) {
+      if (isActive) {
+        iconEl.style.boxShadow = "0 0 0 3px rgba(201, 165, 90, 0.4), 0 0 12px rgba(201, 165, 90, 0.3)";
+        iconEl.style.width = "22px";
+        iconEl.style.height = "22px";
+      } else {
+        iconEl.style.boxShadow = "none";
+        iconEl.style.width = "16px";
+        iconEl.style.height = "16px";
+      }
+    }
+  });
+}
+
 function focusActiveRecordOnMap() {
   if (!hasLeaflet || !map) return;
   const record = activeRecord();
   if (!record) return;
   const marker = state.markers.get(record.id);
   if (!marker) return;
-  smartZoomToMarker(map, marker.getLatLng());
   marker.closePopup();
 }
 
@@ -2749,9 +2815,6 @@ function createStayMarker(record) {
     : "";
   marker.on("click", () => {
     setActiveStayRecord(record.id);
-    if (staysMap && hasLeaflet) {
-      smartZoomToMarker(staysMap, marker.getLatLng());
-    }
   });
   return marker;
 }
@@ -3024,8 +3087,28 @@ function setActiveStayRecord(id) {
   renderStayFocusCard();
   renderStayTable();
   renderStayMobileCards();
+  updateStayMarkerStyles();
   const record = activeStayRecord();
   if (record) renderMobileSheet("stays", record);
+}
+
+function updateStayMarkerStyles() {
+  if (!hasLeaflet || !staysMap) return;
+  state.stayMarkers.forEach((marker, id) => {
+    const isActive = id === state.stayActiveId;
+    const iconEl = marker.getElement()?.querySelector('.custom-marker-icon div');
+    if (iconEl) {
+      if (isActive) {
+        iconEl.style.boxShadow = "0 0 0 3px rgba(77, 184, 166, 0.4), 0 0 12px rgba(77, 184, 166, 0.3)";
+        iconEl.style.width = "22px";
+        iconEl.style.height = "22px";
+      } else {
+        iconEl.style.boxShadow = "none";
+        iconEl.style.width = "16px";
+        iconEl.style.height = "16px";
+      }
+    }
+  });
 }
 
 function focusActiveStayOnMap() {
@@ -3034,7 +3117,6 @@ function focusActiveStayOnMap() {
   if (!record) return;
   const marker = state.stayMarkers.get(record.id);
   if (!marker) return;
-  smartZoomToMarker(staysMap, marker.getLatLng());
   marker.closePopup();
 }
 
@@ -3130,20 +3212,26 @@ function createLoveDiningMarker(record) {
     : "";
   marker.on("click", () => {
     setActiveLoveDiningRecord(record.id);
-    if (loveMap && hasLeaflet) {
-      smartZoomToMarker(loveMap, marker.getLatLng());
-    }
   });
   return marker;
 }
 
 function updateLoveDiningMarkerStyles() {
+  if (!hasLeaflet || !loveMap) return;
   state.loveDiningMarkers.forEach((marker, id) => {
     const isActive = id === state.loveDiningActiveId;
-    marker.setStyle({
-      radius: isActive ? 11 : 8,
-      weight: isActive ? 2.5 : 1.5,
-    });
+    const iconEl = marker.getElement()?.querySelector('.custom-marker-icon div');
+    if (iconEl) {
+      if (isActive) {
+        iconEl.style.boxShadow = "0 0 0 3px rgba(155, 107, 214, 0.4), 0 0 12px rgba(155, 107, 214, 0.3)";
+        iconEl.style.width = "22px";
+        iconEl.style.height = "22px";
+      } else {
+        iconEl.style.boxShadow = "none";
+        iconEl.style.width = "16px";
+        iconEl.style.height = "16px";
+      }
+    }
   });
 }
 
@@ -3172,8 +3260,7 @@ function fitLoveDiningMap() {
 }
 
 function focusLoveDiningOnMap(record) {
-  if (!hasLeaflet || !loveMap || !loveDiningHasMapPin(record)) return;
-  loveMap.setView([record.lat, record.lon], 16);
+  // No auto-zoom on selection - let user control the view
 }
 
 function normalizeInlineText(value) {
