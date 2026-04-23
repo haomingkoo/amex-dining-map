@@ -2075,6 +2075,31 @@ function renderMobileSheet(type, record) {
   });
 }
 
+// ─── Mobile Sheet Rendering Helpers ────────────────────────────────────────
+
+/** Build a single detail line with icon and text */
+function buildDetailLine(icon, text) {
+  return `
+    <div class="detail-line">
+      <span class="detail-icon">${icon}</span>
+      <span class="detail-text">${escapeHtml(text)}</span>
+    </div>
+  `;
+}
+
+/** Build warnings list HTML */
+function buildWarningsList(warnings) {
+  return warnings.length > 0 ? warnings.join(" • ") : "";
+}
+
+/** Build action buttons for maps and phone */
+function buildActionButtons(mapsUrl, phone) {
+  return `
+    ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">📍 Maps</a>` : ""}
+    ${phone ? `<a class="btn secondary" href="tel:${escapeHtml(phone)}">☎ Call</a>` : ""}
+  `;
+}
+
 /** Dining-specific sheet rendering - RUTHLESSLY MINIMAL upfront */
 function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl) {
   // Quick info: cuisine + price + kid policy (upfront)
@@ -2106,21 +2131,11 @@ function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl
 
   // Only show phone/hours if they exist
   if (phone) {
-    detailsHTML += `
-      <div class="detail-line">
-        <span class="detail-icon">☎</span>
-        <span class="detail-text">${escapeHtml(phone)}</span>
-      </div>
-    `;
+    detailsHTML += buildDetailLine("☎", phone);
   }
 
   if (hours) {
-    detailsHTML += `
-      <div class="detail-line">
-        <span class="detail-icon">🕐</span>
-        <span class="detail-text">${escapeHtml(hours)}</span>
-      </div>
-    `;
+    detailsHTML += buildDetailLine("🕐", hours);
   }
 
   // SCROLLABLE SECTION: station, prices, summary (hidden until scroll)
@@ -2131,12 +2146,7 @@ function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl
     detailsHTML += `<div class="detail-divider"></div>`;
 
     if (station) {
-      detailsHTML += `
-        <div class="detail-line">
-          <span class="detail-icon">🚇</span>
-          <span class="detail-text">${escapeHtml(station)}</span>
-        </div>
-      `;
+      detailsHTML += buildDetailLine("🚇", station);
     }
 
     // Price tiers
@@ -2190,12 +2200,7 @@ function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl
 
   // Actions: Only 2 buttons - Google Maps + Call
   const mapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
-  const phoneHref = phone ? `href="tel:${phone}"` : '';
-
-  actionsEl.innerHTML = `
-    ${mapsUrl ? `<a class="btn primary" ${mapsUrl ? `href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener"` : ''}>📍 Maps</a>` : ""}
-    ${phone ? `<a class="btn secondary" ${phoneHref}>☎ Call</a>` : ""}
-  `;
+  actionsEl.innerHTML = buildActionButtons(mapsUrl, phone);
 }
 
 /** Stays-specific sheet rendering - RUTHLESSLY MINIMAL upfront */
@@ -2225,12 +2230,7 @@ function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl)
   `;
 
   if (phone) {
-    detailsHTML += `
-      <div class="detail-line">
-        <span class="detail-icon">☎</span>
-        <span class="detail-text">${escapeHtml(phone)}</span>
-      </div>
-    `;
+    detailsHTML += buildDetailLine("☎", phone);
   }
 
   // SCROLLABLE SECTION: check-in/out, pricing, amenities, summary
@@ -2296,8 +2296,9 @@ function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl)
   if (record.is_closing_soon) warningsList.push("⚠️ Closing soon");
   if (record.is_refurbishing) warningsList.push("🔨 Currently refurbishing");
 
-  if (warningsList.length > 0) {
-    warningsEl.innerHTML = warningsList.join(" • ");
+  const warningsHtml = buildWarningsList(warningsList);
+  if (warningsHtml) {
+    warningsEl.innerHTML = warningsHtml;
     warningsEl.classList.add("active");
   } else {
     warningsEl.classList.remove("active");
@@ -2305,12 +2306,7 @@ function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl)
 
   // Actions: Only 2 buttons - Google Maps + Call
   const mapsUrl = stayGoogleMapsUrl(record);
-  const phoneHref = phone ? `href="tel:${phone}"` : '';
-
-  actionsEl.innerHTML = `
-    ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">📍 Maps</a>` : ""}
-    ${phone ? `<a class="btn secondary" ${phoneHref}>☎ Call</a>` : ""}
-  `;
+  actionsEl.innerHTML = buildActionButtons(mapsUrl, phone);
 }
 
 /** Love Dining-specific sheet rendering */
@@ -2357,8 +2353,10 @@ function renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actio
   const warningsList = [];
   if (record.is_closing) warningsList.push("⚠️ Permanently closed");
   if (record.is_halal) warningsList.push("✓ Halal certified");
-  if (warningsList.length > 0) {
-    warningsEl.innerHTML = warningsList.join(" • ");
+
+  const warningsHtml = buildWarningsList(warningsList);
+  if (warningsHtml) {
+    warningsEl.innerHTML = warningsHtml;
     warningsEl.classList.add("active");
   } else {
     warningsEl.classList.remove("active");
@@ -2366,12 +2364,7 @@ function renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actio
 
   // Actions: Only 2 buttons - Google Maps + Call
   const mapsUrl = record.maps_url || record.google_maps_url;
-  const phoneHref = phone ? `href="tel:${phone}"` : '';
-
-  actionsEl.innerHTML = `
-    ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">📍 Maps</a>` : ""}
-    ${phone ? `<a class="btn secondary" ${phoneHref}>☎ Call</a>` : ""}
-  `;
+  actionsEl.innerHTML = buildActionButtons(mapsUrl, phone);
 }
 function focusActiveRecordOnMap() {
   if (!hasLeaflet || !map) return;
