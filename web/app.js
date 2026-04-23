@@ -1104,6 +1104,9 @@ function createMarker(record) {
     : "";
   marker.on("click", () => {
     setActiveRecord(record.id);
+    if (map && hasLeaflet) {
+      smartZoomToMarker(map, marker.getLatLng());
+    }
   });
   return marker;
 }
@@ -2470,6 +2473,7 @@ function focusActiveRecordOnMap() {
   if (!record) return;
   const marker = state.markers.get(record.id);
   if (!marker) return;
+  smartZoomToMarker(map, marker.getLatLng());
   marker.closePopup();
 }
 
@@ -2815,6 +2819,9 @@ function createStayMarker(record) {
     : "";
   marker.on("click", () => {
     setActiveStayRecord(record.id);
+    if (staysMap && hasLeaflet) {
+      smartZoomToMarker(staysMap, marker.getLatLng());
+    }
   });
   return marker;
 }
@@ -3117,6 +3124,7 @@ function focusActiveStayOnMap() {
   if (!record) return;
   const marker = state.stayMarkers.get(record.id);
   if (!marker) return;
+  smartZoomToMarker(staysMap, marker.getLatLng());
   marker.closePopup();
 }
 
@@ -3212,6 +3220,9 @@ function createLoveDiningMarker(record) {
     : "";
   marker.on("click", () => {
     setActiveLoveDiningRecord(record.id);
+    if (loveMap && hasLeaflet) {
+      smartZoomToMarker(loveMap, marker.getLatLng());
+    }
   });
   return marker;
 }
@@ -3260,7 +3271,8 @@ function fitLoveDiningMap() {
 }
 
 function focusLoveDiningOnMap(record) {
-  // No auto-zoom on selection - let user control the view
+  if (!hasLeaflet || !loveMap || !loveDiningHasMapPin(record)) return;
+  loveMap.setView([record.lat, record.lon], 16);
 }
 
 function normalizeInlineText(value) {
