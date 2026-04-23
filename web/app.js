@@ -2092,8 +2092,8 @@ function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl
   `;
 
   // UPFRONT details: address + phone + hours ONLY (what fits without scroll)
-  const address = record.address || "—";
-  const phone = record.phone;
+  const address = record.source_localized_address || "—";
+  const phone = record.phone_number;
   const hours = record.hours;
   const district = record.district || "";
 
@@ -2215,7 +2215,7 @@ function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl)
   // UPFRONT details: address + city + phone ONLY
   const address = record.address || "Address not available";
   const city = record.city || "";
-  const phone = record.phone;
+  const phone = record.reservation_phone;
 
   let detailsHTML = `
     <div class="detail-line">
