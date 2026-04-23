@@ -1104,12 +1104,14 @@ function createMarker(record) {
     : "";
   marker.on("click", () => {
     setActiveRecord(record.id);
-    // Zoom in slightly when marker is clicked for visual feedback
+    // Zoom in slightly only if far out (smart zoom for convenience)
     if (map && hasLeaflet) {
       const markerLatLng = marker.getLatLng();
       const currentZoom = map.getZoom();
-      const targetZoom = Math.min(currentZoom + 2, map.getMaxZoom());
-      map.flyTo(markerLatLng, targetZoom, { duration: 0.6 });
+      if (currentZoom < 12) {
+        const targetZoom = Math.min(currentZoom + 2, map.getMaxZoom());
+        map.flyTo(markerLatLng, targetZoom, { duration: 0.6 });
+      }
     }
   });
   return marker;
@@ -2719,12 +2721,14 @@ function createStayMarker(record) {
     : "";
   marker.on("click", () => {
     setActiveStayRecord(record.id);
-    // Zoom in slightly when marker is clicked for visual feedback
+    // Zoom in slightly only if far out (smart zoom for convenience)
     if (staysMap && hasLeaflet) {
       const markerLatLng = marker.getLatLng();
       const currentZoom = staysMap.getZoom();
-      const targetZoom = Math.min(currentZoom + 2, staysMap.getMaxZoom());
-      staysMap.flyTo(markerLatLng, targetZoom, { duration: 0.6 });
+      if (currentZoom < 12) {
+        const targetZoom = Math.min(currentZoom + 2, staysMap.getMaxZoom());
+        staysMap.flyTo(markerLatLng, targetZoom, { duration: 0.6 });
+      }
     }
   });
   return marker;
@@ -3105,12 +3109,14 @@ function createLoveDiningMarker(record) {
     : "";
   marker.on("click", () => {
     setActiveLoveDiningRecord(record.id);
-    // Zoom in slightly when marker is clicked for visual feedback
+    // Zoom in slightly only if far out (smart zoom for convenience)
     if (loveMap && hasLeaflet) {
       const markerLatLng = marker.getLatLng();
       const currentZoom = loveMap.getZoom();
-      const targetZoom = Math.min(currentZoom + 2, loveMap.getMaxZoom());
-      loveMap.flyTo(markerLatLng, targetZoom, { duration: 0.6 });
+      if (currentZoom < 12) {
+        const targetZoom = Math.min(currentZoom + 2, loveMap.getMaxZoom());
+        loveMap.flyTo(markerLatLng, targetZoom, { duration: 0.6 });
+      }
     }
   });
   return marker;
