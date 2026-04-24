@@ -2036,11 +2036,11 @@ function renderMobileSheet(type, record) {
 /** Centralized zoom configuration - single source of truth */
 const ZOOM_CONFIG = {
   FAR_OUT_THRESHOLD: 12,           // If below this, zoom in on marker click
-  MARKER_TARGET_LEVEL: 18,         // Default zoom level when clicking marker (street-level detail)
+  MARKER_TARGET_LEVEL: 16,         // Default zoom level when clicking marker (street-level detail)
   CONTINENT_VIEW_THRESHOLD: 6,     // Threshold between continent view and country view
   COUNTRY_VIEW_THRESHOLD: 10,      // Threshold between country view and city view
-  CONTINENT_ZOOM: 19,              // Maximum zoom for very far out (continent/world view)
-  COUNTRY_ZOOM: 18.5,              // High zoom for country/region view
+  CONTINENT_ZOOM: 17,              // Zoom for very far out (continent/world view)
+  COUNTRY_ZOOM: 16.5,              // Zoom for country/region view
   ZOOM_ANIMATION_DURATION: 0.8,    // Animation duration for zoom (allows visual focus before details appear)
   PAN_ANIMATION_DURATION: 0.4,     // Animation duration for pan-only (already zoomed in)
 };
