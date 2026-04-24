@@ -19,6 +19,16 @@ const TILE_OPTS = {
   subdomains: "abcd",
   maxZoom: 20,
 };
+const GLOBAL_DINING_OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/diningbenefit/";
+const LOVE_DINING_RESTAURANTS_URL = "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html";
+const LOVE_DINING_HOTELS_URL = "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html";
+const LOVE_DINING_RESTAURANTS_TNC_URL = "https://www.americanexpress.com/content/dam/amex/sg/benefits/Love_Dining_Restaurants_TnCs.pdf";
+const LOVE_DINING_HOTELS_TNC_URL = "https://www.americanexpress.com/content/dam/amex/sg/benefits/Love_Dining_Hotels_TnC.pdf";
+const LOVE_DINING_FIXED_20_IDS = new Set([
+  "love-pan-pacific-orchard-singapore-florette",
+  "love-swissotel-the-stamford-skai-bar",
+  "love-paradox-singapore-merchant-court-crossroads-bar",
+]);
 
 function normalizeTheme(theme) {
   return theme === "light" ? "light" : "dark";
@@ -316,19 +326,19 @@ const ROUTES = {
         links: [
           {
             label: "Restaurants page",
-            href: "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+            href: LOVE_DINING_RESTAURANTS_URL,
           },
           {
             label: "Restaurants T&C PDF",
-            href: "https://www.americanexpress.com/content/dam/amex/sg/benefits/Love_Dining_Restaurants_Terms_and_Conditions.pdf",
+            href: LOVE_DINING_RESTAURANTS_TNC_URL,
           },
           {
             label: "Hotels page",
-            href: "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+            href: LOVE_DINING_HOTELS_URL,
           },
           {
             label: "Hotels T&C PDF",
-            href: "https://www.americanexpress.com/content/dam/amex/sg/benefits/Love_Dining_Hotels_TnC.pdf",
+            href: LOVE_DINING_HOTELS_TNC_URL,
           },
         ],
       },
@@ -568,6 +578,8 @@ const loveToolbarToggleMeta = document.getElementById("love-toolbar-toggle-meta"
 const loveSearchInput = document.getElementById("love-search-input");
 const loveTypeFilter = document.getElementById("love-type-filter");
 const loveCuisineFilter = document.getElementById("love-cuisine-filter");
+const loveSavingsFilter = document.getElementById("love-savings-filter");
+const loveOrderFilter = document.getElementById("love-order-filter");
 const loveResetFiltersBtn = document.getElementById("love-reset-filters");
 const loveResultsText = document.getElementById("love-results-text");
 const loveFocusCard = document.getElementById("love-focus-card");
@@ -1687,10 +1699,10 @@ function renderFocusCard() {
     return;
   }
 
-  // Hide focus-panel on mobile when showing sheet instead
+  // On mobile, show selected dining details inline below the map.
   if (window.innerWidth <= MOBILE_BREAKPOINT) {
     const fp = document.querySelector('.focus-panel');
-    if (fp) fp.style.display = 'none';
+    if (fp) fp.style.display = 'flex';
   }
 
   const isJapan = record.country === "Japan";
@@ -2004,6 +2016,8 @@ function renderMobileCards(resetPage = true) {
 
 function setActiveRecord(id) {
   state.activeId = id;
+  const route = currentRoute();
+  resultsText.textContent = id ? `Selected venue · ${route.label}` : `Click a dot to select · ${route.label}`;
   renderFocusCard();
   renderTable();
   // Ensure the active card's page is loaded on mobile
@@ -2473,16 +2487,18 @@ function stayReservationSummaryHtml(record) {
 }
 
 function staySourceMetaLink(record) {
-  if (!record.source_url) return "";
-  if (record.reservation_primary_url && record.reservation_primary_url !== record.source_url) {
-    return `<a class="meta-link" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">View source details</a>`;
+  const sourceUrl = record.source_document_url || record.source_url;
+  if (!sourceUrl) return "";
+  if (record.reservation_primary_url && record.reservation_primary_url !== sourceUrl) {
+    return `<a class="meta-link" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">View official source</a>`;
   }
   return "";
 }
 
 function stayOfficialSourceAction(record) {
-  if (!record.source_url || record.reservation_primary_url) return "";
-  return `<a class="inline-link subtle" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">Official details</a>`;
+  const sourceUrl = record.source_document_url || record.source_url;
+  if (!sourceUrl) return "";
+  return `<a class="inline-link subtle" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">Official Plat Stay PDF</a>`;
 }
 
 function stayReservationActions(record) {
@@ -2498,6 +2514,8 @@ function stayReservationActions(record) {
       `<a class="inline-link" href="${escapeHtml(record.reservation_secondary_url)}" target="_blank" rel="noopener">${escapeHtml(record.reservation_secondary_label)}</a>`
     );
   }
+  const sourceAction = stayOfficialSourceAction(record);
+  if (sourceAction) links.push(sourceAction);
   return links.join("");
 }
 
@@ -3027,6 +3045,7 @@ function renderStayMobileCards() {
 
 function setActiveStayRecord(id) {
   state.stayActiveId = id;
+  staysResultsText.textContent = id ? "Selected property · Plat Stay" : "Click a pin to select · Plat Stay";
   renderStayFocusCard();
   renderStayTable();
   renderStayMobileCards();
@@ -3067,6 +3086,7 @@ function activeLoveDiningRecord() {
 function setActiveLoveDiningRecord(id) {
   state.loveDiningActiveId = id;
   const record = activeLoveDiningRecord();
+  loveResultsText.textContent = record ? "Selected venue · Love Dining" : `${state.loveDiningFiltered.length} venue${state.loveDiningFiltered.length === 1 ? "" : "s"} shown`;
   if (record) {
     renderLoveDiningCard();
     renderLoveDiningMobileList();
@@ -3250,6 +3270,101 @@ function loveDiningHasMapPin(record) {
   return record.lat != null && record.lon != null && !loveDiningShouldHideMapPin(record);
 }
 
+function loveDiningTermsUrl(record) {
+  if (record.terms_url) return record.terms_url;
+  return record.type === "hotel" ? LOVE_DINING_HOTELS_TNC_URL : LOVE_DINING_RESTAURANTS_TNC_URL;
+}
+
+function loveDiningSourceUrl(record) {
+  if (record.source_url) return record.source_url;
+  return record.type === "hotel" ? LOVE_DINING_HOTELS_URL : LOVE_DINING_RESTAURANTS_URL;
+}
+
+function loveDiningUnavailable(record) {
+  const combined = normalizeInlineText(`${record.closing_note || ""} ${record.notes || ""}`).toLowerCase();
+  return /not eligible|permanently closed|temporarily closed|closed for renovation/.test(combined);
+}
+
+function loveDiningOrderProfile(record) {
+  const combined = normalizeInlineText(`${record.name || ""} ${record.cuisine || ""} ${record.notes || ""}`).toLowerCase();
+  if (/not eligible|permanently closed|temporarily closed|closed for renovation/.test(combined)) {
+    return {
+      key: "special",
+      label: "Check eligibility",
+      detail: "Eligibility is restricted or changing. Confirm with the official listing before booking.",
+    };
+  }
+  if (/minimum order of three|three\s*\(3\)\s+dishes|three\s*\(3\)/.test(combined)) {
+    return {
+      key: "three_items",
+      label: "3 qualifying dishes",
+      detail: "Requires at least three qualifying dishes from the listed menu categories.",
+    };
+  }
+  if (/buffet|hotpot|grill buffet/.test(combined)) {
+    return {
+      key: "buffet",
+      label: "Buffet / per diner",
+      detail: "Buffet venues generally require the eligible buffet or one qualifying food item per diner.",
+    };
+  }
+  if (record.type === "hotel") {
+    return {
+      key: "one_per_diner",
+      label: "1 main/item per diner",
+      detail: "Hotel outlets generally require at least one qualifying main course, buffet, or food item per diner.",
+    };
+  }
+  if (/minimum order of two|two\s*\(2\)|two qualifying|2 qualifying|two main|2 main/.test(combined)) {
+    return {
+      key: "two_mains",
+      label: "2 qualifying mains/items",
+      detail: "Requires at least two qualifying à la carte main courses or food items, unless the outlet states otherwise.",
+    };
+  }
+  return {
+    key: "two_mains",
+    label: "2 qualifying mains/items",
+    detail: "Restaurant default: at least two qualifying à la carte main courses for parties of two or more, unless otherwise stated.",
+  };
+}
+
+function loveDiningBenefitProfile(record) {
+  const order = loveDiningOrderProfile(record);
+  const isUnavailable = loveDiningUnavailable(record);
+  const isFixed20 = LOVE_DINING_FIXED_20_IDS.has(record.id);
+  const maxSavingsPct = isFixed20 ? 20 : 50;
+  const savingsKey = isUnavailable ? "unavailable" : isFixed20 ? "twenty" : "fifty";
+  const savingsLabel = isUnavailable
+    ? "Eligibility warning"
+    : isFixed20
+      ? "20% special outlet"
+      : "Up to 50%";
+  const savingsDetail = isUnavailable
+    ? "This venue has a closure, renovation, or future ineligibility note in the official listing."
+    : isFixed20
+      ? "This outlet is listed with a fixed or special 20% benefit in the official hotel terms."
+      : record.type === "hotel"
+        ? "Hotel benefit scale: 50% for 2 adults, 35%/33% for 3, 25% for 4, and 20% for larger eligible parties."
+        : "Restaurant benefit scale: 50% for 2 diners, 35% for 3, 25% for 4, and 20% for 5–20 diners.";
+
+  return {
+    maxSavingsPct,
+    savingsKey,
+    savingsLabel,
+    savingsDetail,
+    orderKey: order.key,
+    orderLabel: order.label,
+    orderDetail: order.detail,
+    termsUrl: loveDiningTermsUrl(record),
+    sourceUrl: loveDiningSourceUrl(record),
+    sourceLabel: record.type === "hotel" ? "Official hotel listing" : "Official restaurant listing",
+    termsLabel: record.type === "hotel" ? "Hotel T&Cs PDF" : "Restaurant T&Cs PDF",
+    exclusions:
+      "Common exclusions: beverages, tax, service charge, set/promotional menus, blackout dates, and outlet-specific item exclusions.",
+  };
+}
+
 function loveDiningLocationNote(record) {
   if (!loveDiningHasMultipleLocations(record)) return "";
   if (loveDiningShouldHideMapPin(record)) {
@@ -3275,10 +3390,15 @@ function filterLoveDining() {
   const search = (loveSearchInput.value || "").trim().toLowerCase();
   const type = loveTypeFilter.value;
   const cuisine = loveCuisineFilter.value;
+  const savings = loveSavingsFilter.value;
+  const order = loveOrderFilter.value;
 
   state.loveDiningFiltered = state.loveDining.filter((record) => {
+    const benefit = loveDiningBenefitProfile(record);
     if (type && record.type !== type) return false;
     if (cuisine && record.cuisine !== cuisine) return false;
+    if (savings && benefit.savingsKey !== savings) return false;
+    if (order && benefit.orderKey !== order) return false;
     if (search && !fuzzyMatchSearch(record.search_text || "", search)) return false;
     return true;
   });
@@ -3292,7 +3412,18 @@ function filterLoveDining() {
   loveMobileSummary.textContent = `${n} venue${n === 1 ? "" : "s"}`;
 
   // Active filters summary
-  const active = [type && (type === "hotel" ? "Hotels" : "Restaurants"), cuisine].filter(Boolean);
+  const savingsLabel = savings
+    ? loveSavingsFilter.options[loveSavingsFilter.selectedIndex]?.textContent
+    : "";
+  const orderLabel = order
+    ? loveOrderFilter.options[loveOrderFilter.selectedIndex]?.textContent
+    : "";
+  const active = [
+    type && (type === "hotel" ? "Hotels" : "Restaurants"),
+    cuisine,
+    savingsLabel && savingsLabel.replace("Savings: ", ""),
+    orderLabel && orderLabel.replace("Order: ", ""),
+  ].filter(Boolean);
   loveToolbarToggleMeta.textContent = active.length ? active.join(", ") : "All filters off";
 
   renderLoveDiningMarkers();
@@ -3338,6 +3469,7 @@ function renderLoveDiningCard() {
         : null;
   const gBadge = loveDiningShouldHideMapPin(record) ? "" : googleRatingBadge(record);
   const googleMapsLabel = loveDiningShouldHideMapPin(record) ? "Search in Google Maps" : "Open in Google Maps";
+  const benefit = loveDiningBenefitProfile(record);
 
   loveFocusCard.innerHTML = `
     <div class="focus-head">
@@ -3351,6 +3483,20 @@ function renderLoveDiningCard() {
     ${closingNote}
     ${halal}
     ${locationNote}
+    <div class="price-grid">
+      <div class="price-card">
+        <span class="price-label">Savings</span>
+        <div class="price-tier">${escapeHtml(benefit.savingsLabel)}</div>
+        <div class="price-raw">${escapeHtml(benefit.savingsDetail)}</div>
+      </div>
+      <div class="price-card">
+        <span class="price-label">Minimum order</span>
+        <div class="price-tier">${escapeHtml(benefit.orderLabel)}</div>
+        <div class="price-raw">${escapeHtml(benefit.orderDetail)}</div>
+      </div>
+    </div>
+    <div class="focus-note">${escapeHtml(benefit.exclusions)}</div>
+    ${record.notes ? `<div class="focus-note">${escapeHtml(record.notes)}</div>` : ""}
     ${descriptionHtml}
     <div class="focus-section">
       ${record.address ? `<div class="focus-row"><span class="focus-label">Address</span><span>${escapeHtml(record.address)}</span></div>` : ""}
@@ -3359,7 +3505,8 @@ function renderLoveDiningCard() {
     </div>
     <div class="focus-actions">
       ${googleMapsUrl ? `<a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">${googleMapsLabel}</a>` : ""}
-      <a class="inline-link subtle" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">View on Amex SG</a>
+      <a class="inline-link subtle" href="${escapeHtml(benefit.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(benefit.sourceLabel)}</a>
+      <a class="inline-link subtle" href="${escapeHtml(benefit.termsUrl)}" target="_blank" rel="noopener">${escapeHtml(benefit.termsLabel)}</a>
       ${loveDiningHasMapPin(record) ? `<button type="button" class="ghost-btn secondary" data-love-focus-map="true">Center on map</button>` : ""}
     </div>
   `;
@@ -3383,6 +3530,7 @@ function renderLoveDiningMobileList() {
     const card = document.createElement("article");
     card.className = `mobile-card${record.id === state.loveDiningActiveId ? " active" : ""}`;
     const g = loveDiningShouldHideMapPin(record) ? null : googleRating(record);
+    const benefit = loveDiningBenefitProfile(record);
     const ratingStr = g && g.rating != null
       ? `<span class="card-google-rating">★ ${g.rating}${g.review_count ? ` (${Number(g.review_count).toLocaleString()})` : ""}</span>`
       : "";
@@ -3397,6 +3545,10 @@ function renderLoveDiningMobileList() {
       <div class="mobile-card-meta">
         ${record.address ? `<span>${escapeHtml(record.address)}</span>` : ""}
         ${record.phone ? `<span>${escapeHtml(record.phone)}</span>` : ""}
+      </div>
+      <div class="venue-tags">
+        <span class="badge ${benefit.savingsKey === "unavailable" ? "amber" : "green"}">${escapeHtml(benefit.savingsLabel)}</span>
+        <span class="badge blue">${escapeHtml(benefit.orderLabel)}</span>
       </div>
     `;
     card.addEventListener("click", () => {
@@ -3544,12 +3696,16 @@ async function init() {
   if (loveDiningResponse && loveDiningResponse.ok) {
     state.loveDining = await loveDiningResponse.json();
     state.loveDining.forEach((record) => {
+      const benefit = loveDiningBenefitProfile(record);
       record.search_text = [
         record.search_text,
         record.name,
         record.hotel,
         record.cuisine,
         record.address,
+        benefit.savingsLabel,
+        benefit.orderLabel,
+        benefit.orderDetail,
       ].filter(Boolean).join(" ").toLowerCase();
     });
     refreshLoveDiningCuisineOptions();
@@ -3619,10 +3775,14 @@ resetFiltersButton.addEventListener("click", () => {
 loveSearchInput.addEventListener("input", filterLoveDining);
 loveTypeFilter.addEventListener("change", filterLoveDining);
 loveCuisineFilter.addEventListener("change", filterLoveDining);
+loveSavingsFilter.addEventListener("change", filterLoveDining);
+loveOrderFilter.addEventListener("change", filterLoveDining);
 loveResetFiltersBtn.addEventListener("click", () => {
   loveSearchInput.value = "";
   loveTypeFilter.value = "";
   loveCuisineFilter.value = "";
+  loveSavingsFilter.value = "";
+  loveOrderFilter.value = "";
   filterLoveDining();
 });
 loveToolbarToggle.addEventListener("click", (event) => {

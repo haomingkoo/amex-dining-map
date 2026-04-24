@@ -25,6 +25,8 @@ from playwright.sync_api import Page, sync_playwright
 
 RESTAURANTS_URL = "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html"
 HOTELS_URL = "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html"
+RESTAURANTS_TNC_URL = "https://www.americanexpress.com/content/dam/amex/sg/benefits/Love_Dining_Restaurants_TnCs.pdf"
+HOTELS_TNC_URL = "https://www.americanexpress.com/content/dam/amex/sg/benefits/Love_Dining_Hotels_TnC.pdf"
 OUTPUT_PATH = Path(__file__).parent.parent / "data" / "love-dining.json"
 GEOCODE_CACHE_PATH = Path(__file__).parent.parent / "data" / "love-dining-geocode-cache.json"
 
@@ -233,6 +235,7 @@ def parse_restaurants(text: str) -> list[dict]:
                 "notes": normalize_inline_text(" ".join(notes) if notes else ""),
                 "source": "Amex Love Dining",
                 "source_url": RESTAURANTS_URL,
+                "terms_url": RESTAURANTS_TNC_URL,
             }
             if name in CLOSING_NOTES:
                 record["closing_note"] = CLOSING_NOTES[name]
@@ -377,6 +380,7 @@ def parse_hotels(text: str) -> list[dict]:
                 "notes": normalize_inline_text(" ".join(notes) if notes else ""),
                 "source": "Amex Love Dining",
                 "source_url": HOTELS_URL,
+                "terms_url": HOTELS_TNC_URL,
             }
             records.append(record)
             continue
