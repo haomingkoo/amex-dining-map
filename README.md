@@ -1,108 +1,67 @@
-# Charging the Charge Card
+# Unofficial Platinum Experience
 
-The unofficial Amex experience guide for min-maxers.
+Map-first explorer for Singapore-issued American Express Platinum benefits. The
+site keeps official source data separate from enrichment so users can see when
+each dataset was cached, where it came from, and when a human review is needed.
 
-Map-first explorer for American Express benefits, with a live Japan dining
-dataset and a first live Plat Stay property explorer.
+Live site: `https://xplorer.kooexperience.com/`
 
-## Scope
+## Programs
 
-- Multi-program shell with top-level tabs for:
-  - Dining
-  - Plat Stay
-  - Love Dining
-  - 10Xcelerator
-- Live Japan dining dataset from public Pocket Concierge pages
-- Live Plat Stay dataset from the official `go.amex/platstay` PDF
-- Route-based dining views for:
-  - World shell
-  - Japan
-  - Tokyo
-  - Kyoto
-  - Osaka
-- Static web UI with:
-  - search
-  - city / district / cuisine filters
-  - kid-policy / English menu / reservation-type filters
-  - Plat Stay date-range filtering
-  - Plat Stay country / city / breakfast filters
-  - KML download buttons
-  - mobile cards
-  - multi-dataset roadmap panels for upcoming programs
+- `Dining`: Japan restaurants from Pocket Concierge plus the official Amex
+  Global/Local Dining Credit directory. Singapore records are labelled as Local
+  Dining Credit, not abroad Global Dining Credit.
+- `Plat Stay`: official Plat Stay property set from the current Amex PDF.
+- `Love Dining`: Singapore restaurant and hotel outlets with official discount
+  terms, exclusions, booking notes, and cache metadata.
+- `Table for Two`: Singapore Platinum set-menu roster from the official Amex
+  page, with cache-only availability fields where app screenshots have been
+  manually captured.
 
-## Accuracy Notes
+## Data Trust Model
 
-- Dining facts currently come from Pocket Concierge Japan pages and venue detail
-  endpoints.
-- Coordinates are not equal across all future programs. The app is designed to
-  surface confidence instead of pretending every pin is equally exact.
-- Plat Stay addresses currently come from the official PDF and geocoding is
-  still approximate. Exact Google Maps links are safer than blindly trusting
-  every plotted pin.
-- Michelin status is intentionally left blank unless verified from an official
-  Michelin source.
-- Kid friendliness is normalized from explicit source text. Missing policy is
-  treated as unknown, not family-friendly.
+- `official`: names, official roster membership, addresses, terms links, and
+  source hashes from Amex or Pocket Concierge.
+- `cached`: source fetch times and hashes stored in `data/*-source.json` files
+  and rendered in the UI.
+- `enriched`: geocodes, Google Maps ratings, summaries, and third-party quality
+  signals. These are helpful, but not the source of truth.
+- `manual`: Table for Two availability screenshots and menu screenshots. These
+  are never treated as live availability; users must confirm in the Amex
+  Experiences App before booking.
 
-## Project Layout
+## Key Data Files
 
-```text
-amex-dining-map/
-├── data/
-│   ├── geocode_cache.json
-│   ├── japan-restaurants.json
-│   ├── plat-stays.json
-│   ├── plat-stay-source.json
-│   ├── plat_stay_geocode_cache.json
-│   ├── venue_detail_cache.json
-│   └── kml/
-├── .env.example
-├── scripts/
-│   ├── sync_japan_mvp.py
-│   └── sync_plat_stay.py
-└── web/
-    ├── app.js
-    ├── index.html
-    └── styles.css
-```
+- `data/japan-restaurants.json`: Pocket Concierge Japan dining records.
+- `data/japan-dining-source.json`: Japan cache time, source URL, counts, and
+  stable record hash.
+- `data/global-restaurants.json`: Amex Global/Local Dining Credit records.
+- `data/global-dining-source.json`: Amex directory cache time, source API,
+  country counts, and verification counts.
+- `data/plat-stays.json`: Plat Stay properties.
+- `data/plat-stay-source.json`: Plat Stay PDF source URL, cache time, page count,
+  and PDF hash.
+- `data/love-dining.json`: Love Dining restaurants and hotel outlets.
+- `data/love-dining-source.json`: Love Dining source pages, T&C PDF hashes,
+  counts, reviewed hashes, and manual-review flag.
+- `data/table-for-two.json`: Table for Two official roster, T&C/FAQ links, source
+  image hashes, and cache-only availability notes.
 
-## Build Dining Data
+## Routes
 
-The sync script fetches public Pocket Concierge landing pages, normalizes the
-restaurant records, geocodes them using Nominatim with a local cache, and writes
-JSON + KML outputs.
+- `/#/dining/world`: all dining records.
+- `/#/dining/taiwan`: Taiwan Global Dining Credit records.
+- `/#/dining/singapore`: Singapore Local Dining Credit records.
+- `/#/stays`: Plat Stay explorer.
+- `/#/love-dining`: Love Dining explorer.
+- `/#/table-for-two`: Table for Two roster and cached availability explorer.
+- `/#/alerts`: source-change summary panel.
+
+## Local Run
+
+Serve the repository root and open `/web/`.
 
 ```bash
-cd /Users/koohaoming/dev/amex-dining-map
-python3 scripts/sync_japan_mvp.py
-```
-
-## Build Plat Stay Data
-
-The Plat Stay sync downloads the canonical short-link PDF, parses the property
-table, geocodes the addresses, and writes JSON + KML outputs plus source
-metadata for future diffing.
-
-```bash
-cd /Users/koohaoming/dev/amex-dining-map
-python3 scripts/sync_plat_stay.py
-```
-
-## Local Environment
-
-Optional keys for future assistant work should live in `.env` and never be
-committed. Use `.env.example` as the template.
-
-```bash
-cp .env.example .env
-```
-
-## Run Web App
-
-Serve the repo root and open the web app from `/web/`.
-
-```bash
-cd /Users/koohaoming/dev/amex-dining-map
 python3 -m http.server 8000
 ```
 
@@ -112,25 +71,56 @@ Then open:
 http://localhost:8000/web/
 ```
 
-## Auto Refresh
+## Refresh Commands
 
-- GitHub Pages deploys automatically on every push to `main`.
-- A scheduled GitHub Action now refreshes the generated `data/` files daily at
-  `01:00 UTC` and pushes a commit only when the source data actually changes.
-- The scheduled run also supports manual triggering from the Actions tab.
-- Optional repository secrets:
-  - `GEOAPIFY_API_KEY`
-  - `TOMTOM_API_KEY`
+```bash
+python3 scripts/sync_japan_mvp.py
+python3 scripts/sync_plat_stay.py
+python3 scripts/scrape_global_dining.py
+python3 scripts/scrape_love_dining.py --no-geocode
+python3 scripts/scrape_table_for_two.py
+```
 
-## Current Build Status
+Useful targeted checks:
 
-- Sprint 1:
-  multi-dataset shell and nested dining routing
-- Sprint 2:
-  Plat Stay ingestion + blackout-date planner is live, with more geocode
-  verification still needed
-- Sprint 3:
-  Love Dining Restaurants and Hotels ingestion
-- Later:
-  global dining expansion, source-change notices, Telegram nudges, and a
-  grounded assistant layer
+```bash
+python3 scripts/verify_global_dining_official.py --country-code TW --max-list 40
+python3 scripts/scrape_love_dining.py --diff --no-geocode
+python3 scripts/check_table_for_two_availability.py --venue-id tft-15-stamford-restaurant --meal Lunch --times 12:00,12:30 --date 2026-04-28
+python3 scripts/source_change_alert.py --program "Plat Stay" --meta data/plat-stay-source.json --data data/plat-stays.json --output /tmp/plat-stay-alert.md
+```
+
+## GitHub Workflows
+
+- `deploy-pages.yml`: deploys the static site on pushes to `main`.
+- `refresh-data.yml`: daily Japan dining and Plat Stay refresh at `01:00 UTC`.
+- `refresh-love-dining.yml`: daily Love Dining refresh at `01:45 UTC`.
+- `refresh-table-for-two.yml`: daily public Table for Two roster refresh at
+  `01:30 UTC`.
+- `refresh-global-dining.yml`: monthly Amex Global/Local Dining refresh on the
+  first day of the month at `01:00 UTC`.
+- Source-change workflows open/update GitHub Issues labelled `data-alert` when
+  counts, official hashes, source image hashes, T&C hashes, or official records
+  change.
+
+## Validation
+
+Run these before pushing data or UI changes:
+
+```bash
+python3 -m json.tool data/love-dining-source.json >/tmp/love-source.valid.json
+python3 -m json.tool data/japan-dining-source.json >/tmp/japan-source.valid.json
+python3 -m json.tool data/table-for-two.json >/tmp/table-for-two.valid.json
+python3 -m py_compile scripts/source_change_alert.py scripts/scrape_love_dining.py scripts/scrape_table_for_two.py scripts/check_table_for_two_availability.py scripts/sync_japan_mvp.py
+node --check web/app.js
+git diff --check
+```
+
+## Safety Boundaries
+
+- Do not scrape logged-in Amex Experiences App endpoints or bypass app access.
+- Do not commit cookies, tokens, private screenshots, or user-specific booking
+  data.
+- Do not present Table for Two cache data as live inventory.
+- Prefer official Amex/Pocket Concierge sources for facts; enrichments should be
+  labelled and easy to override.

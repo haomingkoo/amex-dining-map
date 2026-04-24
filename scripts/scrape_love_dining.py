@@ -12,6 +12,8 @@ Usage:
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
+import hashlib
 import json
 import re
 import sys
@@ -28,6 +30,7 @@ HOTELS_URL = "https://www.americanexpress.com/sg/benefits/love-dining/love-dinin
 RESTAURANTS_TNC_URL = "https://www.americanexpress.com/content/dam/amex/sg/benefits/Love_Dining_Restaurants_TnCs.pdf"
 HOTELS_TNC_URL = "https://www.americanexpress.com/content/dam/amex/sg/benefits/Love_Dining_Hotels_TnC.pdf"
 OUTPUT_PATH = Path(__file__).parent.parent / "data" / "love-dining.json"
+META_PATH = Path(__file__).parent.parent / "data" / "love-dining-source.json"
 GEOCODE_CACHE_PATH = Path(__file__).parent.parent / "data" / "love-dining-geocode-cache.json"
 
 CONTEXT_OPTS: dict[str, Any] = {
@@ -47,9 +50,25 @@ CLOSING_NOTES: dict[str, str] = {
     "Sen Of Japan": "Temporarily closed for renovation 8 April – 30 June 2026",
 }
 
+PRESERVED_ENRICHMENT_FIELDS = ("lat", "lon", "summary_ai")
+
 
 def normalize_inline_text(value: str | None) -> str:
     return re.sub(r"\s+", " ", (value or "").replace("\xa0", " ")).strip()
+
+
+def now_utc_iso() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def fetch_bytes(url: str) -> bytes:
+    request = urllib.request.Request(url, headers={"User-Agent": CONTEXT_OPTS["user_agent"]})
+    with urllib.request.urlopen(request, timeout=30) as response:
+        return response.read()
+
+
+def sha256_hex(raw: bytes) -> str:
+    return hashlib.sha256(raw).hexdigest()
 
 
 def phone_count(phone: str | None) -> int:
@@ -95,12 +114,102 @@ def annotate_location_metadata(record: dict) -> None:
         return
 
     record["multi_location"] = True
-    if address_block_count(record.get("address")) > 1:
-        record["location_pin_hidden"] = True
-        record["map_pin_note"] = (
-            "This Love Dining entry bundles multiple outlets into one source record, "
-            "so the map pin is intentionally hidden until the branches are split cleanly."
-        )
+    record["location_pin_hidden"] = True
+    record["map_pin_note"] = (
+        "This Love Dining entry bundles multiple outlets into one source record, "
+        "so the map pin is intentionally hidden until the branches are split cleanly."
+    )
+
+
+def preserve_existing_enrichment(records: list[dict]) -> list[dict]:
+    """Keep manual/geocoded enrichments when refreshing official listing fields."""
+    if not OUTPUT_PATH.exists():
+        return records
+
+    existing = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+    existing_by_id = {record["id"]: record for record in existing}
+    for record in records:
+        old = existing_by_id.get(record["id"])
+        if not old:
+            continue
+        for field in PRESERVED_ENRICHMENT_FIELDS:
+            if record.get("location_pin_hidden") and field in ("lat", "lon"):
+                continue
+            if field in old and field not in record:
+                record[field] = old[field]
+    return records
+
+
+def official_record_projection(record: dict) -> dict:
+    return {
+        key: value
+        for key, value in record.items()
+        if key not in PRESERVED_ENRICHMENT_FIELDS and key not in {"lat", "lon"}
+    }
+
+
+def build_meta(records: list[dict], checked_at: str, *, mark_reviewed: bool = False) -> dict:
+    restaurants = [record for record in records if record.get("type") == "restaurant"]
+    hotels = [record for record in records if record.get("type") == "hotel"]
+    official_records = [official_record_projection(record) for record in records]
+    digest_source = json.dumps(official_records, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    records_sha256 = hashlib.sha256(digest_source).hexdigest()
+    terms_hashes = {
+        "restaurants": sha256_hex(fetch_bytes(RESTAURANTS_TNC_URL)),
+        "hotels": sha256_hex(fetch_bytes(HOTELS_TNC_URL)),
+    }
+    previous_meta = json.loads(META_PATH.read_text(encoding="utf-8")) if META_PATH.exists() else {}
+    reviewed_terms_hashes = previous_meta.get("reviewed_terms_hashes") or terms_hashes
+    reviewed_records_sha256 = previous_meta.get("reviewed_records_sha256") or records_sha256
+    terms_reviewed_at = previous_meta.get("terms_reviewed_at") or checked_at
+    records_reviewed_at = previous_meta.get("records_reviewed_at") or checked_at
+
+    if mark_reviewed:
+        reviewed_terms_hashes = terms_hashes
+        reviewed_records_sha256 = records_sha256
+        terms_reviewed_at = checked_at
+        records_reviewed_at = checked_at
+
+    major_change_reasons: list[str] = []
+    changed_terms = [
+        key for key, value in terms_hashes.items()
+        if reviewed_terms_hashes.get(key) and reviewed_terms_hashes.get(key) != value
+    ]
+    if changed_terms:
+        major_change_reasons.append(f"Love Dining T&C PDF changed: {', '.join(changed_terms)}")
+    if reviewed_records_sha256 and reviewed_records_sha256 != records_sha256:
+        major_change_reasons.append("Official Love Dining listing content changed")
+
+    manual_review_required = bool(major_change_reasons)
+    return {
+        "dataset": "love_dining",
+        "program": "American Express Love Dining Singapore",
+        "last_checked_at": checked_at,
+        "record_count": len(records),
+        "restaurant_count": len(restaurants),
+        "hotel_outlet_count": len(hotels),
+        "records_sha256": records_sha256,
+        "reviewed_records_sha256": reviewed_records_sha256,
+        "records_reviewed_at": records_reviewed_at,
+        "terms_hashes": terms_hashes,
+        "reviewed_terms_hashes": reviewed_terms_hashes,
+        "terms_reviewed_at": terms_reviewed_at,
+        "manual_review_required": manual_review_required,
+        "major_change_reasons": major_change_reasons,
+        "official_pages": {
+            "restaurants": RESTAURANTS_URL,
+            "hotels": HOTELS_URL,
+        },
+        "terms": {
+            "restaurants": RESTAURANTS_TNC_URL,
+            "hotels": HOTELS_TNC_URL,
+        },
+        "source_notes": [
+            "Restaurant cards use the official Amex Love Dining listing for outlet notes, address, phone, and source links.",
+            "Promo rules use the official Love Dining restaurant and hotel T&C PDFs.",
+            "Google ratings and AI summaries are enrichment fields and are not the source of truth for Amex benefit eligibility.",
+        ],
+    }
 
 
 # ─── Playwright helpers ────────────────────────────────────────────────────────
@@ -494,13 +603,30 @@ def run_diff(new_records: list[dict]) -> None:
     old = json.loads(OUTPUT_PATH.read_text())
     old_names = {r["name"] for r in old}
     new_names = {r["name"] for r in new_records}
+    old_by_id = {r["id"]: r for r in old}
+    new_by_id = {r["id"]: r for r in new_records}
     added = new_names - old_names
     removed = old_names - new_names
-    print(f"\nDiff: +{len(added)} added, -{len(removed)} removed, {len(new_names)} total")
+    changed_fields = ("notes", "closing_note", "opening_hours", "phone", "address", "cuisine", "terms_url", "source_url")
+    changed: list[tuple[str, list[str]]] = []
+    for record_id in sorted(set(old_by_id) & set(new_by_id)):
+        fields = [
+            field for field in changed_fields
+            if normalize_inline_text(str(old_by_id[record_id].get(field, "")))
+            != normalize_inline_text(str(new_by_id[record_id].get(field, "")))
+        ]
+        if fields:
+            changed.append((new_by_id[record_id]["name"], fields))
+
+    print(f"\nDiff: +{len(added)} added, -{len(removed)} removed, {len(changed)} changed, {len(new_names)} unique names")
     for n in sorted(added):
         print(f"  + {n}")
     for n in sorted(removed):
         print(f"  - {n}")
+    for name, fields in changed[:25]:
+        print(f"  ~ {name}: {', '.join(fields)}")
+    if len(changed) > 25:
+        print(f"  ... and {len(changed) - 25} more changed records")
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
@@ -510,6 +636,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--dry-run", action="store_true", help="Scrape, print summary, don't write")
     p.add_argument("--diff", action="store_true", help="Show additions/removals vs existing file")
     p.add_argument("--no-geocode", action="store_true", help="Skip geocoding pass")
+    p.add_argument("--mark-reviewed", action="store_true", help="Mark current official records and T&C PDFs as reviewed")
     return p.parse_args()
 
 
@@ -537,6 +664,7 @@ def main() -> None:
     all_records = restaurants + hotels
     for record in all_records:
         annotate_location_metadata(record)
+    checked_at = now_utc_iso()
     print(f"\nTotal: {len(all_records)} venues")
 
     if args.dry_run:
@@ -552,6 +680,8 @@ def main() -> None:
         run_diff(all_records)
         return
 
+    all_records = preserve_existing_enrichment(all_records)
+
     print("\nGeocoding...")
     all_records = geocode_all(all_records, skip=args.no_geocode)
 
@@ -559,7 +689,9 @@ def main() -> None:
     print(f"\nGeocoded: {geocoded}/{len(all_records)}")
 
     OUTPUT_PATH.write_text(json.dumps(all_records, indent=2, ensure_ascii=False) + "\n")
+    META_PATH.write_text(json.dumps(build_meta(all_records, checked_at, mark_reviewed=args.mark_reviewed), indent=2, ensure_ascii=False) + "\n")
     print(f"Written → {OUTPUT_PATH}")
+    print(f"Written → {META_PATH}")
 
 
 if __name__ == "__main__":

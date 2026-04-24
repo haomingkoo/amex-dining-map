@@ -1,0 +1,70 @@
+name: Refresh Table for Two
+
+on:
+  schedule:
+    - cron: "30 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: table-for-two-refresh
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Refresh public roster snapshot
+        run: python3 scripts/scrape_table_for_two.py
+
+      - name: Build Table for Two source alert
+        id: table_for_two_alert
+        run: |
+          python3 scripts/source_change_alert.py \
+            --program "Table for Two" \
+            --meta data/table-for-two.json \
+            --data data/table-for-two.json \
+            --output /tmp/table-for-two-alert.md
+
+      - name: Commit refreshed Table for Two data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/table-for-two.json
+          if git diff --cached --quiet; then
+            echo "No Table for Two changes detected."
+            exit 0
+          fi
+          git commit -m "chore: refresh table for two data"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push failed on attempt ${attempt}; retrying after remote sync."
+            sleep $((attempt * 5))
+          done
+          exit 1
+
+      - name: Open Table for Two alert issue
+        if: steps.table_for_two_alert.outputs.alert_required == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash scripts/open_source_alert_issue.sh \
+            "Table for Two source changed: review required" \
+            /tmp/table-for-two-alert.md \
+            table-for-two

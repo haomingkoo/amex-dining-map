@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
 
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +27,15 @@ jobs:
 
       - name: Verify against official Amex API
         run: python3 scripts/verify_global_dining_official.py --all
+
+      - name: Build Global Dining source alert
+        id: global_alert
+        run: |
+          python3 scripts/source_change_alert.py \
+            --program "Global Dining" \
+            --meta data/global-dining-source.json \
+            --data data/global-restaurants.json \
+            --output /tmp/global-dining-alert.md
 
       - name: Commit updated data
         run: |
@@ -46,3 +56,13 @@ jobs:
             sleep $((attempt * 5))
           done
           exit 1
+
+      - name: Open Global Dining alert issue
+        if: steps.global_alert.outputs.alert_required == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash scripts/open_source_alert_issue.sh \
+            "Global Dining source changed: review required" \
+            /tmp/global-dining-alert.md \
+            global-dining

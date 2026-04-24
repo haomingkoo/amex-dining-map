@@ -1,0 +1,75 @@
+name: Refresh Love Dining
+
+on:
+  schedule:
+    - cron: "45 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: love-dining-refresh
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Playwright
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+
+      - name: Refresh official Love Dining snapshot
+        run: python3 scripts/scrape_love_dining.py --no-geocode
+
+      - name: Build Love Dining source alert
+        id: love_alert
+        run: |
+          python3 scripts/source_change_alert.py \
+            --program "Love Dining" \
+            --meta data/love-dining-source.json \
+            --data data/love-dining.json \
+            --output /tmp/love-dining-alert.md
+
+      - name: Commit refreshed Love Dining data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/love-dining.json data/love-dining-source.json
+          if git diff --cached --quiet; then
+            echo "No Love Dining changes detected."
+            exit 0
+          fi
+          git commit -m "chore: refresh love dining data"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push failed on attempt ${attempt}; retrying after remote sync."
+            sleep $((attempt * 5))
+          done
+          exit 1
+
+      - name: Open Love Dining alert issue
+        if: steps.love_alert.outputs.alert_required == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash scripts/open_source_alert_issue.sh \
+            "Love Dining source changed: review required" \
+            /tmp/love-dining-alert.md \
+            love-dining

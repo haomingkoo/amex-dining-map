@@ -1,8 +1,12 @@
 const DATA_URL = "../data/japan-restaurants.json";
+const JAPAN_META_URL = "../data/japan-dining-source.json";
 const GLOBAL_DATA_URL = "../data/global-restaurants.json";
+const GLOBAL_META_URL = "../data/global-dining-source.json";
 const STAYS_DATA_URL = "../data/plat-stays.json";
 const STAYS_META_URL = "../data/plat-stay-source.json";
 const LOVE_DINING_DATA_URL = "../data/love-dining.json";
+const LOVE_DINING_META_URL = "../data/love-dining-source.json";
+const TABLE_FOR_TWO_DATA_URL = "../data/table-for-two.json";
 const GOOGLE_RATINGS_URL = "../data/google-maps-ratings.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
@@ -20,10 +24,17 @@ const TILE_OPTS = {
   maxZoom: 20,
 };
 const GLOBAL_DINING_OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/diningbenefit/";
+const GLOBAL_DINING_CREDIT_TERMS_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/global-dining-credit/?extlink=SG-Web-null-sgplatdincredit";
+const SINGAPORE_LOCAL_DINING_NOTICE =
+  "Singapore restaurants are Local Dining Credit entries, not the abroad Global Dining Credit. For Singapore-issued Platinum Cards, the abroad Global Dining Credit applies to participating restaurants outside Singapore.";
 const LOVE_DINING_RESTAURANTS_URL = "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html";
 const LOVE_DINING_HOTELS_URL = "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html";
 const LOVE_DINING_RESTAURANTS_TNC_URL = "https://www.americanexpress.com/content/dam/amex/sg/benefits/Love_Dining_Restaurants_TnCs.pdf";
 const LOVE_DINING_HOTELS_TNC_URL = "https://www.americanexpress.com/content/dam/amex/sg/benefits/Love_Dining_Hotels_TnC.pdf";
+const TABLE_FOR_TWO_OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/";
+const TABLE_FOR_TWO_TNC_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf";
+const TABLE_FOR_TWO_FAQ_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TableforTwo_FAQ.pdf";
+const TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES = 30;
 const LOVE_DINING_FIXED_20_IDS = new Set([
   "love-pan-pacific-orchard-singapore-florette",
   "love-swissotel-the-stamford-skai-bar",
@@ -82,7 +93,7 @@ const PROGRAMS = {
     label: "Dining",
     title: "Dining",
     description:
-      "Amex Platinum dining partners in 16 markets — Japan via Pocket Concierge, plus 15 countries via the official Global Dining Credit source.",
+      "Amex Platinum dining directory. Singapore entries are Local Dining Credit; the abroad Global Dining Credit applies outside Singapore.",
     defaultRoute: "dining/world",
   },
   stays: {
@@ -98,8 +109,16 @@ const PROGRAMS = {
     label: "Love Dining",
     title: "Love Dining",
     description:
-      "Singapore dining benefits. Up to 50% off at participating restaurants and hotel outlets.",
+      "Singapore Love Dining benefits with official savings, minimum-order filters, outlet notes, and T&C links.",
     defaultRoute: "love-dining",
+  },
+  "table-for-two": {
+    id: "table-for-two",
+    label: "Table for Two",
+    title: "Table for Two",
+    description:
+      "Singapore Platinum set-menu dining benefit. Public roster and T&Cs are source-backed; availability is cache-only and app-confirmed.",
+    defaultRoute: "table-for-two",
   },
   alerts: {
     id: "alerts",
@@ -119,11 +138,11 @@ const ROUTES = {
     eyebrow: "Dining / All",
     title: "Dining Explorer",
     description:
-      "Amex Platinum dining partners worldwide — Japan via Pocket Concierge plus 15 countries via the official Global Dining Credit source.",
+      "Amex Platinum dining directory — Singapore Local Dining Credit, Japan via Pocket Concierge, and abroad Global Dining Credit partners.",
     note:
-      "All markets. Use the country or city filter to zoom in.",
+      "All markets. Singapore is local dining credit; the abroad Global Dining Credit is for participating restaurants outside Singapore.",
     mapSummary:
-      "All Amex Platinum dining partners worldwide. Filter by country or city to narrow down.",
+      "All Amex Platinum dining records. Filter by country or city; Singapore records are local credit, not abroad Global Dining Credit.",
     matcher: () => true,
     defaultView: [25, 15],
     defaultZoom: 2,
@@ -146,10 +165,12 @@ const ROUTES = {
     programId: "dining",
     label: "Singapore",
     eyebrow: "Dining / Singapore",
-    title: "Singapore",
-    description: "Amex Platinum Global Dining Credit partners in Singapore.",
-    note: "Singapore dining credit partners.",
-    mapSummary: "Singapore dining credit restaurants.",
+    title: "Singapore Local Dining Credit",
+    description:
+      "Singapore restaurants are Local Dining Credit entries. They are not eligible for the abroad Global Dining Credit; use Love Dining and Table for Two for separate local benefits.",
+    note: "Singapore local dining credit restaurants.",
+    mapSummary:
+      "Singapore Local Dining Credit records. The abroad Global Dining Credit excludes Singapore restaurants.",
     matcher: (record) => record.country === "Singapore",
     defaultView: [1.3521, 103.8198],
     defaultZoom: 12,
@@ -316,7 +337,7 @@ const ROUTES = {
     eyebrow: "Love Dining / Singapore",
     title: "Love Dining",
     description:
-      "Up to 50% off your food bill at 30 standalone restaurants and 49 hotel dining outlets across Singapore.",
+      "Up to 50% off at Singapore restaurants and hotel outlets, with savings bands, order rules, outlet notes, and official T&C links.",
     briefCards: [
       {
         kicker: "Primary sources",
@@ -362,10 +383,23 @@ const ROUTES = {
       },
     ],
   },
+  "table-for-two": {
+    id: "table-for-two",
+    programId: "table-for-two",
+    label: "Singapore",
+    eyebrow: "Table For Two / Singapore",
+    title: "Table for Two",
+    description:
+      "Singapore Platinum Table for Two venues from the official Amex 2026 roster image, with cache-only availability labels and app-only booking notes.",
+    mapSummary:
+      "Table for Two is booked via the Amex Experiences App. Public DiningCity pages do not expose the same Table for Two slot allocation.",
+  },
 };
 
 const state = {
   restaurants: [],
+  japanSourceMeta: null,
+  globalSourceMeta: null,
   stays: [],
   staysSourceMeta: null,
   scopeRecords: [],
@@ -387,7 +421,11 @@ const state = {
   loveDiningFiltered: [],
   loveDiningMarkers: new Map(),
   loveDiningActiveId: null,
+  loveDiningSourceMeta: null,
   loveToolbarOpen: false,
+  tableForTwo: null,
+  tableForTwoFiltered: [],
+  tableForTwoActiveId: null,
   googleRatings: {},
 };
 
@@ -580,11 +618,27 @@ const loveTypeFilter = document.getElementById("love-type-filter");
 const loveCuisineFilter = document.getElementById("love-cuisine-filter");
 const loveSavingsFilter = document.getElementById("love-savings-filter");
 const loveOrderFilter = document.getElementById("love-order-filter");
+const loveAppliesFilter = document.getElementById("love-applies-filter");
+const loveBookingFilter = document.getElementById("love-booking-filter");
+const loveLocationFilter = document.getElementById("love-location-filter");
 const loveResetFiltersBtn = document.getElementById("love-reset-filters");
 const loveResultsText = document.getElementById("love-results-text");
 const loveFocusCard = document.getElementById("love-focus-card");
 const loveMobileSummary = document.getElementById("love-mobile-summary");
 const loveMobileResultsList = document.getElementById("love-mobile-results-list");
+const tableForTwoExplorer = document.getElementById("table-for-two-explorer");
+const tableForTwoSummaryStripText = document.getElementById("tft-summary-strip-text");
+const tableForTwoListSummary = document.getElementById("tft-list-summary");
+const tableForTwoSearchInput = document.getElementById("tft-search-input");
+const tableForTwoCategoryFilter = document.getElementById("tft-category-filter");
+const tableForTwoAvailabilityFilter = document.getElementById("tft-availability-filter");
+const tableForTwoSessionFilter = document.getElementById("tft-session-filter");
+const tableForTwoDateFilter = document.getElementById("tft-date-filter");
+const tableForTwoDayFilter = document.getElementById("tft-day-filter");
+const tableForTwoResetFiltersBtn = document.getElementById("tft-reset-filters");
+const tableForTwoResultsList = document.getElementById("tft-results-list");
+const tableForTwoResultsText = document.getElementById("tft-results-text");
+const tableForTwoFocusCard = document.getElementById("tft-focus-card");
 
 function updateThemeToggle(theme) {
   if (!themeToggleButton) return;
@@ -910,6 +964,16 @@ function diningLocationBadge(record) {
   return "";
 }
 
+function diningCreditBadge(record) {
+  if (record.country === "Singapore") {
+    return '<span class="badge amber">SG Local Dining Credit</span>';
+  }
+  if (record.source === "Amex Platinum Dining" && record.country && record.country !== "Japan") {
+    return '<span class="badge green">Abroad Global Dining Credit</span>';
+  }
+  return "";
+}
+
 function googleMapsSearchUrl(parts) {
   const query = parts.filter(Boolean).join(", ");
   if (!query) return null;
@@ -1043,6 +1107,13 @@ function focusLocationNote(record) {
   return "";
 }
 
+function diningCreditEligibilityNote(record) {
+  if (record.country === "Singapore") {
+    return SINGAPORE_LOCAL_DINING_NOTICE;
+  }
+  return "";
+}
+
 function formatAddress(raw, country) {
   if (!raw) return "";
   // Replace " / " separators from scraper, remove trailing country
@@ -1169,13 +1240,17 @@ function isStayRoute(route = currentRoute()) {
   return route.programId === "stays";
 }
 
+function isTableForTwoRoute(route = currentRoute()) {
+  return route.programId === "table-for-two";
+}
+
 function isLiveDataRoute(route = currentRoute()) {
-  return isDiningRoute(route) || isStayRoute(route) || isLoveDiningRoute(route);
+  return isDiningRoute(route) || isStayRoute(route) || isLoveDiningRoute(route) || isTableForTwoRoute(route);
 }
 
 function currentJourneyId(route = currentRoute()) {
   if (isDiningRoute(route) || isStayRoute(route)) return "travel";
-  if (route.programId === "love-dining") return "singapore";
+  if (route.programId === "love-dining" || route.programId === "table-for-two") return "singapore";
   if (route.programId === "alerts") return "alerts";
   return null;
 }
@@ -1185,12 +1260,12 @@ function visibleProgramIdsForJourney(journeyId) {
     return ["dining", "stays"];
   }
   if (journeyId === "singapore") {
-    return ["love-dining"];
+    return ["love-dining", "table-for-two"];
   }
   if (journeyId === "alerts") {
     return ["alerts"];
   }
-  return ["dining", "stays", "love-dining"];
+  return ["dining", "stays", "love-dining", "table-for-two"];
 }
 
 function formatTimestamp(value) {
@@ -1202,6 +1277,45 @@ function formatTimestamp(value) {
     timeStyle: "short",
     timeZone: "Asia/Singapore",
   });
+}
+
+function diningSourceKind(record) {
+  if (!record) return null;
+  if (record.country === "Japan" || record.source === "Pocket Concierge") return "japan";
+  if (record.source === "Amex Platinum Dining" || record.country) return "global";
+  return null;
+}
+
+function diningSourceMeta(kind) {
+  if (kind === "japan") return state.japanSourceMeta;
+  if (kind === "global") return state.globalSourceMeta;
+  return null;
+}
+
+function diningSourceName(kind) {
+  if (kind === "japan") return "Pocket Concierge";
+  if (kind === "global") return "Amex official directory";
+  return "Source";
+}
+
+function diningSourceCacheLabelForKind(kind) {
+  const meta = diningSourceMeta(kind);
+  if (!meta?.fetched_at) return "";
+  return `${diningSourceName(kind)} cached ${formatTimestamp(meta.fetched_at)}`;
+}
+
+function diningSourceCacheLabel(record) {
+  return diningSourceCacheLabelForKind(diningSourceKind(record));
+}
+
+function diningRouteCacheSummary(records = state.scopeRecords) {
+  const order = ["global", "japan"];
+  const kinds = new Set(records.map((record) => diningSourceKind(record)).filter(Boolean));
+  return order
+    .filter((kind) => kinds.has(kind))
+    .map((kind) => diningSourceCacheLabelForKind(kind))
+    .filter(Boolean)
+    .join(" · ");
 }
 
 function buildAlertsSummary() {
@@ -1318,6 +1432,8 @@ function resolveRouteFromHash() {
     osaka: "dining/japan",
     dining: "dining/world",
     "plat-stay": "stays",
+    tft: "table-for-two",
+    "table-for-two": "table-for-two",
     alerts: "alerts",
   };
 
@@ -1346,6 +1462,7 @@ function renderProgramShell(program, route) {
   document.body.classList.toggle("route-dining", route.programId === "dining");
   document.body.classList.toggle("route-stays", route.programId === "stays");
   document.body.classList.toggle("route-love-dining", route.programId === "love-dining");
+  document.body.classList.toggle("route-table-for-two", route.programId === "table-for-two");
   document.body.classList.toggle("route-alerts", route.programId === "alerts");
   if (routeEyebrow) routeEyebrow.textContent = route.eyebrow;
   if (routeDescription) routeDescription.textContent = route.description;
@@ -1392,7 +1509,15 @@ function jumpIntoExplorer(routeHash) {
     window.location.hash = routeHash;
   }
   window.setTimeout(() => {
-    const target = isStayRoute(resolveRouteFromHash()) ? staysExplorer : dataExplorer;
+    const routeId = resolveRouteFromHash();
+    const route = ROUTES[routeId] || ROUTES["dining/world"];
+    const target = isStayRoute(route)
+      ? staysExplorer
+      : isLoveDiningRoute(route)
+        ? loveDiningExplorer
+        : isTableForTwoRoute(route)
+          ? tableForTwoExplorer
+          : dataExplorer;
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, 80);
 }
@@ -1653,11 +1778,13 @@ function renderStats() {
 
   const mappedText = filteredMapped === state.filtered.length ? "" : `, ${filteredMapped} mapped`;
   const scopeMappedText = filteredMapped === state.scopeRecords.length ? "" : `, ${filteredMapped} mapped`;
+  const cacheSummary = diningRouteCacheSummary();
+  const cacheText = cacheSummary ? ` · ${cacheSummary}.` : ".";
 
   summaryStripText.textContent =
     filterCount > 0
-      ? `${state.filtered.length} of ${state.scopeRecords.length} venues shown across ${filteredLoc}${mappedText}.`
-      : `${state.scopeRecords.length} venues across ${scopeLoc}${scopeMappedText}.`;
+      ? `${state.filtered.length} of ${state.scopeRecords.length} venues shown across ${filteredLoc}${mappedText}${cacheText}`
+      : `${state.scopeRecords.length} venues across ${scopeLoc}${scopeMappedText}${cacheText}`;
 
   resultsText.textContent = state.activeId ? `Selected venue · ${route.label}` : `Click a dot to select · ${route.label}`;
   tableSummary.textContent =
@@ -1683,6 +1810,7 @@ function renderMarkers() {
 
 function renderFocusCard() {
   const record = activeRecord();
+  const diningFocusPanel = focusCard.closest(".focus-panel");
   if (!record) {
     focusCard.innerHTML = state.filtered.length > 0
       ? `<div class="empty-state map-cta">
@@ -1693,16 +1821,18 @@ function renderFocusCard() {
       : '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
     // Hide focus-panel on mobile when no record
     if (window.innerWidth <= MOBILE_BREAKPOINT) {
-      const fp = document.querySelector('.focus-panel');
-      if (fp) fp.style.display = 'none';
+      if (diningFocusPanel) diningFocusPanel.style.display = 'none';
+    } else if (diningFocusPanel) {
+      diningFocusPanel.style.display = '';
     }
     return;
   }
 
   // On mobile, show selected dining details inline below the map.
   if (window.innerWidth <= MOBILE_BREAKPOINT) {
-    const fp = document.querySelector('.focus-panel');
-    if (fp) fp.style.display = 'flex';
+    if (diningFocusPanel) diningFocusPanel.style.display = 'flex';
+  } else if (diningFocusPanel) {
+    diningFocusPanel.style.display = '';
   }
 
   const isJapan = record.country === "Japan";
@@ -1713,6 +1843,7 @@ function renderFocusCard() {
 
   const tags = [
     ...diningLocationTags(record),
+    diningCreditBadge(record),
     diningLocationBadge(record),
     isJapan && record.price_dinner_band_tier && record.price_dinner_band_label
       ? `<span class="badge amber">${escapeHtml(priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label))}</span>`
@@ -1741,6 +1872,7 @@ function renderFocusCard() {
   const googleMapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
   const tSearchUrl = tabelogSignal && tabelogSignal.url ? tabelogSignal.url : tabelogSearchUrl(record);
   const summary = diningSummaryPayload(record);
+  const sourceCacheLabel = diningSourceCacheLabel(record);
 
   focusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(diningKicker(record))}</div>
@@ -1776,6 +1908,8 @@ function renderFocusCard() {
         ${priceMarkup(record.price_lunch_min_jpy, record.price_lunch_max_jpy, record.price_lunch_band_tier, record.price_lunch_band_label)}
       </div>` : ""}
     </div>` : ""}
+    ${diningCreditEligibilityNote(record) ? `<div class="focus-note focus-note-warn">${escapeHtml(diningCreditEligibilityNote(record))}</div>` : ""}
+    ${sourceCacheLabel ? `<div class="focus-note">Source cache: ${escapeHtml(sourceCacheLabel)}.</div>` : ""}
     ${focusLocationNote(record) ? `<div class="focus-note">${escapeHtml(focusLocationNote(record))}</div>` : ""}
     <div class="focus-actions">
       ${
@@ -1793,6 +1927,11 @@ function renderFocusCard() {
           ? `<a class="inline-link subtle" href="${escapeHtml(record.website_url)}" target="_blank" rel="noopener">Restaurant website</a>`
           : record.source_url
           ? `<a class="inline-link subtle" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">${record.source === "Amex Platinum Dining" ? "Amex Dining page" : "Pocket Concierge"}</a>`
+          : ""
+      }
+      ${
+        record.source === "Amex Platinum Dining"
+          ? `<a class="inline-link subtle" href="${escapeHtml(GLOBAL_DINING_CREDIT_TERMS_URL)}" target="_blank" rel="noopener">Credit terms</a>`
           : ""
       }
       ${
@@ -1936,6 +2075,7 @@ function renderMobileCards(resetPage = true) {
           : ""
       }
       <div class="venue-tags">
+        ${diningCreditBadge(record)}
         ${dinnerBand ? `<span class="badge amber">${escapeHtml(dinnerBand)}</span>` : ""}
         ${lunchBand ? `<span class="badge blue">${escapeHtml(lunchBand)}</span>` : ""}
         ${kidPolicyKnown ? `<span class="badge">${escapeHtml(kidLabel(record.child_policy_norm))}</span>` : ""}
@@ -3079,6 +3219,418 @@ function focusActiveStayOnMap() {
   marker.closePopup();
 }
 
+// ─── Table for Two ───────────────────────────────────────────────────────────
+
+function tableForTwoPayload() {
+  return state.tableForTwo || { venues: [] };
+}
+
+function tableForTwoVenues() {
+  const payload = tableForTwoPayload();
+  return Array.isArray(payload.venues) ? payload.venues : [];
+}
+
+function activeTableForTwoRecord() {
+  return tableForTwoVenues().find((record) => record.id === state.tableForTwoActiveId) || null;
+}
+
+function tableForTwoCategoryLabel(category) {
+  if (category === "buffet") return "Buffet";
+  if (category === "cafe") return "Café";
+  if (category === "restaurant") return "Restaurant";
+  return category ? category.replaceAll("_", " ") : "Venue";
+}
+
+function tableForTwoSearchText(record) {
+  return [
+    record.name,
+    record.app_name,
+    record.category,
+    record.app_area,
+    ...(record.app_tags || []),
+    record.booking_channel,
+    record.dining_city_id,
+    record.availability?.status,
+    record.availability?.summary,
+    record.availability?.date,
+    record.availability?.date_label,
+    ...(record.availability?.visible_dates || []),
+    ...(record.availability?.meals || []).flatMap((meal) => [
+      meal.meal,
+      meal.date,
+      meal.date_label,
+      ...(meal.times || []),
+    ]),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+function refreshTableForTwoCategoryOptions() {
+  if (!tableForTwoCategoryFilter) return;
+  const current = tableForTwoCategoryFilter.value;
+  const categories = uniqueValues(tableForTwoVenues().map((record) => record.category));
+  tableForTwoCategoryFilter.innerHTML = '<option value="">All categories</option>';
+  categories.forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = tableForTwoCategoryLabel(category);
+    tableForTwoCategoryFilter.appendChild(option);
+  });
+  if (categories.includes(current)) {
+    tableForTwoCategoryFilter.value = current;
+  }
+}
+
+function setActiveTableForTwoRecord(id) {
+  state.tableForTwoActiveId = id;
+  const record = activeTableForTwoRecord();
+  tableForTwoResultsText.textContent = record
+    ? "Selected venue · Table for Two"
+    : `${state.tableForTwoFiltered.length} venue${state.tableForTwoFiltered.length === 1 ? "" : "s"} shown`;
+  renderTableForTwoCard();
+  renderTableForTwoList();
+}
+
+function filterTableForTwo() {
+  const search = (tableForTwoSearchInput.value || "").trim().toLowerCase();
+  const inferredFilters = tableForTwoInferredFilters(search);
+  const residualSearch = tableForTwoResidualSearch(search);
+  const category = tableForTwoCategoryFilter.value;
+  const availability = tableForTwoAvailabilityFilter.value || inferredFilters.availability;
+  const session = tableForTwoSessionFilter.value || inferredFilters.session;
+  const date = tableForTwoDateFilter.value;
+  const day = tableForTwoDayFilter.value || inferredFilters.day;
+  const venues = tableForTwoVenues();
+  state.tableForTwoFiltered = venues.filter((record) => {
+    if (category && record.category !== category) return false;
+    if (!tableForTwoRecordMatchesFilters(record, { availability, session, date, day })) return false;
+    if (residualSearch && !fuzzyMatchSearch(record.search_text || tableForTwoSearchText(record), residualSearch)) return false;
+    return true;
+  });
+
+  if (state.tableForTwoActiveId && !state.tableForTwoFiltered.some((record) => record.id === state.tableForTwoActiveId)) {
+    state.tableForTwoActiveId = null;
+  }
+
+  const total = venues.length;
+  const shown = state.tableForTwoFiltered.length;
+  const payload = tableForTwoPayload();
+  const availableCount = venues.filter((record) => tableForTwoAvailabilityKey(record) === "available").length;
+  const unknownCount = venues.filter((record) => tableForTwoAvailabilityKey(record) === "unknown").length;
+  const verifiedText = payload.last_verified_at
+    ? `Source checked ${formatTimestamp(payload.last_verified_at)}`
+    : "Source check pending";
+  tableForTwoSummaryStripText.textContent =
+    shown === total
+      ? `${total} venues · ${availableCount} captured available · ${unknownCount} not checked · ${verifiedText}.`
+      : `${shown} of ${total} venues · ${verifiedText}.`;
+  tableForTwoListSummary.textContent =
+    "Try “weekend dinner” or “2 seats lunch”. Roster can refresh daily; useful availability needs a 5–10 min cache and is marked stale after 30 min.";
+  tableForTwoResultsText.textContent = state.tableForTwoActiveId
+    ? "Selected venue · Table for Two"
+    : `${shown} venue${shown === 1 ? "" : "s"} shown`;
+
+  renderTableForTwoList();
+  renderTableForTwoCard();
+}
+
+function tableForTwoInferredFilters(search) {
+  return {
+    availability: /\b(available|free|2\s*(seats?|pax|people)?|two\s*(seats?|pax|people)?)\b/.test(search) ? "available" : "",
+    session: /\bdinner\b/.test(search) ? "Dinner" : /\blunch\b/.test(search) ? "Lunch" : "",
+    day: /\bweekends?\b/.test(search) ? "weekend" : /\bweekdays?\b/.test(search) ? "weekday" : "",
+  };
+}
+
+function tableForTwoResidualSearch(search) {
+  return search
+    .replace(/\b(available|free|weekends?|weekdays?|dinner|lunch|2\s*(seats?|pax|people)?|two\s*(seats?|pax|people)?)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function tableForTwoAvailabilityKey(record) {
+  const status = record.availability?.status || "unknown";
+  if (status === "captured_available" || status === "available") return "available";
+  if (status === "captured_no_seats" || status === "no_seats") return "no_seats";
+  return "unknown";
+}
+
+function tableForTwoAvailabilityMeals(record) {
+  return Array.isArray(record.availability?.meals) ? record.availability.meals : [];
+}
+
+function tableForTwoDateValues(record, meal = {}) {
+  return [
+    meal.date,
+    record.availability?.date,
+    ...(record.availability?.visible_dates || []),
+  ].filter(Boolean);
+}
+
+function tableForTwoDateIsWeekend(dateValue) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue || "")) return false;
+  const [year, month, day] = dateValue.split("-").map(Number);
+  const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+  return weekday === 0 || weekday === 6;
+}
+
+function tableForTwoMealMatchesSession(meal, session) {
+  if (!session) return true;
+  return normalizeInlineText(meal.meal).toLowerCase() === session.toLowerCase();
+}
+
+function tableForTwoMealMatchesDate(record, meal, date) {
+  if (!date) return true;
+  return tableForTwoDateValues(record, meal).includes(date);
+}
+
+function tableForTwoMealMatchesDay(record, meal, day) {
+  if (!day) return true;
+  const dates = tableForTwoDateValues(record, meal);
+  if (!dates.length) return false;
+  return dates.some((dateValue) => {
+    const isWeekend = tableForTwoDateIsWeekend(dateValue);
+    return day === "weekend" ? isWeekend : !isWeekend;
+  });
+}
+
+function tableForTwoMealHasTwoSeats(meal) {
+  return meal.status === "available" && Array.isArray(meal.times) && meal.times.length > 0 && (meal.seats || 2) >= 2;
+}
+
+function tableForTwoRecordMatchesFilters(record, filters) {
+  const meals = tableForTwoAvailabilityMeals(record);
+  const matchingMeals = meals.filter((meal) =>
+    tableForTwoMealMatchesSession(meal, filters.session)
+    && tableForTwoMealMatchesDate(record, meal, filters.date)
+    && tableForTwoMealMatchesDay(record, meal, filters.day)
+  );
+
+  if (filters.availability === "available") {
+    return matchingMeals.some((meal) => tableForTwoMealHasTwoSeats(meal));
+  }
+  if (filters.availability === "no_seats") {
+    return matchingMeals.some((meal) => meal.status === "no_seats");
+  }
+  if (filters.availability === "unknown") {
+    return tableForTwoAvailabilityKey(record) === "unknown";
+  }
+  if (filters.session || filters.date || filters.day) {
+    return matchingMeals.length > 0;
+  }
+  return true;
+}
+
+function tableForTwoAvailabilityLabel(record) {
+  const key = tableForTwoAvailabilityKey(record);
+  if (key === "available") return "2 seats seen";
+  if (key === "no_seats") return "Captured no seats";
+  return "Not checked";
+}
+
+function tableForTwoAvailabilityBadgeClass(record) {
+  const key = tableForTwoAvailabilityKey(record);
+  if (key === "available") return tableForTwoAvailabilityIsStale(record) ? "amber" : "green";
+  if (key === "no_seats") return "amber";
+  return "";
+}
+
+function tableForTwoBestAvailabilityLine(record) {
+  const availability = record.availability || {};
+  const meals = Array.isArray(availability.meals) ? availability.meals : [];
+  const availableMeals = meals.filter((meal) => meal.status === "available" && Array.isArray(meal.times) && meal.times.length);
+  if (!availableMeals.length) return availability.summary || "No captured Table for Two slots yet.";
+  return availableMeals
+    .map((meal) => `${meal.meal}: ${meal.seats || 2} seats at ${meal.times.join(", ")}${meal.date ? ` on ${meal.date}` : ""}`)
+    .join(" | ");
+}
+
+function tableForTwoFreshnessLabel(record) {
+  const capturedAt = record.availability?.captured_at;
+  if (!capturedAt) return "No availability timestamp";
+  const staleSuffix = tableForTwoAvailabilityIsStale(record) ? " · stale" : "";
+  return `Refreshed ${formatTimestamp(capturedAt)}${staleSuffix}`;
+}
+
+function tableForTwoAvailabilityIsStale(record) {
+  const capturedAt = record.availability?.captured_at;
+  if (!capturedAt) return false;
+  const capturedDate = new Date(capturedAt);
+  if (Number.isNaN(capturedDate.getTime())) return false;
+  const ageMs = Date.now() - capturedDate.getTime();
+  return ageMs > TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES * 60 * 1000;
+}
+
+function tableForTwoDateSummary(record) {
+  const availability = record.availability || {};
+  const visibleDates = availability.visible_dates || [];
+  const exactDates = uniqueValues(tableForTwoAvailabilityMeals(record).map((meal) => meal.date));
+  if (exactDates.length) return `Dates: ${exactDates.join(", ")}`;
+  if (visibleDates.length) return `Calendar dates seen: ${visibleDates.join(", ")}`;
+  return availability.date_label || "No cached date";
+}
+
+function renderTableForTwoList() {
+  if (!state.tableForTwoFiltered.length) {
+    tableForTwoResultsList.innerHTML = '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
+    return;
+  }
+
+  tableForTwoResultsList.innerHTML = "";
+  state.tableForTwoFiltered.forEach((record) => {
+    const card = document.createElement("article");
+    card.className = `mobile-card tft-card${record.id === state.tableForTwoActiveId ? " active" : ""}`;
+    const displayName = record.app_name || record.name;
+    const availabilityBadgeClass = tableForTwoAvailabilityBadgeClass(record);
+    const tags = [
+      `<span class="badge green">${escapeHtml(tableForTwoCategoryLabel(record.category))}</span>`,
+      `<span class="badge ${availabilityBadgeClass}">${escapeHtml(tableForTwoAvailabilityLabel(record))}</span>`,
+      record.app_area ? `<span class="badge blue">${escapeHtml(record.app_area)}</span>` : "",
+      record.sample_menu ? '<span class="badge amber">Menu captured</span>' : "",
+      '<span class="badge">App-only booking</span>',
+    ]
+      .filter(Boolean)
+      .join("");
+
+    card.innerHTML = `
+      <div class="mobile-card-head">
+        <div>
+          <div class="mobile-card-kicker">Table for Two</div>
+          <div class="mobile-card-title">${escapeHtml(displayName)}</div>
+          <div class="mobile-card-sub">${escapeHtml(tableForTwoAvailabilityLabel(record))} · ${escapeHtml(tableForTwoFreshnessLabel(record))}</div>
+        </div>
+      </div>
+      <div class="venue-tags">${tags}</div>
+      <p class="mobile-card-desc">${escapeHtml(tableForTwoBestAvailabilityLine(record))}</p>
+      <div class="mobile-card-meta">
+        <span>${escapeHtml(tableForTwoDateSummary(record))}</span>
+        <span>${record.dining_city_id ? `DiningCity public ID ${escapeHtml(record.dining_city_id)}` : "No public booking ID captured yet"}</span>
+      </div>
+    `;
+    card.addEventListener("click", () => {
+      setActiveTableForTwoRecord(record.id);
+      tableForTwoFocusCard?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    tableForTwoResultsList.appendChild(card);
+  });
+}
+
+function renderTableForTwoCard() {
+  const payload = tableForTwoPayload();
+  const record = activeTableForTwoRecord();
+  if (!record) {
+    const hash = payload.source_images?.participating_merchants_sha256 || "";
+    const reviewNote = payload.manual_review_required
+      ? '<div class="focus-note focus-note-warn">Official source image changed. Manual roster review is required before trusting the venue list.</div>'
+      : "";
+    tableForTwoFocusCard.innerHTML = `
+      <div class="focus-kicker">Source-backed roster</div>
+      <h3 class="focus-title">Select a venue</h3>
+      <p class="focus-summary">This section tracks the public Table for Two roster and separates it from Global Dining Credit and Love Dining.</p>
+      <div class="price-grid">
+        <div class="price-card">
+          <span class="price-label">Public source</span>
+          <div class="price-tier">${escapeHtml(payload.venues?.length ? `${payload.venues.length} venues` : "No venues loaded")}</div>
+          <div class="price-raw">${escapeHtml(payload.participating_merchants_image_url || "Official roster image unavailable")}</div>
+        </div>
+        <div class="price-card">
+          <span class="price-label">Live slots</span>
+          <div class="price-tier">App handoff required</div>
+          <div class="price-raw">Public DiningCity availability is not treated as Table for Two inventory.</div>
+        </div>
+      </div>
+      ${hash ? `<div class="focus-note">Roster image SHA-256: ${escapeHtml(hash.slice(0, 12))}…</div>` : ""}
+      ${payload.refresh_policy ? `<div class="focus-note">Refresh policy: roster daily; useful availability every 5–10 minutes when a cache source exists; captured slots stale after 30 minutes.</div>` : ""}
+      ${reviewNote}
+      <div class="focus-actions">
+        <a class="inline-link primary-action" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Official Table for Two page</a>
+        <a class="inline-link subtle" href="${escapeHtml(payload.terms_url || TABLE_FOR_TWO_TNC_URL)}" target="_blank" rel="noopener">T&Cs PDF</a>
+        <a class="inline-link subtle" href="${escapeHtml(payload.faq_url || TABLE_FOR_TWO_FAQ_URL)}" target="_blank" rel="noopener">FAQ PDF</a>
+      </div>
+    `;
+    return;
+  }
+
+  const displayName = record.app_name || record.name;
+  const availability = record.availability || {};
+  const appTags = (record.app_tags || [])
+    .map((tag) => `<span class="badge">${escapeHtml(tag)}</span>`)
+    .join("");
+  const menu = record.sample_menu;
+  const menuHtml = menu
+    ? `
+      <div class="focus-section tft-menu">
+        <div class="focus-kicker">Captured menu</div>
+        <h4>${escapeHtml(menu.title || "Table for Two menu")}</h4>
+        ${(menu.courses || []).map((course) => `
+          <div class="focus-row">
+            <span class="focus-label">${escapeHtml(course.course)}</span>
+            <span>${escapeHtml((course.choices || []).join(" / "))}</span>
+          </div>
+        `).join("")}
+        ${menu.additional_cover_note ? `<div class="focus-note">${escapeHtml(menu.additional_cover_note)}</div>` : ""}
+        <div class="focus-note">Menu source: ${escapeHtml(menu.source || "Captured screenshot")}${menu.captured_at ? ` · ${escapeHtml(menu.captured_at)}` : ""}. Re-check inside the app before booking.</div>
+      </div>
+    `
+    : "";
+  const googleMapsUrl = googleMapsSearchUrl([displayName, "Singapore"]);
+  const mealRows = Array.isArray(availability.meals)
+    ? availability.meals.map((meal) => `
+      <div class="focus-row">
+        <span class="focus-label">${escapeHtml(meal.meal || "Meal")}</span>
+        <span>${escapeHtml(meal.status === "available" ? `${meal.seats || 2} seats at ${(meal.times || []).join(", ")}${meal.date ? ` on ${meal.date}` : ""}` : `No seats captured${meal.date ? ` on ${meal.date}` : ""}`)}</span>
+      </div>
+    `).join("")
+    : "";
+
+  tableForTwoFocusCard.innerHTML = `
+    <div class="focus-kicker">${escapeHtml(tableForTwoCategoryLabel(record.category))} / Singapore</div>
+    <h3 class="focus-title">${escapeHtml(displayName)}</h3>
+    <div class="focus-tags">
+      <span class="badge green">Official 2026 roster</span>
+      <span class="badge ${tableForTwoAvailabilityBadgeClass(record)}">${escapeHtml(tableForTwoAvailabilityLabel(record))}</span>
+      <span class="badge amber">App-only booking</span>
+      ${record.app_area ? `<span class="badge blue">${escapeHtml(record.app_area)}</span>` : ""}
+      ${appTags}
+    </div>
+    <div class="price-grid">
+      <div class="price-card">
+        <span class="price-label">Booking source</span>
+        <div class="price-tier">${escapeHtml(record.booking_channel || payload.booking_channel || "Amex Experiences App")}</div>
+        <div class="price-raw">The Amex app booking handoff is user/session-specific. Keep app URLs and screenshots out of public commits unless cleaned.</div>
+      </div>
+      <div class="price-card">
+        <span class="price-label">Captured availability</span>
+        <div class="price-tier">${escapeHtml(tableForTwoAvailabilityLabel(record))}</div>
+        <div class="price-raw">${escapeHtml(tableForTwoBestAvailabilityLine(record))} · ${escapeHtml(tableForTwoFreshnessLabel(record))}</div>
+      </div>
+    </div>
+    <div class="focus-section">
+      <div class="focus-row">
+        <span class="focus-label">Dates</span>
+        <span>${escapeHtml(tableForTwoDateSummary(record))}</span>
+      </div>
+      <div class="focus-row">
+        <span class="focus-label">Refreshed</span>
+        <span>${escapeHtml(tableForTwoFreshnessLabel(record))}</span>
+      </div>
+      ${mealRows}
+      <div class="focus-note">Source confidence: the venue roster is official Amex source data; availability is cache-only from screenshots or local checks and is not a live public feed.</div>
+      <div class="focus-note">${escapeHtml(availability.notes ? availability.notes.join(" ") : "Availability should be reconfirmed in the Amex Experiences App before booking.")}</div>
+    </div>
+    ${menuHtml}
+    <div class="focus-actions">
+      <a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
+      ${record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.dining_city_public_url)}" target="_blank" rel="noopener">Public DiningCity page</a>` : ""}
+      <a class="inline-link subtle" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Official roster</a>
+      <a class="inline-link subtle" href="${escapeHtml(payload.terms_url || TABLE_FOR_TWO_TNC_URL)}" target="_blank" rel="noopener">T&Cs PDF</a>
+    </div>
+  `;
+}
+
 function activeLoveDiningRecord() {
   return state.loveDining.find((r) => r.id === state.loveDiningActiveId) || null;
 }
@@ -3334,6 +3886,7 @@ function loveDiningBenefitProfile(record) {
   const isUnavailable = loveDiningUnavailable(record);
   const isFixed20 = LOVE_DINING_FIXED_20_IDS.has(record.id);
   const maxSavingsPct = isFixed20 ? 20 : 50;
+  const isHotel = record.type === "hotel";
   const savingsKey = isUnavailable ? "unavailable" : isFixed20 ? "twenty" : "fifty";
   const savingsLabel = isUnavailable
     ? "Eligibility warning"
@@ -3344,15 +3897,46 @@ function loveDiningBenefitProfile(record) {
     ? "This venue has a closure, renovation, or future ineligibility note in the official listing."
     : isFixed20
       ? "This outlet is listed with a fixed or special 20% benefit in the official hotel terms."
-      : record.type === "hotel"
+      : isHotel
         ? "Hotel benefit scale: 50% for 2 adults, 35%/33% for 3, 25% for 4, and 20% for larger eligible parties."
         : "Restaurant benefit scale: 50% for 2 diners, 35% for 3, 25% for 4, and 20% for 5–20 diners.";
+  const appliesTo = isUnavailable
+    ? "Eligibility is restricted for this venue; verify the official listing before planning."
+    : isFixed20
+      ? "Specified hotel item or total-food-bill offer in the hotel T&Cs."
+      : isHotel
+        ? "Total food bill at most hotel outlets, or qualifying food items for named exception outlets; lunch and dinner unless otherwise stated."
+        : "Dine-in à la carte food items during lunch and dinner, unless the outlet states otherwise.";
+  const ladder = isHotel
+    ? "1 adult 15%; 2 adults 50%; 3 adults 35% or 33% depending on hotel group; 4 adults 25%; 5–10 adults 20%."
+    : "1 diner 15%; 2 diners 50%; 3 diners 35%; 4 diners 25%; 5–20 diners 20%.";
+  const appliesKey = isUnavailable || isFixed20
+    ? "special"
+    : order.key === "buffet"
+      ? "buffet"
+      : isHotel
+        ? "hotel_food"
+        : "ala_carte";
+  const appliesLabel = appliesKey === "hotel_food"
+    ? "Hotel food bill/items"
+    : appliesKey === "buffet"
+      ? "Buffet"
+      : appliesKey === "special"
+        ? "Special / eligibility"
+        : "À la carte food";
+  const cardRequirement =
+    "Pay with an eligible Singapore-issued physical Amex Platinum/Centurion/Platinum Reserve/Platinum Credit Card; digital wallet eligibility depends on merchant advice.";
 
   return {
     maxSavingsPct,
     savingsKey,
     savingsLabel,
     savingsDetail,
+    appliesKey,
+    appliesLabel,
+    appliesTo,
+    ladder,
+    cardRequirement,
     orderKey: order.key,
     orderLabel: order.label,
     orderDetail: order.detail,
@@ -3363,6 +3947,52 @@ function loveDiningBenefitProfile(record) {
     exclusions:
       "Common exclusions: beverages, tax, service charge, set/promotional menus, blackout dates, and outlet-specific item exclusions.",
   };
+}
+
+function loveDiningCachedAt() {
+  return state.loveDiningSourceMeta?.last_checked_at || state.loveDiningSourceMeta?.fetched_at || "";
+}
+
+function loveDiningCachedLabel() {
+  const cachedAt = loveDiningCachedAt();
+  return cachedAt ? formatTimestamp(cachedAt) : "Cache time not recorded";
+}
+
+function loveDiningBookingKeys(record) {
+  const combined = normalizeInlineText(`${record.notes || ""} ${record.opening_hours || ""}`).toLowerCase();
+  const keys = new Set();
+  if (/48\s*hours?|48h/.test(combined)) keys.add("48h");
+  if (/24\s*hours?|24h/.test(combined)) keys.add("24h");
+  if (/via phone|by phone|call|contact\s*\+?65|quote/.test(combined)) keys.add("phone");
+  if (/walk-?ins?/.test(combined)) keys.add("walk_in");
+  if (/advanced reservations?|reservations? are required|make your reservations?|reservation/.test(combined)) {
+    keys.add("reservation_required");
+  }
+  if (!keys.size) keys.add("not_stated");
+  return keys;
+}
+
+function loveDiningBookingLabel(record) {
+  const keys = loveDiningBookingKeys(record);
+  if (keys.has("48h")) return "48h booking";
+  if (keys.has("24h")) return "24h booking";
+  if (keys.has("phone")) return "Phone booking";
+  if (keys.has("walk_in")) return "Walk-in mentioned";
+  if (keys.has("reservation_required")) return "Reservation required";
+  return "Booking note not stated";
+}
+
+function loveDiningLocationKey(record) {
+  if (loveDiningHasMultipleLocations(record)) return "bundled";
+  if (loveDiningHasMapPin(record)) return "mapped";
+  return "unmapped";
+}
+
+function loveDiningLocationFilterLabel(record) {
+  const key = loveDiningLocationKey(record);
+  if (key === "bundled") return "Bundled locations";
+  if (key === "mapped") return "Mapped outlet";
+  return "No map pin";
 }
 
 function loveDiningLocationNote(record) {
@@ -3392,6 +4022,9 @@ function filterLoveDining() {
   const cuisine = loveCuisineFilter.value;
   const savings = loveSavingsFilter.value;
   const order = loveOrderFilter.value;
+  const applies = loveAppliesFilter.value;
+  const booking = loveBookingFilter.value;
+  const location = loveLocationFilter.value;
 
   state.loveDiningFiltered = state.loveDining.filter((record) => {
     const benefit = loveDiningBenefitProfile(record);
@@ -3399,15 +4032,20 @@ function filterLoveDining() {
     if (cuisine && record.cuisine !== cuisine) return false;
     if (savings && benefit.savingsKey !== savings) return false;
     if (order && benefit.orderKey !== order) return false;
+    if (applies && benefit.appliesKey !== applies) return false;
+    if (booking && !loveDiningBookingKeys(record).has(booking)) return false;
+    if (location && loveDiningLocationKey(record) !== location) return false;
     if (search && !fuzzyMatchSearch(record.search_text || "", search)) return false;
     return true;
   });
 
   const n = state.loveDiningFiltered.length;
   const total = state.loveDining.length;
+  const cachedLabel = loveDiningCachedLabel();
+  const reviewSuffix = state.loveDiningSourceMeta?.manual_review_required ? " · source review required" : "";
   loveSummaryStripText.textContent = n === total
-    ? `${total} venues · Up to 50% off your food bill`
-    : `${n} of ${total} venues`;
+    ? `${total} venues · 50% for 2 eligible diners · cached ${cachedLabel}${reviewSuffix}`
+    : `${n} of ${total} venues · cached ${cachedLabel}${reviewSuffix}`;
   loveResultsText.textContent = `${n} venue${n === 1 ? "" : "s"} shown`;
   loveMobileSummary.textContent = `${n} venue${n === 1 ? "" : "s"}`;
 
@@ -3418,11 +4056,23 @@ function filterLoveDining() {
   const orderLabel = order
     ? loveOrderFilter.options[loveOrderFilter.selectedIndex]?.textContent
     : "";
+  const appliesLabel = applies
+    ? loveAppliesFilter.options[loveAppliesFilter.selectedIndex]?.textContent
+    : "";
+  const bookingLabel = booking
+    ? loveBookingFilter.options[loveBookingFilter.selectedIndex]?.textContent
+    : "";
+  const locationLabel = location
+    ? loveLocationFilter.options[loveLocationFilter.selectedIndex]?.textContent
+    : "";
   const active = [
     type && (type === "hotel" ? "Hotels" : "Restaurants"),
     cuisine,
     savingsLabel && savingsLabel.replace("Savings: ", ""),
     orderLabel && orderLabel.replace("Order: ", ""),
+    appliesLabel,
+    bookingLabel,
+    locationLabel,
   ].filter(Boolean);
   loveToolbarToggleMeta.textContent = active.length ? active.join(", ") : "All filters off";
 
@@ -3443,8 +4093,11 @@ function renderLoveDiningCard() {
   }
 
   const hotelLine = record.hotel ? `<div class="focus-kicker">${escapeHtml(record.hotel)}</div>` : "";
+  const benefit = loveDiningBenefitProfile(record);
   const typeBadge = `<span class="badge ${record.type === "hotel" ? "love-hotel" : "love-rest"}">${record.type === "hotel" ? "Hotel outlet" : "Restaurant"}</span>`;
   const cuisineBadge = record.cuisine ? `<span class="badge">${escapeHtml(record.cuisine)}</span>` : "";
+  const bookingBadge = `<span class="badge blue">${escapeHtml(loveDiningBookingLabel(record))}</span>`;
+  const appliesBadge = `<span class="badge green">${escapeHtml(benefit.appliesLabel)}</span>`;
   const multiLocationBadge = loveDiningHasMultipleLocations(record)
     ? '<span class="badge amber">Multiple locations</span>'
     : "";
@@ -3469,7 +4122,10 @@ function renderLoveDiningCard() {
         : null;
   const gBadge = loveDiningShouldHideMapPin(record) ? "" : googleRatingBadge(record);
   const googleMapsLabel = loveDiningShouldHideMapPin(record) ? "Search in Google Maps" : "Open in Google Maps";
-  const benefit = loveDiningBenefitProfile(record);
+  const cachedLabel = loveDiningCachedLabel();
+  const sourceReviewWarning = state.loveDiningSourceMeta?.manual_review_required
+    ? `<div class="focus-note focus-note-warn">Official Love Dining source changed since the last reviewed baseline: ${escapeHtml((state.loveDiningSourceMeta.major_change_reasons || ["manual review required"]).join("; "))}</div>`
+    : "";
 
   loveFocusCard.innerHTML = `
     <div class="focus-head">
@@ -3478,27 +4134,47 @@ function renderLoveDiningCard() {
         <div class="focus-name">${escapeHtml(record.name)}</div>
         ${gBadge ? `<div class="focus-ratings">${gBadge}</div>` : ""}
       </div>
-      <div class="venue-tags" style="margin-top:6px">${typeBadge}${cuisineBadge}${multiLocationBadge}</div>
+      <div class="venue-tags" style="margin-top:6px">${typeBadge}${cuisineBadge}${appliesBadge}${bookingBadge}${multiLocationBadge}</div>
     </div>
     ${closingNote}
+    ${sourceReviewWarning}
     ${halal}
     ${locationNote}
     <div class="price-grid">
       <div class="price-card">
-        <span class="price-label">Savings</span>
+        <span class="price-label">Card promo</span>
         <div class="price-tier">${escapeHtml(benefit.savingsLabel)}</div>
-        <div class="price-raw">${escapeHtml(benefit.savingsDetail)}</div>
+        <div class="price-raw">${escapeHtml(benefit.ladder)}</div>
+      </div>
+      <div class="price-card">
+        <span class="price-label">50% off what</span>
+        <div class="price-tier">${escapeHtml(record.type === "hotel" ? "Food bill / qualifying items" : "À la carte food")}</div>
+        <div class="price-raw">${escapeHtml(benefit.appliesTo)}</div>
       </div>
       <div class="price-card">
         <span class="price-label">Minimum order</span>
         <div class="price-tier">${escapeHtml(benefit.orderLabel)}</div>
         <div class="price-raw">${escapeHtml(benefit.orderDetail)}</div>
       </div>
+      <div class="price-card">
+        <span class="price-label">Last cached</span>
+        <div class="price-tier">${escapeHtml(cachedLabel)}</div>
+        <div class="price-raw">Official listing + T&C PDFs checked by the scraper.</div>
+      </div>
     </div>
+    <div class="focus-note">${escapeHtml(benefit.savingsDetail)}</div>
+    <div class="focus-note">${escapeHtml(benefit.cardRequirement)}</div>
     <div class="focus-note">${escapeHtml(benefit.exclusions)}</div>
-    ${record.notes ? `<div class="focus-note">${escapeHtml(record.notes)}</div>` : ""}
+    ${record.notes ? `<div class="focus-section">
+      <div class="focus-kicker">Official outlet notes</div>
+      <div class="focus-note">${escapeHtml(record.notes)}</div>
+    </div>` : ""}
     ${descriptionHtml}
     <div class="focus-section">
+      <div class="focus-row"><span class="focus-label">Type</span><span>${escapeHtml(record.type === "hotel" ? `Hotel outlet${record.hotel ? ` at ${record.hotel}` : ""}` : "Standalone restaurant")}</span></div>
+      <div class="focus-row"><span class="focus-label">Booking</span><span>${escapeHtml(loveDiningBookingLabel(record))}</span></div>
+      <div class="focus-row"><span class="focus-label">Location</span><span>${escapeHtml(loveDiningLocationFilterLabel(record))}</span></div>
+      ${record.cuisine ? `<div class="focus-row"><span class="focus-label">Cuisine</span><span>${escapeHtml(record.cuisine)}</span></div>` : ""}
       ${record.address ? `<div class="focus-row"><span class="focus-label">Address</span><span>${escapeHtml(record.address)}</span></div>` : ""}
       ${record.phone ? `<div class="focus-row"><span class="focus-label">Phone</span><span>${escapeHtml(record.phone)}</span></div>` : ""}
       ${record.opening_hours ? `<div class="focus-row"><span class="focus-label">Hours</span><span>${escapeHtml(record.opening_hours)}</span></div>` : ""}
@@ -3549,6 +4225,10 @@ function renderLoveDiningMobileList() {
       <div class="venue-tags">
         <span class="badge ${benefit.savingsKey === "unavailable" ? "amber" : "green"}">${escapeHtml(benefit.savingsLabel)}</span>
         <span class="badge blue">${escapeHtml(benefit.orderLabel)}</span>
+        <span class="badge green">${escapeHtml(benefit.appliesLabel)}</span>
+        <span class="badge blue">${escapeHtml(loveDiningBookingLabel(record))}</span>
+        ${loveDiningHasMultipleLocations(record) ? '<span class="badge amber">Bundled locations</span>' : ""}
+        <span class="badge">Cached ${escapeHtml(loveDiningCachedLabel())}</span>
       </div>
     `;
     card.addEventListener("click", () => {
@@ -3596,6 +4276,7 @@ function applyRoute(routeId) {
     dataExplorer.hidden = true;
     staysExplorer.hidden = false;
     loveDiningExplorer.hidden = true;
+    tableForTwoExplorer.hidden = true;
     renderStayDownloads(route);
     refreshStayFilterOptions();
     filterStays();
@@ -3612,6 +4293,7 @@ function applyRoute(routeId) {
     dataExplorer.hidden = true;
     staysExplorer.hidden = true;
     loveDiningExplorer.hidden = false;
+    tableForTwoExplorer.hidden = true;
     setLoveToolbarOpen(false);
     state.loveDiningActiveId = null;
     filterLoveDining();
@@ -3624,10 +4306,22 @@ function applyRoute(routeId) {
     return;
   }
 
+  if (isTableForTwoRoute(route)) {
+    dataExplorer.hidden = true;
+    staysExplorer.hidden = true;
+    loveDiningExplorer.hidden = true;
+    tableForTwoExplorer.hidden = false;
+    state.tableForTwoActiveId = null;
+    refreshTableForTwoCategoryOptions();
+    filterTableForTwo();
+    return;
+  }
+
   if (!isDiningRoute(route)) {
     dataExplorer.hidden = true;
     staysExplorer.hidden = true;
     loveDiningExplorer.hidden = true;
+    tableForTwoExplorer.hidden = true;
     state.scopeRecords = [];
     state.filtered = [];
     state.activeId = null;
@@ -3646,6 +4340,7 @@ function applyRoute(routeId) {
   dataExplorer.hidden = false;
   staysExplorer.hidden = true;
   loveDiningExplorer.hidden = true;
+  tableForTwoExplorer.hidden = true;
   setToolbarOpen(false);
   state.scopeRecords = state.restaurants.filter((record) => route.matcher(record));
   state.activeId = null;
@@ -3667,19 +4362,40 @@ function handleHashRoute() {
 async function init() {
   initTheme();
 
-  const [restaurantResponse, globalResponse, staysResponse, staysMetaResponse, loveDiningResponse, ratingsResponse] = await Promise.all([
+  const [
+    restaurantResponse,
+    japanMetaResponse,
+    globalResponse,
+    globalMetaResponse,
+    staysResponse,
+    staysMetaResponse,
+    loveDiningResponse,
+    loveDiningMetaResponse,
+    tableForTwoResponse,
+    ratingsResponse,
+  ] = await Promise.all([
     fetch(DATA_URL),
+    fetch(JAPAN_META_URL).catch(() => null),
     fetch(GLOBAL_DATA_URL).catch(() => null),
+    fetch(GLOBAL_META_URL).catch(() => null),
     fetch(STAYS_DATA_URL),
     fetch(STAYS_META_URL).catch(() => null),
     fetch(LOVE_DINING_DATA_URL).catch(() => null),
+    fetch(LOVE_DINING_META_URL).catch(() => null),
+    fetch(TABLE_FOR_TWO_DATA_URL).catch(() => null),
     fetch(GOOGLE_RATINGS_URL).catch(() => null),
   ]);
   if (!restaurantResponse.ok) throw new Error(`Failed to load restaurant data: ${restaurantResponse.status}`);
   state.restaurants = await restaurantResponse.json();
+  if (japanMetaResponse && japanMetaResponse.ok) {
+    state.japanSourceMeta = await japanMetaResponse.json();
+  }
   if (globalResponse && globalResponse.ok) {
     const globalRecs = await globalResponse.json();
     state.restaurants = [...state.restaurants, ...globalRecs];
+  }
+  if (globalMetaResponse && globalMetaResponse.ok) {
+    state.globalSourceMeta = await globalMetaResponse.json();
   }
   state.restaurants.forEach((record) => {
     record.search_text = (record.search_text || "").toLowerCase();
@@ -3706,9 +4422,25 @@ async function init() {
         benefit.savingsLabel,
         benefit.orderLabel,
         benefit.orderDetail,
+        benefit.appliesTo,
+        benefit.appliesLabel,
+        benefit.ladder,
+        benefit.exclusions,
+        loveDiningBookingLabel(record),
+        loveDiningLocationFilterLabel(record),
       ].filter(Boolean).join(" ").toLowerCase();
     });
     refreshLoveDiningCuisineOptions();
+  }
+  if (loveDiningMetaResponse && loveDiningMetaResponse.ok) {
+    state.loveDiningSourceMeta = await loveDiningMetaResponse.json();
+  }
+  if (tableForTwoResponse && tableForTwoResponse.ok) {
+    state.tableForTwo = await tableForTwoResponse.json();
+    tableForTwoVenues().forEach((record) => {
+      record.search_text = tableForTwoSearchText(record);
+    });
+    refreshTableForTwoCategoryOptions();
   }
   if (ratingsResponse && ratingsResponse.ok) {
     state.googleRatings = await ratingsResponse.json();
@@ -3777,17 +4509,40 @@ loveTypeFilter.addEventListener("change", filterLoveDining);
 loveCuisineFilter.addEventListener("change", filterLoveDining);
 loveSavingsFilter.addEventListener("change", filterLoveDining);
 loveOrderFilter.addEventListener("change", filterLoveDining);
+loveAppliesFilter.addEventListener("change", filterLoveDining);
+loveBookingFilter.addEventListener("change", filterLoveDining);
+loveLocationFilter.addEventListener("change", filterLoveDining);
 loveResetFiltersBtn.addEventListener("click", () => {
   loveSearchInput.value = "";
   loveTypeFilter.value = "";
   loveCuisineFilter.value = "";
   loveSavingsFilter.value = "";
   loveOrderFilter.value = "";
+  loveAppliesFilter.value = "";
+  loveBookingFilter.value = "";
+  loveLocationFilter.value = "";
   filterLoveDining();
 });
 loveToolbarToggle.addEventListener("click", (event) => {
   event.stopPropagation();
   setLoveToolbarOpen(!state.loveToolbarOpen);
+});
+
+// Table for Two events
+tableForTwoSearchInput.addEventListener("input", filterTableForTwo);
+tableForTwoCategoryFilter.addEventListener("change", filterTableForTwo);
+tableForTwoAvailabilityFilter.addEventListener("change", filterTableForTwo);
+tableForTwoSessionFilter.addEventListener("change", filterTableForTwo);
+tableForTwoDateFilter.addEventListener("change", filterTableForTwo);
+tableForTwoDayFilter.addEventListener("change", filterTableForTwo);
+tableForTwoResetFiltersBtn.addEventListener("click", () => {
+  tableForTwoSearchInput.value = "";
+  tableForTwoCategoryFilter.value = "";
+  tableForTwoAvailabilityFilter.value = "";
+  tableForTwoSessionFilter.value = "";
+  tableForTwoDateFilter.value = "";
+  tableForTwoDayFilter.value = "";
+  filterTableForTwo();
 });
 
 introSkipTopButton?.addEventListener("click", () => {
@@ -3808,6 +4563,10 @@ introStartDiningButton?.addEventListener("click", () => {
 
 document.getElementById("intro-start-love")?.addEventListener("click", (e) => {
   jumpIntoExplorer(e.currentTarget.dataset.introRoute);
+});
+
+document.getElementById("intro-start-tft")?.addEventListener("click", (event) => {
+  jumpIntoExplorer(event.currentTarget.dataset.introRoute);
 });
 
 replayGuideButton?.addEventListener("click", () => {

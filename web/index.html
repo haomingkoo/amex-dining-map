@@ -48,7 +48,7 @@
             data-intro-route="#/dining/world"
           >
             <span class="choice-label">Dining</span>
-            <span class="choice-desc">2,775 partners across 16 markets — Japan Pocket Concierge (839) + Global Dining (1,936) from Tokyo kaiseki to London Michelin tables.</span>
+            <span class="choice-desc">Official dining directory: Singapore Local Dining Credit, Japan Pocket Concierge, and abroad Global Dining Credit partners outside Singapore.</span>
           </button>
 
           <button
@@ -68,7 +68,17 @@
             data-intro-route="#/love-dining"
           >
             <span class="choice-label">Love Dining</span>
-            <span class="choice-desc">79 Singapore partners with up to 50% off at premier hotels and restaurants.</span>
+            <span class="choice-desc">79 Singapore partners with up to 50% off, minimum-order filters, outlet notes, and official T&C links.</span>
+          </button>
+
+          <button
+            class="intro-choice"
+            id="intro-start-tft"
+            type="button"
+            data-intro-route="#/table-for-two"
+          >
+            <span class="choice-label">Table for Two</span>
+            <span class="choice-desc">Singapore Platinum set-menu roster with official T&Cs, cache-only availability labels, and captured menu details.</span>
           </button>
 
         </div>
@@ -123,6 +133,9 @@
           </a>
           <a class="primary-link" href="#/love-dining" data-program="love-dining">
             Love Dining
+          </a>
+          <a class="primary-link" href="#/table-for-two" data-program="table-for-two">
+            Table for Two
           </a>
         </nav>
 
@@ -572,7 +585,7 @@
             <div class="panel-head">
               <div>
                 <h2>Singapore dining map</h2>
-                <p id="love-map-summary">Up to 50% off your food bill at participating restaurants and hotel outlets islandwide.</p>
+                <p id="love-map-summary">Up to 50% off at participating restaurants and hotel outlets, with order-rule and T&C filters.</p>
               </div>
             </div>
 
@@ -635,6 +648,40 @@
                   </select>
                 </label>
 
+                <label class="filter-wrap">
+                  <span class="label">Promo applies to</span>
+                  <select id="love-applies-filter">
+                    <option value="">All promo types</option>
+                    <option value="ala_carte">À la carte food</option>
+                    <option value="hotel_food">Hotel food bill/items</option>
+                    <option value="buffet">Buffet</option>
+                    <option value="special">Special / eligibility</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Booking</span>
+                  <select id="love-booking-filter">
+                    <option value="">All booking notes</option>
+                    <option value="reservation_required">Reservation required</option>
+                    <option value="24h">24h notice</option>
+                    <option value="48h">48h notice</option>
+                    <option value="phone">Phone booking</option>
+                    <option value="walk_in">Walk-in mentioned</option>
+                    <option value="not_stated">No booking note</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Location</span>
+                  <select id="love-location-filter">
+                    <option value="">All locations</option>
+                    <option value="mapped">Mapped single outlet</option>
+                    <option value="bundled">Bundled multi-outlet</option>
+                    <option value="unmapped">No map pin</option>
+                  </select>
+                </label>
+
                 <div class="filter-actions">
                   <button id="love-reset-filters" type="button" class="ghost-btn">Clear filters</button>
                 </div>
@@ -672,6 +719,89 @@
             </div>
           </div>
           <div class="mobile-results-list" id="love-mobile-results-list"></div>
+        </section>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           TABLE FOR TWO EXPLORER
+      ════════════════════════════════════════════════ -->
+      <div id="table-for-two-explorer" hidden>
+        <section class="summary-strip panel-surface">
+          <p class="summary-strip-text" id="tft-summary-strip-text">Loading...</p>
+        </section>
+
+        <section class="tft-grid">
+          <section class="tft-list-panel panel-surface">
+            <div class="panel-head">
+              <div>
+                <h2>Table for Two roster</h2>
+                <p id="tft-list-summary">Official 2026 roster with cache-only availability and app-only booking caveats.</p>
+              </div>
+            </div>
+
+            <section class="toolbar tft-toolbar panel-surface">
+              <label class="search-wrap">
+                <span class="label">Search</span>
+                <input id="tft-search-input" type="search" placeholder="Venue, category, area..." />
+              </label>
+
+              <label class="filter-wrap">
+                <span class="label">Category</span>
+                <select id="tft-category-filter">
+                  <option value="">All categories</option>
+                </select>
+              </label>
+
+              <label class="filter-wrap">
+                <span class="label">Availability</span>
+                <select id="tft-availability-filter">
+                  <option value="">All availability</option>
+                  <option value="available">2 seats seen</option>
+                  <option value="no_seats">Captured no seats</option>
+                  <option value="unknown">Not checked yet</option>
+                </select>
+              </label>
+
+              <label class="filter-wrap">
+                <span class="label">Session</span>
+                <select id="tft-session-filter">
+                  <option value="">Any session</option>
+                  <option value="Lunch">Lunch</option>
+                  <option value="Dinner">Dinner</option>
+                </select>
+              </label>
+
+              <label class="filter-wrap">
+                <span class="label">Date</span>
+                <input id="tft-date-filter" type="date" />
+              </label>
+
+              <label class="filter-wrap">
+                <span class="label">Day type</span>
+                <select id="tft-day-filter">
+                  <option value="">Any day</option>
+                  <option value="weekend">Weekend</option>
+                  <option value="weekday">Weekday</option>
+                </select>
+              </label>
+
+              <div class="filter-actions">
+                <button id="tft-reset-filters" type="button" class="ghost-btn">Clear filters</button>
+              </div>
+            </section>
+
+            <div class="mobile-results-list tft-results-list" id="tft-results-list"></div>
+          </section>
+
+          <aside class="focus-panel panel-surface">
+            <div class="panel-head">
+              <div>
+                <h2>Selected venue</h2>
+                <p id="tft-results-text">Select a venue</p>
+              </div>
+            </div>
+            <div class="focus-body" id="tft-focus-card"></div>
+          </aside>
         </section>
       </div>
 

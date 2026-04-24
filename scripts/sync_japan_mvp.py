@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import html
+import hashlib
 import json
 import re
 import time
@@ -19,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
 KML_DIR = DATA_DIR / "kml"
 JSON_PATH = DATA_DIR / "japan-restaurants.json"
+SOURCE_PATH = DATA_DIR / "japan-dining-source.json"
 GEOJSON_PATH = DATA_DIR / "japan-restaurants.geojson"
 CACHE_PATH = DATA_DIR / "geocode_cache.json"
 DETAIL_CACHE_PATH = DATA_DIR / "venue_detail_cache.json"
@@ -236,6 +238,32 @@ def load_json(path: Path, default):
 
 def save_json(path: Path, payload) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
+
+
+def source_record_projection(record: dict) -> dict:
+    ignored = {"lat", "lng", "search_text", "external_signals"}
+    return {key: value for key, value in record.items() if key not in ignored}
+
+
+def build_source_meta(records: list[dict], fetched_at: str) -> dict:
+    mapped = sum(1 for record in records if record.get("lat") is not None and record.get("lng") is not None)
+    cities = sorted({record["city"] for record in records if record.get("city")})
+    source_projection = [source_record_projection(record) for record in records]
+    source_hash = hashlib.sha256(
+        json.dumps(source_projection, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    ).hexdigest()
+    return {
+        "dataset": "japan_dining",
+        "source_name": "Pocket Concierge Japan",
+        "fetched_at": fetched_at,
+        "record_count": len(records),
+        "mapped_count": mapped,
+        "city_count": len(cities),
+        "cities": cities,
+        "source_url": "https://pocket-concierge.jp/en/",
+        "api_url": GRAPHQL_URL,
+        "records_sha256": source_hash,
+    }
 
 
 def sanitize_signal(signal: dict | None) -> dict:
@@ -1022,6 +1050,7 @@ def write_kml_outputs(records: list[dict]) -> None:
 
 def main() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
+    fetched_at = datetime.now(UTC).isoformat()
     geocode_cache = load_json(CACHE_PATH, {})
     detail_cache = load_json(DETAIL_CACHE_PATH, {})
     quality_signals = load_json(QUALITY_SIGNALS_PATH, {})
@@ -1055,6 +1084,7 @@ def main() -> None:
             print(f"Enriched {index}/{len(normalized)} venues...")
 
     save_json(JSON_PATH, normalized)
+    save_json(SOURCE_PATH, build_source_meta(normalized, fetched_at))
     save_json(GEOJSON_PATH, to_geojson(normalized))
     write_kml_outputs(normalized)
 

@@ -1,0 +1,379 @@
+{
+  "dataset": "table_for_two",
+  "program": "American Express Table for Two by Platinum",
+  "country": "Singapore",
+  "currency": "SGD",
+  "last_verified_at": "2026-04-24T15:43:09Z",
+  "official_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+  "terms_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf",
+  "faq_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TableforTwo_FAQ.pdf",
+  "participating_merchants_image_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/table-for-two/TFT_2026C2_ParticipatingRestaurants_NEW.png",
+  "voucher_cycles_image_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/table-for-two/VoucherCycles_MARAPR.png",
+  "source_images": {
+    "participating_merchants_sha256": "ab8ca3926779acf298933fd234153efeaaac66c37421677103ea3ece2215a8a5",
+    "voucher_cycles_sha256": "fe025896cb9eded177e770fb23c00f162fac3e238a74ff1e348750d37b453a6c"
+  },
+  "manual_review_required": false,
+  "voucher_cycles_2026": [
+    "Jan - Feb",
+    "Mar - Apr",
+    "May - Jun",
+    "Jul - Aug",
+    "Sep - Oct",
+    "Nov - Dec"
+  ],
+  "availability_last_checked_at": "2026-04-24T09:27:00+08:00",
+  "refresh_policy": {
+    "official_roster": "Daily is enough. The public source is an official image; the script hashes it and raises manual_review_required if it changes.",
+    "terms_and_faq": "Daily is enough unless Amex announces a cycle change.",
+    "captured_availability": "Dining availability is only useful when fresh. Treat screenshot/app-captured availability as stale after 30 minutes.",
+    "app_confirmed_availability": "Useful target cadence is every 5 to 10 minutes for selected restaurants and sessions. Keep user/session-specific app data out of public GitHub Actions.",
+    "github_public_refresh": "GitHub can safely refresh the public roster daily, but that does not create live Table for Two availability because exact slots require app-context data."
+  },
+  "availability_model": {
+    "captured_available": "Availability seen in an Amex Experiences App screenshot or local app check.",
+    "captured_no_seats": "No seats seen in a captured app screenshot or local app check.",
+    "unknown": "Venue is in the official roster, but no app availability has been captured."
+  },
+  "booking_channel": "Amex Experiences App",
+  "source_notes": [
+    "The public Amex page exposes the 2026 participating merchant roster as an image, not as a structured table.",
+    "Live Table for Two slot inventory appears to require an Amex Experiences App handoff context. Public DiningCity availability is not the same allocation.",
+    "Do not commit user/session-specific app handoff values from app URLs or screenshots."
+  ],
+  "venues": [
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "captured_available",
+        "source": "Amex Experiences App screenshot provided by user",
+        "captured_at": "2026-04-24T09:27:00+08:00",
+        "confidence": "manual_screenshot",
+        "date_label": "April 2026 app date screen; exact selected booking date should be reconfirmed inside the app",
+        "visible_dates": [
+          "2026-04-28",
+          "2026-04-29",
+          "2026-04-30"
+        ],
+        "summary": "At least 2 Table for Two seats were visible for lunch at 12:00, 12:30, 13:00, and 13:30. Dinner slots were shown as no seats.",
+        "meals": [
+          {
+            "meal": "Lunch",
+            "status": "available",
+            "seats": 2,
+            "date_label": "Selected date not visible in screenshot",
+            "times": [
+              "12:00",
+              "12:30",
+              "13:00",
+              "13:30"
+            ]
+          },
+          {
+            "meal": "Dinner",
+            "status": "no_seats",
+            "date_label": "Selected date not visible in screenshot",
+            "times": [
+              "18:00",
+              "18:30",
+              "19:00",
+              "19:30",
+              "20:00",
+              "20:30"
+            ]
+          }
+        ],
+        "notes": [
+          "This is a captured app view, not a live public API feed.",
+          "Use the Amex Experiences App to reconfirm before planning around the slot."
+        ]
+      },
+      "id": "tft-15-stamford-restaurant",
+      "name": "15 Stamford Restaurant",
+      "category": "restaurant",
+      "app_area": "City Hall/Bugis",
+      "app_tags": [
+        "Table for Two",
+        "Chic Restaurant"
+      ],
+      "dining_city_id": "2055188",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/15_stamford_by_alvin_leung",
+      "sample_menu": {
+        "source": "Amex Experiences App screenshot provided by user",
+        "captured_at": "2026-04-24",
+        "title": "Table for Two by Platinum — 3-course set menu",
+        "courses": [
+          {
+            "course": "Starter",
+            "choices": [
+              "Pan-seared US Scallop",
+              "Jerusalem Artichoke Soup"
+            ]
+          },
+          {
+            "course": "Main",
+            "choices": [
+              "Seared Barramundi Fillet",
+              "Dry Aged Hanger Steak"
+            ]
+          },
+          {
+            "course": "Dessert",
+            "choices": [
+              "Cheese Cake Mousse"
+            ]
+          }
+        ],
+        "additional_cover_note": "Two sets are served under Table for Two. Additional covers beyond two pax are charged at S$128++ per pax for this menu."
+      }
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-baes-cocktail-club",
+      "name": "Bae's Cocktail Club",
+      "category": "restaurant"
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-cultivate",
+      "name": "Cultivate",
+      "category": "restaurant"
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-highhouse",
+      "name": "HighHouse",
+      "category": "restaurant",
+      "app_area": "Marina Bay/Boat Quay",
+      "app_tags": [
+        "Table for Two",
+        "Chic Restaurant"
+      ]
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-la-brasserie",
+      "name": "La Brasserie",
+      "category": "restaurant"
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-osteria-mozza",
+      "name": "Osteria Mozza",
+      "category": "restaurant"
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-polo-bar-steakhouse",
+      "name": "Polo Bar Steakhouse",
+      "category": "restaurant"
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-rappu",
+      "name": "Rappu",
+      "category": "restaurant"
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-sarai",
+      "name": "Sarai",
+      "category": "restaurant"
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-tanoke",
+      "name": "TANOKE",
+      "category": "restaurant",
+      "app_area": "City Hall/Bugis",
+      "app_tags": [
+        "Table for Two",
+        "Chic Restaurant"
+      ]
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-the-feather-blade",
+      "name": "The Feather Blade",
+      "category": "restaurant"
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-vineyard",
+      "name": "Vineyard",
+      "category": "restaurant"
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-vue",
+      "name": "VUE",
+      "category": "restaurant"
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-colony",
+      "name": "Colony",
+      "category": "buffet",
+      "app_name": "Colony @ The Ritz-Carlton",
+      "app_area": "Marina Bay/Boat Quay",
+      "app_tags": [
+        "Table for Two",
+        "Buffet"
+      ]
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-peppermint",
+      "name": "Peppermint",
+      "category": "buffet"
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-capitol-bistro-bar-patisserie",
+      "name": "Capitol Bistro. Bar. Patisserie",
+      "category": "cafe",
+      "app_area": "City Hall/Bugis",
+      "app_tags": [
+        "Table for Two",
+        "Cafe"
+      ]
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-kees",
+      "name": "Kee's",
+      "category": "cafe"
+    },
+    {
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "app_handoff_required",
+      "availability": {
+        "status": "unknown",
+        "source": "not_checked",
+        "confidence": "not_checked",
+        "summary": "No Table for Two app availability has been captured for this venue yet."
+      },
+      "id": "tft-the-plump-frenchman",
+      "name": "The Plump Frenchman",
+      "category": "cafe",
+      "app_area": "City Hall/Bugis",
+      "app_tags": [
+        "Table for Two",
+        "Cafe"
+      ]
+    }
+  ]
+}

@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: data-refresh
@@ -36,12 +37,30 @@ jobs:
           PYTHONUNBUFFERED: "1"
         run: /usr/bin/time -p python3 scripts/sync_japan_mvp.py
 
+      - name: Build Japan Dining source alert
+        id: japan_alert
+        run: |
+          python3 scripts/source_change_alert.py \
+            --program "Japan Dining" \
+            --meta data/japan-dining-source.json \
+            --data data/japan-restaurants.json \
+            --output /tmp/japan-dining-alert.md
+
       - name: Sync Plat Stay
         env:
           PYTHONUNBUFFERED: "1"
           GEOAPIFY_API_KEY: ${{ secrets.GEOAPIFY_API_KEY }}
           TOMTOM_API_KEY: ${{ secrets.TOMTOM_API_KEY }}
         run: /usr/bin/time -p python3 scripts/sync_plat_stay.py
+
+      - name: Build Plat Stay source alert
+        id: plat_stay_alert
+        run: |
+          python3 scripts/source_change_alert.py \
+            --program "Plat Stay" \
+            --meta data/plat-stay-source.json \
+            --data data/plat-stays.json \
+            --output /tmp/plat-stay-alert.md
 
       - name: Commit refreshed data
         run: |
@@ -62,3 +81,23 @@ jobs:
             sleep $((attempt * 5))
           done
           exit 1
+
+      - name: Open Plat Stay alert issue
+        if: steps.plat_stay_alert.outputs.alert_required == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash scripts/open_source_alert_issue.sh \
+            "Plat Stay source changed: review required" \
+            /tmp/plat-stay-alert.md \
+            plat-stay
+
+      - name: Open Japan Dining alert issue
+        if: steps.japan_alert.outputs.alert_required == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash scripts/open_source_alert_issue.sh \
+            "Japan Dining source changed: review required" \
+            /tmp/japan-dining-alert.md \
+            japan-dining

@@ -904,6 +904,54 @@ input,
   padding: 16px 20px;
 }
 
+.tft-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  gap: 12px;
+  margin-bottom: 12px;
+  animation: fade-up 0.6s ease both;
+  animation-delay: 0.12s;
+}
+
+.tft-list-panel {
+  overflow: hidden;
+}
+
+.tft-toolbar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  align-items: end;
+  margin: 0 16px 12px;
+}
+
+.tft-toolbar .search-wrap {
+  min-width: min(100%, 220px);
+}
+
+.tft-results-list {
+  max-height: 620px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+}
+
+.tft-card {
+  cursor: pointer;
+}
+
+.tft-menu h4 {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.focus-note-warn {
+  border-color: var(--amber-border);
+  background: var(--amber-surface);
+}
+
 
 /* ═══════════════════════════════════════════════════════════
    FILTER TOOLBAR
@@ -972,6 +1020,14 @@ input,
   display: grid;
   grid-template-columns: 1fr;
   animation: fade-up 0.2s ease both;
+}
+
+.toolbar.tft-toolbar {
+  display: grid;
+}
+
+.tft-toolbar .filter-actions {
+  grid-column: auto;
 }
 
 @media (min-width: 600px) {
@@ -2004,6 +2060,10 @@ h1, h2, h3 {
     grid-template-columns: 1fr;
   }
 
+  .tft-grid {
+    grid-template-columns: 1fr;
+  }
+
   .program-brief-grid {
     grid-template-columns: 1fr;
   }
@@ -2038,12 +2098,13 @@ h1, h2, h3 {
     display: flex;
     flex-direction: column;
     position: relative;
-    height: calc(100vh - 50px);
+    height: auto;
+    min-height: calc(100vh - 50px);
     margin-bottom: 0;
   }
 
   .map-panel {
-    flex: 1;
+    flex: none;
     min-height: 0;
     order: 1;
   }
@@ -2052,8 +2113,12 @@ h1, h2, h3 {
     display: flex;
     flex-direction: column;
     order: 2;
-    max-height: 50vh;
+    max-height: none;
     border-top: 1px solid var(--border);
+  }
+
+  .focus-body {
+    overflow: visible;
   }
 
   /* Drag handle indicator */
@@ -2071,6 +2136,22 @@ h1, h2, h3 {
 
   .mobile-results-panel {
     display: none;
+  }
+
+  .tft-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tft-toolbar {
+    grid-template-columns: 1fr;
+    margin: 0 12px 12px;
+    padding: 12px;
+  }
+
+  .tft-results-list {
+    max-height: none;
   }
 
   .table-shell {
