@@ -2456,12 +2456,12 @@ function updateDiningMarkerStyles() {
     const iconEl = marker.getElement()?.querySelector('.custom-marker-icon div');
     if (iconEl) {
       if (isActive) {
-        // Selected: bright gold with glow
-        iconEl.style.background = "#c9a55a";
-        iconEl.style.boxShadow = "0 0 0 3px rgba(201, 165, 90, 0.4), 0 0 12px rgba(201, 165, 90, 0.5)";
-        iconEl.style.width = "22px";
-        iconEl.style.height = "22px";
-        iconEl.style.opacity = "0.95";
+        // Selected: bright white with strong glow for max contrast against all region colors
+        iconEl.style.background = "#ffffff";
+        iconEl.style.boxShadow = "0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.6)";
+        iconEl.style.width = "24px";
+        iconEl.style.height = "24px";
+        iconEl.style.opacity = "1";
       } else {
         // Unselected: restore original color and style
         const record = state.filtered.find(r => r.id === id);
@@ -3115,12 +3115,12 @@ function updateStayMarkerStyles() {
     const iconEl = marker.getElement()?.querySelector('.custom-marker-icon div');
     if (iconEl) {
       if (isActive) {
-        // Selected: bright gold with glow
-        iconEl.style.background = "#c9a55a";
-        iconEl.style.boxShadow = "0 0 0 3px rgba(201, 165, 90, 0.4), 0 0 12px rgba(201, 165, 90, 0.5)";
-        iconEl.style.width = "22px";
-        iconEl.style.height = "22px";
-        iconEl.style.opacity = "0.95";
+        // Selected: bright white with strong glow for max contrast
+        iconEl.style.background = "#ffffff";
+        iconEl.style.boxShadow = "0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.6)";
+        iconEl.style.width = "24px";
+        iconEl.style.height = "24px";
+        iconEl.style.opacity = "1";
       } else {
         // Unselected: restore original teal
         iconEl.style.background = "#5fb9a6";
@@ -3249,12 +3249,12 @@ function updateLoveDiningMarkerStyles() {
     const iconEl = marker.getElement()?.querySelector('.custom-marker-icon div');
     if (iconEl) {
       if (isActive) {
-        // Selected: bright gold with glow
-        iconEl.style.background = "#c9a55a";
-        iconEl.style.boxShadow = "0 0 0 3px rgba(201, 165, 90, 0.4), 0 0 12px rgba(201, 165, 90, 0.5)";
-        iconEl.style.width = "22px";
-        iconEl.style.height = "22px";
-        iconEl.style.opacity = "0.95";
+        // Selected: bright white with strong glow for max contrast
+        iconEl.style.background = "#ffffff";
+        iconEl.style.boxShadow = "0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.6)";
+        iconEl.style.width = "24px";
+        iconEl.style.height = "24px";
+        iconEl.style.opacity = "1";
       } else {
         // Unselected: restore original color (hotel = purple, restaurant = rose)
         const record = state.loveDining.find(r => r.id === id);
