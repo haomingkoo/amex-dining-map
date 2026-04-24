@@ -2326,6 +2326,15 @@ function renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actio
     `;
   }
 
+  // Add benefit/discount info and notes
+  if (record.notes) {
+    detailsHTML += `
+      <div class="detail-summary-divider">
+        <div class="detail-summary-text">💳 ${escapeHtml(record.notes)}</div>
+      </div>
+    `;
+  }
+
   detailsEl.innerHTML = detailsHTML;
 
   // Warnings
