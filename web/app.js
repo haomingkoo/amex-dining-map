@@ -2020,120 +2020,16 @@ function setActiveRecord(id) {
   if (record) renderMobileSheet("dining", record);
 }
 
-/** Unified Mobile Sheet Renderer - works for all three venue types */
+/** Mobile Sheet Renderer - DISABLED on mobile
+ * On mobile, details show inline in .focus-panel below the map (via renderFocusCard)
+ * This function is kept for potential future use but doesn't show popups on mobile
+ */
 function renderMobileSheet(type, record) {
-  const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
-  const sheet = sheetElements[type];
-
-  if (!isMobile || !sheet || !record) {
-    sheet?.classList.remove("sheet-visible");
-    return;
-  }
-
-  // Get elements specific to this sheet type
-  const nameEl = sheet.querySelector(`#${type}-sheet-name`);
-  const ratingEl = sheet.querySelector(`#${type}-sheet-rating`);
-  const reviewsEl = sheet.querySelector(`#${type}-sheet-reviews`);
-  const quickInfoEl = sheet.querySelector(`#${type}-sheet-quick-info`);
-  const detailsEl = sheet.querySelector(`#${type}-sheet-details`);
-  const warningsEl = sheet.querySelector(`#${type}-sheet-warnings`);
-  const actionsEl = sheet.querySelector(`#${type}-sheet-actions`);
-
-  if (!nameEl || !quickInfoEl || !detailsEl) {
-    console.error(`Mobile sheet elements not found for type "${type}". Check that HTML IDs match the pattern: ${type}-sheet-*`);
-    return;
-  }
-
-  // Set name
-  nameEl.textContent = record.name;
-
-  // Set rating
-  const gRating = googleRating(record);
-  if (gRating && gRating.rating != null) {
-    if (ratingEl) ratingEl.textContent = gRating.rating.toFixed(1);
-    if (reviewsEl) reviewsEl.textContent = `(${Number(gRating.review_count || 0).toLocaleString()})`;
-  } else {
-    if (ratingEl) ratingEl.textContent = "—";
-    if (reviewsEl) reviewsEl.textContent = "";
-  }
-
-  // Type-specific rendering
-  if (type === "dining") {
-    renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl);
-  } else if (type === "stays") {
-    renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl);
-  } else if (type === "loveDining") {
-    renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl);
-  }
-
-  // Dismiss any other visible sheets before showing this one
-  Object.values(sheetElements).forEach(otherSheet => {
-    if (otherSheet && otherSheet !== sheet) {
-      otherSheet.classList.remove("sheet-visible");
-    }
-  });
-
-  sheet.hidden = false;
-  requestAnimationFrame(() => {
-    sheet.classList.add("sheet-visible");
-    // Move focus to sheet for better a11y, focus the first interactive element
-    const closeBtn = sheet.querySelector(".sheet-close");
-    const firstBtn = sheet.querySelector(".btn");
-    if (closeBtn) closeBtn.focus();
-    else if (firstBtn) firstBtn.focus();
-
-    // Add swipe gesture listeners for peek/expanded state and dismissal
-    setupSheetGestureHandling(sheet);
-  });
+  // On mobile, details are shown inline via renderFocusCard()
+  // No popup sheet should appear
+  // This function is a no-op on mobile
 }
 
-/** Set up touch gesture handling for mobile sheets (swipe up/down) */
-function setupSheetGestureHandling(sheet) {
-  let touchStartY = 0;
-  let touchStartTime = 0;
-
-  sheet.removeEventListener("touchstart", handleTouchStart);
-  sheet.removeEventListener("touchend", handleTouchEnd);
-
-  function handleTouchStart(e) {
-    touchStartY = e.touches[0].clientY;
-    touchStartTime = Date.now();
-  }
-
-  function handleTouchEnd(e) {
-    const touchEndY = e.changedTouches[0].clientY;
-    const deltaY = touchStartY - touchEndY; // negative = swipe down, positive = swipe up
-    const duration = Date.now() - touchStartTime;
-    const velocity = Math.abs(deltaY) / duration; // pixels per millisecond
-
-    const isSwipeUp = deltaY > 40 && (velocity > 0.3 || deltaY > 100);
-    const isSwipeDown = deltaY < -40 && (velocity > 0.3 || Math.abs(deltaY) > 100);
-
-    if (isSwipeDown) {
-      // Dismiss sheet
-      sheet.classList.remove("sheet-visible", "sheet-expanded");
-      // Clear selection after animation completes
-      setTimeout(() => {
-        if (sheet.id.includes("dining")) {
-          state.activeId = null;
-        } else if (sheet.id.includes("stays")) {
-          state.stayActiveId = null;
-        } else if (sheet.id.includes("love")) {
-          state.loveDiningActiveId = null;
-        }
-        updateDiningMarkerStyles();
-        updateStayMarkerStyles();
-        updateLoveDiningMarkerStyles();
-      }, 400);
-    } else if (isSwipeUp) {
-      // Expand to full screen
-      sheet.classList.add("sheet-expanded");
-    }
-  }
-
-  sheet.addEventListener("touchstart", handleTouchStart, false);
-  sheet.addEventListener("touchend", handleTouchEnd, false);
-}
 
 // ─── Mobile Sheet Rendering Helpers ────────────────────────────────────────
 
@@ -3852,38 +3748,11 @@ window.addEventListener("resize", () => {
   }
 });
 
-// Dismiss handlers for unified mobile sheets
-[mobileDiningSheet, mobileStaysSheet, mobileLoveDiningSheet].forEach(sheet => {
-  if (sheet) {
-    sheet.querySelector(".sheet-close")?.addEventListener("click", () => {
-      sheet.classList.remove("sheet-visible");
-      state.activeId = null;
-      state.stayActiveId = null;
-      state.loveDiningActiveId = null;
-    });
-  }
-});
-
-// Close mobile sheet when clicking on map (mobile only)
-function setupMobileSheetDismissal() {
-  if (window.innerWidth > MOBILE_BREAKPOINT) return;
-
-  const maps = [map, staysMap, loveMap].filter(Boolean);
-  maps.forEach(m => {
-    if (!m) return;
-    // Close sheet when user clicks on the map
-    m.on("click", () => {
-      [mobileDiningSheet, mobileStaysSheet, mobileLoveDiningSheet].forEach(sheet => {
-        if (sheet) sheet.classList.remove("sheet-visible");
-      });
-      state.activeId = null;
-      state.stayActiveId = null;
-      state.loveDiningActiveId = null;
-    });
-  });
+// Mobile sheet dismiss handlers removed - sheets are now disabled
+// Details show inline via .focus-panel on mobile instead of popup overlay
 }
 
-setTimeout(setupMobileSheetDismissal, 500);
+// Mobile sheet dismissal removed - sheets no longer used
 
 // Hide header clutter on mobile to maximize map visibility
 let mobileClutterObserver = null;
@@ -3897,7 +3766,7 @@ function hideMobileClutter() {
       '.map-instructions',
       '.refine-panel',
       '#summary-strip-text',
-      '.focus-panel',
+      // '.focus-panel',  -- REMOVED: we want to show details inline on mobile, not hide them
       '.map-panel .panel-head',
       '.toolbar-toggle-meta'
     ];
