@@ -2049,8 +2049,11 @@ h1, h2, h3 {
   }
 
   .focus-panel {
-    display: none !important;
+    display: flex;
+    flex-direction: column;
     order: 2;
+    max-height: 50vh;
+    border-top: 1px solid var(--border);
   }
 
   /* Drag handle indicator */
