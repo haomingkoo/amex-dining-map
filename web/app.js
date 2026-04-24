@@ -2035,8 +2035,14 @@ function renderMobileSheet(type, record) {
 
 /** Centralized zoom configuration - single source of truth */
 const ZOOM_CONFIG = {
-  FAR_OUT_THRESHOLD: 12,     // If below this, zoom in
-  MARKER_TARGET_LEVEL: 18,   // Zoom level when clicking/focusing marker (street-level detail)
+  FAR_OUT_THRESHOLD: 12,           // If below this, zoom in on marker click
+  MARKER_TARGET_LEVEL: 18,         // Default zoom level when clicking marker (street-level detail)
+  CONTINENT_VIEW_THRESHOLD: 6,     // Threshold between continent view and country view
+  COUNTRY_VIEW_THRESHOLD: 10,      // Threshold between country view and city view
+  CONTINENT_ZOOM: 19,              // Maximum zoom for very far out (continent/world view)
+  COUNTRY_ZOOM: 18.5,              // High zoom for country/region view
+  ZOOM_ANIMATION_DURATION: 0.8,    // Animation duration for zoom (allows visual focus before details appear)
+  PAN_ANIMATION_DURATION: 0.4,     // Animation duration for pan-only (already zoomed in)
 };
 
 /** Centralized smart zoom for all maps (dining, stays, love dining) */
@@ -2045,16 +2051,16 @@ function smartZoomToMarker(map, latLng) {
   const currentZoom = map.getZoom();
   // Only zoom if currently far out; otherwise just pan to marker
   if (currentZoom < ZOOM_CONFIG.FAR_OUT_THRESHOLD) {
-    // More dramatic zoom when very far away (zoom < 6 → zoom to 19)
+    // Adaptive zoom based on current view: more dramatic from very far away
     let targetZoom = ZOOM_CONFIG.MARKER_TARGET_LEVEL;
-    if (currentZoom < 6) {
-      targetZoom = 19;  // Maximum zoom for very far out (countries/regions view)
-    } else if (currentZoom < 10) {
-      targetZoom = 18.5;  // High zoom for continent/country view
+    if (currentZoom < ZOOM_CONFIG.CONTINENT_VIEW_THRESHOLD) {
+      targetZoom = ZOOM_CONFIG.CONTINENT_ZOOM;  // World/continent view → zoom to max
+    } else if (currentZoom < ZOOM_CONFIG.COUNTRY_VIEW_THRESHOLD) {
+      targetZoom = ZOOM_CONFIG.COUNTRY_ZOOM;    // Country view → zoom to high level
     }
-    map.flyTo(latLng, targetZoom, { duration: 0.8 });
+    map.flyTo(latLng, targetZoom, { duration: ZOOM_CONFIG.ZOOM_ANIMATION_DURATION });
   } else {
-    map.flyTo(latLng, currentZoom, { duration: 0.4 });
+    map.flyTo(latLng, currentZoom, { duration: ZOOM_CONFIG.PAN_ANIMATION_DURATION });
   }
 }
 
@@ -2361,6 +2367,25 @@ function renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actio
   const mapsUrl = record.maps_url || record.google_maps_url;
   actionsEl.innerHTML = buildActionButtons(mapsUrl, phone);
 }
+
+/** Apply selected (active) marker styling: white with glow, larger size */
+function applySelectedMarkerStyle(iconEl) {
+  iconEl.style.background = "#ffffff";
+  iconEl.style.boxShadow = "0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.6)";
+  iconEl.style.width = "24px";
+  iconEl.style.height = "24px";
+  iconEl.style.opacity = "1";
+}
+
+/** Apply unselected (inactive) marker styling: original color, smaller size */
+function applyUnselectedMarkerStyle(iconEl, originalColor) {
+  iconEl.style.background = originalColor;
+  iconEl.style.boxShadow = "none";
+  iconEl.style.width = "16px";
+  iconEl.style.height = "16px";
+  iconEl.style.opacity = "0.92";
+}
+
 function updateDiningMarkerStyles() {
   if (!hasLeaflet || !map) return;
   state.markers.forEach((marker, id) => {
@@ -2368,21 +2393,11 @@ function updateDiningMarkerStyles() {
     const iconEl = marker.getElement()?.querySelector('.custom-marker-icon div');
     if (iconEl) {
       if (isActive) {
-        // Selected: bright white with strong glow for max contrast against all region colors
-        iconEl.style.background = "#ffffff";
-        iconEl.style.boxShadow = "0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.6)";
-        iconEl.style.width = "24px";
-        iconEl.style.height = "24px";
-        iconEl.style.opacity = "1";
+        applySelectedMarkerStyle(iconEl);
       } else {
-        // Unselected: restore original color and style
         const record = state.filtered.find(r => r.id === id);
         const originalColor = record ? markerColor(record) : "#8899aa";
-        iconEl.style.background = originalColor;
-        iconEl.style.boxShadow = "none";
-        iconEl.style.width = "16px";
-        iconEl.style.height = "16px";
-        iconEl.style.opacity = "0.92";
+        applyUnselectedMarkerStyle(iconEl, originalColor);
       }
     }
   });
@@ -3027,19 +3042,9 @@ function updateStayMarkerStyles() {
     const iconEl = marker.getElement()?.querySelector('.custom-marker-icon div');
     if (iconEl) {
       if (isActive) {
-        // Selected: bright white with strong glow for max contrast
-        iconEl.style.background = "#ffffff";
-        iconEl.style.boxShadow = "0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.6)";
-        iconEl.style.width = "24px";
-        iconEl.style.height = "24px";
-        iconEl.style.opacity = "1";
+        applySelectedMarkerStyle(iconEl);
       } else {
-        // Unselected: restore original teal
-        iconEl.style.background = "#5fb9a6";
-        iconEl.style.boxShadow = "none";
-        iconEl.style.width = "16px";
-        iconEl.style.height = "16px";
-        iconEl.style.opacity = "0.92";
+        applyUnselectedMarkerStyle(iconEl, "#5fb9a6"); // Stays always use teal
       }
     }
   });
@@ -3161,21 +3166,11 @@ function updateLoveDiningMarkerStyles() {
     const iconEl = marker.getElement()?.querySelector('.custom-marker-icon div');
     if (iconEl) {
       if (isActive) {
-        // Selected: bright white with strong glow for max contrast
-        iconEl.style.background = "#ffffff";
-        iconEl.style.boxShadow = "0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.6)";
-        iconEl.style.width = "24px";
-        iconEl.style.height = "24px";
-        iconEl.style.opacity = "1";
+        applySelectedMarkerStyle(iconEl);
       } else {
-        // Unselected: restore original color (hotel = purple, restaurant = rose)
         const record = state.loveDining.find(r => r.id === id);
         const originalColor = record ? (record.type === "hotel" ? "#9b6bd6" : "#e06b8b") : "#9b6bd6";
-        iconEl.style.background = originalColor;
-        iconEl.style.boxShadow = "none";
-        iconEl.style.width = "16px";
-        iconEl.style.height = "16px";
-        iconEl.style.opacity = "0.9";
+        applyUnselectedMarkerStyle(iconEl, originalColor);
       }
     }
   });
