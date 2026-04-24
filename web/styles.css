@@ -272,6 +272,11 @@ input,
   user-select: none;
 }
 
+/* Fix white bars on map: override Leaflet's default #ddd background */
+.leaflet-container {
+  background: var(--bg) !important;
+}
+
 /* Selectable content */
 .focus-body,
 .table-scroll th,
@@ -2094,11 +2099,12 @@ h1, h2, h3 {
     overflow-y: auto;
   }
 
-  /* Make toolbar button compact and top-left (map control position) */
+  /* Make toolbar button compact and top-right (away from Leaflet zoom controls) */
   .toolbar-toggle {
     position: fixed;
     top: 8px;
-    left: 8px;
+    right: 8px;
+    left: auto;
     z-index: 2001;
     background: rgba(7, 13, 22, 0.95) !important;
     border: 1px solid rgba(201, 165, 90, 0.3) !important;
