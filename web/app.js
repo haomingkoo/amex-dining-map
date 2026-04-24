@@ -2186,12 +2186,12 @@ function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl
 function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl) {
   const roomType = record.eligible_room_type || "Room";
   const availabilityStatus = stayAvailability(record);
-  const pricePerNight = record.price_per_night ? `$${record.price_per_night}` : "—";
+  // Don't show price for Amex benefit properties - they're discounted/free
+  const priceDisplay = record.price_per_night ? `$${record.price_per_night}/night` : null;
+  const priceTag = priceDisplay ? `<span class="divider">•</span><span class="quick-price">${escapeHtml(priceDisplay)}</span>` : "";
 
   quickInfoEl.innerHTML = `
     <span class="quick-tag">${escapeHtml(roomType)}</span>
-    <span class="divider">•</span>
-    <span class="quick-price">${escapeHtml(pricePerNight)}/night</span>
     <span class="divider">•</span>
     <span class="quick-status ${availabilityStatus.key === "available" ? "" : "closed"}">${escapeHtml(availabilityStatus.label)}</span>
   `;
