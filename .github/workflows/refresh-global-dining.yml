@@ -28,6 +28,9 @@ jobs:
       - name: Verify against official Amex API
         run: python3 scripts/verify_global_dining_official.py --all
 
+      - name: Audit map coordinates
+        run: python3 scripts/audit_coordinates.py
+
       - name: Build Global Dining source alert
         id: global_alert
         run: |

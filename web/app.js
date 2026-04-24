@@ -1421,8 +1421,17 @@ function activeRecord() {
   return state.filtered.find((record) => record.id === state.activeId) || null;
 }
 
-function resolveRouteFromHash() {
-  const hash = window.location.hash.replace(/^#\/?/, "").trim().toLowerCase();
+function normalizeRouteHash(hashValue = window.location.hash) {
+  return String(hashValue || "")
+    .replace(/^#\/?/, "")
+    .split(/[?&]/)[0]
+    .replace(/\/+$/, "")
+    .trim()
+    .toLowerCase();
+}
+
+function resolveRouteFromHash(hashValue = window.location.hash) {
+  const hash = normalizeRouteHash(hashValue);
   const aliases = {
     all: "dining/world",
     world: "dining/world",
@@ -1506,7 +1515,7 @@ function hideIntroGate({ persist = true } = {}) {
 function jumpIntoExplorer(routeHash) {
   hideIntroGate();
   if (routeHash) {
-    window.location.hash = routeHash;
+    navigateToRouteHash(routeHash);
   }
   window.setTimeout(() => {
     const routeId = resolveRouteFromHash();
@@ -2189,12 +2198,12 @@ function renderMobileSheet(type, record) {
 
 /** Centralized zoom configuration - single source of truth */
 const ZOOM_CONFIG = {
-  FAR_OUT_THRESHOLD: 12,           // If below this, zoom in on marker click
-  MARKER_TARGET_LEVEL: 12,         // Default zoom level when clicking marker (neighborhood view)
+  FAR_OUT_THRESHOLD: 10,           // If below this, zoom in on marker click
+  MARKER_TARGET_LEVEL: 10,         // Default zoom level keeps nearby pins in context
   CONTINENT_VIEW_THRESHOLD: 6,     // Threshold between continent view and country view
-  COUNTRY_VIEW_THRESHOLD: 10,      // Threshold between country view and city view
-  CONTINENT_ZOOM: 12,              // Zoom for very far out (neighborhood/city view)
-  COUNTRY_ZOOM: 12,                // Zoom for country/region view
+  COUNTRY_VIEW_THRESHOLD: 9,       // Threshold between country view and city view
+  CONTINENT_ZOOM: 9,               // World/continent view → city context
+  COUNTRY_ZOOM: 10,                // Country view → city/neighborhood context
   ZOOM_ANIMATION_DURATION: 0.8,    // Animation duration for zoom (allows visual focus before details appear)
   PAN_ANIMATION_DURATION: 0.4,     // Animation duration for pan-only (already zoomed in)
 };
@@ -3064,7 +3073,7 @@ function renderStayFocusCard() {
     <div class="focus-subtitle">${escapeHtml(record.eligible_room_type || "Eligible room type not listed")}</div>
     <div class="focus-address">${escapeHtml(record.address)}</div>
     <div class="focus-tags">${tags}</div>
-    <div class="price-grid">
+    <div class="price-grid stay-detail-grid">
       <div class="price-card">
         <span class="price-label">Stay Availability</span>
         <div class="price-tier">${escapeHtml(status.label)}</div>
@@ -3774,7 +3783,7 @@ function fitLoveDiningMap() {
 
 function focusLoveDiningOnMap(record) {
   if (!hasLeaflet || !loveMap || !loveDiningHasMapPin(record)) return;
-  loveMap.setView([record.lat, record.lon], 16);
+  loveMap.setView([record.lat, record.lon], 14);
 }
 
 function normalizeInlineText(value) {
@@ -4359,6 +4368,14 @@ function handleHashRoute() {
   applyRoute(resolveRouteFromHash());
 }
 
+function navigateToRouteHash(routeHash) {
+  const nextHash = routeHash && routeHash.startsWith("#") ? routeHash : `#/${routeHash || ""}`;
+  if (window.location.hash !== nextHash) {
+    window.location.hash = nextHash;
+  }
+  applyRoute(resolveRouteFromHash(nextHash));
+}
+
 async function init() {
   initTheme();
 
@@ -4571,6 +4588,13 @@ document.getElementById("intro-start-tft")?.addEventListener("click", (event) =>
 
 replayGuideButton?.addEventListener("click", () => {
   showIntroGate(true);
+});
+
+programLinks.forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    navigateToRouteHash(link.getAttribute("href") || "#/dining/world");
+  });
 });
 
 toolbarToggle.addEventListener("click", () => {

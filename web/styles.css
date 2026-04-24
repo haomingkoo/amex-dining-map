@@ -1755,6 +1755,26 @@ a.google-badge:hover {
   margin-top: 2px;
 }
 
+.stay-detail-grid {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.stay-detail-grid .price-card {
+  padding: 14px 16px;
+}
+
+.stay-detail-grid .price-tier {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.stay-detail-grid .price-raw {
+  margin-top: 6px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
 .cell-muted {
   color: var(--text-dim);
 }

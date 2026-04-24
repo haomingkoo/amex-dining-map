@@ -112,6 +112,7 @@ python3 -m json.tool data/love-dining-source.json >/tmp/love-source.valid.json
 python3 -m json.tool data/japan-dining-source.json >/tmp/japan-source.valid.json
 python3 -m json.tool data/table-for-two.json >/tmp/table-for-two.valid.json
 python3 -m py_compile scripts/source_change_alert.py scripts/scrape_love_dining.py scripts/scrape_table_for_two.py scripts/check_table_for_two_availability.py scripts/sync_japan_mvp.py
+python3 scripts/audit_coordinates.py
 node --check web/app.js
 git diff --check
 ```

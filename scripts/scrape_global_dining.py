@@ -1154,8 +1154,6 @@ def main() -> None:
     corrected = 0
     hidden = 0
     for record in records:
-        if record.get("source_merchant_id"):
-            continue
         before = (record.get("lat"), record.get("lng"), record.get("coordinate_confidence"))
         validate_record_coordinates(record, geocode_cache, google_ratings)
         after = (record.get("lat"), record.get("lng"), record.get("coordinate_confidence"))
