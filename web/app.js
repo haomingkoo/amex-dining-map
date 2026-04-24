@@ -931,11 +931,8 @@ function hasVerifiedCoordinates(record) {
     record.lat != null
     && record.lng != null
     && [
-      "address_validated",
-      "address_matched",
       "manual_verified",
       "poi_address_matched",
-      "source_map_verified",
       "google_place_verified",
     ].includes(record.coordinate_confidence)
   );
@@ -947,19 +944,19 @@ function diningLocationBadge(record) {
     return '<span class="badge amber">Approximate pin</span>';
   }
   if (record.coordinate_confidence === "source_map_verified") {
-    return '<span class="badge green">Source map verified</span>';
+    return '<span class="badge blue">Source map pin</span>';
   }
   if (record.coordinate_confidence === "google_place_verified") {
-    return '<span class="badge blue">Google place verified</span>';
+    return '<span class="badge green">Place matched</span>';
   }
   if (record.coordinate_confidence === "address_validated") {
-    return '<span class="badge green">Address verified</span>';
+    return '<span class="badge blue">Address geocoded</span>';
   }
   if (record.coordinate_confidence === "manual_verified") {
-    return '<span class="badge green">Verified pin</span>';
+    return '<span class="badge green">Manual pin check</span>';
   }
   if (hasVerifiedCoordinates(record)) {
-    return '<span class="badge green">Verified pin</span>';
+    return '<span class="badge green">Place matched</span>';
   }
   return "";
 }
@@ -1104,6 +1101,12 @@ function focusLocationNote(record) {
   if (record.coordinate_confidence === "approximate") {
     return "Location is approximate — confirm the address before visiting.";
   }
+  if (record.coordinate_confidence === "source_map_verified") {
+    return "Pin follows the official source map link, but this is not an independent 20m verification.";
+  }
+  if (record.coordinate_confidence === "address_validated") {
+    return "Pin is address-geocoded; confirm the exact entrance before visiting.";
+  }
   return "";
 }
 
@@ -1148,17 +1151,26 @@ function diningSummaryPayload(record) {
   if (knownFor.length || specialties.length) {
     const parts = [];
     if (knownFor.length) {
-      parts.push(`Known for ${naturalList(knownFor)}.`);
+      parts.push(`Source cues include ${naturalList(knownFor)}.`);
     }
     if (specialties.length) {
-      parts.push(`${specialties.length === 1 ? "Verified specialty" : "Verified specialties"} include ${naturalList(specialties)}.`);
+      parts.push(`Cuisine cues include ${naturalList(specialties)}.`);
     }
     return { text: parts.join(" "), isAi: false };
   }
 
-  const ai = (record.summary_ai || "").trim();
-  if (!ai) return null;
-  return { text: ai, isAi: true };
+  if (record.source === "Amex Platinum Dining") {
+    const cuisine = (record.cuisines || []).filter(Boolean).join(", ");
+    const city = [record.city, record.country].filter(Boolean).join(", ");
+    const cuisineLine = cuisine ? ` serving ${cuisine}` : "";
+    const cityLine = city ? ` in ${city}` : "";
+    return {
+      text: `${record.name} is listed in the official Amex dining directory${cityLine}${cuisineLine}. Use the official source and credit terms to confirm eligibility before visiting.`,
+      isAi: false,
+    };
+  }
+
+  return null;
 }
 
 function createMarker(record) {
@@ -1903,8 +1915,8 @@ function renderFocusCard() {
         : ""
     }
     <div class="focus-tags">${tags}</div>
-    ${tagSection("Known for", record.known_for_tags, "gold")}
-    ${tagSection("Specialties", record.signature_dish_tags, "blue")}
+    ${tagSection("Source cues", record.known_for_tags, "gold")}
+    ${tagSection("Cuisine cues", record.signature_dish_tags, "blue")}
     ${summary ? `<p class="focus-summary${summary.isAi ? " focus-summary-ai" : ""}">${escapeHtml(summary.text)}</p>` : ""}
     ${showPriceGrid ? `
     <div class="price-grid">
@@ -2090,8 +2102,8 @@ function renderMobileCards(resetPage = true) {
         ${kidPolicyKnown ? `<span class="badge">${escapeHtml(kidLabel(record.child_policy_norm))}</span>` : ""}
         ${isJapan && record.english_menu ? '<span class="badge green">English menu</span>' : ""}
       </div>
-      ${tagSection("Known for", record.known_for_tags, "gold")}
-      ${tagSection("Specialties", record.signature_dish_tags, "blue")}
+      ${tagSection("Source cues", record.known_for_tags, "gold")}
+      ${tagSection("Cuisine cues", record.signature_dish_tags, "blue")}
       ${externalSignalsSection(record)}
       ${isJapan ? `<div class="mobile-price-grid">
         <div class="mobile-price-card">
@@ -2589,16 +2601,16 @@ function stayLocationBadge(record) {
   }
   if (record.lat == null || record.lng == null) return "";
   if (record.coordinate_confidence === "google_place_verified") {
-    return '<span class="badge blue">Google place verified</span>';
+    return '<span class="badge green">Place matched</span>';
   }
   if (record.coordinate_confidence === "poi_address_matched" || record.coordinate_confidence === "address_matched") {
-    return '<span class="badge green">Address verified</span>';
+    return '<span class="badge green">POI + address matched</span>';
   }
   if (record.coordinate_confidence === "poi_matched") {
     return '<span class="badge blue">POI matched</span>';
   }
   if (record.coordinate_confidence === "manual_verified") {
-    return '<span class="badge green">Verified pin</span>';
+    return '<span class="badge green">Manual pin check</span>';
   }
   if (record.coordinate_confidence === "approximate") {
     return '<span class="badge amber">Approximate pin</span>';
@@ -2612,6 +2624,9 @@ function stayLocationNote(record) {
   }
   if (record.coordinate_confidence === "approximate") {
     return "Location is approximate — confirm the address before travelling.";
+  }
+  if (["poi_matched", "poi_address_matched", "address_matched", "google_place_verified"].includes(record.coordinate_confidence)) {
+    return "Pin is matched to a place/address signal, not guaranteed to a specific hotel entrance.";
   }
   return "";
 }
@@ -4012,6 +4027,16 @@ function loveDiningLocationNote(record) {
   return "This Love Dining entry includes additional outlet details in the same record. Double-check the branch before booking or travelling.";
 }
 
+function loveDiningSourceDescription(record, benefit) {
+  const type = record.type === "hotel"
+    ? `hotel outlet${record.hotel ? ` at ${record.hotel}` : ""}`
+    : "standalone restaurant";
+  const cuisine = record.cuisine ? `${record.cuisine} ` : "";
+  const location = record.address || record.area || record.hotel || "Singapore";
+  const booking = loveDiningBookingLabel(record).toLowerCase();
+  return `${record.name} is a Love Dining ${type} listed for ${cuisine}dining at ${location}. The cached terms show ${benefit.savingsLabel.toLowerCase()} for eligible cardmembers, with ${benefit.appliesLabel.toLowerCase()} and ${booking}.`;
+}
+
 function refreshLoveDiningCuisineOptions() {
   const cuisines = [...new Set(state.loveDining.map((r) => r.cuisine).filter(Boolean))].sort();
   const current = loveCuisineFilter.value;
@@ -4118,9 +4143,6 @@ function renderLoveDiningCard() {
     ? `<div class="focus-note">${escapeHtml(loveDiningLocationNote(record))}</div>`
     : "";
 
-  const descriptionHtml = record.summary_ai
-    ? `<p class="focus-summary focus-summary-ai">${escapeHtml(record.summary_ai)}</p>` : "";
-
   const scrapedRating = googleRating(record);
   const googleMapsUrl = loveDiningShouldHideMapPin(record)
     ? googleMapsSearchUrl([record.name, "Singapore"])
@@ -4174,11 +4196,11 @@ function renderLoveDiningCard() {
     <div class="focus-note">${escapeHtml(benefit.savingsDetail)}</div>
     <div class="focus-note">${escapeHtml(benefit.cardRequirement)}</div>
     <div class="focus-note">${escapeHtml(benefit.exclusions)}</div>
+    <p class="focus-summary">${escapeHtml(loveDiningSourceDescription(record, benefit))}</p>
     ${record.notes ? `<div class="focus-section">
       <div class="focus-kicker">Official outlet notes</div>
       <div class="focus-note">${escapeHtml(record.notes)}</div>
     </div>` : ""}
-    ${descriptionHtml}
     <div class="focus-section">
       <div class="focus-row"><span class="focus-label">Type</span><span>${escapeHtml(record.type === "hotel" ? `Hotel outlet${record.hotel ? ` at ${record.hotel}` : ""}` : "Standalone restaurant")}</span></div>
       <div class="focus-row"><span class="focus-label">Booking</span><span>${escapeHtml(loveDiningBookingLabel(record))}</span></div>

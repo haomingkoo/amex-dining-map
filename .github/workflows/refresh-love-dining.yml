@@ -35,6 +35,9 @@ jobs:
       - name: Refresh official Love Dining snapshot
         run: python3 scripts/scrape_love_dining.py --no-geocode
 
+      - name: Audit content provenance
+        run: python3 scripts/audit_content_provenance.py
+
       - name: Build Love Dining source alert
         id: love_alert
         run: |

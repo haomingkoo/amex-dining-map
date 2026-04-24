@@ -50,7 +50,7 @@ CLOSING_NOTES: dict[str, str] = {
     "Sen Of Japan": "Temporarily closed for renovation 8 April – 30 June 2026",
 }
 
-PRESERVED_ENRICHMENT_FIELDS = ("lat", "lon", "summary_ai")
+PRESERVED_ENRICHMENT_FIELDS = ("lat", "lon")
 
 
 def normalize_inline_text(value: str | None) -> str:

@@ -29,6 +29,9 @@ jobs:
       - name: Audit map coordinates
         run: python3 scripts/audit_coordinates.py
 
+      - name: Audit content provenance
+        run: python3 scripts/audit_content_provenance.py
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
