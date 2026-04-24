@@ -4,7 +4,7 @@ Map-first explorer for Singapore-issued American Express Platinum benefits. The
 site keeps official source data separate from enrichment so users can see when
 each dataset was cached, where it came from, and when a human review is needed.
 
-Live site: `https://xplorer.kooexperience.com/`
+Live site: `https://amex-explorer.kooexperience.com/`
 
 ## Programs
 
@@ -15,8 +15,8 @@ Live site: `https://xplorer.kooexperience.com/`
 - `Love Dining`: Singapore restaurant and hotel outlets with official discount
   terms, exclusions, booking notes, and cache metadata.
 - `Table for Two`: Singapore Platinum set-menu roster from the official Amex
-  page, with cache-only availability fields where app screenshots have been
-  manually captured.
+  page, with cache-only availability fields where app screenshots or approved
+  local checks have been captured.
 
 ## Data Trust Model
 
@@ -44,8 +44,8 @@ Live site: `https://xplorer.kooexperience.com/`
 - `data/love-dining.json`: Love Dining restaurants and hotel outlets.
 - `data/love-dining-source.json`: Love Dining source pages, T&C PDF hashes,
   counts, reviewed hashes, and manual-review flag.
-- `data/table-for-two.json`: Table for Two official roster, T&C/FAQ links, source
-  image hashes, and cache-only availability notes.
+- `data/table-for-two.json`: Table for Two official roster, T&C/FAQ links,
+  roster source metadata, and cache-only availability notes.
 
 ## Routes
 
@@ -96,7 +96,7 @@ python3 scripts/source_change_alert.py --program "Plat Stay" --meta data/plat-st
 - `refresh-data.yml`: daily Japan dining and Plat Stay refresh at `01:00 UTC`.
 - `refresh-love-dining.yml`: daily Love Dining refresh at `01:45 UTC`.
 - `refresh-table-for-two.yml`: daily public Table for Two roster refresh at
-  `01:30 UTC`.
+  `01:30 UTC`; this does not create live app slot inventory.
 - `refresh-global-dining.yml`: monthly Amex Global/Local Dining refresh on the
   first day of the month at `01:00 UTC`.
 - Source-change workflows open/update GitHub Issues labelled `data-alert` when
@@ -124,5 +124,7 @@ git diff --check
 - Do not commit cookies, tokens, private screenshots, or user-specific booking
   data.
 - Do not present Table for Two cache data as live inventory.
+- Treat Table for Two visible app-calendar dates as context only unless an exact
+  captured booking date is stored with the slot.
 - Prefer official Amex/Pocket Concierge sources for facts; enrichments should be
   labelled and easy to override.

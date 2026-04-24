@@ -800,8 +800,8 @@
           <section class="tft-list-panel panel-surface">
             <div class="panel-head">
               <div>
-                <h2>Table for Two roster</h2>
-                <p id="tft-list-summary">Official 2026 roster with cache-only availability and app-only booking caveats.</p>
+                <h2>Table for Two availability</h2>
+                <p id="tft-list-summary">Official 2026 roster with cache-only slot checks. Start with when you are free.</p>
               </div>
             </div>
 
@@ -812,24 +812,7 @@
               </label>
 
               <label class="filter-wrap">
-                <span class="label">Category</span>
-                <select id="tft-category-filter">
-                  <option value="">All categories</option>
-                </select>
-              </label>
-
-              <label class="filter-wrap">
-                <span class="label">Availability</span>
-                <select id="tft-availability-filter">
-                  <option value="">All availability</option>
-                  <option value="available">2 seats seen</option>
-                  <option value="no_seats">Captured no seats</option>
-                  <option value="unknown">Not checked yet</option>
-                </select>
-              </label>
-
-              <label class="filter-wrap">
-                <span class="label">Session</span>
+                <span class="label">Free for</span>
                 <select id="tft-session-filter">
                   <option value="">Any session</option>
                   <option value="Lunch">Lunch</option>
@@ -838,7 +821,7 @@
               </label>
 
               <label class="filter-wrap">
-                <span class="label">Date</span>
+                <span class="label">Free date</span>
                 <input id="tft-date-filter" type="date" />
               </label>
 
@@ -848,6 +831,23 @@
                   <option value="">Any day</option>
                   <option value="weekend">Weekend</option>
                   <option value="weekday">Weekday</option>
+                </select>
+              </label>
+
+              <label class="filter-wrap">
+                <span class="label">2-seat cache</span>
+                <select id="tft-availability-filter">
+                  <option value="">All cache states</option>
+                  <option value="available">2 seats seen</option>
+                  <option value="no_seats">Captured no seats</option>
+                  <option value="unknown">Cache pending</option>
+                </select>
+              </label>
+
+              <label class="filter-wrap">
+                <span class="label">Category</span>
+                <select id="tft-category-filter">
+                  <option value="">All categories</option>
                 </select>
               </label>
 

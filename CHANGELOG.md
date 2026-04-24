@@ -22,10 +22,17 @@
   T&C PDFs instead of the Global Dining Credit page.
 - Love Dining cards now show promo structure, what the discount applies to,
   minimum-order rules, booking notes, exclusions, and last cache time.
+- Table for Two now frames the page as cache-backed availability, removes raw
+  source/hash artifacts from the UI, and shows a selected-venue calendar panel.
+- Table for Two filters now start from user availability: free session, free
+  date, day type, 2-seat cache, then category.
+- Table for Two exact-date filters now only match stored exact slot dates; visible
+  app-calendar dates are shown as context, not treated as confirmed slot dates.
 - Refresh workflows now rebase before pushing, reducing GitHub Actions push
   failures when multiple refresh jobs update `main`.
 - Japan dining sync now writes `data/japan-dining-source.json` with cache time,
   counts, and a stable official-record hash.
+- README now uses the canonical `https://amex-explorer.kooexperience.com/` URL.
 
 ### Verified
 
@@ -41,4 +48,3 @@
 - Table for Two live slot scraping is not implemented because booking inventory
   is inside the Amex Experiences App. The site only displays manual/cache-backed
   availability and tells users to reconfirm in the app.
-

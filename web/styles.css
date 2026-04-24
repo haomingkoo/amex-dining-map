@@ -1031,12 +1031,138 @@ input,
   cursor: pointer;
 }
 
+.tft-status-grid {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
 .tft-menu h4 {
   margin: 0 0 10px;
   font-family: var(--serif);
   font-size: 20px;
   font-weight: 500;
   color: var(--text);
+}
+
+.tft-calendar-card,
+.tft-calendar-empty {
+  margin: 14px 0 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, var(--surface-overlay), transparent),
+    var(--surface-soft);
+}
+
+.tft-calendar-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tft-calendar-card h4,
+.tft-calendar-empty h4 {
+  margin: 2px 0 0;
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.tft-calendar-empty p {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.tft-calendar-weekdays,
+.tft-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.tft-calendar-weekdays {
+  margin-bottom: 6px;
+}
+
+.tft-calendar-weekdays span {
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.tft-calendar-cell {
+  display: grid;
+  aspect-ratio: 1;
+  min-width: 0;
+  place-items: center;
+  border: 1px solid var(--surface-border-strong);
+  border-radius: var(--radius-xs);
+  background: var(--surface-overlay);
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tft-calendar-cell.is-empty {
+  border-color: transparent;
+  background: transparent;
+}
+
+.tft-calendar-cell.is-seen {
+  border-color: var(--gold-border);
+  background: var(--gold-subtle);
+  color: var(--gold);
+}
+
+.tft-calendar-cell.is-available {
+  border-color: var(--teal-border-strong);
+  background: var(--teal-surface-strong);
+  color: var(--teal);
+}
+
+.tft-calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 10px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.tft-calendar-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tft-calendar-legend i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+}
+
+.tft-calendar-legend i.is-seen {
+  background: var(--gold);
+}
+
+.tft-calendar-legend i.is-available {
+  background: var(--teal);
+}
+
+.tft-calendar-meals {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--surface-border-soft);
 }
 
 .focus-note-warn {

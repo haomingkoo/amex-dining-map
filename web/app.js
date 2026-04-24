@@ -3342,16 +3342,16 @@ function filterTableForTwo() {
   const shown = state.tableForTwoFiltered.length;
   const payload = tableForTwoPayload();
   const availableCount = venues.filter((record) => tableForTwoAvailabilityKey(record) === "available").length;
-  const unknownCount = venues.filter((record) => tableForTwoAvailabilityKey(record) === "unknown").length;
+  const checkedCount = venues.filter((record) => tableForTwoAvailabilityKey(record) !== "unknown").length;
   const verifiedText = payload.last_verified_at
-    ? `Source checked ${formatTimestamp(payload.last_verified_at)}`
-    : "Source check pending";
+    ? `Roster checked ${formatTimestamp(payload.last_verified_at)}`
+    : "Roster check pending";
   tableForTwoSummaryStripText.textContent =
     shown === total
-      ? `${total} venues · ${availableCount} captured available · ${unknownCount} not checked · ${verifiedText}.`
+      ? `${total} official roster venues · availability cache covers ${checkedCount}/${total} venues · ${availableCount} with 2-seat slots captured · ${verifiedText}.`
       : `${shown} of ${total} venues · ${verifiedText}.`;
   tableForTwoListSummary.textContent =
-    "Try “weekend dinner” or “2 seats lunch”. Roster can refresh daily; useful availability needs a 5–10 min cache and is marked stale after 30 min.";
+    "Filter by free date, session, day type, and 2-seat cache. Full-roster slot refresh is not live yet; bookings still require the Amex Experiences App.";
   tableForTwoResultsText.textContent = state.tableForTwoActiveId
     ? "Selected venue · Table for Two"
     : `${shown} venue${shown === 1 ? "" : "s"} shown`;
@@ -3394,6 +3394,13 @@ function tableForTwoDateValues(record, meal = {}) {
   ].filter(Boolean);
 }
 
+function tableForTwoExactDateValues(record, meal = {}) {
+  return [
+    meal.date,
+    record.availability?.date,
+  ].filter(Boolean);
+}
+
 function tableForTwoDateIsWeekend(dateValue) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue || "")) return false;
   const [year, month, day] = dateValue.split("-").map(Number);
@@ -3408,12 +3415,12 @@ function tableForTwoMealMatchesSession(meal, session) {
 
 function tableForTwoMealMatchesDate(record, meal, date) {
   if (!date) return true;
-  return tableForTwoDateValues(record, meal).includes(date);
+  return tableForTwoExactDateValues(record, meal).includes(date);
 }
 
 function tableForTwoMealMatchesDay(record, meal, day) {
   if (!day) return true;
-  const dates = tableForTwoDateValues(record, meal);
+  const dates = tableForTwoExactDateValues(record, meal);
   if (!dates.length) return false;
   return dates.some((dateValue) => {
     const isWeekend = tableForTwoDateIsWeekend(dateValue);
@@ -3452,7 +3459,7 @@ function tableForTwoAvailabilityLabel(record) {
   const key = tableForTwoAvailabilityKey(record);
   if (key === "available") return "2 seats seen";
   if (key === "no_seats") return "Captured no seats";
-  return "Not checked";
+  return "Cache pending";
 }
 
 function tableForTwoAvailabilityBadgeClass(record) {
@@ -3466,15 +3473,23 @@ function tableForTwoBestAvailabilityLine(record) {
   const availability = record.availability || {};
   const meals = Array.isArray(availability.meals) ? availability.meals : [];
   const availableMeals = meals.filter((meal) => meal.status === "available" && Array.isArray(meal.times) && meal.times.length);
-  if (!availableMeals.length) return availability.summary || "No captured Table for Two slots yet.";
+  if (!availableMeals.length) return availability.summary || "No cached Table for Two slot check yet.";
   return availableMeals
     .map((meal) => `${meal.meal}: ${meal.seats || 2} seats at ${meal.times.join(", ")}${meal.date ? ` on ${meal.date}` : ""}`)
     .join(" | ");
 }
 
+function tableForTwoAvailabilityDetailLine(record) {
+  const availability = record.availability || {};
+  if (!availability.captured_at) {
+    return "No venue-level slot cache has been captured yet.";
+  }
+  return `${tableForTwoBestAvailabilityLine(record)} · ${tableForTwoFreshnessLabel(record)}`;
+}
+
 function tableForTwoFreshnessLabel(record) {
   const capturedAt = record.availability?.captured_at;
-  if (!capturedAt) return "No availability timestamp";
+  if (!capturedAt) return "No slot cache yet";
   const staleSuffix = tableForTwoAvailabilityIsStale(record) ? " · stale" : "";
   return `Refreshed ${formatTimestamp(capturedAt)}${staleSuffix}`;
 }
@@ -3491,10 +3506,92 @@ function tableForTwoAvailabilityIsStale(record) {
 function tableForTwoDateSummary(record) {
   const availability = record.availability || {};
   const visibleDates = availability.visible_dates || [];
-  const exactDates = uniqueValues(tableForTwoAvailabilityMeals(record).map((meal) => meal.date));
+  const exactDates = uniqueValues([
+    availability.date,
+    ...tableForTwoAvailabilityMeals(record).map((meal) => meal.date),
+  ]);
   if (exactDates.length) return `Dates: ${exactDates.join(", ")}`;
   if (visibleDates.length) return `Calendar dates seen: ${visibleDates.join(", ")}`;
-  return availability.date_label || "No cached date";
+  return availability.date_label || "No cached calendar yet";
+}
+
+function tableForTwoCalendarDates(record) {
+  const availability = record.availability || {};
+  return uniqueValues([
+    availability.date,
+    ...(availability.visible_dates || []),
+    ...tableForTwoAvailabilityMeals(record).flatMap((meal) => tableForTwoDateValues(record, meal)),
+  ]).filter((dateValue) => /^\d{4}-\d{2}-\d{2}$/.test(dateValue));
+}
+
+function tableForTwoCalendarHtml(record) {
+  const dates = tableForTwoCalendarDates(record);
+  if (!dates.length) {
+    return `
+      <div class="tft-calendar-empty">
+        <div class="focus-kicker">Availability calendar</div>
+        <h4>Cache pending</h4>
+        <p>No date-level Table for Two slot check has been captured for this venue yet. Once a full-roster cache source exists, this will show available lunch and dinner days.</p>
+      </div>
+    `;
+  }
+
+  const firstDate = dates[0];
+  const [year, month] = firstDate.split("-").map(Number);
+  const monthDate = new Date(Date.UTC(year, month - 1, 1));
+  const monthLabel = monthDate.toLocaleString("en-SG", { month: "long", year: "numeric", timeZone: "UTC" });
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const firstWeekday = monthDate.getUTCDay();
+  const dateSet = new Set(dates);
+  const exactAvailableDates = new Set(
+    tableForTwoAvailabilityMeals(record)
+      .filter((meal) => tableForTwoMealHasTwoSeats(meal))
+      .flatMap((meal) => tableForTwoExactDateValues(record, meal))
+      .filter((dateValue) => /^\d{4}-\d{2}-\d{2}$/.test(dateValue))
+  );
+
+  const cells = [];
+  for (let index = 0; index < firstWeekday; index += 1) {
+    cells.push('<span class="tft-calendar-cell is-empty"></span>');
+  }
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const dateValue = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const isSeen = dateSet.has(dateValue);
+    const isAvailable = exactAvailableDates.has(dateValue);
+    cells.push(`<span class="tft-calendar-cell${isSeen ? " is-seen" : ""}${isAvailable ? " is-available" : ""}">${day}</span>`);
+  }
+
+  const meals = tableForTwoAvailabilityMeals(record)
+    .map((meal) => {
+      const status = tableForTwoMealHasTwoSeats(meal)
+        ? `${meal.seats || 2} seats at ${(meal.times || []).join(", ")}`
+        : meal.status === "no_seats"
+          ? "No seats captured"
+          : "Status unknown";
+      return `<div class="focus-row"><span class="focus-label">${escapeHtml(meal.meal || "Meal")}</span><span>${escapeHtml(status)}</span></div>`;
+    })
+    .join("");
+
+  return `
+    <div class="tft-calendar-card">
+      <div class="tft-calendar-head">
+        <div>
+          <div class="focus-kicker">Availability calendar</div>
+          <h4>${escapeHtml(monthLabel)}</h4>
+        </div>
+        <span class="badge amber">${tableForTwoAvailabilityIsStale(record) ? "Stale cache" : "Cached"}</span>
+      </div>
+      <div class="tft-calendar-weekdays">
+        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+      </div>
+      <div class="tft-calendar-grid">${cells.join("")}</div>
+      <div class="tft-calendar-legend">
+        <span><i class="is-seen"></i> Date visible in capture</span>
+        <span><i class="is-available"></i> Exact 2-seat date captured</span>
+      </div>
+      ${meals ? `<div class="tft-calendar-meals">${meals}</div>` : ""}
+    </div>
+  `;
 }
 
 function renderTableForTwoList() {
@@ -3524,14 +3621,14 @@ function renderTableForTwoList() {
         <div>
           <div class="mobile-card-kicker">Table for Two</div>
           <div class="mobile-card-title">${escapeHtml(displayName)}</div>
-          <div class="mobile-card-sub">${escapeHtml(tableForTwoAvailabilityLabel(record))} · ${escapeHtml(tableForTwoFreshnessLabel(record))}</div>
+          <div class="mobile-card-sub">${escapeHtml(tableForTwoAvailabilityLabel(record))}${record.availability?.captured_at ? ` · ${escapeHtml(tableForTwoFreshnessLabel(record))}` : ""}</div>
         </div>
       </div>
       <div class="venue-tags">${tags}</div>
       <p class="mobile-card-desc">${escapeHtml(tableForTwoBestAvailabilityLine(record))}</p>
       <div class="mobile-card-meta">
         <span>${escapeHtml(tableForTwoDateSummary(record))}</span>
-        <span>${record.dining_city_id ? `DiningCity public ID ${escapeHtml(record.dining_city_id)}` : "No public booking ID captured yet"}</span>
+        <span>${record.dining_city_public_url ? "Public DiningCity info available" : "App-only booking"}</span>
       </div>
     `;
     card.addEventListener("click", () => {
@@ -3546,28 +3643,26 @@ function renderTableForTwoCard() {
   const payload = tableForTwoPayload();
   const record = activeTableForTwoRecord();
   if (!record) {
-    const hash = payload.source_images?.participating_merchants_sha256 || "";
     const reviewNote = payload.manual_review_required
-      ? '<div class="focus-note focus-note-warn">Official source image changed. Manual roster review is required before trusting the venue list.</div>'
+      ? '<div class="focus-note focus-note-warn">Official roster changed. Manual review is required before trusting the venue list.</div>'
       : "";
     tableForTwoFocusCard.innerHTML = `
-      <div class="focus-kicker">Source-backed roster</div>
+      <div class="focus-kicker">Official roster</div>
       <h3 class="focus-title">Select a venue</h3>
-      <p class="focus-summary">This section tracks the public Table for Two roster and separates it from Global Dining Credit and Love Dining.</p>
-      <div class="price-grid">
+      <p class="focus-summary">This section shows the official Table for Two venue roster. Availability is a separate cache and is only shown where a slot check has been captured.</p>
+      <div class="price-grid tft-status-grid">
         <div class="price-card">
-          <span class="price-label">Public source</span>
+          <span class="price-label">Roster</span>
           <div class="price-tier">${escapeHtml(payload.venues?.length ? `${payload.venues.length} venues` : "No venues loaded")}</div>
-          <div class="price-raw">${escapeHtml(payload.participating_merchants_image_url || "Official roster image unavailable")}</div>
+          <div class="price-raw">Official Amex source checked ${escapeHtml(payload.last_verified_at ? formatTimestamp(payload.last_verified_at) : "pending")}.</div>
         </div>
         <div class="price-card">
-          <span class="price-label">Live slots</span>
-          <div class="price-tier">App handoff required</div>
-          <div class="price-raw">Public DiningCity availability is not treated as Table for Two inventory.</div>
+          <span class="price-label">Availability cache</span>
+          <div class="price-tier">Not connected for full roster</div>
+          <div class="price-raw">Only captured app checks are shown here. Public DiningCity availability is not treated as Table for Two inventory.</div>
         </div>
       </div>
-      ${hash ? `<div class="focus-note">Roster image SHA-256: ${escapeHtml(hash.slice(0, 12))}…</div>` : ""}
-      ${payload.refresh_policy ? `<div class="focus-note">Refresh policy: roster daily; useful availability every 5–10 minutes when a cache source exists; captured slots stale after 30 minutes.</div>` : ""}
+      <div class="focus-note">Slot coverage: only captured app checks are shown today. Once an approved full-roster cache source exists, this view can refresh every 5–10 minutes and flag stale slots after 30 minutes.</div>
       ${reviewNote}
       <div class="focus-actions">
         <a class="inline-link primary-action" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Official Table for Two page</a>
@@ -3620,16 +3715,16 @@ function renderTableForTwoCard() {
       ${record.app_area ? `<span class="badge blue">${escapeHtml(record.app_area)}</span>` : ""}
       ${appTags}
     </div>
-    <div class="price-grid">
+    <div class="price-grid tft-status-grid">
       <div class="price-card">
         <span class="price-label">Booking source</span>
         <div class="price-tier">${escapeHtml(record.booking_channel || payload.booking_channel || "Amex Experiences App")}</div>
-        <div class="price-raw">The Amex app booking handoff is user/session-specific. Keep app URLs and screenshots out of public commits unless cleaned.</div>
+        <div class="price-raw">Book inside the Amex Experiences App. Public DiningCity pages are informational only and may not match Table for Two inventory.</div>
       </div>
       <div class="price-card">
         <span class="price-label">Captured availability</span>
         <div class="price-tier">${escapeHtml(tableForTwoAvailabilityLabel(record))}</div>
-        <div class="price-raw">${escapeHtml(tableForTwoBestAvailabilityLine(record))} · ${escapeHtml(tableForTwoFreshnessLabel(record))}</div>
+        <div class="price-raw">${escapeHtml(tableForTwoAvailabilityDetailLine(record))}</div>
       </div>
     </div>
     <div class="focus-section">
@@ -3646,6 +3741,7 @@ function renderTableForTwoCard() {
       <div class="focus-note">${escapeHtml(availability.notes ? availability.notes.join(" ") : "Availability should be reconfirmed in the Amex Experiences App before booking.")}</div>
     </div>
     ${menuHtml}
+    ${tableForTwoCalendarHtml(record)}
     <div class="focus-actions">
       <a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
       ${record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.dining_city_public_url)}" target="_blank" rel="noopener">Public DiningCity page</a>` : ""}
