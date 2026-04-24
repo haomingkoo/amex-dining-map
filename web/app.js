@@ -3768,19 +3768,20 @@ window.addEventListener("resize", () => {
 let mobileClutterObserver = null;
 
 function hideMobileClutter() {
-  if (window.innerWidth <= MOBILE_BREAKPOINT) {
-    const selectors = [
-      '.context-title',
-      '.context-strip',
-      '.summary-strip',
-      '.map-instructions',
-      '.refine-panel',
-      '#summary-strip-text',
-      // '.focus-panel',  -- REMOVED: we want to show details inline on mobile, not hide them
-      '.map-panel .panel-head',
-      '.toolbar-toggle-meta'
-    ];
+  const selectors = [
+    '.context-title',
+    '.context-strip',
+    '.summary-strip',
+    '.map-instructions',
+    '.refine-panel',
+    '#summary-strip-text',
+    // '.focus-panel',  -- REMOVED: we want to show details inline on mobile, not hide them
+    '.map-panel .panel-head',
+    '.toolbar-toggle-meta'
+  ];
 
+  if (window.innerWidth <= MOBILE_BREAKPOINT) {
+    // Hide clutter elements on mobile
     selectors.forEach(selector => {
       document.querySelectorAll(selector).forEach(el => {
         el.hidden = true;
@@ -3790,6 +3791,13 @@ function hideMobileClutter() {
     // Start observer only on mobile to catch dynamically inserted elements
     startMobileClutterObserver();
   } else {
+    // Unhide all elements on desktop
+    selectors.forEach(selector => {
+      document.querySelectorAll(selector).forEach(el => {
+        el.hidden = false;
+      });
+    });
+
     // Disconnect observer on desktop to save CPU
     stopMobileClutterObserver();
   }
