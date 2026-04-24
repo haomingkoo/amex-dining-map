@@ -2036,7 +2036,7 @@ function renderMobileSheet(type, record) {
 /** Centralized zoom configuration - single source of truth */
 const ZOOM_CONFIG = {
   FAR_OUT_THRESHOLD: 12,     // If below this, zoom in
-  MARKER_TARGET_LEVEL: 16,   // Zoom level when clicking/focusing marker
+  MARKER_TARGET_LEVEL: 18,   // Zoom level when clicking/focusing marker (street-level detail)
 };
 
 /** Centralized smart zoom for all maps (dining, stays, love dining) */
