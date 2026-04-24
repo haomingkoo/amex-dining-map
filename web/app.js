@@ -2045,7 +2045,14 @@ function smartZoomToMarker(map, latLng) {
   const currentZoom = map.getZoom();
   // Only zoom if currently far out; otherwise just pan to marker
   if (currentZoom < ZOOM_CONFIG.FAR_OUT_THRESHOLD) {
-    map.flyTo(latLng, ZOOM_CONFIG.MARKER_TARGET_LEVEL, { duration: 0.6 });
+    // More dramatic zoom when very far away (zoom < 6 → zoom to 19)
+    let targetZoom = ZOOM_CONFIG.MARKER_TARGET_LEVEL;
+    if (currentZoom < 6) {
+      targetZoom = 19;  // Maximum zoom for very far out (countries/regions view)
+    } else if (currentZoom < 10) {
+      targetZoom = 18.5;  // High zoom for continent/country view
+    }
+    map.flyTo(latLng, targetZoom, { duration: 0.8 });
   } else {
     map.flyTo(latLng, currentZoom, { duration: 0.4 });
   }
