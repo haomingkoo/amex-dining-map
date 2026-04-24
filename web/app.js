@@ -72,7 +72,7 @@ const PROGRAMS = {
     label: "Dining",
     title: "Dining",
     description:
-      "Amex Platinum dining partners in 17 markets — Japan via Pocket Concierge, plus 16 countries via the Global Dining Credit.",
+      "Amex Platinum dining partners in 16 markets — Japan via Pocket Concierge, plus 15 countries via the official Global Dining Credit source.",
     defaultRoute: "dining/world",
   },
   stays: {
@@ -109,7 +109,7 @@ const ROUTES = {
     eyebrow: "Dining / All",
     title: "Dining Explorer",
     description:
-      "Amex Platinum dining partners worldwide — Japan via Pocket Concierge plus 16 countries via the Global Dining Credit.",
+      "Amex Platinum dining partners worldwide — Japan via Pocket Concierge plus 15 countries via the official Global Dining Credit source.",
     note:
       "All markets. Use the country or city filter to zoom in.",
     mapSummary:

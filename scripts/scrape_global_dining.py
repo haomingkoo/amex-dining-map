@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Scrape Amex Platinum Dining global restaurant list from platinumdining.caffeinesoftware.com
+"""Sync Amex Platinum Dining global restaurant list from the official Amex app API.
 
-Fetches all non-Japan restaurant pages via the sitemap, extracts JSON-LD structured data,
-and saves to data/global-restaurants.json. Supports diff mode to detect additions/removals.
+Fetches non-Japan restaurant data from the official dining benefit app used by
+https://www.americanexpress.com/en-sg/benefits/diningbenefit/ and saves it to
+data/global-restaurants.json. Supports diff mode to detect additions/removals.
 
 Usage:
     python3 scripts/scrape_global_dining.py              # Full scrape
@@ -38,13 +39,19 @@ OVERRIDES_PATH = DATA_DIR / "coordinate-overrides.json"
 GEOCODE_CACHE_PATH = DATA_DIR / "global-dining-geocode-cache.json"
 GOOGLE_RATINGS_PATH = DATA_DIR / "google-maps-ratings.json"
 
-BASE_URL = "https://platinumdining.caffeinesoftware.com"
-SITEMAP_URL = f"{BASE_URL}/sitemap.xml"
-# Sitemap references platinumdining.co.uk; we remap to caffeinesoftware.com for fetching
-SITEMAP_DOMAIN = "https://platinumdining.co.uk"
+OFFICIAL_PAGE_URL = "https://www.americanexpress.com/en-sg/benefits/diningbenefit/"
+API_BASE_URL = "https://dining-offers-prod.amex.r53.tuimedia.com"
+COUNTRIES_API_URL = f"{API_BASE_URL}/api/countries"
+ORIGIN_MARKET = "SG"
+
+# Legacy constants kept for compatibility with helpers that parse old source URLs.
+BASE_URL = API_BASE_URL
+SITEMAP_URL = f"{API_BASE_URL}/sitemap.xml"
+SITEMAP_DOMAIN = API_BASE_URL
 
 # Countries that are handled by Pocket Concierge — skip them
 SKIP_COUNTRIES = {"japan"}
+SKIP_COUNTRY_CODES = {"JP"}
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
@@ -76,6 +83,9 @@ def http_get(url: str, retries: int = 3, timeout: int = 15) -> str:
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 return ""
+            if e.code in {429, 500, 502, 503, 504} and attempt < retries - 1:
+                time.sleep(1.5 ** attempt)
+                continue
             if attempt == retries - 1:
                 raise
             time.sleep(1.5 ** attempt)
@@ -84,6 +94,13 @@ def http_get(url: str, retries: int = 3, timeout: int = 15) -> str:
                 raise
             time.sleep(1.5 ** attempt)
     return ""
+
+
+def http_json(url: str, retries: int = 3, timeout: int = 30) -> Any:
+    body = http_get(url, retries=retries, timeout=timeout)
+    if not body:
+        raise RuntimeError(f"Empty response from {url}")
+    return json.loads(body)
 
 
 def remap_url(url: str) -> str:
@@ -258,13 +275,16 @@ def geocode_with_cache(query: str, cache: dict[str, Any]) -> dict[str, Any] | No
     return result
 
 
-def parse_google_map_coordinates(url: str | None) -> tuple[float | None, float | None]:
+def parse_google_map_coordinates(
+    url: str | None,
+    resolve_short_urls: bool = True,
+) -> tuple[float | None, float | None]:
     if not url:
         return None, None
 
     candidates = [url]
     parsed = urllib.parse.urlparse(url)
-    should_resolve = "goo.gl" in parsed.netloc or "maps.app.goo.gl" in parsed.netloc
+    should_resolve = resolve_short_urls and ("goo.gl" in parsed.netloc or "maps.app.goo.gl" in parsed.netloc)
     if should_resolve:
         try:
             req = urllib.request.Request(url, headers=HEADERS)
@@ -286,7 +306,7 @@ def parse_google_map_coordinates(url: str | None) -> tuple[float | None, float |
                 return float(match.group(1)), float(match.group(2))
 
         query = urllib.parse.parse_qs(urllib.parse.urlparse(candidate).query)
-        for key in ("q", "query"):
+        for key in ("q", "query", "ll", "center"):
             value = query.get(key, [None])[0]
             if not value:
                 continue
@@ -498,11 +518,22 @@ def dedupe_records(records: list[dict[str, Any]]) -> tuple[list[dict[str, Any]],
     by_url: dict[str, dict[str, Any]] = {}
     duplicate_urls = 0
     for record in records:
-        url = record.get("source_url")
-        if url in by_url:
+        source_key = record.get("source_record_url") or record.get("source_merchant_id") or record.get("source_url")
+        if source_key in by_url:
             duplicate_urls += 1
             continue
-        by_url[url] = record
+        by_url[source_key] = record
+
+    if all(record.get("source_merchant_id") for record in by_url.values()):
+        stats = {
+            "raw_count": len(records),
+            "duplicate_source_urls": duplicate_urls,
+            "duplicate_fingerprints": 0,
+            "removed_count": len(records) - len(by_url),
+            "replaced_with_better": 0,
+            "removed_by_country": {},
+        }
+        return list(by_url.values()), stats
 
     deduped: list[dict[str, Any]] = []
     seen_fingerprints: dict[tuple[str, ...], int] = {}
@@ -539,6 +570,14 @@ def dedupe_records(records: list[dict[str, Any]]) -> tuple[list[dict[str, Any]],
 
 
 def unique_record_id(record: dict[str, Any], include_region: bool = False) -> str:
+    if record.get("source_merchant_id"):
+        country_slug = normalized_ascii(record.get("country")).replace(" ", "-")
+        name_slug = normalized_ascii(record.get("name")).replace(" ", "-")
+        city_slug = normalized_ascii(record.get("city")).replace(" ", "-")
+        if include_region and city_slug:
+            return f"amex-global-{country_slug}-{name_slug}-{city_slug}"
+        return f"amex-global-{country_slug}-{name_slug}"
+
     path = (record.get("source_url") or "").replace(BASE_URL, "").replace(SITEMAP_DOMAIN, "").strip("/")
     parts = path.split("/")
     country_slug = parts[0] if len(parts) >= 1 else ""
@@ -565,7 +604,8 @@ def assign_unique_record_ids(records: list[dict[str, Any]]) -> int:
             candidate = unique_record_id(record, include_region=True)
             if not candidate or candidate in used_ids:
                 path = (record.get("source_url") or "").replace(BASE_URL, "").replace(SITEMAP_DOMAIN, "").strip("/")
-                short_hash = hashlib.sha1(path.encode()).hexdigest()[:8]
+                stable_key = record.get("source_merchant_id") or path
+                short_hash = hashlib.sha1(stable_key.encode()).hexdigest()[:8]
                 candidate = f"{unique_record_id(record, include_region=True)}-{short_hash}"
             record["id"] = candidate
             used_ids.add(candidate)
@@ -830,6 +870,204 @@ def build_record(url: str, json_ld: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def country_slug(country_name: str) -> str:
+    return normalized_ascii(country_name).replace(" ", "-")
+
+
+def record_slug(value: str) -> str:
+    slug = normalized_ascii(value).replace(" ", "-")
+    return slug or hashlib.sha1(value.encode()).hexdigest()[:8]
+
+
+def translated_value(payload: dict[str, Any] | None, key: str, locale: str = "en") -> str:
+    if not isinstance(payload, dict):
+        return ""
+    translations = payload.get("translations")
+    if isinstance(translations, dict):
+        localized = translations.get(locale)
+        if isinstance(localized, dict) and localized.get(key) not in (None, ""):
+            return compact_space(str(localized[key]))
+    return compact_space(str(payload.get(key) or payload.get("title") or ""))
+
+
+def official_country_name(country: dict[str, Any]) -> str:
+    key = compact_space(country.get("key"))
+    return ISO_COUNTRY_MAP.get(key, translated_value(country, "title") or key)
+
+
+def official_country_candidates(countries_payload: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    countries: list[dict[str, Any]] = []
+    for region in countries_payload:
+        for country in region.get("countries") or []:
+            key = compact_space(country.get("key"))
+            if key in SKIP_COUNTRY_CODES:
+                continue
+            if country.get("isActive") and country.get("isVisibleToOtherMarkets"):
+                countries.append(country)
+            elif key == ORIGIN_MARKET:
+                countries.append(country)
+    return sorted(countries, key=lambda item: official_country_name(item))
+
+
+def official_api_url(path: str) -> str:
+    return f"{API_BASE_URL}{path}"
+
+
+def fetch_official_merchants(country_code: str) -> list[dict[str, Any]]:
+    url = official_api_url(f"/api/country/{country_code}/merchants?origin={urllib.parse.quote(ORIGIN_MARKET)}")
+    payload = http_json(url, retries=4)
+    if not isinstance(payload, list):
+        raise RuntimeError(f"Unexpected merchant payload for {country_code}")
+    return payload
+
+
+def official_merchant_rows(merchant: dict[str, Any]) -> list[tuple[dict[str, Any], dict[str, Any] | None]]:
+    if merchant.get("isMerchantGroup") and isinstance(merchant.get("merchants"), list):
+        rows = [(child, merchant) for child in merchant["merchants"] if child.get("showMerchant", True)]
+        if rows:
+            return rows
+    return [(merchant, None)]
+
+
+def parse_district(address: str) -> str | None:
+    parts = [compact_space(part) for part in address.split(",") if compact_space(part)]
+    for part in reversed(parts):
+        if re.search(r"\b(?:dist\.?|district|ward|borough|arrondissement)\b", part, re.IGNORECASE):
+            return part
+    return None
+
+
+def official_full_address(address: str, city: str, postcode: str, country: str) -> str:
+    parts = [address, city, postcode, country]
+    deduped: list[str] = []
+    for part in parts:
+        cleaned = compact_space(str(part or "")).strip(" ,")
+        if cleaned and (not deduped or cleaned.lower() != deduped[-1].lower()):
+            deduped.append(cleaned)
+    return ", ".join(deduped)
+
+
+def build_record_from_official_api(
+    country: dict[str, Any],
+    merchant: dict[str, Any],
+    parent: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    country_code = compact_space(country.get("key"))
+    country_name = official_country_name(country)
+    city_obj = merchant.get("city") or {}
+    cuisine_obj = merchant.get("cuisine") or {}
+    business_data = merchant.get("businessData") or {}
+
+    name = translated_value(merchant, "name")
+    address = translated_value(merchant, "address")
+    postcode = compact_space(str(translated_value(merchant, "postcode") or merchant.get("postcode") or ""))
+    city = translated_value(city_obj, "title")
+    cuisine = translated_value(cuisine_obj, "title")
+    website = compact_space(business_data.get("website"))
+    phone = compact_space(business_data.get("phone"))
+    map_url = compact_space(merchant.get("googleMapsUrl"))
+    lat, lng = parse_google_map_coordinates(map_url, resolve_short_urls=False)
+
+    full_address = official_full_address(address, city, postcode, country_name)
+    record_id = f"amex-global-{country_slug(country_name)}-{record_slug(name)}"
+    source_record_url = official_api_url(
+        f"/api/country/{urllib.parse.quote(country_code)}/merchants?origin={urllib.parse.quote(ORIGIN_MARKET)}"
+    )
+
+    search_parts = [
+        name,
+        address,
+        city,
+        parse_district(address),
+        country_name,
+        cuisine,
+        phone,
+        parent and translated_value(parent, "name"),
+    ]
+
+    return {
+        "id": record_id,
+        "source": "Amex Platinum Dining",
+        "source_url": OFFICIAL_PAGE_URL,
+        "source_record_url": f"{source_record_url}#{merchant.get('id')}",
+        "source_merchant_id": merchant.get("id"),
+        "source_country_code": country_code,
+        "source_parent_merchant_id": parent.get("id") if parent else None,
+        "source_parent_merchant_name": translated_value(parent, "name") if parent else None,
+        "country": country_name,
+        "region": city or None,
+        "city": city or None,
+        "district": parse_district(address),
+        "name": name,
+        "cuisines": [cuisine] if cuisine else [],
+        "source_localized_address": full_address,
+        "source_google_map_url": map_url or None,
+        "lat": lat,
+        "lng": lng,
+        "coordinate_source": "source_google_map_url" if (lat is not None and lng is not None) else None,
+        "coordinate_confidence": "source_map_verified" if (lat is not None and lng is not None) else "none",
+        "map_pin_note": "Pin comes from the official Amex map link for this venue." if (lat is not None and lng is not None) else None,
+        "website_url": website or None,
+        "phone": phone or None,
+        "external_signals": {},
+        "search_text": " ".join(part.lower() for part in search_parts if part),
+        "is_new": bool(business_data.get("isNew") or merchant.get("isNew")),
+        "is_in_hotel": bool(business_data.get("isInHotel") or merchant.get("isInHotel")),
+        "price_lunch_band_key": None,
+        "price_dinner_band_key": None,
+        "price_lunch_band_tier": None,
+        "price_dinner_band_tier": None,
+        "price_lunch_band_label": None,
+        "price_dinner_band_label": None,
+        "price_lunch_min_jpy": None,
+        "price_lunch_max_jpy": None,
+        "price_dinner_min_jpy": None,
+        "price_dinner_max_jpy": None,
+        "child_policy_norm": "unknown",
+        "english_menu": None,
+        "reservation_type": None,
+        "known_for_tags": [],
+        "signature_dish_tags": [],
+        "nearest_stations": [],
+        "summary_official": None,
+    }
+
+
+def fetch_official_records(limit: int = 0) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    countries_payload = http_json(COUNTRIES_API_URL, retries=4)
+    if not isinstance(countries_payload, list):
+        raise RuntimeError("Unexpected countries payload from official Amex API")
+
+    countries = official_country_candidates(countries_payload)
+    records: list[dict[str, Any]] = []
+    top_level_counts: dict[str, int] = {}
+    expanded_counts: dict[str, int] = {}
+
+    for country in countries:
+        country_code = country["key"]
+        country_name = official_country_name(country)
+        merchants = fetch_official_merchants(country_code)
+        top_level_counts[country_name] = len(merchants)
+        for merchant in merchants:
+            for row, parent in official_merchant_rows(merchant):
+                records.append(build_record_from_official_api(country, row, parent))
+                if limit and len(records) >= limit:
+                    expanded_counts[country_name] = expanded_counts.get(country_name, 0) + 1
+                    return records, {
+                        "countries": [official_country_name(item) for item in countries],
+                        "top_level_counts": top_level_counts,
+                        "expanded_counts": expanded_counts,
+                    }
+                expanded_counts[country_name] = expanded_counts.get(country_name, 0) + 1
+        time.sleep(0.1)
+
+    return records, {
+        "countries": [official_country_name(item) for item in countries],
+        "top_level_counts": top_level_counts,
+        "expanded_counts": expanded_counts,
+    }
+
+
 def record_hash(record: dict[str, Any]) -> str:
     """Stable hash of a restaurant record for change detection."""
     key = json.dumps({
@@ -866,12 +1104,12 @@ def print_diff(old: dict[str, dict], new: dict[str, dict]) -> None:
 
     if added:
         print("ADDED:")
-        for r in sorted(added, key=lambda x: (x["country"], x["city"], x["name"])):
+        for r in sorted(added, key=lambda x: (x.get("country") or "", x.get("city") or "", x.get("name") or "")):
             print(f"  + {r['name']}  ({r['city']}, {r['country']})")
 
     if removed:
         print("\nREMOVED:")
-        for r in sorted(removed, key=lambda x: (x["country"], x["city"], x["name"])):
+        for r in sorted(removed, key=lambda x: (x.get("country") or "", x.get("city") or "", x.get("name") or "")):
             print(f"  - {r['name']}  ({r['city']}, {r['country']})")
 
     if changed:
@@ -890,53 +1128,19 @@ def main() -> None:
                         help="Limit to N restaurants (for testing)")
     args = parser.parse_args()
 
-    # ── 1. Get all restaurant URLs from sitemap ──────────────────────
-    all_urls = fetch_sitemap_urls()
-    restaurant_urls = [u for u in all_urls if is_restaurant_url(u)]
-    print(f"Sitemap: {len(all_urls)} total URLs → {len(restaurant_urls)} restaurant pages", file=sys.stderr)
+    # ── 1. Fetch current restaurant data from the official Amex app API ──
+    records, official_stats = fetch_official_records(limit=args.limit)
+    failed: list[str] = []
+
+    print(
+        f"Official Amex API: {len(official_stats['countries'])} non-Japan countries, "
+        f"{sum(official_stats['top_level_counts'].values())} top-level listings, "
+        f"{len(records)} expanded restaurant records",
+        file=sys.stderr,
+    )
 
     if args.limit:
-        restaurant_urls = restaurant_urls[:args.limit]
-        print(f"(limited to {args.limit} for testing)", file=sys.stderr)
-
-    # ── 2. Fetch each restaurant page and extract JSON-LD ────────────
-    records: list[dict[str, Any]] = []
-    failed: list[str] = []
-    start = datetime.datetime.now()
-
-    for i, url in enumerate(restaurant_urls, 1):
-        elapsed = (datetime.datetime.now() - start).total_seconds()
-        rate = i / elapsed if elapsed > 0 else 0
-        eta = (len(restaurant_urls) - i) / rate if rate > 0 else 0
-        sys.stderr.write(
-            f"\r[{i}/{len(restaurant_urls)}] {rate:.1f} req/s  ETA {eta/60:.0f}m  "
-            f"ok={len(records)} fail={len(failed)}   "
-        )
-        sys.stderr.flush()
-
-        try:
-            html = http_get(url, retries=2)
-            if not html:
-                failed.append(url)
-                continue
-            json_ld = extract_json_ld(html)
-            if not json_ld:
-                failed.append(url)
-                continue
-            record = build_record(url, json_ld)
-            records.append(record)
-        except Exception as e:
-            failed.append(url)
-        time.sleep(args.pause)
-
-    sys.stderr.write("\n")
-
-    print(f"\nScraped {len(records)} restaurants, {len(failed)} failed", file=sys.stderr)
-
-    if failed:
-        print(f"Failed URLs (first 10):", file=sys.stderr)
-        for u in failed[:10]:
-            print(f"  {u}", file=sys.stderr)
+        print(f"(limited to {args.limit} expanded records for testing)", file=sys.stderr)
 
     records, dedupe_stats = dedupe_records(records)
 
@@ -950,6 +1154,8 @@ def main() -> None:
     corrected = 0
     hidden = 0
     for record in records:
+        if record.get("source_merchant_id"):
+            continue
         before = (record.get("lat"), record.get("lng"), record.get("coordinate_confidence"))
         validate_record_coordinates(record, geocode_cache, google_ratings)
         after = (record.get("lat"), record.get("lng"), record.get("coordinate_confidence"))
@@ -960,7 +1166,7 @@ def main() -> None:
                 corrected += 1
 
     # ── 3. Apply manual overrides and compute stats ───────────────────
-    fetched_at = datetime.datetime.utcnow().isoformat() + "Z"
+    fetched_at = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
 
     # ── Disambiguate IDs first (before applying overrides) ──
     from collections import Counter
@@ -1032,8 +1238,12 @@ def main() -> None:
         "fetched_at": fetched_at,
         "record_count": len(records),
         "mapped_count": mapped,
-        "source_url": BASE_URL,
+        "source_url": OFFICIAL_PAGE_URL,
+        "api_url": API_BASE_URL,
+        "origin_market": ORIGIN_MARKET,
         "countries": dict(sorted(by_country.items())),
+        "official_top_level_counts": dict(sorted(official_stats["top_level_counts"].items())),
+        "official_expanded_counts": dict(sorted(official_stats["expanded_counts"].items())),
         "failed_count": len(failed),
     }
     SOURCE_META_PATH.write_text(json.dumps(meta, indent=2) + "\n")

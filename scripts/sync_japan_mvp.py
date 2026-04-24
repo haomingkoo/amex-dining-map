@@ -7,6 +7,7 @@ import html
 import json
 import re
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import UTC, datetime
@@ -193,22 +194,38 @@ KNOWN_FOR_PATTERNS = [
 ]
 
 
-def post_json(url: str, payload: dict) -> dict:
+def post_json(url: str, payload: dict, retries: int = 4) -> dict:
     data = json.dumps(payload).encode("utf-8")
-    request = urllib.request.Request(
-        url,
-        data=data,
-        headers={
-            "User-Agent": USER_AGENT,
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "Origin": "https://pocket-concierge.jp",
-            "Referer": "https://pocket-concierge.jp/",
-        },
-        method="POST",
-    )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return json.loads(response.read().decode("utf-8"))
+    retry_statuses = {429, 500, 502, 503, 504}
+
+    for attempt in range(retries):
+        request = urllib.request.Request(
+            url,
+            data=data,
+            headers={
+                "User-Agent": USER_AGENT,
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Origin": "https://pocket-concierge.jp",
+                "Referer": "https://pocket-concierge.jp/",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            if exc.code in retry_statuses and attempt < retries - 1:
+                time.sleep(2 ** attempt)
+                continue
+            raise
+        except (TimeoutError, urllib.error.URLError):
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt)
+                continue
+            raise
+
+    return {}
 
 
 def load_json(path: Path, default):
