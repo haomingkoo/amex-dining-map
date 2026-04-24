@@ -27,7 +27,7 @@
     <!-- ═══════════════════════════════════════════════════════════
          ONBOARDING GATE — shown on first visit, hidden after
     ════════════════════════════════════════════════════════════ -->
-    <section class="intro-gate" id="intro-gate" hidden>
+    <section class="intro-gate" id="intro-gate" role="dialog" aria-modal="true" aria-labelledby="intro-title" hidden>
       <div class="intro-ambient">
         <div class="intro-orb intro-orb-gold" aria-hidden="true"></div>
         <div class="intro-orb intro-orb-teal" aria-hidden="true"></div>
@@ -37,7 +37,12 @@
 
         <header class="intro-header">
           <p class="eyebrow">Unofficial Platinum Experience</p>
-          <h2 class="intro-question">Where would you like to begin?</h2>
+          <h2 class="intro-question" id="intro-title">Where would you like to begin?</h2>
+          <p class="intro-subtitle">
+            Use this as a source-aware map for Platinum benefits. It shows official
+            rosters, cache times, filters, and handoff links; always confirm final
+            eligibility or booking availability with Amex before spending.
+          </p>
         </header>
 
         <div class="intro-choices">
@@ -83,8 +88,69 @@
 
         </div>
 
+        <section class="intro-guide" aria-label="How to use this explorer">
+          <article class="intro-guide-card">
+            <span class="guide-step">1</span>
+            <div>
+              <h3>Pick the right program first</h3>
+              <p>
+                Use Dining for Amex dining-credit partners, Plat Stay for hotels,
+                Love Dining for Singapore percentage discounts, and Table for Two
+                for Singapore Platinum set menus.
+              </p>
+            </div>
+          </article>
+
+          <article class="intro-guide-card">
+            <span class="guide-step">2</span>
+            <div>
+              <h3>Check freshness before trusting a result</h3>
+              <p>
+                Summary bars and selected cards show when the source was cached.
+                If a record is marked cache-only or manual, reconfirm in the
+                official Amex page or app.
+              </p>
+            </div>
+          </article>
+
+          <article class="intro-guide-card">
+            <span class="guide-step">3</span>
+            <div>
+              <h3>Filter for the actual use case</h3>
+              <p>
+                Search by venue/city, then narrow by cuisine, benefit type,
+                discount rule, booking requirement, mapped status, or Table for
+                Two session availability.
+              </p>
+            </div>
+          </article>
+
+          <article class="intro-guide-card">
+            <span class="guide-step">4</span>
+            <div>
+              <h3>Use the source links as final authority</h3>
+              <p>
+                Cards link to official directories, T&Cs, Google Maps, booking
+                pages, or DiningCity where available. The map is a planning layer,
+                not a replacement for Amex eligibility checks.
+              </p>
+            </div>
+          </article>
+        </section>
+
+        <div class="intro-trust-panel">
+          <div>
+            <strong>Important distinction</strong>
+            <span>Singapore Dining entries are Local Dining Credit, not abroad Global Dining Credit.</span>
+          </div>
+          <div>
+            <strong>Table for Two</strong>
+            <span>Availability is cache-only unless reconfirmed inside the Amex Experiences App.</span>
+          </div>
+        </div>
+
         <button class="intro-skip-bottom" id="intro-skip-bottom" type="button">
-          Skip intro
+          Enter app
         </button>
       </div>
     </section>
