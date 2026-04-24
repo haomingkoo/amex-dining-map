@@ -3766,7 +3766,6 @@ window.addEventListener("resize", () => {
 
 // Mobile sheet dismiss handlers removed - sheets are now disabled
 // Details show inline via .focus-panel on mobile instead of popup overlay
-}
 
 // Mobile sheet dismissal removed - sheets no longer used
 
