@@ -42,6 +42,8 @@ jobs:
           cp -R data site/data
           cp .nojekyll site/
           cp CNAME site/
+          short_sha="${GITHUB_SHA::7}"
+          sed -i "s/?v=dev/?v=${short_sha}/g" site/index.html
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
