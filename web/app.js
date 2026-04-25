@@ -3342,7 +3342,7 @@ function clearTableForTwoMarkers() {
 function createTableForTwoMarker(record) {
   if (!hasLeaflet || !tableForTwoMap || !tableForTwoHasMapPin(record)) return null;
   const color = tableForTwoPinColor(record);
-  const marker = L.marker([record.lat, record.lon], {
+  const marker = L.marker([record.lat, (record.lng || record.lon)], {
     icon: L.divIcon({
       html: `<div style="width: 16px; height: 16px; border-radius: 50%; background: ${color}; border: 2px solid #091018; opacity: 0.92; cursor: pointer;"></div>`,
       iconSize: [16, 16],
@@ -3388,7 +3388,7 @@ function fitTableForTwoMap() {
   if (!hasLeaflet || !tableForTwoMap) return;
   const latLngs = state.tableForTwoFiltered
     .filter((record) => tableForTwoHasMapPin(record))
-    .map((record) => L.latLng(record.lat, record.lon));
+    .map((record) => L.latLng(record.lat, (record.lng || record.lon)));
   if (!latLngs.length) {
     tableForTwoMap.setView([1.2903, 103.8519], 12);
     return;
@@ -3403,7 +3403,7 @@ function fitTableForTwoMap() {
 function focusTableForTwoOnMap(record) {
   if (!hasLeaflet || !tableForTwoMap || !tableForTwoHasMapPin(record)) return;
   const marker = state.tableForTwoMarkers.get(record.id);
-  smartZoomToMarker(tableForTwoMap, marker?.getLatLng?.() || L.latLng(record.lat, record.lon));
+  smartZoomToMarker(tableForTwoMap, marker?.getLatLng?.() || L.latLng(record.lat, (record.lng || record.lon)));
 }
 
 function setActiveTableForTwoRecord(id) {
@@ -3949,7 +3949,7 @@ function createLoveDiningMarker(record) {
   const color = record.type === "hotel" ? "#9b6bd6" : "#e06b8b";
 
   // Use a custom div icon instead of circleMarker which doesn't render reliably
-  const marker = L.marker([record.lat, record.lon], {
+  const marker = L.marker([record.lat, (record.lng || record.lon)], {
     icon: L.divIcon({
       html: `<div style="width: 16px; height: 16px; border-radius: 50%; background: ${color}; border: 2px solid #091018; opacity: 0.9; cursor: pointer;"></div>`,
       iconSize: [16, 16],
@@ -4015,7 +4015,7 @@ function fitLoveDiningMap() {
 
 function focusLoveDiningOnMap(record) {
   if (!hasLeaflet || !loveMap || !loveDiningHasMapPin(record)) return;
-  loveMap.setView([record.lat, record.lon], 14);
+  loveMap.setView([record.lat, (record.lng || record.lon)], 14);
 }
 
 function normalizeInlineText(value) {
