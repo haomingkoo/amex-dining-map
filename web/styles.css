@@ -266,6 +266,8 @@ input,
 .inline-link,
 #map,
 #stays-map,
+#love-map,
+#tft-map,
 .leaflet-container,
 .intro-choice {
   -webkit-user-select: none;
@@ -941,7 +943,8 @@ input,
 
 #map,
 #stays-map,
-#love-map {
+#love-map,
+#tft-map {
   flex: 1;
   min-height: 440px;
   border-radius: 0 0 var(--radius-xl) var(--radius-xl);
@@ -983,6 +986,9 @@ input,
 .legend-oceania    { background: var(--legend-oceania); }
 .legend-love-rest  { background: var(--legend-love-rest); }
 .legend-love-hotel { background: var(--legend-love-hotel); }
+.legend-tft-available { background: var(--teal); }
+.legend-tft-stale     { background: var(--gold); }
+.legend-tft-pending   { background: #c9a55a; }
 
 .focus-panel {
   display: flex;
@@ -1003,6 +1009,17 @@ input,
   margin-bottom: 12px;
   animation: fade-up 0.6s ease both;
   animation-delay: 0.12s;
+}
+
+.tft-main-stack {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tft-map-panel {
+  overflow: hidden;
 }
 
 .tft-list-panel {
@@ -1883,11 +1900,22 @@ a.google-badge:hover {
 
 .stay-detail-grid {
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: 12px;
 }
 
 .stay-detail-grid .price-card {
-  padding: 14px 16px;
+  position: relative;
+  padding: 15px 16px 15px 18px;
+  overflow: hidden;
+}
+
+.stay-detail-grid .price-card::before {
+  content: "";
+  position: absolute;
+  inset: 14px auto 14px 0;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--gold);
 }
 
 .stay-detail-grid .price-tier {
@@ -1899,6 +1927,12 @@ a.google-badge:hover {
   margin-top: 6px;
   line-height: 1.55;
   overflow-wrap: anywhere;
+}
+
+.stay-detail-grid .meta-link {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 8px;
 }
 
 .cell-muted {
@@ -2455,7 +2489,8 @@ h1, h2, h3 {
 
   #map,
   #stays-map,
-  #love-map {
+  #love-map,
+  #tft-map {
     min-height: 300px;
     height: 100%;
     max-height: 100%;
@@ -2647,7 +2682,8 @@ h1, h2, h3 {
   /* Increase map height on mobile for better visibility */
   #map,
   #stays-map,
-  #love-map {
+  #love-map,
+  #tft-map {
     height: 52vw !important;
     max-height: 380px !important;
   }

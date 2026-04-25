@@ -15,8 +15,8 @@ Live site: `https://amex-explorer.kooexperience.com/`
 - `Love Dining`: Singapore restaurant and hotel outlets with official discount
   terms, exclusions, booking notes, and cache metadata.
 - `Table for Two`: Singapore Platinum set-menu roster from the official Amex
-  page, with cache-only availability fields where app screenshots or approved
-  local checks have been captured.
+  page, with 18/18 mapped roster venues and cache-only availability fields where
+  app screenshots or approved local checks have been captured.
 
 ## Data Trust Model
 
@@ -118,12 +118,24 @@ node --check web/app.js
 git diff --check
 ```
 
+Current coordinate audit notes:
+
+- Global Dining: 1,479 mapped records, 457 records without coordinates.
+- Japan Dining: 845 mapped records, no missing coordinates.
+- Love Dining: 74 mapped records, 5 bundled/unmapped records.
+- Table for Two: 18 mapped records, no missing coordinates.
+- The bounds audit catches impossible country-level pins; it does not prove
+  every pin is within 20m of a restaurant entrance.
+
 ## Safety Boundaries
 
 - Do not scrape logged-in Amex Experiences App endpoints or bypass app access.
 - Do not commit cookies, tokens, private screenshots, or user-specific booking
   data.
 - Do not present Table for Two cache data as live inventory.
+- Public DiningCity time slots are treated as generic DiningCity inventory, not
+  Table for Two inventory. A public probe for 15 Stamford returned 91-100 same-day
+  seats, which does not match the Amex Experiences App Table for Two screenshot.
 - Treat Table for Two visible app-calendar dates as context only unless an exact
   captured booking date is stored with the slot.
 - Prefer official Amex/Pocket Concierge sources for facts; enrichments should be

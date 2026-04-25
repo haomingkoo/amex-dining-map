@@ -47,6 +47,7 @@ DATASETS = [
     ("japan", Path("data/japan-restaurants.json"), "Japan", "lng"),
     ("plat-stay", Path("data/plat-stays.json"), None, "lng"),
     ("love-dining", Path("data/love-dining.json"), "Singapore", "lon"),
+    ("table-for-two", Path("data/table-for-two.json"), "Singapore", "lon"),
 ]
 
 
@@ -69,9 +70,10 @@ def in_bounds(country: str | None, lat: float, lng: float) -> bool:
     return min_lat <= lat <= max_lat and min_lng <= lng <= max_lng
 
 
-def audit_dataset(name: str, path: Path, default_country: str | None, lng_key: str) -> tuple[int, int, list[str]]:
+def audit_dataset(name: str, path: Path, default_country: str | None, lng_key: str) -> tuple[int, int, int, list[str]]:
     records = records_from_payload(json.loads(path.read_text(encoding="utf-8")))
     mapped = 0
+    missing = 0
     checked = 0
     issues: list[str] = []
 
@@ -79,6 +81,7 @@ def audit_dataset(name: str, path: Path, default_country: str | None, lng_key: s
         lat = record.get("lat")
         lng = record.get(lng_key if lng_key in record else "lng")
         if lat is None or lng is None:
+            missing += 1
             continue
 
         mapped += 1
@@ -95,7 +98,7 @@ def audit_dataset(name: str, path: Path, default_country: str | None, lng_key: s
                 f"has {lat_float}, {lng_float} outside {country}"
             )
 
-    return mapped, checked, issues
+    return mapped, missing, checked, issues
 
 
 def main() -> int:
@@ -106,15 +109,24 @@ def main() -> int:
     results = []
     all_issues: list[str] = []
     for dataset in DATASETS:
-        mapped, checked, issues = audit_dataset(*dataset)
-        results.append({"dataset": dataset[0], "mapped": mapped, "checked": checked, "issues": issues})
+        mapped, missing, checked, issues = audit_dataset(*dataset)
+        results.append({
+            "dataset": dataset[0],
+            "mapped": mapped,
+            "missing": missing,
+            "checked": checked,
+            "issues": issues,
+        })
         all_issues.extend(issues)
 
     if args.json:
         print(json.dumps({"issue_count": len(all_issues), "datasets": results}, indent=2))
     else:
         for result in results:
-            print(f"{result['dataset']}: checked {result['checked']} of {result['mapped']} mapped pins")
+            print(
+                f"{result['dataset']}: checked {result['checked']} of {result['mapped']} mapped pins; "
+                f"{result['missing']} records missing coordinates"
+            )
         if all_issues:
             print("\nOut-of-bounds pins:")
             for issue in all_issues:
@@ -127,4 +139,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

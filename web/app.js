@@ -11,6 +11,7 @@ const GOOGLE_RATINGS_URL = "../data/google-maps-ratings.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
 const LOVE_FIT_OPTIONS = { padding: [48, 48], maxZoom: 15 };
+const TABLE_FOR_TWO_FIT_OPTIONS = { padding: [48, 48], maxZoom: 14 };
 const INTRO_STORAGE_KEY = "amex-benefits-intro-v3";
 const THEME_STORAGE_KEY = "theme-preference";
 const MOBILE_BREAKPOINT = 820;
@@ -425,6 +426,7 @@ const state = {
   loveToolbarOpen: false,
   tableForTwo: null,
   tableForTwoFiltered: [],
+  tableForTwoMarkers: new Map(),
   tableForTwoActiveId: null,
   googleRatings: {},
 };
@@ -433,12 +435,14 @@ const hasLeaflet = typeof window !== "undefined" && typeof window.L !== "undefin
 const mapElement = document.getElementById("map");
 const staysMapElement = document.getElementById("stays-map");
 const loveDiningMapElement = document.getElementById("love-map");
+const tableForTwoMapElement = document.getElementById("tft-map");
 let themedTileLayers = [];
 
 // Maps are initialized in init() after DOM is ready
 let map = null;
 let staysMap = null;
 let loveMap = null;
+let tableForTwoMap = null;
 
 function initMaps() {
   if (!hasLeaflet) return;
@@ -465,6 +469,13 @@ function initMaps() {
     }).setView([1.3521, 103.8198], 12);
   }
 
+  if (tableForTwoMapElement && !tableForTwoMap) {
+    tableForTwoMap = L.map("tft-map", {
+      zoomControl: true,
+      scrollWheelZoom: true,
+    }).setView([1.2903, 103.8519], 12);
+  }
+
   // Set up tile layers for all maps
   setupTileLayers();
 }
@@ -479,7 +490,7 @@ function setupTileLayers() {
 
   // Add new tile layers for current theme
   const tileUrl = THEME_TILE_URLS[normalizeTheme(currentTheme)];
-  themedTileLayers = [map, staysMap, loveMap]
+  themedTileLayers = [map, staysMap, loveMap, tableForTwoMap]
     .filter(Boolean)
     .map((instance) => ({
       instance,
@@ -502,6 +513,8 @@ if (!hasLeaflet) {
     '<div class="empty-state">Map library failed to load. Plat Stay results are still available below.</div>';
   if (loveDiningMapElement) loveDiningMapElement.innerHTML =
     '<div class="empty-state">Map library failed to load. Venue list is still available below.</div>';
+  if (tableForTwoMapElement) tableForTwoMapElement.innerHTML =
+    '<div class="empty-state">Map library failed to load. Table for Two results are still available below.</div>';
 }
 
 const routeEyebrow = document.getElementById("route-eyebrow");
@@ -628,6 +641,7 @@ const loveMobileSummary = document.getElementById("love-mobile-summary");
 const loveMobileResultsList = document.getElementById("love-mobile-results-list");
 const tableForTwoExplorer = document.getElementById("table-for-two-explorer");
 const tableForTwoSummaryStripText = document.getElementById("tft-summary-strip-text");
+const tableForTwoMapSummary = document.getElementById("tft-map-summary");
 const tableForTwoListSummary = document.getElementById("tft-list-summary");
 const tableForTwoSearchInput = document.getElementById("tft-search-input");
 const tableForTwoCategoryFilter = document.getElementById("tft-category-filter");
@@ -940,6 +954,9 @@ function hasVerifiedCoordinates(record) {
 
 function diningLocationBadge(record) {
   if (record.lat == null || record.lng == null) return "";
+  if (record.coordinate_confidence === "location_conflict") {
+    return '<span class="badge amber">Location needs review</span>';
+  }
   if (record.coordinate_confidence === "approximate") {
     return '<span class="badge amber">Approximate pin</span>';
   }
@@ -1101,6 +1118,9 @@ function focusLocationNote(record) {
   if (record.coordinate_confidence === "approximate") {
     return "Location is approximate — confirm the address before visiting.";
   }
+  if (["manual_verified", "google_place_verified"].includes(record.coordinate_confidence) && record.map_pin_note) {
+    return record.map_pin_note;
+  }
   if (record.coordinate_confidence === "source_map_verified") {
     return "Pin follows the official source map link, but this is not an independent 20m verification.";
   }
@@ -1151,23 +1171,12 @@ function diningSummaryPayload(record) {
   if (knownFor.length || specialties.length) {
     const parts = [];
     if (knownFor.length) {
-      parts.push(`Source cues include ${naturalList(knownFor)}.`);
+      parts.push(`Known for ${naturalList(knownFor)}.`);
     }
     if (specialties.length) {
-      parts.push(`Cuisine cues include ${naturalList(specialties)}.`);
+      parts.push(`Signature dishes: ${naturalList(specialties)}.`);
     }
     return { text: parts.join(" "), isAi: false };
-  }
-
-  if (record.source === "Amex Platinum Dining") {
-    const cuisine = (record.cuisines || []).filter(Boolean).join(", ");
-    const city = [record.city, record.country].filter(Boolean).join(", ");
-    const cuisineLine = cuisine ? ` serving ${cuisine}` : "";
-    const cityLine = city ? ` in ${city}` : "";
-    return {
-      text: `${record.name} is listed in the official Amex dining directory${cityLine}${cuisineLine}. Use the official source and credit terms to confirm eligibility before visiting.`,
-      isAi: false,
-    };
   }
 
   return null;
@@ -1836,8 +1845,8 @@ function renderFocusCard() {
     focusCard.innerHTML = state.filtered.length > 0
       ? `<div class="empty-state map-cta">
           <div class="map-cta-icon" aria-hidden="true">◉</div>
-          <p class="map-cta-heading">Click any dot on the map</p>
-          <p class="map-cta-sub">or select a venue from the list below to see details here</p>
+          <p class="map-cta-heading">Select a dining venue</p>
+          <p class="map-cta-sub">Use a map pin or table row to review cuisine, ratings, and eligibility notes.</p>
         </div>`
       : '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
     // Hide focus-panel on mobile when no record
@@ -1915,8 +1924,8 @@ function renderFocusCard() {
         : ""
     }
     <div class="focus-tags">${tags}</div>
-    ${tagSection("Source cues", record.known_for_tags, "gold")}
-    ${tagSection("Cuisine cues", record.signature_dish_tags, "blue")}
+    ${tagSection("Known for", record.known_for_tags, "gold")}
+    ${tagSection("Signature dishes", record.signature_dish_tags, "blue")}
     ${summary ? `<p class="focus-summary${summary.isAi ? " focus-summary-ai" : ""}">${escapeHtml(summary.text)}</p>` : ""}
     ${showPriceGrid ? `
     <div class="price-grid">
@@ -1930,7 +1939,7 @@ function renderFocusCard() {
       </div>` : ""}
     </div>` : ""}
     ${diningCreditEligibilityNote(record) ? `<div class="focus-note focus-note-warn">${escapeHtml(diningCreditEligibilityNote(record))}</div>` : ""}
-    ${sourceCacheLabel ? `<div class="focus-note">Source cache: ${escapeHtml(sourceCacheLabel)}.</div>` : ""}
+    ${sourceCacheLabel ? `<div class="focus-note">Data source: ${escapeHtml(sourceCacheLabel)}.</div>` : ""}
     ${focusLocationNote(record) ? `<div class="focus-note">${escapeHtml(focusLocationNote(record))}</div>` : ""}
     <div class="focus-actions">
       ${
@@ -2102,8 +2111,8 @@ function renderMobileCards(resetPage = true) {
         ${kidPolicyKnown ? `<span class="badge">${escapeHtml(kidLabel(record.child_policy_norm))}</span>` : ""}
         ${isJapan && record.english_menu ? '<span class="badge green">English menu</span>' : ""}
       </div>
-      ${tagSection("Source cues", record.known_for_tags, "gold")}
-      ${tagSection("Cuisine cues", record.signature_dish_tags, "blue")}
+      ${tagSection("Known for", record.known_for_tags, "gold")}
+      ${tagSection("Signature dishes", record.signature_dish_tags, "blue")}
       ${externalSignalsSection(record)}
       ${isJapan ? `<div class="mobile-price-grid">
         <div class="mobile-price-card">
@@ -3271,6 +3280,8 @@ function tableForTwoSearchText(record) {
     record.app_name,
     record.category,
     record.app_area,
+    record.address,
+    record.map_pin_source,
     ...(record.app_tags || []),
     record.booking_channel,
     record.dining_city_id,
@@ -3307,6 +3318,94 @@ function refreshTableForTwoCategoryOptions() {
   }
 }
 
+function tableForTwoHasMapPin(record) {
+  return record && record.lat != null && record.lon != null;
+}
+
+function tableForTwoPinColor(record) {
+  if (!record) return "#c9a55a";
+  const key = tableForTwoAvailabilityKey(record);
+  if (key === "available" && !tableForTwoAvailabilityIsStale(record)) return "#5fb9a6";
+  if (key === "available" || key === "no_seats") return "#d6a44c";
+  return "#c9a55a";
+}
+
+function clearTableForTwoMarkers() {
+  if (!hasLeaflet || !tableForTwoMap) {
+    state.tableForTwoMarkers.clear();
+    return;
+  }
+  state.tableForTwoMarkers.forEach((marker) => tableForTwoMap.removeLayer(marker));
+  state.tableForTwoMarkers.clear();
+}
+
+function createTableForTwoMarker(record) {
+  if (!hasLeaflet || !tableForTwoMap || !tableForTwoHasMapPin(record)) return null;
+  const color = tableForTwoPinColor(record);
+  const marker = L.marker([record.lat, record.lon], {
+    icon: L.divIcon({
+      html: `<div style="width: 16px; height: 16px; border-radius: 50%; background: ${color}; border: 2px solid #091018; opacity: 0.92; cursor: pointer;"></div>`,
+      iconSize: [16, 16],
+      className: "custom-marker-icon",
+    }),
+  });
+  marker.on("click", () => {
+    setActiveTableForTwoRecord(record.id);
+    if (tableForTwoMap && hasLeaflet) {
+      smartZoomToMarker(tableForTwoMap, marker.getLatLng());
+    }
+  });
+  return marker;
+}
+
+function updateTableForTwoMarkerStyles() {
+  if (!hasLeaflet || !tableForTwoMap) return;
+  state.tableForTwoMarkers.forEach((marker, id) => {
+    const iconEl = marker.getElement()?.querySelector(".custom-marker-icon div");
+    if (!iconEl) return;
+    if (id === state.tableForTwoActiveId) {
+      applySelectedMarkerStyle(iconEl);
+      return;
+    }
+    const record = state.tableForTwoFiltered.find((item) => item.id === id);
+    applyUnselectedMarkerStyle(iconEl, tableForTwoPinColor(record));
+  });
+}
+
+function renderTableForTwoMarkers() {
+  if (!hasLeaflet || !tableForTwoMap) return;
+  clearTableForTwoMarkers();
+  state.tableForTwoFiltered.forEach((record) => {
+    const marker = createTableForTwoMarker(record);
+    if (!marker) return;
+    marker.addTo(tableForTwoMap);
+    state.tableForTwoMarkers.set(record.id, marker);
+  });
+  updateTableForTwoMarkerStyles();
+}
+
+function fitTableForTwoMap() {
+  if (!hasLeaflet || !tableForTwoMap) return;
+  const latLngs = state.tableForTwoFiltered
+    .filter((record) => tableForTwoHasMapPin(record))
+    .map((record) => L.latLng(record.lat, record.lon));
+  if (!latLngs.length) {
+    tableForTwoMap.setView([1.2903, 103.8519], 12);
+    return;
+  }
+  if (latLngs.length === 1) {
+    tableForTwoMap.setView(latLngs[0], 14);
+    return;
+  }
+  tableForTwoMap.fitBounds(L.latLngBounds(latLngs), TABLE_FOR_TWO_FIT_OPTIONS);
+}
+
+function focusTableForTwoOnMap(record) {
+  if (!hasLeaflet || !tableForTwoMap || !tableForTwoHasMapPin(record)) return;
+  const marker = state.tableForTwoMarkers.get(record.id);
+  smartZoomToMarker(tableForTwoMap, marker?.getLatLng?.() || L.latLng(record.lat, record.lon));
+}
+
 function setActiveTableForTwoRecord(id) {
   state.tableForTwoActiveId = id;
   const record = activeTableForTwoRecord();
@@ -3315,6 +3414,8 @@ function setActiveTableForTwoRecord(id) {
     : `${state.tableForTwoFiltered.length} venue${state.tableForTwoFiltered.length === 1 ? "" : "s"} shown`;
   renderTableForTwoCard();
   renderTableForTwoList();
+  updateTableForTwoMarkerStyles();
+  if (record) focusTableForTwoOnMap(record);
 }
 
 function filterTableForTwo() {
@@ -3352,10 +3453,17 @@ function filterTableForTwo() {
       : `${shown} of ${total} venues · ${verifiedText}.`;
   tableForTwoListSummary.textContent =
     "Filter by free date, session, day type, and 2-seat cache. Full-roster slot refresh is not live yet; bookings still require the Amex Experiences App.";
+  if (tableForTwoMapSummary) {
+    const mappedCount = venues.filter((record) => tableForTwoHasMapPin(record)).length;
+    tableForTwoMapSummary.textContent =
+      `${mappedCount}/${total} roster venues mapped. Pin colour shows cache state, not guaranteed live inventory.`;
+  }
   tableForTwoResultsText.textContent = state.tableForTwoActiveId
     ? "Selected venue · Table for Two"
     : `${shown} venue${shown === 1 ? "" : "s"} shown`;
 
+  renderTableForTwoMarkers();
+  if (!state.tableForTwoActiveId) fitTableForTwoMap();
   renderTableForTwoList();
   renderTableForTwoCard();
 }
@@ -3713,8 +3821,10 @@ function renderTableForTwoCard() {
       <span class="badge ${tableForTwoAvailabilityBadgeClass(record)}">${escapeHtml(tableForTwoAvailabilityLabel(record))}</span>
       <span class="badge amber">App-only booking</span>
       ${record.app_area ? `<span class="badge blue">${escapeHtml(record.app_area)}</span>` : ""}
+      ${tableForTwoHasMapPin(record) ? '<span class="badge green">Mapped</span>' : ""}
       ${appTags}
     </div>
+    ${record.address ? `<div class="focus-address">${escapeHtml(record.address)}</div>` : ""}
     <div class="price-grid tft-status-grid">
       <div class="price-card">
         <span class="price-label">Booking source</span>
@@ -3738,6 +3848,7 @@ function renderTableForTwoCard() {
       </div>
       ${mealRows}
       <div class="focus-note">Source confidence: the venue roster is official Amex source data; availability is cache-only from screenshots or local checks and is not a live public feed.</div>
+      ${record.map_pin_note ? `<div class="focus-note">${escapeHtml(record.map_pin_note)}</div>` : ""}
       <div class="focus-note">${escapeHtml(availability.notes ? availability.notes.join(" ") : "Availability should be reconfirmed in the Amex Experiences App before booking.")}</div>
     </div>
     ${menuHtml}
@@ -3745,10 +3856,20 @@ function renderTableForTwoCard() {
     <div class="focus-actions">
       <a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
       ${record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.dining_city_public_url)}" target="_blank" rel="noopener">Public DiningCity page</a>` : ""}
+      ${record.venue_source_url && !record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.venue_source_url)}" target="_blank" rel="noopener">Venue source</a>` : ""}
+      ${tableForTwoHasMapPin(record) ? `<button type="button" class="ghost-btn secondary" data-tft-focus-map="true">Center on map</button>` : ""}
       <a class="inline-link subtle" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Official roster</a>
       <a class="inline-link subtle" href="${escapeHtml(payload.terms_url || TABLE_FOR_TWO_TNC_URL)}" target="_blank" rel="noopener">T&Cs PDF</a>
     </div>
   `;
+
+  const centerButton = tableForTwoFocusCard.querySelector("[data-tft-focus-map='true']");
+  if (centerButton) {
+    centerButton.addEventListener("click", () => {
+      const active = activeTableForTwoRecord();
+      if (active) focusTableForTwoOnMap(active);
+    });
+  }
 }
 
 function activeLoveDiningRecord() {
@@ -4216,8 +4337,8 @@ function renderLoveDiningCard() {
   if (!record) {
     loveFocusCard.innerHTML = `<div class="empty-state map-cta">
       <div class="map-cta-icon" aria-hidden="true">◉</div>
-      <p class="map-cta-heading">Click any dot on the map</p>
-      <p class="map-cta-sub">or select a venue from the list below to see details here</p>
+      <p class="map-cta-heading">Select a Love Dining venue</p>
+      <p class="map-cta-sub">Use a map pin or result card to check savings, booking rules, and T&C links.</p>
     </div>`;
     return;
   }
@@ -4269,32 +4390,29 @@ function renderLoveDiningCard() {
     ${locationNote}
     <div class="price-grid">
       <div class="price-card">
-        <span class="price-label">Card promo</span>
+        <span class="price-label">Savings</span>
         <div class="price-tier">${escapeHtml(benefit.savingsLabel)}</div>
         <div class="price-raw">${escapeHtml(benefit.ladder)}</div>
       </div>
       <div class="price-card">
-        <span class="price-label">50% off what</span>
+        <span class="price-label">Eligible spend</span>
         <div class="price-tier">${escapeHtml(record.type === "hotel" ? "Food bill / qualifying items" : "À la carte food")}</div>
         <div class="price-raw">${escapeHtml(benefit.appliesTo)}</div>
       </div>
       <div class="price-card">
-        <span class="price-label">Minimum order</span>
+        <span class="price-label">Order rule</span>
         <div class="price-tier">${escapeHtml(benefit.orderLabel)}</div>
         <div class="price-raw">${escapeHtml(benefit.orderDetail)}</div>
       </div>
       <div class="price-card">
-        <span class="price-label">Last cached</span>
+        <span class="price-label">Source check</span>
         <div class="price-tier">${escapeHtml(cachedLabel)}</div>
-        <div class="price-raw">Official listing + T&C PDFs checked by the scraper.</div>
+        <div class="price-raw">Based on the official venue listing and Love Dining T&Cs.</div>
       </div>
     </div>
-    <div class="focus-note">${escapeHtml(benefit.savingsDetail)}</div>
-    <div class="focus-note">${escapeHtml(benefit.cardRequirement)}</div>
-    <div class="focus-note">${escapeHtml(benefit.exclusions)}</div>
-    <p class="focus-summary">${escapeHtml(loveDiningSourceDescription(record, benefit))}</p>
+    <div class="focus-note">${escapeHtml(benefit.cardRequirement)} ${escapeHtml(benefit.exclusions)}</div>
     ${record.notes ? `<div class="focus-section">
-      <div class="focus-kicker">Official outlet notes</div>
+      <div class="focus-kicker">Outlet-specific notes</div>
       <div class="focus-note">${escapeHtml(record.notes)}</div>
     </div>` : ""}
     <div class="focus-section">
@@ -4404,6 +4522,7 @@ function applyRoute(routeId) {
     staysExplorer.hidden = false;
     loveDiningExplorer.hidden = true;
     tableForTwoExplorer.hidden = true;
+    clearTableForTwoMarkers();
     renderStayDownloads(route);
     refreshStayFilterOptions();
     filterStays();
@@ -4421,6 +4540,7 @@ function applyRoute(routeId) {
     staysExplorer.hidden = true;
     loveDiningExplorer.hidden = false;
     tableForTwoExplorer.hidden = true;
+    clearTableForTwoMarkers();
     setLoveToolbarOpen(false);
     state.loveDiningActiveId = null;
     filterLoveDining();
@@ -4441,6 +4561,12 @@ function applyRoute(routeId) {
     state.tableForTwoActiveId = null;
     refreshTableForTwoCategoryOptions();
     filterTableForTwo();
+    if (hasLeaflet && tableForTwoMap) {
+      setTimeout(() => {
+        tableForTwoMap.invalidateSize();
+        fitTableForTwoMap();
+      }, 0);
+    }
     return;
   }
 
@@ -4457,6 +4583,7 @@ function applyRoute(routeId) {
     clearMarkers();
     clearStayMarkers();
     clearLoveDiningMarkers();
+    clearTableForTwoMarkers();
     setToolbarOpen(false);
     setTableOpen(false);
     setStayToolbarOpen(false);
@@ -4468,6 +4595,7 @@ function applyRoute(routeId) {
   staysExplorer.hidden = true;
   loveDiningExplorer.hidden = true;
   tableForTwoExplorer.hidden = true;
+  clearTableForTwoMarkers();
   setToolbarOpen(false);
   state.scopeRecords = state.restaurants.filter((record) => route.matcher(record));
   state.activeId = null;
@@ -4806,6 +4934,11 @@ window.addEventListener("resize", () => {
   if (isStayRoute()) {
     staysMap.invalidateSize();
     fitStayMapToVisibleMarkers();
+    return;
+  }
+  if (isTableForTwoRoute()) {
+    tableForTwoMap?.invalidateSize();
+    fitTableForTwoMap();
     return;
   }
   if (isDiningRoute()) {

@@ -797,67 +797,84 @@
         </section>
 
         <section class="tft-grid">
-          <section class="tft-list-panel panel-surface">
-            <div class="panel-head">
-              <div>
-                <h2>Table for Two availability</h2>
-                <p id="tft-list-summary">Official 2026 roster with cache-only slot checks. Start with when you are free.</p>
+          <div class="tft-main-stack">
+            <section class="map-panel tft-map-panel panel-surface">
+              <div class="panel-head">
+                <div>
+                  <h2>Table for Two map</h2>
+                  <p id="tft-map-summary">Official roster pins. Pin colour shows captured cache state, not guaranteed live inventory.</p>
+                </div>
               </div>
-            </div>
-
-            <section class="toolbar tft-toolbar panel-surface">
-              <label class="search-wrap">
-                <span class="label">Search</span>
-                <input id="tft-search-input" type="search" placeholder="Venue, category, area..." />
-              </label>
-
-              <label class="filter-wrap">
-                <span class="label">Free for</span>
-                <select id="tft-session-filter">
-                  <option value="">Any session</option>
-                  <option value="Lunch">Lunch</option>
-                  <option value="Dinner">Dinner</option>
-                </select>
-              </label>
-
-              <label class="filter-wrap">
-                <span class="label">Free date</span>
-                <input id="tft-date-filter" type="date" />
-              </label>
-
-              <label class="filter-wrap">
-                <span class="label">Day type</span>
-                <select id="tft-day-filter">
-                  <option value="">Any day</option>
-                  <option value="weekend">Weekend</option>
-                  <option value="weekday">Weekday</option>
-                </select>
-              </label>
-
-              <label class="filter-wrap">
-                <span class="label">2-seat cache</span>
-                <select id="tft-availability-filter">
-                  <option value="">All cache states</option>
-                  <option value="available">2 seats seen</option>
-                  <option value="no_seats">Captured no seats</option>
-                  <option value="unknown">Cache pending</option>
-                </select>
-              </label>
-
-              <label class="filter-wrap">
-                <span class="label">Category</span>
-                <select id="tft-category-filter">
-                  <option value="">All categories</option>
-                </select>
-              </label>
-
-              <div class="filter-actions">
-                <button id="tft-reset-filters" type="button" class="ghost-btn">Clear filters</button>
+              <div id="tft-map"></div>
+              <div class="map-legend">
+                <span class="legend-item"><i class="legend-dot legend-tft-available"></i>2 seats captured</span>
+                <span class="legend-item"><i class="legend-dot legend-tft-stale"></i>Stale/no seats</span>
+                <span class="legend-item"><i class="legend-dot legend-tft-pending"></i>Cache pending</span>
               </div>
             </section>
 
-            <div class="mobile-results-list tft-results-list" id="tft-results-list"></div>
-          </section>
+            <section class="tft-list-panel panel-surface">
+              <div class="panel-head">
+                <div>
+                  <h2>Table for Two availability</h2>
+                  <p id="tft-list-summary">Official 2026 roster with cache-only slot checks. Start with when you are free.</p>
+                </div>
+              </div>
+
+              <section class="toolbar tft-toolbar panel-surface">
+                <label class="search-wrap">
+                  <span class="label">Search</span>
+                  <input id="tft-search-input" type="search" placeholder="Venue, category, area..." />
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Free for</span>
+                  <select id="tft-session-filter">
+                    <option value="">Any session</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Dinner">Dinner</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Free date</span>
+                  <input id="tft-date-filter" type="date" />
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Day type</span>
+                  <select id="tft-day-filter">
+                    <option value="">Any day</option>
+                    <option value="weekend">Weekend</option>
+                    <option value="weekday">Weekday</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">2-seat cache</span>
+                  <select id="tft-availability-filter">
+                    <option value="">All cache states</option>
+                    <option value="available">2 seats seen</option>
+                    <option value="no_seats">Captured no seats</option>
+                    <option value="unknown">Cache pending</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Category</span>
+                  <select id="tft-category-filter">
+                    <option value="">All categories</option>
+                  </select>
+                </label>
+
+                <div class="filter-actions">
+                  <button id="tft-reset-filters" type="button" class="ghost-btn">Clear filters</button>
+                </div>
+              </section>
+
+              <div class="mobile-results-list tft-results-list" id="tft-results-list"></div>
+            </section>
+          </div>
 
           <aside class="focus-panel panel-surface">
             <div class="panel-head">
