@@ -15,8 +15,8 @@ Live site: `https://amex-explorer.kooexperience.com/`
 - `Love Dining`: Singapore restaurant and hotel outlets with official discount
   terms, exclusions, booking notes, and cache metadata.
 - `Table for Two`: Singapore Platinum set-menu roster from the official Amex
-  page, with 18/18 mapped roster venues and cache-only availability fields where
-  app screenshots or approved local checks have been captured.
+  page, with 18/18 mapped roster venues and DiningCity `AMEXPlatSG`
+  availability checks.
 
 ## Data Trust Model
 
@@ -24,11 +24,14 @@ Live site: `https://amex-explorer.kooexperience.com/`
   source hashes from Amex or Pocket Concierge.
 - `cached`: source fetch times and hashes stored in `data/*-source.json` files
   and rendered in the UI.
+- `live-cache`: Table for Two availability from DiningCity's public
+  `AMEXPlatSG` project endpoint. The UI refreshes it while the page is open,
+  but final booking and voucher redemption still happen in the Amex Experiences
+  App.
 - `enriched`: geocodes, Google Maps ratings, summaries, and third-party quality
   signals. These are helpful, but not the source of truth.
-- `manual`: Table for Two availability screenshots and menu screenshots. These
-  are never treated as live availability; users must confirm in the Amex
-  Experiences App before booking.
+- `manual`: screenshots and menu captures. These are fallback context only;
+  users must confirm in the Amex Experiences App before booking.
 
 ## Key Data Files
 
@@ -45,7 +48,7 @@ Live site: `https://amex-explorer.kooexperience.com/`
 - `data/love-dining-source.json`: Love Dining source pages, T&C PDF hashes,
   counts, reviewed hashes, and manual-review flag.
 - `data/table-for-two.json`: Table for Two official roster, T&C/FAQ links,
-  roster source metadata, and cache-only availability notes.
+  roster source metadata, and cached `AMEXPlatSG` availability.
 
 ## Routes
 
@@ -95,8 +98,9 @@ python3 scripts/source_change_alert.py --program "Plat Stay" --meta data/plat-st
 - `deploy-pages.yml`: deploys the static site on pushes to `main`.
 - `refresh-data.yml`: daily Japan dining and Plat Stay refresh at `01:00 UTC`.
 - `refresh-love-dining.yml`: daily Love Dining refresh at `01:45 UTC`.
-- `refresh-table-for-two.yml`: daily public Table for Two roster refresh at
-  `01:30 UTC`; this does not create live app slot inventory.
+- `refresh-table-for-two.yml`: daily public Table for Two roster and baseline
+  `AMEXPlatSG` availability refresh at `01:30 UTC`. The browser also refreshes
+  Table for Two availability while the page is open.
 - `refresh-global-dining.yml`: monthly Amex Global/Local Dining refresh on the
   first day of the month at `01:00 UTC`.
 - Source-change workflows open/update GitHub Issues labelled `data-alert` when
@@ -132,11 +136,10 @@ Current coordinate audit notes:
 - Do not scrape logged-in Amex Experiences App endpoints or bypass app access.
 - Do not commit cookies, tokens, private screenshots, or user-specific booking
   data.
-- Do not present Table for Two cache data as live inventory.
-- Public DiningCity time slots are treated as generic DiningCity inventory, not
-  Table for Two inventory. A public probe for 15 Stamford returned 91-100 same-day
-  seats, which does not match the Amex Experiences App Table for Two screenshot.
-- Treat Table for Two visible app-calendar dates as context only unless an exact
-  captured booking date is stored with the slot.
+- Do not present generic public DiningCity restaurant time slots as Table for Two
+  inventory. Only the DiningCity `AMEXPlatSG` project endpoint is used for Table
+  for Two availability.
+- Treat cached Table for Two availability as planning data. Users still need to
+  complete booking and voucher redemption in the Amex Experiences App.
 - Prefer official Amex/Pocket Concierge sources for facts; enrichments should be
   labelled and easy to override.

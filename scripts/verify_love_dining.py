@@ -104,7 +104,7 @@ def analyze_love_dining():
     print("Data Quality:")
     missing_phone = [v["name"] for v in data if not v.get("phone")]
     missing_address = [v["name"] for v in data if not v.get("address")]
-    missing_coords = [v["name"] for v in data if not v.get("lat") or not v.get("lon")]
+    missing_coords = [v["name"] for v in data if not v.get("lat") or not v.get("lng")]
 
     print(f"  Missing phone: {len(missing_phone)}")
     if missing_phone:

@@ -46,8 +46,8 @@ DATASETS = [
     ("global", Path("data/global-restaurants.json"), None, "lng"),
     ("japan", Path("data/japan-restaurants.json"), "Japan", "lng"),
     ("plat-stay", Path("data/plat-stays.json"), None, "lng"),
-    ("love-dining", Path("data/love-dining.json"), "Singapore", "lon"),
-    ("table-for-two", Path("data/table-for-two.json"), "Singapore", "lon"),
+    ("love-dining", Path("data/love-dining.json"), "Singapore", "lng"),
+    ("table-for-two", Path("data/table-for-two.json"), "Singapore", "lng"),
 ]
 
 

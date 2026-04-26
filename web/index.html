@@ -20,7 +20,7 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
-    <link rel="stylesheet" href="./styles.css?v=dev" />
+    <link rel="stylesheet" href="./styles.css?v=20260426-2" />
   </head>
   <body>
 
@@ -83,7 +83,7 @@
             data-intro-route="#/table-for-two"
           >
             <span class="choice-label">Table for Two</span>
-            <span class="choice-desc">Singapore Platinum set-menu roster with official T&Cs, cache-only availability labels, and captured menu details.</span>
+            <span class="choice-desc">Singapore Platinum set-menu roster with official T&Cs, AMEXPlatSG availability checks, and captured menu details.</span>
           </button>
 
         </div>
@@ -145,7 +145,7 @@
           </div>
           <div>
             <strong>Table for Two</strong>
-            <span>Availability is cache-only unless reconfirmed inside the Amex Experiences App.</span>
+            <span>Availability is cached from DiningCity AMEXPlatSG and still needs app confirmation.</span>
           </div>
         </div>
 
@@ -802,14 +802,14 @@
               <div class="panel-head">
                 <div>
                   <h2>Table for Two map</h2>
-                  <p id="tft-map-summary">Official roster pins. Pin colour shows captured cache state, not guaranteed live inventory.</p>
+                  <p id="tft-map-summary">Official roster pins. Pin colour shows cached AMEXPlatSG availability state.</p>
                 </div>
               </div>
               <div id="tft-map"></div>
               <div class="map-legend">
-                <span class="legend-item"><i class="legend-dot legend-tft-available"></i>2 seats captured</span>
-                <span class="legend-item"><i class="legend-dot legend-tft-stale"></i>Stale/no seats</span>
-                <span class="legend-item"><i class="legend-dot legend-tft-pending"></i>Cache pending</span>
+                <span class="legend-item"><i class="legend-dot legend-tft-available"></i>Fresh 2-seat slots</span>
+                <span class="legend-item"><i class="legend-dot legend-tft-stale"></i>No seats/stale</span>
+                <span class="legend-item"><i class="legend-dot legend-tft-pending"></i>Not checked</span>
               </div>
             </section>
 
@@ -817,7 +817,7 @@
               <div class="panel-head">
                 <div>
                   <h2>Table for Two availability</h2>
-                  <p id="tft-list-summary">Official 2026 roster with cache-only slot checks. Start with when you are free.</p>
+                  <p id="tft-list-summary">Official 2026 roster with cached AMEXPlatSG slot checks. Start with when you are free.</p>
                 </div>
               </div>
 
@@ -837,7 +837,7 @@
                 </label>
 
                 <label class="filter-wrap">
-                  <span class="label">Free date</span>
+                  <span class="label">Date seen</span>
                   <input id="tft-date-filter" type="date" />
                 </label>
 
@@ -851,12 +851,13 @@
                 </label>
 
                 <label class="filter-wrap">
-                  <span class="label">2-seat cache</span>
+                  <span class="label">2-seat status</span>
                   <select id="tft-availability-filter">
-                    <option value="">All cache states</option>
-                    <option value="available">2 seats seen</option>
-                    <option value="no_seats">Captured no seats</option>
-                    <option value="unknown">Cache pending</option>
+                    <option value="">All states</option>
+                    <option value="available">2 seats available</option>
+                    <option value="no_seats">No 2-seat slots</option>
+                    <option value="stale">Stale check</option>
+                    <option value="unknown">Not checked</option>
                   </select>
                 </label>
 
@@ -946,6 +947,6 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="./app.js?v=dev"></script>
+    <script src="./app.js?v=20260426-2"></script>
   </body>
 </html>

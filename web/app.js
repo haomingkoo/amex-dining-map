@@ -36,6 +36,12 @@ const TABLE_FOR_TWO_OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefi
 const TABLE_FOR_TWO_TNC_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf";
 const TABLE_FOR_TWO_FAQ_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TableforTwo_FAQ.pdf";
 const TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES = 30;
+const TABLE_FOR_TWO_DININGCITY_API_BASE = "https://api.diningcity.asia/public";
+const TABLE_FOR_TWO_DININGCITY_PROJECT = "AMEXPlatSG";
+const TABLE_FOR_TWO_DININGCITY_PROJECT_TITLE = "AMEX Platinum SG";
+const TABLE_FOR_TWO_LIVE_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+const TABLE_FOR_TWO_MIN_SEATS = 2;
+const TABLE_FOR_TWO_MAX_TIMES = 12;
 const LOVE_DINING_FIXED_20_IDS = new Set([
   "love-pan-pacific-orchard-singapore-florette",
   "love-swissotel-the-stamford-skai-bar",
@@ -118,7 +124,7 @@ const PROGRAMS = {
     label: "Table for Two",
     title: "Table for Two",
     description:
-      "Singapore Platinum set-menu dining benefit. Public roster and T&Cs are source-backed; availability is cache-only and app-confirmed.",
+      "Singapore Platinum set-menu dining benefit. Public roster and T&Cs are source-backed; availability is cached from DiningCity AMEXPlatSG.",
     defaultRoute: "table-for-two",
   },
   alerts: {
@@ -391,9 +397,9 @@ const ROUTES = {
     eyebrow: "Table For Two / Singapore",
     title: "Table for Two",
     description:
-      "Singapore Platinum Table for Two venues from the official Amex 2026 roster image, with cache-only availability labels and app-only booking notes.",
+      "Singapore Platinum Table for Two venues from the official Amex 2026 roster image, with cached DiningCity AMEXPlatSG availability and app-only booking notes.",
     mapSummary:
-      "Table for Two is booked via the Amex Experiences App. Public DiningCity pages do not expose the same Table for Two slot allocation.",
+      "Table for Two is booked via the Amex Experiences App. Generic public DiningCity restaurant slots are not treated as Table for Two allocation.",
   },
 };
 
@@ -428,6 +434,9 @@ const state = {
   tableForTwoFiltered: [],
   tableForTwoMarkers: new Map(),
   tableForTwoActiveId: null,
+  tableForTwoLiveRefreshInFlight: false,
+  tableForTwoLiveRefreshAt: null,
+  tableForTwoLiveRefreshTimer: null,
   googleRatings: {},
 };
 
@@ -934,6 +943,20 @@ function priceMarkup(min, max, tier, label) {
     blocks.push(`<div class="price-raw">${escapeHtml(range)}</div>`);
   }
   return blocks.join("");
+}
+
+function recordLongitude(record) {
+  if (!record) return null;
+  return record.lng ?? record.lon ?? null;
+}
+
+function hasCoordinates(record) {
+  return record?.lat != null && recordLongitude(record) != null;
+}
+
+function latLngForRecord(record) {
+  if (!hasCoordinates(record)) return null;
+  return [record.lat, recordLongitude(record)];
 }
 
 function hasSourceCoordinates(record) {
@@ -3263,6 +3286,176 @@ function tableForTwoVenues() {
   return Array.isArray(payload.venues) ? payload.venues : [];
 }
 
+function tableForTwoLiveSourceUrl(record) {
+  if (!record?.dining_city_id) return "";
+  const params = new URLSearchParams({ project: TABLE_FOR_TWO_DININGCITY_PROJECT });
+  return `${TABLE_FOR_TWO_DININGCITY_API_BASE}/restaurants/${record.dining_city_id}/available_2018?${params.toString()}`;
+}
+
+function tableForTwoFetchHeaders() {
+  return {
+    "api-key": "cgecegcegcc",
+    "accept-version": "application/json; version=2",
+    lang: "en",
+  };
+}
+
+function tableForTwoSlotSeatValues(slot) {
+  const rawValues = Array.isArray(slot?.seats?.available) ? slot.seats.available : [];
+  return rawValues
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value));
+}
+
+function tableForTwoSlotHasMinimumSeats(slot, minimum = TABLE_FOR_TWO_MIN_SEATS) {
+  if (tableForTwoSlotSeatValues(slot).includes(minimum)) return true;
+  const total = Number(slot?.seats?.total_available_seats || 0);
+  return Number.isFinite(total) && total >= minimum;
+}
+
+function tableForTwoAvailabilityFromRows(record, rows, checkedAt) {
+  const grouped = new Map();
+  const visibleDates = new Set();
+  let availableSlotCount = 0;
+
+  (Array.isArray(rows) ? rows : []).forEach((row) => {
+    const date = row?.date;
+    if (date) visibleDates.add(date);
+    (row?.times || []).forEach((slot) => {
+      if (!tableForTwoSlotHasMinimumSeats(slot)) return;
+      const meal = slot.meal_type_text || slot.meal_type || "Session";
+      if (!grouped.has(meal)) {
+        grouped.set(meal, { dates: new Set(), times: new Set(), slotCount: 0 });
+      }
+      const bucket = grouped.get(meal);
+      if (date) bucket.dates.add(date);
+      if (slot.time) bucket.times.add(slot.time);
+      bucket.slotCount += 1;
+      availableSlotCount += 1;
+    });
+  });
+
+  const meals = [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([meal, bucket]) => ({
+    meal,
+    status: "available",
+    seats: TABLE_FOR_TWO_MIN_SEATS,
+    dates: [...bucket.dates].sort(),
+    times: [...bucket.times].sort().slice(0, TABLE_FOR_TWO_MAX_TIMES),
+    slot_count: bucket.slotCount,
+  }));
+  const visibleDateList = [...visibleDates].sort();
+  const sourceUrl = tableForTwoLiveSourceUrl(record);
+  const sourceNote =
+    `Availability is from DiningCity project ${TABLE_FOR_TWO_DININGCITY_PROJECT} (${TABLE_FOR_TWO_DININGCITY_PROJECT_TITLE}). Book and redeem through the Amex Experiences App.`;
+
+  if (availableSlotCount) {
+    const availableDates = uniqueValues(meals.flatMap((meal) => meal.dates || []));
+    const mealSummary = meals
+      .map((meal) => `${meal.meal} ${(meal.dates || []).length} dates`)
+      .join(", ");
+    return {
+      status: "live_available",
+      source: `DiningCity public API project ${TABLE_FOR_TWO_DININGCITY_PROJECT}`,
+      source_url: sourceUrl,
+      project: TABLE_FOR_TWO_DININGCITY_PROJECT,
+      project_title: TABLE_FOR_TWO_DININGCITY_PROJECT_TITLE,
+      captured_at: checkedAt,
+      checked_at: checkedAt,
+      confidence: "diningcity_amex_platinum_project",
+      visible_dates: visibleDateList,
+      summary:
+        `${availableDates.length} dates with 2-seat Table for Two slots returned by DiningCity ${TABLE_FOR_TWO_DININGCITY_PROJECT}${mealSummary ? ` (${mealSummary})` : ""}.`,
+      meals,
+      notes: [sourceNote],
+    };
+  }
+
+  return {
+    status: "live_no_seats",
+    source: `DiningCity public API project ${TABLE_FOR_TWO_DININGCITY_PROJECT}`,
+    source_url: sourceUrl,
+    project: TABLE_FOR_TWO_DININGCITY_PROJECT,
+    project_title: TABLE_FOR_TWO_DININGCITY_PROJECT_TITLE,
+    captured_at: checkedAt,
+    checked_at: checkedAt,
+    confidence: "diningcity_amex_platinum_project",
+    visible_dates: visibleDateList,
+    summary:
+      `No 2-seat Table for Two slots were returned by DiningCity ${TABLE_FOR_TWO_DININGCITY_PROJECT} at this check.`,
+    meals: [],
+    notes: [sourceNote],
+  };
+}
+
+async function fetchTableForTwoLiveAvailability(record, checkedAt) {
+  if (!record?.dining_city_id) return null;
+  const response = await fetch(tableForTwoLiveSourceUrl(record), {
+    headers: tableForTwoFetchHeaders(),
+  });
+  if (!response.ok) {
+    throw new Error(`DiningCity ${response.status}`);
+  }
+  const payload = await response.json();
+  return tableForTwoAvailabilityFromRows(record, payload?.data || [], checkedAt);
+}
+
+async function refreshTableForTwoLiveAvailability({ force = false } = {}) {
+  if (!state.tableForTwo || state.tableForTwoLiveRefreshInFlight) return;
+  const now = Date.now();
+  if (!force && state.tableForTwoLiveRefreshAt && now - state.tableForTwoLiveRefreshAt < 60 * 1000) return;
+
+  const venues = tableForTwoVenues().filter((record) => record.dining_city_id);
+  if (!venues.length) return;
+
+  state.tableForTwoLiveRefreshInFlight = true;
+  const checkedAt = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
+  try {
+    const results = await Promise.allSettled(
+      venues.map((record) => fetchTableForTwoLiveAvailability(record, checkedAt))
+    );
+    const errors = {};
+    let checkedCount = 0;
+    results.forEach((result, index) => {
+      const record = venues[index];
+      if (result.status === "fulfilled" && result.value) {
+        record.availability = result.value;
+        record.slot_source_status = "diningcity_amex_platinum_project";
+        record.search_text = tableForTwoSearchText(record);
+        checkedCount += 1;
+      } else if (result.status === "rejected") {
+        errors[record.id] = result.reason?.message || String(result.reason);
+      }
+    });
+    state.tableForTwo.availability_last_checked_at = checkedAt;
+    state.tableForTwo.availability_source = {
+      type: "diningcity_public_api",
+      api_base: TABLE_FOR_TWO_DININGCITY_API_BASE,
+      project: TABLE_FOR_TWO_DININGCITY_PROJECT,
+      project_title: TABLE_FOR_TWO_DININGCITY_PROJECT_TITLE,
+      checked_venues: checkedCount,
+      error_count: Object.keys(errors).length,
+      errors,
+    };
+    state.tableForTwoLiveRefreshAt = now;
+    if (isTableForTwoRoute(resolveRouteFromHash())) {
+      filterTableForTwo();
+    }
+  } finally {
+    state.tableForTwoLiveRefreshInFlight = false;
+  }
+}
+
+function ensureTableForTwoLiveRefresh() {
+  if (!state.tableForTwoLiveRefreshTimer) {
+    state.tableForTwoLiveRefreshTimer = window.setInterval(() => {
+      if (isTableForTwoRoute(resolveRouteFromHash())) {
+        refreshTableForTwoLiveAvailability();
+      }
+    }, TABLE_FOR_TWO_LIVE_REFRESH_INTERVAL_MS);
+  }
+  refreshTableForTwoLiveAvailability();
+}
+
 function activeTableForTwoRecord() {
   return tableForTwoVenues().find((record) => record.id === state.tableForTwoActiveId) || null;
 }
@@ -3287,12 +3480,15 @@ function tableForTwoSearchText(record) {
     record.dining_city_id,
     record.availability?.status,
     record.availability?.summary,
+    record.availability?.source,
+    record.availability?.project,
     record.availability?.date,
     record.availability?.date_label,
     ...(record.availability?.visible_dates || []),
     ...(record.availability?.meals || []).flatMap((meal) => [
       meal.meal,
       meal.date,
+      ...(meal.dates || []),
       meal.date_label,
       ...(meal.times || []),
     ]),
@@ -3319,14 +3515,14 @@ function refreshTableForTwoCategoryOptions() {
 }
 
 function tableForTwoHasMapPin(record) {
-  return record && record.lat != null && record.lon != null;
+  return hasCoordinates(record);
 }
 
 function tableForTwoPinColor(record) {
   if (!record) return "#c9a55a";
   const key = tableForTwoAvailabilityKey(record);
-  if (key === "available" && !tableForTwoAvailabilityIsStale(record)) return "#5fb9a6";
-  if (key === "available" || key === "no_seats") return "#d6a44c";
+  if (key === "available") return "#5fb9a6";
+  if (key === "no_seats" || key === "stale") return "#d6a44c";
   return "#c9a55a";
 }
 
@@ -3342,7 +3538,7 @@ function clearTableForTwoMarkers() {
 function createTableForTwoMarker(record) {
   if (!hasLeaflet || !tableForTwoMap || !tableForTwoHasMapPin(record)) return null;
   const color = tableForTwoPinColor(record);
-  const marker = L.marker([record.lat, (record.lng || record.lon)], {
+  const marker = L.marker(latLngForRecord(record), {
     icon: L.divIcon({
       html: `<div style="width: 16px; height: 16px; border-radius: 50%; background: ${color}; border: 2px solid #091018; opacity: 0.92; cursor: pointer;"></div>`,
       iconSize: [16, 16],
@@ -3388,7 +3584,7 @@ function fitTableForTwoMap() {
   if (!hasLeaflet || !tableForTwoMap) return;
   const latLngs = state.tableForTwoFiltered
     .filter((record) => tableForTwoHasMapPin(record))
-    .map((record) => L.latLng(record.lat, (record.lng || record.lon)));
+    .map((record) => latLngForRecord(record));
   if (!latLngs.length) {
     tableForTwoMap.setView([1.2903, 103.8519], 12);
     return;
@@ -3403,7 +3599,7 @@ function fitTableForTwoMap() {
 function focusTableForTwoOnMap(record) {
   if (!hasLeaflet || !tableForTwoMap || !tableForTwoHasMapPin(record)) return;
   const marker = state.tableForTwoMarkers.get(record.id);
-  smartZoomToMarker(tableForTwoMap, marker?.getLatLng?.() || L.latLng(record.lat, (record.lng || record.lon)));
+  smartZoomToMarker(tableForTwoMap, marker?.getLatLng?.() || latLngForRecord(record));
 }
 
 function setActiveTableForTwoRecord(id) {
@@ -3442,21 +3638,29 @@ function filterTableForTwo() {
   const total = venues.length;
   const shown = state.tableForTwoFiltered.length;
   const payload = tableForTwoPayload();
-  const availableCount = venues.filter((record) => tableForTwoAvailabilityKey(record) === "available").length;
-  const checkedCount = venues.filter((record) => tableForTwoAvailabilityKey(record) !== "unknown").length;
+  const freshAvailableCount = venues.filter((record) => tableForTwoAvailabilityKey(record) === "available").length;
+  const freshNoSeatCount = venues.filter((record) => tableForTwoAvailabilityKey(record) === "no_seats").length;
+  const staleCaptureCount = venues.filter((record) => tableForTwoAvailabilityKey(record) === "stale").length;
+  const pendingCount = venues.filter((record) => tableForTwoAvailabilityKey(record) === "unknown").length;
+  const freshCaptureLabel = freshAvailableCount === 1 ? "venue with fresh 2-seat slots" : "venues with fresh 2-seat slots";
+  const noSeatLabel = freshNoSeatCount === 1 ? "fresh no-seat venue" : "fresh no-seat venues";
+  const staleCaptureLabel = staleCaptureCount === 1 ? "stale check" : "stale checks";
   const verifiedText = payload.last_verified_at
     ? `Roster checked ${formatTimestamp(payload.last_verified_at)}`
     : "Roster check pending";
+  const availabilityCheckedText = payload.availability_last_checked_at
+    ? `Availability checked ${formatTimestamp(payload.availability_last_checked_at)}`
+    : "Availability check pending";
   tableForTwoSummaryStripText.textContent =
     shown === total
-      ? `${total} official roster venues · availability cache covers ${checkedCount}/${total} venues · ${availableCount} with 2-seat slots captured · ${verifiedText}.`
-      : `${shown} of ${total} venues · ${verifiedText}.`;
+      ? `${total} official roster venues · ${freshAvailableCount} ${freshCaptureLabel} · ${freshNoSeatCount} ${noSeatLabel} · ${staleCaptureCount} ${staleCaptureLabel} · ${pendingCount} not checked · ${availabilityCheckedText} · ${verifiedText}.`
+      : `${shown} of ${total} venues · ${availabilityCheckedText} · ${verifiedText}.`;
   tableForTwoListSummary.textContent =
-    "Filter by free date, session, day type, and 2-seat cache. Full-roster slot refresh is not live yet; bookings still require the Amex Experiences App.";
+    "Filter by session, date, day type, and cached AMEXPlatSG availability. Bookings still require the Amex Experiences App.";
   if (tableForTwoMapSummary) {
     const mappedCount = venues.filter((record) => tableForTwoHasMapPin(record)).length;
     tableForTwoMapSummary.textContent =
-      `${mappedCount}/${total} roster venues mapped. Pin colour shows cache state, not guaranteed live inventory.`;
+      `${mappedCount}/${total} roster venues mapped. Pin colour shows fresh 2-seat, no-seat/stale, or unchecked AMEXPlatSG state.`;
   }
   tableForTwoResultsText.textContent = state.tableForTwoActiveId
     ? "Selected venue · Table for Two"
@@ -3483,11 +3687,17 @@ function tableForTwoResidualSearch(search) {
     .trim();
 }
 
-function tableForTwoAvailabilityKey(record) {
+function tableForTwoRawAvailabilityKey(record) {
   const status = record.availability?.status || "unknown";
-  if (status === "captured_available" || status === "available") return "available";
-  if (status === "captured_no_seats" || status === "no_seats") return "no_seats";
+  if (status === "live_available" || status === "captured_available" || status === "available") return "available";
+  if (status === "live_no_seats" || status === "captured_no_seats" || status === "no_seats") return "no_seats";
   return "unknown";
+}
+
+function tableForTwoAvailabilityKey(record) {
+  const key = tableForTwoRawAvailabilityKey(record);
+  if (key !== "unknown" && tableForTwoAvailabilityIsStale(record)) return "stale";
+  return key;
 }
 
 function tableForTwoAvailabilityMeals(record) {
@@ -3497,6 +3707,7 @@ function tableForTwoAvailabilityMeals(record) {
 function tableForTwoDateValues(record, meal = {}) {
   return [
     meal.date,
+    ...(meal.dates || []),
     record.availability?.date,
     ...(record.availability?.visible_dates || []),
   ].filter(Boolean);
@@ -3505,6 +3716,7 @@ function tableForTwoDateValues(record, meal = {}) {
 function tableForTwoExactDateValues(record, meal = {}) {
   return [
     meal.date,
+    ...(meal.dates || []),
     record.availability?.date,
   ].filter(Boolean);
 }
@@ -3523,7 +3735,7 @@ function tableForTwoMealMatchesSession(meal, session) {
 
 function tableForTwoMealMatchesDate(record, meal, date) {
   if (!date) return true;
-  return tableForTwoExactDateValues(record, meal).includes(date);
+  return tableForTwoDateValues(record, meal).includes(date);
 }
 
 function tableForTwoMealMatchesDay(record, meal, day) {
@@ -3549,10 +3761,20 @@ function tableForTwoRecordMatchesFilters(record, filters) {
   );
 
   if (filters.availability === "available") {
-    return matchingMeals.some((meal) => tableForTwoMealHasTwoSeats(meal));
+    return tableForTwoAvailabilityKey(record) === "available"
+      && matchingMeals.some((meal) => tableForTwoMealHasTwoSeats(meal));
   }
   if (filters.availability === "no_seats") {
-    return matchingMeals.some((meal) => meal.status === "no_seats");
+    if (tableForTwoAvailabilityKey(record) !== "no_seats") return false;
+    if (filters.session || filters.date || filters.day) {
+      return matchingMeals.some((meal) => meal.status === "no_seats");
+    }
+    return true;
+  }
+  if (filters.availability === "stale") {
+    if (tableForTwoAvailabilityKey(record) !== "stale") return false;
+    if (filters.session || filters.date || filters.day) return matchingMeals.length > 0;
+    return true;
   }
   if (filters.availability === "unknown") {
     return tableForTwoAvailabilityKey(record) === "unknown";
@@ -3565,39 +3787,51 @@ function tableForTwoRecordMatchesFilters(record, filters) {
 
 function tableForTwoAvailabilityLabel(record) {
   const key = tableForTwoAvailabilityKey(record);
-  if (key === "available") return "2 seats seen";
-  if (key === "no_seats") return "Captured no seats";
-  return "Cache pending";
+  if (key === "available") return "2 seats available";
+  if (key === "no_seats") return "No 2-seat slots";
+  if (key === "stale") return "Stale check";
+  return "Not checked";
 }
 
 function tableForTwoAvailabilityBadgeClass(record) {
   const key = tableForTwoAvailabilityKey(record);
-  if (key === "available") return tableForTwoAvailabilityIsStale(record) ? "amber" : "green";
-  if (key === "no_seats") return "amber";
+  if (key === "available") return "green";
+  if (key === "no_seats" || key === "stale") return "amber";
   return "";
+}
+
+function tableForTwoMealDateSummary(meal) {
+  const dates = uniqueValues([meal.date, ...(meal.dates || [])].filter(Boolean));
+  if (!dates.length) return "";
+  if (dates.length === 1) return ` on ${dates[0]}`;
+  if (dates.length <= 3) return ` on ${dates.join(", ")}`;
+  return ` on ${dates.length} dates from ${dates[0]} to ${dates[dates.length - 1]}`;
 }
 
 function tableForTwoBestAvailabilityLine(record) {
   const availability = record.availability || {};
   const meals = Array.isArray(availability.meals) ? availability.meals : [];
   const availableMeals = meals.filter((meal) => meal.status === "available" && Array.isArray(meal.times) && meal.times.length);
-  if (!availableMeals.length) return availability.summary || "No cached Table for Two slot check yet.";
-  return availableMeals
-    .map((meal) => `${meal.meal}: ${meal.seats || 2} seats at ${meal.times.join(", ")}${meal.date ? ` on ${meal.date}` : ""}`)
+  const stalePrefix = tableForTwoAvailabilityIsStale(record) ? "Stale availability check: " : "";
+  if (!availableMeals.length) {
+    return availability.summary ? `${stalePrefix}${availability.summary}` : "No cached Table for Two slot check yet.";
+  }
+  return stalePrefix + availableMeals
+    .map((meal) => `${meal.meal}: ${meal.seats || 2} seats at ${meal.times.join(", ")}${tableForTwoMealDateSummary(meal)}`)
     .join(" | ");
 }
 
 function tableForTwoAvailabilityDetailLine(record) {
   const availability = record.availability || {};
   if (!availability.captured_at) {
-    return "No venue-level slot cache has been captured yet.";
+    return "No venue-level availability check has been captured yet.";
   }
   return `${tableForTwoBestAvailabilityLine(record)} · ${tableForTwoFreshnessLabel(record)}`;
 }
 
 function tableForTwoFreshnessLabel(record) {
   const capturedAt = record.availability?.captured_at;
-  if (!capturedAt) return "No slot cache yet";
+  if (!capturedAt) return "No availability check yet";
   const staleSuffix = tableForTwoAvailabilityIsStale(record) ? " · stale" : "";
   return `Refreshed ${formatTimestamp(capturedAt)}${staleSuffix}`;
 }
@@ -3611,16 +3845,22 @@ function tableForTwoAvailabilityIsStale(record) {
   return ageMs > TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES * 60 * 1000;
 }
 
+function tableForTwoDateListSummary(dates, prefix = "Dates") {
+  if (!dates.length) return "";
+  if (dates.length <= 4) return `${prefix}: ${dates.join(", ")}`;
+  return `${prefix}: ${dates.length} dates from ${dates[0]} to ${dates[dates.length - 1]}`;
+}
+
 function tableForTwoDateSummary(record) {
   const availability = record.availability || {};
   const visibleDates = availability.visible_dates || [];
   const exactDates = uniqueValues([
     availability.date,
-    ...tableForTwoAvailabilityMeals(record).map((meal) => meal.date),
+    ...tableForTwoAvailabilityMeals(record).flatMap((meal) => tableForTwoExactDateValues(record, meal)),
   ]);
-  if (exactDates.length) return `Dates: ${exactDates.join(", ")}`;
-  if (visibleDates.length) return `Calendar dates seen: ${visibleDates.join(", ")}`;
-  return availability.date_label || "No cached calendar yet";
+  if (exactDates.length) return tableForTwoDateListSummary(exactDates);
+  if (visibleDates.length) return tableForTwoDateListSummary(visibleDates, "Calendar dates");
+  return availability.date_label || "No availability calendar yet";
 }
 
 function tableForTwoCalendarDates(record) {
@@ -3638,8 +3878,8 @@ function tableForTwoCalendarHtml(record) {
     return `
       <div class="tft-calendar-empty">
         <div class="focus-kicker">Availability calendar</div>
-        <h4>Cache pending</h4>
-        <p>No date-level Table for Two slot check has been captured for this venue yet. Once a full-roster cache source exists, this will show available lunch and dinner days.</p>
+        <h4>Not checked</h4>
+        <p>No date-level Table for Two availability is cached for this venue yet.</p>
       </div>
     `;
   }
@@ -3672,9 +3912,9 @@ function tableForTwoCalendarHtml(record) {
   const meals = tableForTwoAvailabilityMeals(record)
     .map((meal) => {
       const status = tableForTwoMealHasTwoSeats(meal)
-        ? `${meal.seats || 2} seats at ${(meal.times || []).join(", ")}`
+        ? `${meal.seats || 2} seats at ${(meal.times || []).join(", ")}${tableForTwoMealDateSummary(meal)}`
         : meal.status === "no_seats"
-          ? "No seats captured"
+          ? "No 2-seat slots"
           : "Status unknown";
       return `<div class="focus-row"><span class="focus-label">${escapeHtml(meal.meal || "Meal")}</span><span>${escapeHtml(status)}</span></div>`;
     })
@@ -3687,15 +3927,15 @@ function tableForTwoCalendarHtml(record) {
           <div class="focus-kicker">Availability calendar</div>
           <h4>${escapeHtml(monthLabel)}</h4>
         </div>
-        <span class="badge amber">${tableForTwoAvailabilityIsStale(record) ? "Stale cache" : "Cached"}</span>
+        <span class="badge amber">${tableForTwoAvailabilityIsStale(record) ? "Stale check" : "Cached check"}</span>
       </div>
       <div class="tft-calendar-weekdays">
         <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
       </div>
       <div class="tft-calendar-grid">${cells.join("")}</div>
       <div class="tft-calendar-legend">
-        <span><i class="is-seen"></i> Date visible in capture</span>
-        <span><i class="is-available"></i> Exact 2-seat date captured</span>
+        <span><i class="is-seen"></i> Date returned by source</span>
+        <span><i class="is-available"></i> 2-seat date available</span>
       </div>
       ${meals ? `<div class="tft-calendar-meals">${meals}</div>` : ""}
     </div>
@@ -3757,7 +3997,7 @@ function renderTableForTwoCard() {
     tableForTwoFocusCard.innerHTML = `
       <div class="focus-kicker">Official roster</div>
       <h3 class="focus-title">Select a venue</h3>
-      <p class="focus-summary">This section shows the official Table for Two venue roster. Availability is a separate cache and is only shown where a slot check has been captured.</p>
+      <p class="focus-summary">This section shows the official Table for Two venue roster with cached DiningCity AMEXPlatSG availability where the source returns slots.</p>
       <div class="price-grid tft-status-grid">
         <div class="price-card">
           <span class="price-label">Roster</span>
@@ -3765,12 +4005,12 @@ function renderTableForTwoCard() {
           <div class="price-raw">Official Amex source checked ${escapeHtml(payload.last_verified_at ? formatTimestamp(payload.last_verified_at) : "pending")}.</div>
         </div>
         <div class="price-card">
-          <span class="price-label">Availability cache</span>
-          <div class="price-tier">Not connected for full roster</div>
-          <div class="price-raw">Only captured app checks are shown here. Public DiningCity availability is not treated as Table for Two inventory.</div>
+          <span class="price-label">Availability source</span>
+          <div class="price-tier">${escapeHtml(payload.availability_source?.project || "AMEXPlatSG")}</div>
+          <div class="price-raw">${escapeHtml(payload.availability_last_checked_at ? `Checked ${formatTimestamp(payload.availability_last_checked_at)}.` : "Availability check pending.")}</div>
         </div>
       </div>
-      <div class="focus-note">Slot coverage: only captured app checks are shown today. Once an approved full-roster cache source exists, this view can refresh every 5–10 minutes and flag stale slots after 30 minutes.</div>
+      <div class="focus-note">Slot coverage: DiningCity AMEXPlatSG availability is cached here and marked stale after 30 minutes. Complete booking and voucher redemption in the Amex Experiences App.</div>
       ${reviewNote}
       <div class="focus-actions">
         <a class="inline-link primary-action" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Official Table for Two page</a>
@@ -3808,7 +4048,7 @@ function renderTableForTwoCard() {
     ? availability.meals.map((meal) => `
       <div class="focus-row">
         <span class="focus-label">${escapeHtml(meal.meal || "Meal")}</span>
-        <span>${escapeHtml(meal.status === "available" ? `${meal.seats || 2} seats at ${(meal.times || []).join(", ")}${meal.date ? ` on ${meal.date}` : ""}` : `No seats captured${meal.date ? ` on ${meal.date}` : ""}`)}</span>
+        <span>${escapeHtml(meal.status === "available" ? `${meal.seats || 2} seats at ${(meal.times || []).join(", ")}${tableForTwoMealDateSummary(meal)}` : `No 2-seat slots${tableForTwoMealDateSummary(meal)}`)}</span>
       </div>
     `).join("")
     : "";
@@ -3829,10 +4069,10 @@ function renderTableForTwoCard() {
       <div class="price-card">
         <span class="price-label">Booking source</span>
         <div class="price-tier">${escapeHtml(record.booking_channel || payload.booking_channel || "Amex Experiences App")}</div>
-        <div class="price-raw">Book inside the Amex Experiences App. Public DiningCity pages are informational only and may not match Table for Two inventory.</div>
+        <div class="price-raw">Book inside the Amex Experiences App. This cache reads DiningCity's AMEXPlatSG project, not generic public restaurant slots.</div>
       </div>
       <div class="price-card">
-        <span class="price-label">Captured availability</span>
+        <span class="price-label">Cached availability</span>
         <div class="price-tier">${escapeHtml(tableForTwoAvailabilityLabel(record))}</div>
         <div class="price-raw">${escapeHtml(tableForTwoAvailabilityDetailLine(record))}</div>
       </div>
@@ -3847,7 +4087,7 @@ function renderTableForTwoCard() {
         <span>${escapeHtml(tableForTwoFreshnessLabel(record))}</span>
       </div>
       ${mealRows}
-      <div class="focus-note">Source confidence: the venue roster is official Amex source data; availability is cache-only from screenshots or local checks and is not a live public feed.</div>
+      <div class="focus-note">Source confidence: the venue roster is official Amex source data; availability is from DiningCity's AMEXPlatSG project and should be reconfirmed in the app before booking.</div>
       ${record.map_pin_note ? `<div class="focus-note">${escapeHtml(record.map_pin_note)}</div>` : ""}
       <div class="focus-note">${escapeHtml(availability.notes ? availability.notes.join(" ") : "Availability should be reconfirmed in the Amex Experiences App before booking.")}</div>
     </div>
@@ -3949,7 +4189,7 @@ function createLoveDiningMarker(record) {
   const color = record.type === "hotel" ? "#9b6bd6" : "#e06b8b";
 
   // Use a custom div icon instead of circleMarker which doesn't render reliably
-  const marker = L.marker([record.lat, (record.lng || record.lon)], {
+  const marker = L.marker(latLngForRecord(record), {
     icon: L.divIcon({
       html: `<div style="width: 16px; height: 16px; border-radius: 50%; background: ${color}; border: 2px solid #091018; opacity: 0.9; cursor: pointer;"></div>`,
       iconSize: [16, 16],
@@ -4004,7 +4244,7 @@ function fitLoveDiningMap() {
   if (!hasLeaflet || !loveMap) return;
   const latLngs = state.loveDiningFiltered
     .filter((r) => loveDiningHasMapPin(r))
-    .map((r) => [r.lat, r.lon]);
+    .map((r) => latLngForRecord(r));
   if (!latLngs.length) return;
   if (latLngs.length === 1) {
     loveMap.setView(latLngs[0], 15);
@@ -4015,7 +4255,7 @@ function fitLoveDiningMap() {
 
 function focusLoveDiningOnMap(record) {
   if (!hasLeaflet || !loveMap || !loveDiningHasMapPin(record)) return;
-  loveMap.setView([record.lat, (record.lng || record.lon)], 14);
+  loveMap.setView(latLngForRecord(record), 14);
 }
 
 function normalizeInlineText(value) {
@@ -4056,11 +4296,11 @@ function loveDiningHasMultipleLocations(record) {
 
 function loveDiningShouldHideMapPin(record) {
   if (record.location_pin_hidden === true) return true;
-  return loveDiningAddressBlockCount(record) > 1;
+  return loveDiningHasMultipleLocations(record);
 }
 
 function loveDiningHasMapPin(record) {
-  return record.lat != null && record.lon != null && !loveDiningShouldHideMapPin(record);
+  return hasCoordinates(record) && !loveDiningShouldHideMapPin(record);
 }
 
 function loveDiningTermsUrl(record) {
@@ -4561,6 +4801,7 @@ function applyRoute(routeId) {
     state.tableForTwoActiveId = null;
     refreshTableForTwoCategoryOptions();
     filterTableForTwo();
+    ensureTableForTwoLiveRefresh();
     if (hasLeaflet && tableForTwoMap) {
       setTimeout(() => {
         tableForTwoMap.invalidateSize();
@@ -4637,19 +4878,20 @@ async function init() {
     tableForTwoResponse,
     ratingsResponse,
   ] = await Promise.all([
-    fetch(DATA_URL),
+    fetch(DATA_URL).catch(() => null),
     fetch(JAPAN_META_URL).catch(() => null),
     fetch(GLOBAL_DATA_URL).catch(() => null),
     fetch(GLOBAL_META_URL).catch(() => null),
-    fetch(STAYS_DATA_URL),
+    fetch(STAYS_DATA_URL).catch(() => null),
     fetch(STAYS_META_URL).catch(() => null),
     fetch(LOVE_DINING_DATA_URL).catch(() => null),
     fetch(LOVE_DINING_META_URL).catch(() => null),
     fetch(TABLE_FOR_TWO_DATA_URL).catch(() => null),
     fetch(GOOGLE_RATINGS_URL).catch(() => null),
   ]);
-  if (!restaurantResponse.ok) throw new Error(`Failed to load restaurant data: ${restaurantResponse.status}`);
-  state.restaurants = await restaurantResponse.json();
+  if (restaurantResponse && restaurantResponse.ok) {
+    state.restaurants = await restaurantResponse.json();
+  }
   if (japanMetaResponse && japanMetaResponse.ok) {
     state.japanSourceMeta = await japanMetaResponse.json();
   }

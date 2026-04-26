@@ -50,7 +50,7 @@ CLOSING_NOTES: dict[str, str] = {
     "Sen Of Japan": "Temporarily closed for renovation 8 April – 30 June 2026",
 }
 
-PRESERVED_ENRICHMENT_FIELDS = ("lat", "lon")
+PRESERVED_ENRICHMENT_FIELDS = ("lat", "lng")
 
 
 def normalize_inline_text(value: str | None) -> str:
@@ -103,11 +103,16 @@ def address_block_count(address: str | None) -> int:
 
 
 def annotate_location_metadata(record: dict) -> None:
+    address = normalize_inline_text(record.get("address")).lower()
+    has_branch_directory_address = "full list of locations" in address
     multi_location = (
-        phone_count(record.get("phone")) > 1
-        and (
-            repeated_name_in_notes(record.get("name"), record.get("notes"))
-            or address_block_count(record.get("address")) > 1
+        has_branch_directory_address
+        or (
+            phone_count(record.get("phone")) > 1
+            and (
+                repeated_name_in_notes(record.get("name"), record.get("notes"))
+                or address_block_count(record.get("address")) > 1
+            )
         )
     )
     if not multi_location:
@@ -133,10 +138,11 @@ def preserve_existing_enrichment(records: list[dict]) -> list[dict]:
         if not old:
             continue
         for field in PRESERVED_ENRICHMENT_FIELDS:
-            if record.get("location_pin_hidden") and field in ("lat", "lon"):
+            if record.get("location_pin_hidden") and field in ("lat", "lng"):
                 continue
-            if field in old and field not in record:
-                record[field] = old[field]
+            old_value = old.get("lon") if field == "lng" and "lng" not in old else old.get(field)
+            if old_value is not None and field not in record:
+                record[field] = old_value
     return records
 
 
@@ -144,7 +150,7 @@ def official_record_projection(record: dict) -> dict:
     return {
         key: value
         for key, value in record.items()
-        if key not in PRESERVED_ENRICHMENT_FIELDS and key not in {"lat", "lon"}
+        if key not in PRESERVED_ENRICHMENT_FIELDS and key not in {"lat", "lng", "lon"}
     }
 
 
@@ -516,7 +522,7 @@ def _nominatim(query: str) -> tuple[float, float] | None:
 
 
 def geocode_address(address: str, cache: dict) -> tuple[float, float] | None:
-    """Geocode a Singapore address using Nominatim. Returns (lat, lon) or None.
+    """Geocode a Singapore address using Nominatim. Returns (lat, lng) or None.
 
     Tries multiple strategies:
     1. Singapore postal code (most reliable)
@@ -559,7 +565,7 @@ def geocode_address(address: str, cache: dict) -> tuple[float, float] | None:
 
 
 def geocode_all(records: list[dict], skip: bool = False) -> list[dict]:
-    """Add lat/lon to every record. Uses a file cache to avoid re-fetching."""
+    """Add lat/lng to every record. Uses a file cache to avoid re-fetching."""
     if skip:
         return records
 
@@ -571,10 +577,13 @@ def geocode_all(records: list[dict], skip: bool = False) -> list[dict]:
     for i, rec in enumerate(records, 1):
         if rec.get("location_pin_hidden"):
             rec.pop("lat", None)
+            rec.pop("lng", None)
             rec.pop("lon", None)
             print(f"  [{i}/{total}] {rec['name']} — multiple outlet bundle, skipping single-pin geocode")
             continue
-        if rec.get("lat") and rec.get("lon"):
+        if rec.get("lat") and (rec.get("lng") or rec.get("lon")):
+            if "lng" not in rec and rec.get("lon") is not None:
+                rec["lng"] = rec.pop("lon")
             continue
         addr = rec.get("address", "")
         if not addr:
@@ -584,7 +593,7 @@ def geocode_all(records: list[dict], skip: bool = False) -> list[dict]:
         result = geocode_address(addr, cache)
         if result:
             rec["lat"] = result[0]
-            rec["lon"] = result[1]
+            rec["lng"] = result[1]
             print(f"  [{i}/{total}] {rec['name']} → {result[0]:.4f}, {result[1]:.4f}")
         else:
             print(f"  [{i}/{total}] {rec['name']} — geocode failed for: {addr}")
