@@ -101,6 +101,9 @@ python3 scripts/source_change_alert.py --program "Plat Stay" --meta data/plat-st
 - `refresh-table-for-two.yml`: daily public Table for Two roster and baseline
   `AMEXPlatSG` availability refresh at `01:30 UTC`. The browser also refreshes
   Table for Two availability while the page is open.
+- `table-for-two-alerts.yml`: twice-hourly Table for Two availability refresh
+  and SMTP alert sender. It reads signup rows from a configured CSV endpoint,
+  sends only newly matched slots, and stores salted sent-key hashes.
 - `refresh-global-dining.yml`: monthly Amex Global/Local Dining refresh on the
   first day of the month at `01:00 UTC`.
 - Source-change workflows open/update GitHub Issues labelled `data-alert` when
@@ -143,6 +146,34 @@ Current coordinate audit notes:
   complete booking and voucher redemption in the Amex Experiences App.
 - A real Table for Two waitlist/alert feature needs a backend or scheduled
   notifier to store user preferences and send notifications after the browser
-  closes. The current static page only does in-page refresh while open.
+  closes. The included GitHub Actions notifier can poll a Google Form/Sheet
+  CSV endpoint and send through SMTP, but the signup storage still lives outside
+  GitHub Pages.
 - Prefer official Amex/Pocket Concierge sources for facts; enrichments should be
   labelled and easy to override.
+
+## Table for Two Email Alerts
+
+The static site cannot store visitor emails by itself. For a Google-based setup,
+create a Google Form that collects email, party size, dates, sessions, and
+venues, link it to a Sheet, then expose the responses to the alert workflow via
+a CSV endpoint. Use an Apps Script endpoint with a secret token for private
+responses; a published CSV link is simpler but exposes emails to anyone who has
+the URL.
+
+Set these repository secrets before enabling the scheduled workflow:
+
+```text
+TABLE_FOR_TWO_ALERTS_CSV_URL=https://script.google.com/.../exec?token=...
+ALERT_HASH_SALT=<random long string>
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=dinnertime@kooexperience.com
+SMTP_PASS=<Google app password or SMTP relay password>
+SMTP_FROM=Dinnertime <dinnertime@kooexperience.com>
+SMTP_REPLY_TO=<optional reply address>
+```
+
+For Google Workspace, make sure `dinnertime@kooexperience.com` is a real mailbox
+or configured send-as alias, 2-step verification/app passwords or SMTP relay are
+allowed, and the domain has Google SPF/DKIM/DMARC records.

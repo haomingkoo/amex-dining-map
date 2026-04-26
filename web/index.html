@@ -821,6 +821,14 @@
                 </div>
               </div>
 
+              <div class="tft-alert-panel" id="tft-alert-signup-panel" hidden>
+                <div>
+                  <h3>Booking alerts</h3>
+                  <p>Get an email when cached Table for Two slots match your dates, session, venue, and party size.</p>
+                </div>
+                <a class="inline-link primary-action compact" id="tft-alert-signup-link" href="#" target="_blank" rel="noopener">Create alert</a>
+              </div>
+
               <section class="toolbar tft-toolbar panel-surface">
                 <label class="search-wrap">
                   <span class="label">Search</span>
@@ -851,9 +859,7 @@
 
                 <label class="filter-wrap">
                   <span class="label">Date</span>
-                  <select id="tft-date-filter">
-                    <option value="">Any returned date</option>
-                  </select>
+                  <input id="tft-date-filter" type="date" />
                 </label>
 
                 <label class="filter-wrap">
@@ -868,8 +874,8 @@
                 <label class="filter-wrap">
                   <span class="label">Availability</span>
                   <select id="tft-availability-filter">
-                    <option value="available" selected>Party size available</option>
-                    <option value="">All states</option>
+                    <option value="" selected>All states</option>
+                    <option value="available">Matching slots</option>
                     <option value="no_seats">No matching slots</option>
                     <option value="stale">Stale check</option>
                     <option value="unknown">Not checked</option>

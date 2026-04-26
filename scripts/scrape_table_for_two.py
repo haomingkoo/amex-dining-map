@@ -659,6 +659,7 @@ def build_payload(existing_payload: dict | None = None) -> dict:
         "official_url": OFFICIAL_URL,
         "terms_url": TERMS_URL,
         "faq_url": FAQ_URL,
+        "alert_signup_url": (existing_payload or {}).get("alert_signup_url", ""),
         "participating_merchants_image_url": participating_url,
         "voucher_cycles_image_url": cycles_url,
         "source_images": {

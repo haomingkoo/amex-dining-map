@@ -1,0 +1,85 @@
+name: Table for Two Alerts
+
+on:
+  schedule:
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: table-for-two-alerts
+  cancel-in-progress: true
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check alert configuration
+        id: config
+        env:
+          TABLE_FOR_TWO_ALERTS_CSV_URL: ${{ secrets.TABLE_FOR_TWO_ALERTS_CSV_URL }}
+          ALERT_HASH_SALT: ${{ secrets.ALERT_HASH_SALT }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: |
+          if [ -n "$TABLE_FOR_TWO_ALERTS_CSV_URL" ] && [ -n "$ALERT_HASH_SALT" ] && [ -n "$SMTP_HOST" ] && [ -n "$SMTP_USER" ] && [ -n "$SMTP_PASS" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Alert secrets are not fully configured; skipping email run."
+          fi
+
+      - name: Refresh Table for Two availability
+        if: steps.config.outputs.enabled == 'true'
+        run: python3 scripts/scrape_table_for_two.py
+
+      - name: Send matching alert emails
+        if: steps.config.outputs.enabled == 'true'
+        env:
+          TABLE_FOR_TWO_ALERTS_CSV_URL: ${{ secrets.TABLE_FOR_TWO_ALERTS_CSV_URL }}
+          ALERT_HASH_SALT: ${{ secrets.ALERT_HASH_SALT }}
+          ALERT_SITE_URL: https://amex-explorer.kooexperience.com/#/table-for-two
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          SMTP_REPLY_TO: ${{ secrets.SMTP_REPLY_TO }}
+        run: python3 scripts/send_table_for_two_alerts.py
+
+      - name: Commit refreshed alert state
+        if: steps.config.outputs.enabled == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/table-for-two.json
+          if [ -f data/table-for-two-alert-sent.json ]; then
+            git add data/table-for-two-alert-sent.json
+          fi
+          if git diff --cached --quiet; then
+            echo "No Table for Two alert state changes detected."
+            exit 0
+          fi
+          git commit -m "chore: refresh table for two alert state"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push failed on attempt ${attempt}; retrying after remote sync."
+            sleep $((attempt * 5))
+          done
+          exit 1

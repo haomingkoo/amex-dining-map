@@ -100,7 +100,7 @@ const PROGRAMS = {
     label: "Dining",
     title: "Dining",
     description:
-      "Amex Platinum dining directory. Singapore entries are Local Dining Credit; the abroad Global Dining Credit applies outside Singapore.",
+      "Amex Platinum dining partners, split by local Singapore credit and overseas Global Dining Credit.",
     defaultRoute: "dining/world",
   },
   stays: {
@@ -124,7 +124,7 @@ const PROGRAMS = {
     label: "Table for Two",
     title: "Table for Two",
     description:
-      "Singapore Platinum set-menu dining benefit. Public roster and T&Cs are source-backed; availability is cached from DiningCity AMEXPlatSG.",
+      "Singapore Platinum set-menu roster with cached AMEXPlatSG slot availability.",
     defaultRoute: "table-for-two",
   },
   alerts: {
@@ -664,6 +664,8 @@ const tableForTwoResetFiltersBtn = document.getElementById("tft-reset-filters");
 const tableForTwoResultsList = document.getElementById("tft-results-list");
 const tableForTwoResultsText = document.getElementById("tft-results-text");
 const tableForTwoFocusCard = document.getElementById("tft-focus-card");
+const tableForTwoAlertSignupPanel = document.getElementById("tft-alert-signup-panel");
+const tableForTwoAlertSignupLink = document.getElementById("tft-alert-signup-link");
 
 function updateThemeToggle(theme) {
   if (!themeToggleButton) return;
@@ -3574,21 +3576,17 @@ function refreshTableForTwoDateOptions() {
     session: tableForTwoSessionFilter?.value || "",
     day: tableForTwoDayFilter?.value || "",
   });
-  tableForTwoDateFilter.innerHTML = '<option value="">Any returned date</option>';
-  dates.forEach((dateValue) => {
-    const option = document.createElement("option");
-    option.value = dateValue;
-    option.textContent = tableForTwoDateOptionLabel(dateValue);
-    tableForTwoDateFilter.appendChild(option);
-  });
-  if (current) {
-    if (!dates.includes(current)) {
-      const option = document.createElement("option");
-      option.value = current;
-      option.textContent = `${tableForTwoDateOptionLabel(current)} · no current match`;
-      tableForTwoDateFilter.appendChild(option);
-    }
-    tableForTwoDateFilter.value = current;
+  tableForTwoDateFilter.min = dates[0] || "";
+  tableForTwoDateFilter.max = dates[dates.length - 1] || "";
+  tableForTwoDateFilter.value = current;
+}
+
+function renderTableForTwoAlertSignup() {
+  if (!tableForTwoAlertSignupPanel || !tableForTwoAlertSignupLink) return;
+  const signupUrl = tableForTwoPayload().alert_signup_url || "";
+  tableForTwoAlertSignupPanel.hidden = !signupUrl;
+  if (signupUrl) {
+    tableForTwoAlertSignupLink.href = signupUrl;
   }
 }
 
@@ -3641,7 +3639,7 @@ function updateTableForTwoMarkerStyles() {
       applySelectedMarkerStyle(iconEl);
       return;
     }
-    const record = state.tableForTwoFiltered.find((item) => item.id === id);
+    const record = tableForTwoVenues().find((item) => item.id === id);
     applyUnselectedMarkerStyle(iconEl, tableForTwoPinColor(record));
   });
 }
@@ -3649,7 +3647,7 @@ function updateTableForTwoMarkerStyles() {
 function renderTableForTwoMarkers() {
   if (!hasLeaflet || !tableForTwoMap) return;
   clearTableForTwoMarkers();
-  state.tableForTwoFiltered.forEach((record) => {
+  tableForTwoVenues().forEach((record) => {
     const marker = createTableForTwoMarker(record);
     if (!marker) return;
     marker.addTo(tableForTwoMap);
@@ -3660,7 +3658,7 @@ function renderTableForTwoMarkers() {
 
 function fitTableForTwoMap() {
   if (!hasLeaflet || !tableForTwoMap) return;
-  const latLngs = state.tableForTwoFiltered
+  const latLngs = tableForTwoVenues()
     .filter((record) => tableForTwoHasMapPin(record))
     .map((record) => latLngForRecord(record));
   if (!latLngs.length) {
@@ -3711,6 +3709,13 @@ function filterTableForTwo() {
     if (residualSearch && !fuzzyMatchSearch(record.search_text || tableForTwoSearchText(record), residualSearch)) return false;
     return true;
   });
+  const availabilityRank = { available: 0, stale: 1, no_seats: 2, unknown: 3 };
+  state.tableForTwoFiltered.sort((a, b) => {
+    const rankA = availabilityRank[tableForTwoAvailabilityKey(a, filters)] ?? 4;
+    const rankB = availabilityRank[tableForTwoAvailabilityKey(b, filters)] ?? 4;
+    if (rankA !== rankB) return rankA - rankB;
+    return (a.app_name || a.name || "").localeCompare(b.app_name || b.name || "");
+  });
 
   if (state.tableForTwoActiveId && !state.tableForTwoFiltered.some((record) => record.id === state.tableForTwoActiveId)) {
     state.tableForTwoActiveId = null;
@@ -3722,10 +3727,11 @@ function filterTableForTwo() {
   const freshAvailableCount = venues.filter((record) => tableForTwoAvailabilityKey(record, filters) === "available").length;
   const freshNoSeatCount = venues.filter((record) => tableForTwoAvailabilityKey(record, filters) === "no_seats").length;
   const staleCaptureCount = venues.filter((record) => tableForTwoAvailabilityKey(record, filters) === "stale").length;
+  const staleMatchCount = venues.filter((record) => (
+    tableForTwoAvailabilityKey(record, filters) === "stale"
+    && tableForTwoMatchingSlots(record, filters).length > 0
+  )).length;
   const pendingCount = venues.filter((record) => tableForTwoAvailabilityKey(record, filters) === "unknown").length;
-  const freshCaptureLabel = freshAvailableCount === 1 ? "venue available" : "venues available";
-  const noSeatLabel = freshNoSeatCount === 1 ? "venue with no matching slot" : "venues with no matching slots";
-  const staleCaptureLabel = staleCaptureCount === 1 ? "stale check" : "stale checks";
   const filterLabel = [
     `${partySize} pax`,
     session || "",
@@ -3739,16 +3745,24 @@ function filterTableForTwo() {
   const availabilityCheckedText = latestAvailabilityCheckedAt
     ? `Availability checked ${formatTimestamp(latestAvailabilityCheckedAt)}`
     : "Availability check pending";
-  tableForTwoSummaryStripText.textContent =
-    shown === total
-      ? `${total} official roster venues · ${filterLabel} · ${freshAvailableCount} ${freshCaptureLabel} · ${freshNoSeatCount} ${noSeatLabel} · ${staleCaptureCount} ${staleCaptureLabel} · ${pendingCount} not checked · ${availabilityCheckedText} · ${verifiedText}.`
-      : `${shown} of ${total} venues · ${filterLabel} · ${availabilityCheckedText} · ${verifiedText}.`;
+  const statusBits = [
+    `${shown === total ? total : `${shown} of ${total}`} roster venues`,
+    filterLabel,
+    freshAvailableCount ? `${freshAvailableCount} with matching slots` : "",
+    staleMatchCount ? `${staleMatchCount} cached matches pending refresh` : "",
+    freshNoSeatCount ? `${freshNoSeatCount} no match` : "",
+    staleCaptureCount ? `${staleCaptureCount} stale` : "",
+    pendingCount ? `${pendingCount} not checked` : "",
+    availabilityCheckedText,
+    verifiedText,
+  ].filter(Boolean);
+  tableForTwoSummaryStripText.textContent = `${statusBits.join(" · ")}.`;
   tableForTwoListSummary.textContent =
-    "Filter by party size, session, and returned date. Results are slot-level matches from cached AMEXPlatSG availability; bookings still require the Amex Experiences App.";
+    "Start with all roster venues, then narrow by party size, date, session, status, or category.";
   if (tableForTwoMapSummary) {
     const mappedCount = venues.filter((record) => tableForTwoHasMapPin(record)).length;
     tableForTwoMapSummary.textContent =
-      `${mappedCount}/${total} roster venues mapped. Pin colour follows the current party-size/date filters.`;
+      `${mappedCount}/${total} roster venues mapped. Green pins match the current party/date; amber pins need checking or have no matching slot.`;
   }
   tableForTwoResultsText.textContent = state.tableForTwoActiveId
     ? "Selected venue · Table for Two"
@@ -3888,7 +3902,9 @@ function tableForTwoLatestAvailabilityCheckedAt(records = tableForTwoVenues()) {
 
 function tableForTwoRecordMatchesFilters(record, filters) {
   const key = tableForTwoAvailabilityKey(record, filters);
-  if (filters.availability === "available") return key === "available";
+  if (filters.availability === "available") {
+    return key === "available" || (key === "stale" && tableForTwoMatchingSlots(record, filters).length > 0);
+  }
   if (filters.availability === "no_seats") return key === "no_seats";
   if (filters.availability === "stale") return key === "stale";
   if (filters.availability === "unknown") return key === "unknown";
@@ -3911,12 +3927,30 @@ function tableForTwoAvailabilityBadgeClass(record, filters = state.tableForTwoCu
   return "";
 }
 
-function tableForTwoSlotDateSummary(slots) {
-  const dates = uniqueValues(slots.map((slot) => slot.date).filter(Boolean));
-  if (!dates.length) return "";
-  if (dates.length === 1) return `on ${dates[0]}`;
-  if (dates.length <= 3) return `on ${dates.join(", ")}`;
-  return `on ${dates.length} dates from ${dates[0]} to ${dates[dates.length - 1]}`;
+function tableForTwoShortDate(dateValue) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue || "")) return dateValue || "";
+  const [year, month, day] = dateValue.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString("en-SG", {
+    day: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+  });
+}
+
+function tableForTwoMonthLabel(monthKey) {
+  const [year, month] = monthKey.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString("en-SG", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function tableForTwoDateRangeSummary(dates, fallback = "No availability calendar yet") {
+  const sortedDates = uniqueValues(dates.filter(Boolean)).sort();
+  if (!sortedDates.length) return fallback;
+  if (sortedDates.length === 1) return tableForTwoDateOptionLabel(sortedDates[0]);
+  return `${sortedDates.length} dates · ${tableForTwoShortDate(sortedDates[0])} to ${tableForTwoShortDate(sortedDates[sortedDates.length - 1])}`;
 }
 
 function tableForTwoSlotGroupSummaries(slots) {
@@ -3931,8 +3965,71 @@ function tableForTwoSlotGroupSummaries(slots) {
     const maxSeats = Math.max(...mealSlots.map((slot) => tableForTwoSlotMaxSeatValue(slot)));
     const timeText = times.length ? times.join(", ") : `${mealSlots.length} slots`;
     const moreText = uniqueValues(mealSlots.map((slot) => slot.time).filter(Boolean)).length > times.length ? " +" : "";
-    return `${meal}: ${timeText}${moreText} · ${tableForTwoSlotDateSummary(mealSlots)} · up to ${maxSeats} pax`;
+    const dateText = tableForTwoDateRangeSummary(mealSlots.map((slot) => slot.date).filter(Boolean), "");
+    return `${meal}: ${timeText}${moreText}${dateText ? ` · ${dateText}` : ""} · up to ${maxSeats} pax`;
   });
+}
+
+function tableForTwoSessionLabel(meal) {
+  const normalized = normalizeInlineText(meal).toLowerCase();
+  if (normalized === "lunch") return "Lunch";
+  if (normalized === "dinner") return "Dinner";
+  return meal || "Session";
+}
+
+function tableForTwoSessionShortLabel(meal) {
+  const label = tableForTwoSessionLabel(meal);
+  if (label === "Lunch") return "L";
+  if (label === "Dinner") return "D";
+  return label.slice(0, 1).toUpperCase();
+}
+
+function tableForTwoSlotsByDate(slots) {
+  const byDate = new Map();
+  slots.forEach((slot) => {
+    if (!slot.date) return;
+    if (!byDate.has(slot.date)) byDate.set(slot.date, []);
+    byDate.get(slot.date).push(slot);
+  });
+  return byDate;
+}
+
+function tableForTwoDateSessionSummaries(slots) {
+  const grouped = new Map();
+  slots.forEach((slot) => {
+    const meal = tableForTwoSessionLabel(slot.meal);
+    if (!grouped.has(meal)) grouped.set(meal, []);
+    grouped.get(meal).push(slot);
+  });
+  return [...grouped.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([meal, mealSlots]) => {
+      const times = uniqueValues(mealSlots.map((slot) => slot.time).filter(Boolean));
+      const maxSeats = Math.max(...mealSlots.map((slot) => tableForTwoSlotMaxSeatValue(slot)));
+      const visibleTimes = times.slice(0, 4).join(", ");
+      const more = times.length > 4 ? ` +${times.length - 4}` : "";
+      return {
+        meal,
+        label: `${meal}: ${visibleTimes || `${mealSlots.length} slots`}${more}`,
+        shortLabel: `${tableForTwoSessionShortLabel(meal)}${times[0] ? ` ${times[0]}` : ""}`,
+        maxSeats,
+      };
+    });
+}
+
+function tableForTwoCompactAvailabilityLine(record, filters = state.tableForTwoCurrentFilters || {}) {
+  const key = tableForTwoAvailabilityKey(record, filters);
+  const partySize = Number(filters.partySize || tableForTwoSelectedPartySize());
+  const slots = tableForTwoMatchingSlots(record, filters);
+  if (!slots.length) {
+    if (key === "unknown") return "Not checked yet";
+    if (key === "stale") return "Stale check; refresh before trusting slots";
+    return `No ${partySize}-pax slots for current filters`;
+  }
+  const dates = uniqueValues(slots.map((slot) => slot.date).filter(Boolean)).sort();
+  const sessions = uniqueValues(slots.map((slot) => tableForTwoSessionLabel(slot.meal)).filter(Boolean));
+  const maxSeats = Math.max(...slots.map((slot) => tableForTwoSlotMaxSeatValue(slot)));
+  return `${tableForTwoDateRangeSummary(dates)} · ${sessions.join(" + ")} · up to ${maxSeats} pax`;
 }
 
 function tableForTwoBestAvailabilityLine(record, filters = state.tableForTwoCurrentFilters || {}) {
@@ -3982,10 +4079,53 @@ function tableForTwoDateListSummary(dates, prefix = "Dates") {
 function tableForTwoDateSummary(record, filters = state.tableForTwoCurrentFilters || {}) {
   const availability = record.availability || {};
   const matchingDates = uniqueValues(tableForTwoMatchingSlots(record, filters).map((slot) => slot.date).filter(Boolean));
-  if (matchingDates.length) return tableForTwoDateListSummary(matchingDates, "Matching dates");
+  if (matchingDates.length) return tableForTwoDateRangeSummary(matchingDates);
   const visibleDates = uniqueValues(availability.visible_dates || []);
-  if (visibleDates.length) return tableForTwoDateListSummary(visibleDates, "Calendar dates");
+  if (visibleDates.length) return tableForTwoDateRangeSummary(visibleDates, "No matching dates");
   return availability.date_label || "No availability calendar yet";
+}
+
+function tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedDate = "") {
+  const [year, month] = monthKey.split("-").map(Number);
+  const firstDay = new Date(Date.UTC(year, month - 1, 1));
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const leadingBlanks = firstDay.getUTCDay();
+  const cells = [];
+  for (let index = 0; index < leadingBlanks; index += 1) {
+    cells.push('<div class="tft-calendar-cell is-empty" aria-hidden="true"></div>');
+  }
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const dateValue = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const slots = slotsByDate.get(dateValue) || [];
+    const summaries = tableForTwoDateSessionSummaries(slots);
+    const title = summaries.map((summary) => summary.label).join(" | ");
+    const sessionPills = summaries
+      .slice(0, 2)
+      .map((summary) => `<span class="tft-session-pill">${escapeHtml(summary.shortLabel)}</span>`)
+      .join("");
+    const moreSessions = summaries.length > 2 ? '<span class="tft-session-pill">+</span>' : "";
+    const classes = [
+      "tft-calendar-cell",
+      slots.length ? "is-available" : "",
+      selectedDate === dateValue ? "is-selected" : "",
+    ].filter(Boolean).join(" ");
+    cells.push(`
+      <div class="${classes}"${title ? ` title="${escapeHtml(title)}"` : ""}>
+        <span class="tft-day-number">${day}</span>
+        ${slots.length ? `<span class="tft-day-slots">${sessionPills}${moreSessions}</span>` : ""}
+      </div>
+    `);
+  }
+
+  return `
+    <section class="tft-calendar-month">
+      <h5>${escapeHtml(tableForTwoMonthLabel(monthKey))}</h5>
+      <div class="tft-calendar-weekdays" aria-hidden="true">
+        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+      </div>
+      <div class="tft-calendar-grid">${cells.join("")}</div>
+    </section>
+  `;
 }
 
 function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFilters || {}) {
@@ -4001,30 +4141,32 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
   }
 
   const dates = uniqueValues(slots.map((slot) => slot.date).filter(Boolean));
-  const shownDates = dates.slice(0, 18);
-  const dateChips = shownDates
-    .map((dateValue) => `<span class="badge green">${escapeHtml(tableForTwoDateOptionLabel(dateValue))}</span>`)
-    .join("");
-  const moreDates = dates.length > shownDates.length
-    ? `<span class="badge">+${dates.length - shownDates.length} more dates</span>`
-    : "";
-  const rows = tableForTwoSlotGroupSummaries(slots)
-    .map((line) => `<div class="focus-row"><span class="focus-label">Match</span><span>${escapeHtml(line)}</span></div>`)
+  const slotsByDate = tableForTwoSlotsByDate(slots);
+  const monthKeys = uniqueValues(dates.map((dateValue) => dateValue.slice(0, 7))).sort();
+  const monthsHtml = monthKeys
+    .map((monthKey) => tableForTwoCalendarMonthHtml(monthKey, slotsByDate, filters.date || ""))
     .join("");
 
   return `
     <div class="tft-calendar-card">
       <div class="tft-calendar-head">
         <div>
-          <div class="focus-kicker">Matching slots</div>
-          <h4>${escapeHtml(`${slots.length} slot${slots.length === 1 ? "" : "s"} for ${filters.partySize || tableForTwoSelectedPartySize()} pax`)}</h4>
+          <div class="focus-kicker">Availability calendar</div>
+          <h4>${escapeHtml(`${tableForTwoDateRangeSummary(dates)} for ${filters.partySize || tableForTwoSelectedPartySize()} pax`)}</h4>
         </div>
-        <span class="badge amber">${tableForTwoAvailabilityIsStale(record) ? "Stale check" : "Cached check"}</span>
+        <span class="badge amber">${escapeHtml(`${slots.length} slot time${slots.length === 1 ? "" : "s"}`)}</span>
       </div>
-      <div class="venue-tags">${dateChips}${moreDates}</div>
-      <div class="tft-calendar-meals">${rows}</div>
+      <div class="tft-calendar-months">${monthsHtml}</div>
+      <div class="tft-calendar-legend">
+        <span><i class="is-available"></i>Available date</span>
+        <span><i class="is-selected"></i>Selected date</span>
+      </div>
     </div>
   `;
+}
+
+function tableForTwoMenuSourceUrl(menu) {
+  return menu?.source_url || menu?.url || menu?.public_url || "";
 }
 
 function renderTableForTwoList() {
@@ -4040,8 +4182,9 @@ function renderTableForTwoList() {
     const displayName = record.app_name || record.name;
     const filters = state.tableForTwoCurrentFilters || {};
     const availabilityBadgeClass = tableForTwoAvailabilityBadgeClass(record, filters);
+    const menuSourceUrl = tableForTwoMenuSourceUrl(record.sample_menu);
     const tags = [
-      record.sample_menu ? '<span class="badge amber">Menu captured</span>' : "",
+      menuSourceUrl ? '<span class="badge amber">Menu linked</span>' : "",
     ]
       .filter(Boolean)
       .join("");
@@ -4055,10 +4198,10 @@ function renderTableForTwoList() {
         </div>
       </div>
       ${tags ? `<div class="venue-tags">${tags}</div>` : ""}
-      <p class="mobile-card-desc">${escapeHtml(tableForTwoBestAvailabilityLine(record, filters))}</p>
+      <p class="mobile-card-desc">${escapeHtml(tableForTwoCompactAvailabilityLine(record, filters))}</p>
       <div class="mobile-card-meta">
         <span>${escapeHtml(tableForTwoDateSummary(record, filters))}</span>
-        <span>Book in Amex app</span>
+        <span>Amex app</span>
       </div>
     `;
     card.addEventListener("click", () => {
@@ -4107,7 +4250,8 @@ function renderTableForTwoCard() {
   const displayName = record.app_name || record.name;
   const filters = state.tableForTwoCurrentFilters || {};
   const menu = record.sample_menu;
-  const menuHtml = menu
+  const menuSourceUrl = tableForTwoMenuSourceUrl(menu);
+  const menuHtml = menu && menuSourceUrl
     ? `
       <div class="focus-section tft-menu">
         <div class="focus-kicker">Captured menu</div>
@@ -4119,19 +4263,13 @@ function renderTableForTwoCard() {
           </div>
         `).join("")}
         ${menu.additional_cover_note ? `<div class="focus-note">${escapeHtml(menu.additional_cover_note)}</div>` : ""}
-        <div class="focus-note">Menu source: ${escapeHtml(menu.source || "Captured screenshot")}${menu.captured_at ? ` · ${escapeHtml(menu.captured_at)}` : ""}. Re-check inside the app before booking.</div>
+        <div class="focus-actions">
+          <a class="inline-link" href="${escapeHtml(menuSourceUrl)}" target="_blank" rel="noopener">Menu source</a>
+        </div>
       </div>
     `
     : "";
   const googleMapsUrl = googleMapsSearchUrl([displayName, "Singapore"]);
-  const matchRows = tableForTwoSlotGroupSummaries(tableForTwoMatchingSlots(record, filters))
-    .map((line) => `
-      <div class="focus-row">
-        <span class="focus-label">Match</span>
-        <span>${escapeHtml(line)}</span>
-      </div>
-    `)
-    .join("");
 
   tableForTwoFocusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(tableForTwoCategoryLabel(record.category))} / Singapore</div>
@@ -4139,7 +4277,7 @@ function renderTableForTwoCard() {
     <div class="focus-tags">
       <span class="badge ${tableForTwoAvailabilityBadgeClass(record, filters)}">${escapeHtml(tableForTwoAvailabilityLabel(record, filters))}</span>
       ${record.app_area ? `<span class="badge blue">${escapeHtml(record.app_area)}</span>` : ""}
-      ${record.sample_menu ? '<span class="badge amber">Menu captured</span>' : ""}
+      ${menuSourceUrl ? '<span class="badge amber">Menu linked</span>' : ""}
     </div>
     ${record.address ? `<div class="focus-address">${escapeHtml(record.address)}</div>` : ""}
     <div class="price-grid tft-status-grid">
@@ -4149,26 +4287,23 @@ function renderTableForTwoCard() {
         <div class="price-raw">Book and redeem inside the Amex Experiences App.</div>
       </div>
       <div class="price-card">
-        <span class="price-label">Current match</span>
+        <span class="price-label">Current filters</span>
         <div class="price-tier">${escapeHtml(tableForTwoAvailabilityLabel(record, filters))}</div>
-        <div class="price-raw">${escapeHtml(tableForTwoAvailabilityDetailLine(record, filters))}</div>
+        <div class="price-raw">${escapeHtml(tableForTwoCompactAvailabilityLine(record, filters))}</div>
       </div>
     </div>
     <div class="focus-section">
       <div class="focus-row">
-        <span class="focus-label">Dates</span>
+        <span class="focus-label">Range</span>
         <span>${escapeHtml(tableForTwoDateSummary(record, filters))}</span>
       </div>
       <div class="focus-row">
         <span class="focus-label">Refreshed</span>
         <span>${escapeHtml(tableForTwoFreshnessLabel(record))}</span>
       </div>
-      ${matchRows}
-      <div class="focus-note">Availability is from DiningCity's AMEXPlatSG project and should be reconfirmed in the app before booking.</div>
-      ${record.map_pin_note ? `<div class="focus-note">${escapeHtml(record.map_pin_note)}</div>` : ""}
     </div>
-    ${menuHtml}
     ${tableForTwoSlotMatchesHtml(record, filters)}
+    ${menuHtml}
     <div class="focus-actions">
       <a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
       ${record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.dining_city_public_url)}" target="_blank" rel="noopener">Public DiningCity page</a>` : ""}
@@ -4877,6 +5012,7 @@ function applyRoute(routeId) {
     state.tableForTwoActiveId = null;
     refreshTableForTwoCategoryOptions();
     refreshTableForTwoDateOptions();
+    renderTableForTwoAlertSignup();
     filterTableForTwo();
     ensureTableForTwoLiveRefresh();
     if (hasLeaflet && tableForTwoMap) {
@@ -5130,7 +5266,7 @@ tableForTwoDayFilter.addEventListener("change", () => {
 tableForTwoResetFiltersBtn.addEventListener("click", () => {
   tableForTwoSearchInput.value = "";
   tableForTwoCategoryFilter.value = "";
-  tableForTwoAvailabilityFilter.value = "available";
+  tableForTwoAvailabilityFilter.value = "";
   tableForTwoPartySizeFilter.value = String(TABLE_FOR_TWO_DEFAULT_PARTY_SIZE);
   tableForTwoSessionFilter.value = "";
   tableForTwoDateFilter.value = "";
