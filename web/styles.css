@@ -1323,7 +1323,8 @@ input,
 
 .search-wrap input,
 .filter-wrap select,
-.filter-wrap input[type="date"] {
+.filter-wrap input[type="date"],
+.filter-wrap input[type="number"] {
   width: 100%;
   padding: 7px 10px;
   border: 1px solid var(--surface-border-soft);
@@ -1338,7 +1339,8 @@ input,
 
 .search-wrap input:focus,
 .filter-wrap select:focus,
-.filter-wrap input[type="date"]:focus {
+.filter-wrap input[type="date"]:focus,
+.filter-wrap input[type="number"]:focus {
   outline: none;
   border-color: var(--border-strong);
   box-shadow: var(--focus-ring);

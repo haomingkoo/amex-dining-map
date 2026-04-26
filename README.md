@@ -16,7 +16,7 @@ Live site: `https://amex-explorer.kooexperience.com/`
   terms, exclusions, booking notes, and cache metadata.
 - `Table for Two`: Singapore Platinum set-menu roster from the official Amex
   page, with 18/18 mapped roster venues and DiningCity `AMEXPlatSG`
-  availability checks.
+  slot-level availability checks for party-size/date/session filtering.
 
 ## Data Trust Model
 
@@ -25,9 +25,9 @@ Live site: `https://amex-explorer.kooexperience.com/`
 - `cached`: source fetch times and hashes stored in `data/*-source.json` files
   and rendered in the UI.
 - `live-cache`: Table for Two availability from DiningCity's public
-  `AMEXPlatSG` project endpoint. The UI refreshes it while the page is open,
-  but final booking and voucher redemption still happen in the Amex Experiences
-  App.
+  `AMEXPlatSG` project endpoint. The UI stores returned slot dates, times, and
+  max party size so filters are evaluated per slot. Final booking and voucher
+  redemption still happen in the Amex Experiences App.
 - `enriched`: geocodes, Google Maps ratings, summaries, and third-party quality
   signals. These are helpful, but not the source of truth.
 - `manual`: screenshots and menu captures. These are fallback context only;
@@ -126,7 +126,7 @@ Current coordinate audit notes:
 
 - Global Dining: 1,479 mapped records, 457 records without coordinates.
 - Japan Dining: 845 mapped records, no missing coordinates.
-- Love Dining: 74 mapped records, 5 bundled/unmapped records.
+- Love Dining: 73 mapped records, 6 bundled/unmapped records.
 - Table for Two: 18 mapped records, no missing coordinates.
 - The bounds audit catches impossible country-level pins; it does not prove
   every pin is within 20m of a restaurant entrance.
@@ -141,5 +141,8 @@ Current coordinate audit notes:
   for Two availability.
 - Treat cached Table for Two availability as planning data. Users still need to
   complete booking and voucher redemption in the Amex Experiences App.
+- A real Table for Two waitlist/alert feature needs a backend or scheduled
+  notifier to store user preferences and send notifications after the browser
+  closes. The current static page only does in-page refresh while open.
 - Prefer official Amex/Pocket Concierge sources for facts; enrichments should be
   labelled and easy to override.

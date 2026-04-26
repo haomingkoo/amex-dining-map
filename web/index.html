@@ -20,7 +20,7 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
-    <link rel="stylesheet" href="./styles.css?v=20260426-2" />
+    <link rel="stylesheet" href="./styles.css?v=20260427-1" />
   </head>
   <body>
 
@@ -807,8 +807,8 @@
               </div>
               <div id="tft-map"></div>
               <div class="map-legend">
-                <span class="legend-item"><i class="legend-dot legend-tft-available"></i>Fresh 2-seat slots</span>
-                <span class="legend-item"><i class="legend-dot legend-tft-stale"></i>No seats/stale</span>
+                <span class="legend-item"><i class="legend-dot legend-tft-available"></i>Matches filters</span>
+                <span class="legend-item"><i class="legend-dot legend-tft-stale"></i>No match/stale</span>
                 <span class="legend-item"><i class="legend-dot legend-tft-pending"></i>Not checked</span>
               </div>
             </section>
@@ -828,7 +828,20 @@
                 </label>
 
                 <label class="filter-wrap">
-                  <span class="label">Free for</span>
+                  <span class="label">Party size</span>
+                  <select id="tft-party-size-filter">
+                    <option value="2" selected>2 pax</option>
+                    <option value="3">3 pax</option>
+                    <option value="4">4 pax</option>
+                    <option value="5">5 pax</option>
+                    <option value="6">6 pax</option>
+                    <option value="7">7 pax</option>
+                    <option value="8">8 pax</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap">
+                  <span class="label">Session</span>
                   <select id="tft-session-filter">
                     <option value="">Any session</option>
                     <option value="Lunch">Lunch</option>
@@ -837,8 +850,10 @@
                 </label>
 
                 <label class="filter-wrap">
-                  <span class="label">Date seen</span>
-                  <input id="tft-date-filter" type="date" />
+                  <span class="label">Date</span>
+                  <select id="tft-date-filter">
+                    <option value="">Any returned date</option>
+                  </select>
                 </label>
 
                 <label class="filter-wrap">
@@ -851,11 +866,11 @@
                 </label>
 
                 <label class="filter-wrap">
-                  <span class="label">2-seat status</span>
+                  <span class="label">Availability</span>
                   <select id="tft-availability-filter">
+                    <option value="available" selected>Party size available</option>
                     <option value="">All states</option>
-                    <option value="available">2 seats available</option>
-                    <option value="no_seats">No 2-seat slots</option>
+                    <option value="no_seats">No matching slots</option>
                     <option value="stale">Stale check</option>
                     <option value="unknown">Not checked</option>
                   </select>
@@ -947,6 +962,6 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="./app.js?v=20260426-2"></script>
+    <script src="./app.js?v=20260427-1"></script>
   </body>
 </html>

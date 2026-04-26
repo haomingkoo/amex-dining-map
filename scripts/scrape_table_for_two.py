@@ -441,18 +441,24 @@ def seat_values(slot: dict) -> set[int]:
     return normalized
 
 
-def has_minimum_seats(slot: dict, minimum: int = MIN_TABLE_FOR_TWO_SEATS) -> bool:
-    if minimum in seat_values(slot):
-        return True
+def slot_max_seats(slot: dict) -> int:
+    values = seat_values(slot)
+    listed_max = max(values) if values else 0
     try:
         total = int(slot.get("seats", {}).get("total_available_seats") or 0)
     except (TypeError, ValueError):
         total = 0
-    return total >= minimum
+    return max(listed_max, total)
+
+
+def has_minimum_seats(slot: dict, minimum: int = MIN_TABLE_FOR_TWO_SEATS) -> bool:
+    return slot_max_seats(slot) >= minimum
 
 
 def build_meals(rows: list[dict]) -> tuple[list[dict], list[str], int]:
-    grouped: dict[str, dict] = defaultdict(lambda: {"dates": set(), "times": set(), "slot_count": 0})
+    grouped: dict[str, dict] = defaultdict(
+        lambda: {"dates": set(), "times": set(), "slots": [], "slot_count": 0, "max_seats": 0}
+    )
     visible_dates = set()
     available_slot_count = 0
     for row in rows:
@@ -464,25 +470,39 @@ def build_meals(rows: list[dict]) -> tuple[list[dict], list[str], int]:
                 continue
             meal = slot.get("meal_type_text") or slot.get("meal_type") or "Session"
             time = slot.get("time")
+            max_seats = slot_max_seats(slot)
             bucket = grouped[meal]
             if date:
                 bucket["dates"].add(date)
             if time:
                 bucket["times"].add(time)
+            bucket["slots"].append(
+                {
+                    "date": date,
+                    "weekday": row.get("weekday") or "",
+                    "time": time,
+                    "meal": meal,
+                    "max_seats": max_seats,
+                }
+            )
             bucket["slot_count"] += 1
+            bucket["max_seats"] = max(bucket["max_seats"], max_seats)
             available_slot_count += 1
 
     meals = []
     for meal, bucket in sorted(grouped.items()):
         dates = sorted(bucket["dates"])
         times = sorted(bucket["times"])
+        slots = sorted(bucket["slots"], key=lambda item: f"{item.get('date') or ''} {item.get('time') or ''}")
         meals.append(
             {
                 "meal": meal,
                 "status": "available",
                 "seats": MIN_TABLE_FOR_TWO_SEATS,
+                "max_seats": bucket["max_seats"],
                 "dates": dates,
                 "times": times[:MAX_AVAILABILITY_TIMES],
+                "slots": slots,
                 "slot_count": bucket["slot_count"],
             }
         )
@@ -519,14 +539,14 @@ def live_availability_for_venue(venue: dict, checked_at: str) -> tuple[dict | No
             for meal in meals
         )
         summary = (
-            f"{len(available_dates)} dates with 2-seat Table for Two slots returned "
+            f"{len(available_dates)} dates with Table for Two slots returned "
             f"by DiningCity {DININGCITY_PROJECT}"
             f"{f' ({meal_summary})' if meal_summary else ''}."
         )
         status = "live_available"
     else:
         summary = (
-            f"No 2-seat Table for Two slots were returned by DiningCity {DININGCITY_PROJECT} "
+            f"No Table for Two slots were returned by DiningCity {DININGCITY_PROJECT} "
             "at this check."
         )
         status = "live_no_seats"
@@ -672,8 +692,8 @@ def build_payload(existing_payload: dict | None = None) -> dict:
             "github_public_refresh": "GitHub can refresh the official roster and DiningCity AMEXPlatSG availability without storing user/session-specific app data.",
         },
         "availability_model": {
-            "live_available": "Two-seat availability returned by DiningCity's public AMEXPlatSG project endpoint.",
-            "live_no_seats": "DiningCity's public AMEXPlatSG project endpoint returned no two-seat slots at check time.",
+            "live_available": "Slot availability returned by DiningCity's public AMEXPlatSG project endpoint.",
+            "live_no_seats": "DiningCity's public AMEXPlatSG project endpoint returned no qualifying slots at check time.",
             "captured_available": "Legacy/manual availability seen in an Amex Experiences App screenshot or local app check.",
             "captured_no_seats": "Legacy/manual no-seat result seen in a captured app screenshot or local app check.",
             "unknown": "Venue is in the official roster, but no availability source has been captured.",
