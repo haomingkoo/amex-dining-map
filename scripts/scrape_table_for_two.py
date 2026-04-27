@@ -82,20 +82,6 @@ VENUES = [
                 "Use the Amex Experiences App to reconfirm before planning around the slot.",
             ],
         },
-        "sample_menu": {
-            "source": "Amex Experiences App screenshot provided by user",
-            "captured_at": "2026-04-24",
-            "title": "Table for Two by Platinum — 3-course set menu",
-            "courses": [
-                {"course": "Starter", "choices": ["Pan-seared US Scallop", "Jerusalem Artichoke Soup"]},
-                {"course": "Main", "choices": ["Seared Barramundi Fillet", "Dry Aged Hanger Steak"]},
-                {"course": "Dessert", "choices": ["Cheese Cake Mousse"]},
-            ],
-            "additional_cover_note": (
-                "Two sets are served under Table for Two. Additional covers beyond two pax "
-                "are charged at S$128++ per pax for this menu."
-            ),
-        },
     },
     {
         "id": "tft-baes-cocktail-club",
@@ -334,47 +320,6 @@ VENUES = [
         "coordinate_confidence": "diningcity_place_matched",
         "map_pin_source": "DiningCity public restaurant search",
         "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
-        "sample_menu": {
-            "source": "Amex Experiences App screenshot provided by user",
-            "source_label": "Amex Experiences App capture, 27 Apr 2026",
-            "captured_at": "2026-04-27",
-            "title": "Table for Two - Exclusively curated by American Express",
-            "courses": [
-                {
-                    "course": "Appetizers",
-                    "choices": [
-                        "Tuna Tartare - toasted sesame, fennel salad, wonton crisp, coriander",
-                        "Heirloom Tomato - apple puree, candied walnut, sesame galangal dressing",
-                    ],
-                },
-                {
-                    "course": "Main",
-                    "choices": [
-                        "Stanbroke Australian Ribeye Steak - truffle roasted baby potatoes, baby gem, parmesan, truffle beef jus",
-                        "Mediterranean Seabass - tomato confit, capsicum stew, grilled leek, white wine beurre blanc",
-                        "Truffle Spinach Rigatoni - slow cooked egg, parmesan, cream, garlic crisp",
-                    ],
-                },
-                {
-                    "course": "Dessert",
-                    "choices": [
-                        "Pandan Trifle - coffee sponge, salted pandan ice cream, chocolate pearl, toasted coconut flake",
-                        "Sea Salt Dark Chocolate Tart - 70% dark chocolate mousse, vanilla ice cream centre, quince, chocolate soil, toasted hazelnut",
-                    ],
-                },
-                {
-                    "course": "Beverage",
-                    "choices": [
-                        "Kee's Iced Tea - Mandarin Sticky Rice Pu'Er, red date honey",
-                        "Yuzu Goodness - yuzu lemon prebiotic soda, peach, raspberry",
-                    ],
-                },
-            ],
-            "additional_cover_note": (
-                "Two complimentary sets are served under Table for Two. Additional covers beyond two pax "
-                "are charged at S$85++ per pax for this menu."
-            ),
-        },
     },
     {
         "id": "tft-the-plump-frenchman",

@@ -4515,26 +4515,6 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
   `;
 }
 
-function tableForTwoMenuSourceUrl(menu) {
-  return menu?.source_url || menu?.url || menu?.public_url || "";
-}
-
-function tableForTwoMenuSourceLabel(menu) {
-  return menu?.source_label || menu?.source || "Captured menu";
-}
-
-function tableForTwoMenuSourceText(menu) {
-  const label = tableForTwoMenuSourceLabel(menu);
-  if (menu?.source_label || !menu?.captured_at) return label;
-  return `${label} · ${menu.captured_at}`;
-}
-
-function tableForTwoMenuChoiceText(choice) {
-  if (typeof choice === "string") return choice;
-  if (!choice || typeof choice !== "object") return "";
-  return [choice.name, choice.description].filter(Boolean).join(" - ");
-}
-
 function tableForTwoProfile(record) {
   return record?.amex_app_profile || record?.dining_city_profile || {};
 }
@@ -4565,12 +4545,6 @@ function renderTableForTwoList() {
     const ratingStr = rating && rating.rating != null
       ? `<span class="card-google-rating">★ ${escapeHtml(String(rating.rating))}${rating.review_count ? ` (${Number(rating.review_count).toLocaleString()})` : ""}</span>`
       : "";
-    const tags = [
-      record.sample_menu ? '<span class="badge amber">Menu captured</span>' : "",
-    ]
-      .filter(Boolean)
-      .join("");
-
     card.innerHTML = `
       <div class="mobile-card-head">
         <div>
@@ -4583,7 +4557,6 @@ function renderTableForTwoList() {
           </div>
         </div>
       </div>
-      ${tags ? `<div class="venue-tags">${tags}</div>` : ""}
       <p class="mobile-card-desc">${escapeHtml(tableForTwoCompactAvailabilityLine(record, filters))}</p>
       <div class="mobile-card-meta">
         <span>${escapeHtml(tableForTwoDateSummary(record, filters))}</span>
@@ -4634,38 +4607,10 @@ function renderTableForTwoCard() {
 
   const displayName = record.app_name || record.name;
   const filters = state.tableForTwoCurrentFilters || {};
-  const menu = record.sample_menu;
-  const menuSourceUrl = tableForTwoMenuSourceUrl(menu);
-  const menuSourceText = tableForTwoMenuSourceText(menu);
   const profileDescription = tableForTwoProfileDescription(record);
   const profileImageUrl = tableForTwoProfileImageUrl(record);
   const profileSourceUrl = tableForTwoProfile(record).source_url || "";
   const gBadge = googleRatingBadge(record);
-  const menuHtml = menu
-    ? `
-      <details class="focus-section tft-menu">
-        <summary>
-          <span class="focus-kicker">Captured menu</span>
-          <strong>${escapeHtml(menu.title || "Table for Two menu")}</strong>
-        </summary>
-        ${(menu.courses || []).map((course) => `
-          <div class="tft-menu-course">
-            <span class="focus-label">${escapeHtml(course.course)}</span>
-            <ul class="tft-menu-list">
-              ${(course.choices || []).map((choice) => {
-                const text = tableForTwoMenuChoiceText(choice);
-                return text ? `<li>${escapeHtml(text)}</li>` : "";
-              }).join("")}
-            </ul>
-          </div>
-        `).join("")}
-        ${menu.additional_cover_note ? `<div class="focus-note">${escapeHtml(menu.additional_cover_note)}</div>` : ""}
-        ${menuSourceUrl
-          ? `<div class="focus-actions"><a class="inline-link" href="${escapeHtml(menuSourceUrl)}" target="_blank" rel="noopener">Menu source</a></div>`
-          : `<div class="tft-menu-source">Source: ${escapeHtml(menuSourceText)}</div>`}
-      </details>
-    `
-    : "";
   const googleMapsUrl = bestGoogleMapsUrl(record) || googleMapsSearchUrl([displayName, "Singapore"]);
 
   tableForTwoFocusCard.innerHTML = `
@@ -4678,7 +4623,6 @@ function renderTableForTwoCard() {
     <div class="focus-tags">
       <span class="badge ${tableForTwoAvailabilityBadgeClass(record, filters)}">${escapeHtml(tableForTwoAvailabilityLabel(record, filters))}</span>
       ${record.app_area ? `<span class="badge blue">${escapeHtml(record.app_area)}</span>` : ""}
-      ${menu ? '<span class="badge amber">Menu captured</span>' : ""}
     </div>
     ${record.address ? `<div class="focus-address">${escapeHtml(record.address)}</div>` : ""}
     ${profileDescription ? `<p class="focus-summary tft-profile-desc">${escapeHtml(profileDescription)}</p>` : ""}
@@ -4705,7 +4649,6 @@ function renderTableForTwoCard() {
         <span>${escapeHtml(tableForTwoFreshnessLabel(record))}</span>
       </div>
     </div>
-    ${menuHtml}
     <div class="focus-actions">
       <a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
       ${record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.dining_city_public_url)}" target="_blank" rel="noopener">Public DiningCity page</a>` : ""}

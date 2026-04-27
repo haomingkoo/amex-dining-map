@@ -161,6 +161,12 @@ a CSV endpoint. Use an Apps Script endpoint with a secret token for private
 responses; a published CSV link is simpler but exposes emails to anyone who has
 the URL.
 
+When `TABLE_FOR_TWO_ALERT_SIGNUP_URL` is set and the Table for Two data refresh
+runs, the site shows a `Booking alerts` panel above the Table for Two venue
+results. The scheduled alert workflow then polls the CSV endpoint and emails
+matching newly-seen slots. A copy-paste Google Apps Script setup is in
+[`docs/table-for-two-alerts-google-apps-script.md`](docs/table-for-two-alerts-google-apps-script.md).
+
 Recommended Sheet/Form fields:
 
 ```text

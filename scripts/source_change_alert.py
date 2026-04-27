@@ -26,7 +26,6 @@ IGNORED_RECORD_FIELDS = {
     "last_synced_at",
     "last_verified_at",
     "availability",
-    "sample_menu",
 }
 
 META_FIELD_LABELS = {

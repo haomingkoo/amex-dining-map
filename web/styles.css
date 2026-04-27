@@ -1110,14 +1110,6 @@ input,
   gap: 10px;
 }
 
-.tft-menu h4 {
-  margin: 0 0 10px;
-  font-family: var(--serif);
-  font-size: 20px;
-  font-weight: 500;
-  color: var(--text);
-}
-
 .tft-venue-photo {
   display: block;
   width: 100%;
@@ -1135,82 +1127,6 @@ input,
   font-size: 13px;
   line-height: 1.55;
   white-space: pre-line;
-}
-
-.tft-menu {
-  padding: 12px;
-  border: 1px solid var(--surface-border-soft);
-  border-radius: var(--radius-md);
-  background: var(--surface-overlay);
-}
-
-.tft-menu summary {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-  align-items: center;
-  cursor: pointer;
-  list-style: none;
-}
-
-.tft-menu summary::-webkit-details-marker {
-  display: none;
-}
-
-.tft-menu summary::after {
-  content: "+";
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: 1px solid var(--surface-border-soft);
-  border-radius: 999px;
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1;
-}
-
-.tft-menu[open] summary::after {
-  content: "-";
-}
-
-.tft-menu summary .focus-kicker {
-  margin: 0;
-}
-
-.tft-menu summary strong {
-  grid-column: 1;
-  font-family: var(--serif);
-  font-size: 19px;
-  font-weight: 500;
-  line-height: 1.2;
-  color: var(--text);
-}
-
-.tft-menu-course {
-  display: grid;
-  grid-template-columns: 82px minmax(0, 1fr);
-  gap: 10px;
-  padding: 10px 0 0;
-}
-
-.tft-menu-list {
-  display: grid;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.tft-menu-source {
-  margin-top: 10px;
-  color: var(--text-dim);
-  font-size: 11px;
-  font-weight: 650;
 }
 
 .tft-calendar-card,
@@ -2838,15 +2754,6 @@ h1, h2, h3 {
     gap: 4px;
   }
 
-  .tft-menu-course {
-    grid-template-columns: 1fr;
-    gap: 4px;
-  }
-
-  .tft-menu summary strong {
-    font-size: 18px;
-  }
-
   .tft-results-list {
     max-height: none;
   }
@@ -3041,7 +2948,7 @@ h1, h2, h3 {
   }
 
   body.route-table-for-two #table-for-two-explorer .tft-status-grid,
-  body.route-table-for-two #table-for-two-explorer .focus-section:not(.tft-menu) {
+  body.route-table-for-two #table-for-two-explorer .focus-section {
     display: none;
   }
 

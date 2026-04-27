@@ -28,6 +28,8 @@ jobs:
           python-version: "3.12"
 
       - name: Refresh public roster snapshot
+        env:
+          TABLE_FOR_TWO_ALERT_SIGNUP_URL: ${{ secrets.TABLE_FOR_TWO_ALERT_SIGNUP_URL }}
         run: python3 scripts/scrape_table_for_two.py
 
       - name: Build Table for Two source alert
