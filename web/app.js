@@ -446,7 +446,9 @@ const state = {
   tableForTwoMarkers: new Map(),
   tableForTwoActiveId: null,
   tableForTwoCurrentFilters: {},
+  tableForTwoAutoAvailabilityOnly: false,
   tableForTwoSelectedCalendarDates: {},
+  tableForTwoCalendarMonths: {},
   tableForTwoLiveRefreshInFlight: false,
   tableForTwoLiveRefreshAt: null,
   tableForTwoLiveRefreshTimer: null,
@@ -664,6 +666,7 @@ const loveMobileResultsList = document.getElementById("love-mobile-results-list"
 const tableForTwoExplorer = document.getElementById("table-for-two-explorer");
 const tableForTwoSummaryStripText = document.getElementById("tft-summary-strip-text");
 const tableForTwoMapSummary = document.getElementById("tft-map-summary");
+const tableForTwoNoMatchLegend = document.querySelector(".legend-tft-no-match")?.closest(".legend-item");
 const tableForTwoListSummary = document.getElementById("tft-list-summary");
 const tableForTwoSearchInput = document.getElementById("tft-search-input");
 const tableForTwoCategoryFilter = document.getElementById("tft-category-filter");
@@ -3650,6 +3653,18 @@ function tableForTwoHasMapPin(record) {
   return hasCoordinates(record);
 }
 
+function tableForTwoHasSlotFilters(filters = {}) {
+  const partySize = Number(filters.partySize || TABLE_FOR_TWO_DEFAULT_PARTY_SIZE);
+  return partySize !== TABLE_FOR_TWO_DEFAULT_PARTY_SIZE
+    || Boolean(filters.session || filters.date || filters.time || filters.day);
+}
+
+function tableForTwoMapRecords() {
+  return Object.keys(state.tableForTwoCurrentFilters || {}).length
+    ? state.tableForTwoFiltered
+    : tableForTwoVenues();
+}
+
 function tableForTwoPinColor(record) {
   if (!record) return "#c9a55a";
   const key = tableForTwoAvailabilityKey(record, state.tableForTwoCurrentFilters || {});
@@ -3703,7 +3718,7 @@ function updateTableForTwoMarkerStyles() {
 function renderTableForTwoMarkers() {
   if (!hasLeaflet || !tableForTwoMap) return;
   clearTableForTwoMarkers();
-  tableForTwoVenues().forEach((record) => {
+  tableForTwoMapRecords().forEach((record) => {
     const marker = createTableForTwoMarker(record);
     if (!marker) return;
     marker.addTo(tableForTwoMap);
@@ -3714,7 +3729,7 @@ function renderTableForTwoMarkers() {
 
 function fitTableForTwoMap() {
   if (!hasLeaflet || !tableForTwoMap) return;
-  const latLngs = tableForTwoVenues()
+  const latLngs = tableForTwoMapRecords()
     .filter((record) => tableForTwoHasMapPin(record))
     .map((record) => latLngForRecord(record));
   if (!latLngs.length) {
@@ -3764,10 +3779,14 @@ function filterTableForTwo() {
   const day = tableForTwoDayFilter.value || inferredFilters.day;
   const venues = tableForTwoVenues();
   const filters = { availability, partySize, session, date, time, day };
+  const autoAvailabilityOnly = !availability && tableForTwoHasSlotFilters(filters);
   state.tableForTwoCurrentFilters = filters;
+  state.tableForTwoAutoAvailabilityOnly = autoAvailabilityOnly;
   state.tableForTwoFiltered = venues.filter((record) => {
     if (category && record.category !== category) return false;
-    if (!tableForTwoRecordMatchesFilters(record, filters)) return false;
+    if (autoAvailabilityOnly) {
+      if (tableForTwoAvailabilityKey(record, filters) !== "available") return false;
+    } else if (!tableForTwoRecordMatchesFilters(record, filters)) return false;
     if (residualSearch && !fuzzyMatchSearch(record.search_text || tableForTwoSearchText(record), residualSearch)) return false;
     return true;
   });
@@ -3812,10 +3831,10 @@ function filterTableForTwo() {
     ? `Availability checked ${formatTimestamp(latestAvailabilityCheckedAt)}`
     : "Availability check pending";
   const statusBits = [
-    `${shown === total ? total : `${shown} of ${total}`} roster venues`,
+    autoAvailabilityOnly ? `${shown} venues with matching slots` : `${shown === total ? total : `${shown} of ${total}`} roster venues`,
     filterLabel,
-    freshAvailableCount ? `${freshAvailableCount} with matching slots` : "",
-    freshNoSeatCount ? `${freshNoSeatCount} no slots for filters` : "",
+    !autoAvailabilityOnly && freshAvailableCount ? `${freshAvailableCount} with matching slots` : "",
+    !autoAvailabilityOnly && freshNoSeatCount ? `${freshNoSeatCount} no slots for filters` : "",
     staleCaptureCount ? "source older than 30 min" : "",
     pendingCount ? `${pendingCount} source checks pending` : "",
     availabilityCheckedText,
@@ -3823,11 +3842,19 @@ function filterTableForTwo() {
   ].filter(Boolean);
   tableForTwoSummaryStripText.textContent = `${statusBits.join(" · ")}.`;
   tableForTwoListSummary.textContent =
-    "Start with all roster venues, then narrow by party size, date, session, status, or category.";
+    autoAvailabilityOnly
+      ? "Showing venues with matching cached slots. Use Availability to inspect no-slot venues."
+      : "Start with all roster venues, then narrow by party size, date, session, status, or category.";
   if (tableForTwoMapSummary) {
-    const mappedCount = venues.filter((record) => tableForTwoHasMapPin(record)).length;
+    const mapRecords = tableForTwoMapRecords();
+    const mappedCount = mapRecords.filter((record) => tableForTwoHasMapPin(record)).length;
     tableForTwoMapSummary.textContent =
-      `${mappedCount}/${total} roster venues mapped. Green pins match the current filters; amber pins have no slots for those filters.`;
+      autoAvailabilityOnly
+        ? `${mappedCount}/${shown} matching venues mapped. Green pins match the current filters.`
+        : `${mappedCount}/${shown || total} shown venues mapped. Green pins match the current filters; amber pins have no slots for those filters.`;
+  }
+  if (tableForTwoNoMatchLegend) {
+    tableForTwoNoMatchLegend.hidden = autoAvailabilityOnly;
   }
   tableForTwoResultsText.textContent = state.tableForTwoActiveId
     ? "Selected venue · Table for Two"
@@ -4239,7 +4266,9 @@ function tableForTwoSelectedDateSlotsHtml(slots, filters = state.tableForTwoCurr
         .map((slot) => {
           const distance = filters.time ? tableForTwoSlotTimeDistance(slot, filters.time) : null;
           const distanceLabel = filters.time ? tableForTwoTimeDistanceLabel(distance) : "";
-          return `<span class="tft-time-chip">${escapeHtml(slot.time || "Time")} ${distanceLabel ? `<em>${escapeHtml(distanceLabel)}</em>` : ""}</span>`;
+          const maxSeats = tableForTwoSlotMaxSeatValue(slot);
+          const paxLabel = maxSeats ? `up to ${maxSeats} pax` : "";
+          return `<span class="tft-time-chip"><span>${escapeHtml(slot.time || "Time")}</span>${paxLabel ? `<em>${escapeHtml(paxLabel)}</em>` : ""}${distanceLabel ? `<em>${escapeHtml(distanceLabel)}</em>` : ""}</span>`;
         })
         .join("");
       return `
@@ -4254,6 +4283,20 @@ function tableForTwoSelectedDateSlotsHtml(slots, filters = state.tableForTwoCurr
     <div class="tft-date-detail">
       <h5>${escapeHtml(tableForTwoDateOptionLabel(selectedDate))}</h5>
       ${groupedRows}
+    </div>
+  `;
+}
+
+function tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey) {
+  if (monthKeys.length <= 1) return "";
+  const activeIndex = Math.max(0, monthKeys.indexOf(activeMonthKey));
+  const prevMonth = monthKeys[Math.max(0, activeIndex - 1)] || "";
+  const nextMonth = monthKeys[Math.min(monthKeys.length - 1, activeIndex + 1)] || "";
+  return `
+    <div class="tft-month-pager" aria-label="Calendar month">
+      <button type="button" class="ghost-btn secondary tft-month-btn" data-tft-calendar-month="${escapeHtml(prevMonth)}" ${activeIndex === 0 ? "disabled" : ""}>Prev</button>
+      <span>${escapeHtml(tableForTwoMonthLabel(activeMonthKey))} · ${activeIndex + 1}/${monthKeys.length}</span>
+      <button type="button" class="ghost-btn secondary tft-month-btn" data-tft-calendar-month="${escapeHtml(nextMonth)}" ${activeIndex === monthKeys.length - 1 ? "disabled" : ""}>Next</button>
     </div>
   `;
 }
@@ -4277,9 +4320,10 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
     || (dates.includes(state.tableForTwoSelectedCalendarDates[record.id]) ? state.tableForTwoSelectedCalendarDates[record.id] : "")
     || dates[0]
     || "";
-  const monthsHtml = monthKeys
-    .map((monthKey) => tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedCalendarDate))
-    .join("");
+  const selectedMonthKey = selectedCalendarDate ? selectedCalendarDate.slice(0, 7) : "";
+  const preferredMonthKey = state.tableForTwoCalendarMonths[record.id] || selectedMonthKey || monthKeys[0] || "";
+  const activeMonthKey = monthKeys.includes(preferredMonthKey) ? preferredMonthKey : (selectedMonthKey || monthKeys[0] || "");
+  const monthsHtml = activeMonthKey ? tableForTwoCalendarMonthHtml(activeMonthKey, slotsByDate, selectedCalendarDate) : "";
   const headingParts = [
     tableForTwoDateRangeSummary(dates),
     `${filters.partySize || tableForTwoSelectedPartySize()} pax`,
@@ -4295,6 +4339,7 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
         </div>
         <span class="badge amber">${escapeHtml(`${slots.length} slot time${slots.length === 1 ? "" : "s"}`)}</span>
       </div>
+      ${tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey)}
       <div class="tft-calendar-months">${monthsHtml}</div>
       ${tableForTwoSelectedDateSlotsHtml(slots, filters, selectedCalendarDate)}
       <div class="tft-calendar-legend">
@@ -4474,6 +4519,16 @@ function renderTableForTwoCard() {
       const selectedDate = button.getAttribute("data-tft-calendar-date") || "";
       if (!active || !selectedDate) return;
       state.tableForTwoSelectedCalendarDates[active.id] = selectedDate;
+      state.tableForTwoCalendarMonths[active.id] = selectedDate.slice(0, 7);
+      renderTableForTwoCard();
+    });
+  });
+  tableForTwoFocusCard.querySelectorAll("[data-tft-calendar-month]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const active = activeTableForTwoRecord();
+      const selectedMonth = button.getAttribute("data-tft-calendar-month") || "";
+      if (!active || !selectedMonth) return;
+      state.tableForTwoCalendarMonths[active.id] = selectedMonth;
       renderTableForTwoCard();
     });
   });

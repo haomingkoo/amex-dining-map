@@ -1124,6 +1124,31 @@ input,
   gap: 14px;
 }
 
+.tft-month-pager {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.tft-month-pager span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.tft-month-btn {
+  min-height: 34px;
+  padding: 6px 10px;
+}
+
+.tft-month-btn:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
 .tft-calendar-month h5 {
   margin: 0 0 8px;
   font-size: 13px;
