@@ -805,6 +805,90 @@
                   <p id="tft-map-summary">Official roster pins. Pin colour shows cached AMEXPlatSG availability state.</p>
                 </div>
               </div>
+              <section class="map-filter-shell" id="tft-map-filter-shell">
+                <button
+                  id="tft-toolbar-toggle"
+                  type="button"
+                  class="toolbar-toggle tft-toolbar-toggle panel-surface"
+                  aria-expanded="false"
+                  aria-controls="tft-filter-toolbar"
+                >
+                  <span>
+                    <span class="toolbar-toggle-title">Refine</span>
+                    <span class="toolbar-toggle-meta" id="tft-toolbar-toggle-meta">All filters off</span>
+                  </span>
+                  <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
+                </button>
+
+                <section class="toolbar tft-toolbar panel-surface" id="tft-filter-toolbar">
+                  <label class="search-wrap">
+                    <span class="label">Search</span>
+                    <input id="tft-search-input" type="search" placeholder="Venue, category, area..." />
+                  </label>
+
+                  <label class="filter-wrap">
+                    <span class="label">Party size</span>
+                    <select id="tft-party-size-filter">
+                      <option value="2" selected>2 pax</option>
+                      <option value="3">3 pax</option>
+                      <option value="4">4 pax</option>
+                      <option value="5">5 pax</option>
+                      <option value="6">6 pax</option>
+                      <option value="7">7 pax</option>
+                      <option value="8">8 pax</option>
+                    </select>
+                  </label>
+
+                  <label class="filter-wrap">
+                    <span class="label">Session</span>
+                    <select id="tft-session-filter">
+                      <option value="">Any session</option>
+                      <option value="Lunch">Lunch</option>
+                      <option value="Dinner">Dinner</option>
+                    </select>
+                  </label>
+
+                  <label class="filter-wrap">
+                    <span class="label">Date</span>
+                    <input id="tft-date-filter" type="date" />
+                  </label>
+
+                  <label class="filter-wrap">
+                    <span class="label">Preferred time</span>
+                    <input id="tft-time-filter" type="time" step="1800" />
+                  </label>
+
+                  <label class="filter-wrap">
+                    <span class="label">Day type</span>
+                    <select id="tft-day-filter">
+                      <option value="">Any day</option>
+                      <option value="weekend">Weekend</option>
+                      <option value="weekday">Weekday</option>
+                    </select>
+                  </label>
+
+                  <label class="filter-wrap">
+                    <span class="label">Availability</span>
+                    <select id="tft-availability-filter">
+                      <option value="" selected>All states</option>
+                      <option value="available">Matching slots</option>
+                      <option value="no_seats">No slots for filters</option>
+                      <option value="stale">Cache older than 30 min</option>
+                    </select>
+                  </label>
+
+                  <label class="filter-wrap">
+                    <span class="label">Category</span>
+                    <select id="tft-category-filter">
+                      <option value="">All categories</option>
+                    </select>
+                  </label>
+
+                  <div class="filter-actions">
+                    <button id="tft-reset-filters" type="button" class="ghost-btn">Clear filters</button>
+                  </div>
+                </section>
+              </section>
               <div id="tft-map"></div>
               <div class="map-legend">
                 <span class="legend-item"><i class="legend-dot legend-tft-available"></i>Matches filters</span>
@@ -827,89 +911,6 @@
                 </div>
                 <a class="inline-link primary-action compact" id="tft-alert-signup-link" href="#" target="_blank" rel="noopener">Create alert</a>
               </div>
-
-              <button
-                id="tft-toolbar-toggle"
-                type="button"
-                class="toolbar-toggle tft-toolbar-toggle panel-surface"
-                aria-expanded="false"
-                aria-controls="tft-filter-toolbar"
-              >
-                <span>
-                  <span class="toolbar-toggle-title">Refine</span>
-                  <span class="toolbar-toggle-meta" id="tft-toolbar-toggle-meta">All filters off</span>
-                </span>
-                <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
-              </button>
-
-              <section class="toolbar tft-toolbar panel-surface" id="tft-filter-toolbar">
-                <label class="search-wrap">
-                  <span class="label">Search</span>
-                  <input id="tft-search-input" type="search" placeholder="Venue, category, area..." />
-                </label>
-
-                <label class="filter-wrap">
-                  <span class="label">Party size</span>
-                  <select id="tft-party-size-filter">
-                    <option value="2" selected>2 pax</option>
-                    <option value="3">3 pax</option>
-                    <option value="4">4 pax</option>
-                    <option value="5">5 pax</option>
-                    <option value="6">6 pax</option>
-                    <option value="7">7 pax</option>
-                    <option value="8">8 pax</option>
-                  </select>
-                </label>
-
-                <label class="filter-wrap">
-                  <span class="label">Session</span>
-                  <select id="tft-session-filter">
-                    <option value="">Any session</option>
-                    <option value="Lunch">Lunch</option>
-                    <option value="Dinner">Dinner</option>
-                  </select>
-                </label>
-
-                <label class="filter-wrap">
-                  <span class="label">Date</span>
-                  <input id="tft-date-filter" type="date" />
-                </label>
-
-                <label class="filter-wrap">
-                  <span class="label">Preferred time</span>
-                  <input id="tft-time-filter" type="time" step="1800" />
-                </label>
-
-                <label class="filter-wrap">
-                  <span class="label">Day type</span>
-                  <select id="tft-day-filter">
-                    <option value="">Any day</option>
-                    <option value="weekend">Weekend</option>
-                    <option value="weekday">Weekday</option>
-                  </select>
-                </label>
-
-                <label class="filter-wrap">
-                  <span class="label">Availability</span>
-                  <select id="tft-availability-filter">
-                    <option value="" selected>All states</option>
-                    <option value="available">Matching slots</option>
-                    <option value="no_seats">No slots for filters</option>
-                    <option value="stale">Cache older than 30 min</option>
-                  </select>
-                </label>
-
-                <label class="filter-wrap">
-                  <span class="label">Category</span>
-                  <select id="tft-category-filter">
-                    <option value="">All categories</option>
-                  </select>
-                </label>
-
-                <div class="filter-actions">
-                  <button id="tft-reset-filters" type="button" class="ghost-btn">Clear filters</button>
-                </div>
-              </section>
 
               <div class="mobile-results-list tft-results-list" id="tft-results-list"></div>
             </section>
