@@ -441,6 +441,7 @@ const state = {
   loveDiningActiveId: null,
   loveDiningSourceMeta: null,
   loveToolbarOpen: false,
+  tableForTwoToolbarOpen: false,
   tableForTwo: null,
   tableForTwoFiltered: [],
   tableForTwoMarkers: new Map(),
@@ -668,6 +669,9 @@ const tableForTwoSummaryStripText = document.getElementById("tft-summary-strip-t
 const tableForTwoMapSummary = document.getElementById("tft-map-summary");
 const tableForTwoNoMatchLegend = document.querySelector(".legend-tft-no-match")?.closest(".legend-item");
 const tableForTwoListSummary = document.getElementById("tft-list-summary");
+const tableForTwoToolbar = document.getElementById("tft-filter-toolbar");
+const tableForTwoToolbarToggle = document.getElementById("tft-toolbar-toggle");
+const tableForTwoToolbarToggleMeta = document.getElementById("tft-toolbar-toggle-meta");
 const tableForTwoSearchInput = document.getElementById("tft-search-input");
 const tableForTwoCategoryFilter = document.getElementById("tft-category-filter");
 const tableForTwoAvailabilityFilter = document.getElementById("tft-availability-filter");
@@ -3659,12 +3663,6 @@ function tableForTwoHasSlotFilters(filters = {}) {
     || Boolean(filters.session || filters.date || filters.time || filters.day);
 }
 
-function tableForTwoMapRecords() {
-  return Object.keys(state.tableForTwoCurrentFilters || {}).length
-    ? state.tableForTwoFiltered
-    : tableForTwoVenues();
-}
-
 function tableForTwoPinColor(record) {
   if (!record) return "#c9a55a";
   const key = tableForTwoAvailabilityKey(record, state.tableForTwoCurrentFilters || {});
@@ -3718,7 +3716,7 @@ function updateTableForTwoMarkerStyles() {
 function renderTableForTwoMarkers() {
   if (!hasLeaflet || !tableForTwoMap) return;
   clearTableForTwoMarkers();
-  tableForTwoMapRecords().forEach((record) => {
+  tableForTwoVenues().forEach((record) => {
     const marker = createTableForTwoMarker(record);
     if (!marker) return;
     marker.addTo(tableForTwoMap);
@@ -3729,7 +3727,7 @@ function renderTableForTwoMarkers() {
 
 function fitTableForTwoMap() {
   if (!hasLeaflet || !tableForTwoMap) return;
-  const latLngs = tableForTwoMapRecords()
+  const latLngs = tableForTwoVenues()
     .filter((record) => tableForTwoHasMapPin(record))
     .map((record) => latLngForRecord(record));
   if (!latLngs.length) {
@@ -3753,8 +3751,22 @@ function resetTableForTwoFocusScroll() {
   tableForTwoFocusCard?.scrollTo?.({ top: 0, behavior: "auto" });
 }
 
+function syncTableForTwoSelectionState() {
+  tableForTwoExplorer?.classList.toggle("has-tft-selection", Boolean(state.tableForTwoActiveId));
+}
+
+function maybeScrollTableForTwoDetailsIntoView() {
+  if (window.innerWidth > MOBILE_BREAKPOINT) return;
+  const focusPanel = tableForTwoFocusCard?.closest(".focus-panel");
+  if (!focusPanel) return;
+  window.requestAnimationFrame(() => {
+    focusPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
+
 function setActiveTableForTwoRecord(id) {
   state.tableForTwoActiveId = id;
+  syncTableForTwoSelectionState();
   const record = activeTableForTwoRecord();
   tableForTwoResultsText.textContent = record
     ? "Selected venue · Table for Two"
@@ -3764,6 +3776,10 @@ function setActiveTableForTwoRecord(id) {
   updateTableForTwoMarkerStyles();
   if (record) focusTableForTwoOnMap(record);
   if (record) resetTableForTwoFocusScroll();
+  if (record) {
+    setTableForTwoToolbarOpen(false);
+    maybeScrollTableForTwoDetailsIntoView();
+  }
 }
 
 function filterTableForTwo() {
@@ -3808,6 +3824,7 @@ function filterTableForTwo() {
   if (state.tableForTwoActiveId && !state.tableForTwoFiltered.some((record) => record.id === state.tableForTwoActiveId)) {
     state.tableForTwoActiveId = null;
   }
+  syncTableForTwoSelectionState();
 
   const total = venues.length;
   const shown = state.tableForTwoFiltered.length;
@@ -3843,19 +3860,17 @@ function filterTableForTwo() {
   tableForTwoSummaryStripText.textContent = `${statusBits.join(" · ")}.`;
   tableForTwoListSummary.textContent =
     autoAvailabilityOnly
-      ? "Showing venues with matching cached slots. Use Availability to inspect no-slot venues."
+      ? "List shows matching cached slots; map keeps no-slot venues in amber."
       : "Start with all roster venues, then narrow by party size, date, session, status, or category.";
   if (tableForTwoMapSummary) {
-    const mapRecords = tableForTwoMapRecords();
-    const mappedCount = mapRecords.filter((record) => tableForTwoHasMapPin(record)).length;
+    const mappedCount = venues.filter((record) => tableForTwoHasMapPin(record)).length;
     tableForTwoMapSummary.textContent =
-      autoAvailabilityOnly
-        ? `${mappedCount}/${shown} matching venues mapped. Green pins match the current filters.`
-        : `${mappedCount}/${shown || total} shown venues mapped. Green pins match the current filters; amber pins have no slots for those filters.`;
+      `${mappedCount}/${total} roster venues mapped. Green pins match the current filters; amber pins have no slots for those filters.`;
   }
   if (tableForTwoNoMatchLegend) {
-    tableForTwoNoMatchLegend.hidden = autoAvailabilityOnly;
+    tableForTwoNoMatchLegend.hidden = false;
   }
+  renderTableForTwoToolbarToggle();
   tableForTwoResultsText.textContent = state.tableForTwoActiveId
     ? "Selected venue · Table for Two"
     : `${shown} venue${shown === 1 ? "" : "s"} shown`;
@@ -3864,6 +3879,34 @@ function filterTableForTwo() {
   if (!state.tableForTwoActiveId) fitTableForTwoMap();
   renderTableForTwoList();
   renderTableForTwoCard();
+}
+
+function tableForTwoActiveFilterCount() {
+  let count = 0;
+  if ((tableForTwoSearchInput?.value || "").trim()) count += 1;
+  if (tableForTwoCategoryFilter?.value) count += 1;
+  if (tableForTwoAvailabilityFilter?.value) count += 1;
+  if (tableForTwoSelectedPartySize() !== TABLE_FOR_TWO_DEFAULT_PARTY_SIZE) count += 1;
+  if (tableForTwoSessionFilter?.value) count += 1;
+  if (tableForTwoDateFilter?.value) count += 1;
+  if (tableForTwoTimeFilter?.value) count += 1;
+  if (tableForTwoDayFilter?.value) count += 1;
+  return count;
+}
+
+function setTableForTwoToolbarOpen(isOpen) {
+  state.tableForTwoToolbarOpen = isOpen;
+  tableForTwoToolbar?.classList.toggle("is-open", isOpen);
+  tableForTwoToolbarToggle?.setAttribute("aria-expanded", String(isOpen));
+  const icon = tableForTwoToolbarToggle?.querySelector(".toolbar-toggle-icon");
+  if (icon) icon.textContent = isOpen ? "-" : "+";
+}
+
+function renderTableForTwoToolbarToggle() {
+  if (!tableForTwoToolbarToggleMeta) return;
+  const count = tableForTwoActiveFilterCount();
+  tableForTwoToolbarToggleMeta.textContent =
+    count > 0 ? `${count} active filter${count === 1 ? "" : "s"}` : "All filters off";
 }
 
 function tableForTwoInferredFilters(search) {
@@ -5478,6 +5521,10 @@ tableForTwoDayFilter.addEventListener("change", () => {
   refreshTableForTwoDateOptions();
   filterTableForTwo();
 });
+tableForTwoToolbarToggle?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  setTableForTwoToolbarOpen(!state.tableForTwoToolbarOpen);
+});
 tableForTwoResetFiltersBtn.addEventListener("click", () => {
   tableForTwoSearchInput.value = "";
   tableForTwoCategoryFilter.value = "";
@@ -5488,6 +5535,7 @@ tableForTwoResetFiltersBtn.addEventListener("click", () => {
   tableForTwoTimeFilter.value = "";
   tableForTwoDayFilter.value = "";
   refreshTableForTwoDateOptions();
+  setTableForTwoToolbarOpen(false);
   filterTableForTwo();
 });
 

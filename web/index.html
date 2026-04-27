@@ -828,7 +828,21 @@
                 <a class="inline-link primary-action compact" id="tft-alert-signup-link" href="#" target="_blank" rel="noopener">Create alert</a>
               </div>
 
-              <section class="toolbar tft-toolbar panel-surface">
+              <button
+                id="tft-toolbar-toggle"
+                type="button"
+                class="toolbar-toggle tft-toolbar-toggle panel-surface"
+                aria-expanded="false"
+                aria-controls="tft-filter-toolbar"
+              >
+                <span>
+                  <span class="toolbar-toggle-title">Refine</span>
+                  <span class="toolbar-toggle-meta" id="tft-toolbar-toggle-meta">All filters off</span>
+                </span>
+                <span class="toolbar-toggle-icon" aria-hidden="true">+</span>
+              </button>
+
+              <section class="toolbar tft-toolbar panel-surface" id="tft-filter-toolbar">
                 <label class="search-wrap">
                   <span class="label">Search</span>
                   <input id="tft-search-input" type="search" placeholder="Venue, category, area..." />

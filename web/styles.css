@@ -1441,6 +1441,10 @@ button.tft-calendar-cell:hover {
   display: grid;
 }
 
+.tft-toolbar-toggle {
+  display: none;
+}
+
 .tft-toolbar .filter-actions {
   grid-column: auto;
 }
@@ -2598,12 +2602,47 @@ h1, h2, h3 {
     gap: 12px;
   }
 
+  .tft-main-stack {
+    display: contents;
+  }
+
   .tft-map-panel {
     order: 0;
   }
 
-  .tft-list-panel {
+  #table-for-two-explorer .tft-grid > .focus-panel {
+    display: none;
     order: 1;
+    scroll-margin-top: 10px;
+  }
+
+  #table-for-two-explorer.has-tft-selection .tft-grid > .focus-panel {
+    display: flex;
+  }
+
+  #table-for-two-explorer .tft-grid > .focus-panel .panel-head {
+    padding: 12px 14px 8px;
+  }
+
+  #table-for-two-explorer .tft-grid > .focus-panel .focus-body {
+    padding: 12px 14px 14px;
+  }
+
+  .tft-list-panel {
+    order: 2;
+  }
+
+  .tft-toolbar-toggle {
+    display: flex;
+    margin: 0 12px 10px;
+  }
+
+  .toolbar.tft-toolbar {
+    display: none;
+  }
+
+  .toolbar.tft-toolbar.is-open {
+    display: grid;
   }
 
   .tft-toolbar {
