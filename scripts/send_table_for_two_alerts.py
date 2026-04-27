@@ -199,7 +199,7 @@ def subscription_from_row(row: dict[str, Any], venue_aliases: dict[str, str], so
         return None
 
     name = value_from_row(row, ("name", "first name", "your name"))
-    dates = parse_dates(value_from_row(row, ("dates", "date", "desired dates", "free dates", "alert dates")))
+    dates = parse_dates(value_from_row(row, ("dates", "date", "exact dates", "desired dates", "free dates", "alert dates")))
     date_start = parse_date(value_from_row(row, ("date start", "start date", "from date")))
     date_end = parse_date(value_from_row(row, ("date end", "end date", "to date")))
     return Subscription(
@@ -661,17 +661,24 @@ def main() -> int:
     smtp_config = smtp_config_from_env()
     messages: list[EmailMessage] = []
     newly_sent_keys: list[str] = []
+    pending_sent_keys: set[str] = set()
     today = iso_date(args.today) if args.today else today_singapore()
     if today is None:
         raise ValueError("--today must be YYYY-MM-DD")
 
     for subscription in subscriptions:
         matches = matching_slots(subscription, venues)
-        new_matches = [slot for slot in matches if slot_key(subscription, slot, salt) not in sent_keys]
+        new_matches = [
+            slot
+            for slot in matches
+            if slot_key(subscription, slot, salt) not in sent_keys
+            and slot_key(subscription, slot, salt) not in pending_sent_keys
+        ]
         fulfilled_key = subscription_state_key(subscription, "matched", salt)
         expired_key = subscription_state_key(subscription, "expired", salt)
         unsubscribe_url = unsubscribe_url_for(subscription, salt, smtp_config["unsubscribe_base_url"])
         if new_matches:
+            new_slot_keys = [slot_key(subscription, slot, salt) for slot in new_matches]
             messages.append(
                 build_email(
                     subscription,
@@ -683,12 +690,16 @@ def main() -> int:
                     one_click_unsubscribe=smtp_config["one_click_unsubscribe"],
                 )
             )
-            newly_sent_keys.extend(slot_key(subscription, slot, salt) for slot in new_matches)
+            newly_sent_keys.extend(new_slot_keys)
+            pending_sent_keys.update(new_slot_keys)
             newly_sent_keys.append(fulfilled_key)
+            pending_sent_keys.add(fulfilled_key)
         elif (
             subscription_is_expired(subscription, today)
             and fulfilled_key not in sent_keys
+            and fulfilled_key not in pending_sent_keys
             and expired_key not in sent_keys
+            and expired_key not in pending_sent_keys
         ):
             messages.append(
                 build_expired_email(
@@ -701,6 +712,7 @@ def main() -> int:
                 )
             )
             newly_sent_keys.append(expired_key)
+            pending_sent_keys.add(expired_key)
         if len(messages) >= args.max_emails:
             break
 
