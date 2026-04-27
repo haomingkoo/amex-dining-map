@@ -19,6 +19,8 @@ import re
 import smtplib
 import ssl
 import sys
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
@@ -34,6 +36,9 @@ DEFAULT_SENT_LOG_PATH = "data/table-for-two-alert-sent.json"
 DEFAULT_SITE_URL = "https://amex-explorer.kooexperience.com/#/table-for-two"
 MAX_MATCHES_PER_EMAIL = 24
 ALERT_TIMEZONE = "Asia/Singapore"
+CSV_FETCH_ATTEMPTS = 3
+CSV_FETCH_TIMEOUT_SECONDS = 60
+CSV_FETCH_BACKOFF_SECONDS = 5
 
 
 @dataclass(frozen=True)
@@ -81,12 +86,23 @@ def write_json(path: str | Path, payload: Any) -> None:
 
 
 def fetch_text(url: str) -> str:
-    request = urllib.request.Request(
-        url,
-        headers={"User-Agent": "amex-dining-map table-for-two alerts"},
-    )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return response.read().decode("utf-8-sig")
+    last_error: BaseException | None = None
+    for attempt in range(1, CSV_FETCH_ATTEMPTS + 1):
+        request = urllib.request.Request(
+            url,
+            headers={"User-Agent": "amex-dining-map table-for-two alerts"},
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=CSV_FETCH_TIMEOUT_SECONDS) as response:
+                return response.read().decode("utf-8-sig")
+        except urllib.error.HTTPError:
+            raise
+        except (TimeoutError, OSError, urllib.error.URLError) as exc:
+            last_error = exc
+            if attempt >= CSV_FETCH_ATTEMPTS:
+                break
+            time.sleep(CSV_FETCH_BACKOFF_SECONDS * attempt)
+    raise RuntimeError("Could not fetch subscriptions CSV after retries") from last_error
 
 
 def split_values(value: Any) -> list[str]:
