@@ -995,7 +995,7 @@ input,
 .legend-love-rest  { background: var(--legend-love-rest); }
 .legend-love-hotel { background: var(--legend-love-hotel); }
 .legend-tft-available { background: var(--teal); }
-.legend-tft-stale     { background: var(--gold); }
+.legend-tft-no-match  { background: var(--gold); }
 .legend-tft-pending   { background: #c9a55a; }
 
 .focus-panel {
@@ -1182,6 +1182,17 @@ input,
   color: var(--text-dim);
   font-size: 11px;
   font-weight: 600;
+  text-align: left;
+}
+
+button.tft-calendar-cell {
+  appearance: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+button.tft-calendar-cell:hover {
+  border-color: var(--teal);
 }
 
 .tft-calendar-cell.is-empty {
@@ -1229,6 +1240,61 @@ input,
   line-height: 1.15;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.tft-date-detail {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--surface-border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface-overlay);
+}
+
+.tft-date-detail h5 {
+  margin: 0 0 10px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tft-date-detail p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.tft-date-session {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 6px 0;
+}
+
+.tft-time-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tft-time-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 4px 7px;
+  border: 1px solid var(--teal-border);
+  border-radius: 5px;
+  background: var(--teal-surface);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.tft-time-chip em {
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
 }
 
 .tft-calendar-legend {
@@ -2540,6 +2606,11 @@ h1, h2, h3 {
   .tft-session-pill {
     font-size: 8px;
     padding: 1px 3px;
+  }
+
+  .tft-date-session {
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
 
   .tft-results-list {

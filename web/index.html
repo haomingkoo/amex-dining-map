@@ -808,7 +808,7 @@
               <div id="tft-map"></div>
               <div class="map-legend">
                 <span class="legend-item"><i class="legend-dot legend-tft-available"></i>Matches filters</span>
-                <span class="legend-item"><i class="legend-dot legend-tft-stale"></i>No match/stale</span>
+                <span class="legend-item"><i class="legend-dot legend-tft-no-match"></i>No match</span>
                 <span class="legend-item"><i class="legend-dot legend-tft-pending"></i>Not checked</span>
               </div>
             </section>
@@ -863,6 +863,11 @@
                 </label>
 
                 <label class="filter-wrap">
+                  <span class="label">Preferred time</span>
+                  <input id="tft-time-filter" type="time" step="900" />
+                </label>
+
+                <label class="filter-wrap">
                   <span class="label">Day type</span>
                   <select id="tft-day-filter">
                     <option value="">Any day</option>
@@ -877,7 +882,7 @@
                     <option value="" selected>All states</option>
                     <option value="available">Matching slots</option>
                     <option value="no_seats">No matching slots</option>
-                    <option value="stale">Stale check</option>
+                    <option value="stale">Cache older than 30 min</option>
                     <option value="unknown">Not checked</option>
                   </select>
                 </label>
