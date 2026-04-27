@@ -161,19 +161,47 @@ a CSV endpoint. Use an Apps Script endpoint with a secret token for private
 responses; a published CSV link is simpler but exposes emails to anyone who has
 the URL.
 
+Recommended Sheet/Form fields:
+
+```text
+enabled,email,name,party size,dates,sessions,venues,unsubscribe url
+```
+
+`dates`, `sessions`, and `venues` may be comma-separated. Use `enabled=false`
+when a user unsubscribes.
+
 Set these repository secrets before enabling the scheduled workflow:
 
 ```text
 TABLE_FOR_TWO_ALERTS_CSV_URL=https://script.google.com/.../exec?token=...
+TABLE_FOR_TWO_ALERT_SIGNUP_URL=https://forms.gle/... or https://script.google.com/.../exec
+ALERT_UNSUBSCRIBE_BASE_URL=https://script.google.com/.../exec?action=unsubscribe
 ALERT_HASH_SALT=<random long string>
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=dinnertime@kooexperience.com
+SMTP_USER=no-reply@kooexperience.com
 SMTP_PASS=<Google app password or SMTP relay password>
-SMTP_FROM=Dinnertime <dinnertime@kooexperience.com>
-SMTP_REPLY_TO=<optional reply address>
+SMTP_FROM=Table for Two Alerts <no-reply@kooexperience.com>
+SMTP_REPLY_TO=no-reply@kooexperience.com
 ```
 
-For Google Workspace, make sure `dinnertime@kooexperience.com` is a real mailbox
-or configured send-as alias, 2-step verification/app passwords or SMTP relay are
-allowed, and the domain has Google SPF/DKIM/DMARC records.
+For Google Workspace, make sure `no-reply@kooexperience.com` is a real mailbox
+or a verified send-as alias for the mailbox used by `SMTP_USER`. The simplest
+GitHub Actions setup is Gmail SMTP with 2-step verification and an app password;
+Workspace SMTP relay can also work, but GitHub-hosted runner IPs are not stable.
+The domain should have Google SPF, DKIM, and DMARC records so alert mail is not
+treated as spoofed.
+
+Security notes:
+
+- Do not expose the Google Sheet as a public CSV. Use Apps Script and a secret
+  token in `TABLE_FOR_TWO_ALERTS_CSV_URL`.
+- Keep `ALERT_HASH_SALT`, SMTP passwords, Apps Script tokens, and form admin URLs
+  in GitHub Actions secrets only.
+- The repository stores only salted hashes of sent alert keys in
+  `data/table-for-two-alert-sent.json`; it should not store user emails.
+- Unsubscribe links are added to email bodies and `List-Unsubscribe` headers. The
+  Apps Script unsubscribe endpoint should verify the `email` and `token` query
+  parameters, then mark matching rows as `enabled=false`.
+- Only set `ALERT_ONE_CLICK_UNSUBSCRIBE=true` if the Apps Script endpoint also
+  supports one-click unsubscribe POST requests.

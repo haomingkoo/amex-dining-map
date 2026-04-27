@@ -44,6 +44,8 @@ jobs:
 
       - name: Refresh Table for Two availability
         if: steps.config.outputs.enabled == 'true'
+        env:
+          TABLE_FOR_TWO_ALERT_SIGNUP_URL: ${{ secrets.TABLE_FOR_TWO_ALERT_SIGNUP_URL }}
         run: python3 scripts/scrape_table_for_two.py
 
       - name: Send matching alert emails
@@ -52,6 +54,8 @@ jobs:
           TABLE_FOR_TWO_ALERTS_CSV_URL: ${{ secrets.TABLE_FOR_TWO_ALERTS_CSV_URL }}
           ALERT_HASH_SALT: ${{ secrets.ALERT_HASH_SALT }}
           ALERT_SITE_URL: https://amex-explorer.kooexperience.com/#/table-for-two
+          ALERT_UNSUBSCRIBE_BASE_URL: ${{ secrets.ALERT_UNSUBSCRIBE_BASE_URL }}
+          ALERT_ONE_CLICK_UNSUBSCRIBE: ${{ secrets.ALERT_ONE_CLICK_UNSUBSCRIBE }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}

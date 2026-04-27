@@ -19,6 +19,7 @@ import re
 import smtplib
 import ssl
 import sys
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -43,6 +44,7 @@ class Subscription:
     date_end: str
     sessions: tuple[str, ...]
     venues: tuple[str, ...]
+    unsubscribe_url: str
     source_label: str
 
 
@@ -201,6 +203,21 @@ def subscription_from_row(row: dict[str, Any], venue_aliases: dict[str, str], so
         date_end=date_end,
         sessions=parse_sessions(value_from_row(row, ("session", "sessions", "meal", "meals"))),
         venues=parse_venues(value_from_row(row, ("venues", "venue", "restaurants", "restaurant")), venue_aliases),
+        unsubscribe_url=str(
+            value_from_row(
+                row,
+                (
+                    "unsubscribe url",
+                    "unsubscribe link",
+                    "unsubscribe",
+                    "manage url",
+                    "manage link",
+                    "preferences url",
+                    "preferences link",
+                ),
+            )
+            or ""
+        ).strip(),
         source_label=source_label,
     )
 
@@ -243,6 +260,32 @@ def load_sent_log(path: Path) -> dict[str, Any]:
 def salted_hash(parts: list[Any], salt: str) -> str:
     raw = json.dumps(parts, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(f"{salt}:{raw}".encode("utf-8")).hexdigest()
+
+
+def append_query_params(url: str, params: dict[str, str]) -> str:
+    if not url:
+        return ""
+    parts = urllib.parse.urlsplit(url)
+    query = urllib.parse.parse_qsl(parts.query, keep_blank_values=True)
+    query.extend((key, value) for key, value in params.items() if value)
+    return urllib.parse.urlunsplit(
+        (
+            parts.scheme,
+            parts.netloc,
+            parts.path,
+            urllib.parse.urlencode(query),
+            parts.fragment,
+        )
+    )
+
+
+def unsubscribe_url_for(subscription: Subscription, salt: str, base_url: str) -> str:
+    if subscription.unsubscribe_url:
+        return subscription.unsubscribe_url
+    if not salt or not base_url:
+        return ""
+    token = salted_hash(["unsubscribe", subscription.email.casefold()], salt)
+    return append_query_params(base_url, {"email": subscription.email, "token": token})
 
 
 def slot_max_seats(slot: dict[str, Any], fallback: int = 2) -> int:
@@ -355,7 +398,15 @@ def format_slot(slot: dict[str, Any]) -> str:
     return f"{slot.get('venue_name')} - {date} {meal} {time} (up to {max_seats} pax)"
 
 
-def build_email(subscription: Subscription, slots: list[dict[str, Any]], sender: str, site_url: str, reply_to: str = "") -> EmailMessage:
+def build_email(
+    subscription: Subscription,
+    slots: list[dict[str, Any]],
+    sender: str,
+    site_url: str,
+    reply_to: str = "",
+    unsubscribe_url: str = "",
+    one_click_unsubscribe: bool = False,
+) -> EmailMessage:
     subject = f"Table for Two alert: {len(slots)} matching slot{'s' if len(slots) != 1 else ''}"
     greeting = f"Hi {subscription.name}," if subscription.name else "Hi,"
     shown_slots = slots[:MAX_MATCHES_PER_EMAIL]
@@ -377,6 +428,8 @@ def build_email(subscription: Subscription, slots: list[dict[str, Any]], sender:
             site_url,
         ]
     )
+    if unsubscribe_url:
+        lines.extend(["", f"Unsubscribe: {unsubscribe_url}"])
     text_body = "\n".join(lines)
     html_items = "".join(f"<li>{html.escape(format_slot(slot))}</li>" for slot in shown_slots)
     if extra_count:
@@ -388,6 +441,12 @@ def build_email(subscription: Subscription, slots: list[dict[str, Any]], sender:
     <p>Book and redeem in the Amex Experiences App. Reconfirm cached DiningCity AMEXPlatSG availability before making plans.</p>
     <p><a href="{html.escape(site_url)}">Open Table for Two explorer</a></p>
     """
+    if unsubscribe_url:
+        html_body += f"""
+        <p style="color:#6b7280;font-size:12px">
+          <a href="{html.escape(unsubscribe_url)}">Unsubscribe from these alerts</a>
+        </p>
+        """
 
     message = EmailMessage()
     message["Subject"] = subject
@@ -395,6 +454,10 @@ def build_email(subscription: Subscription, slots: list[dict[str, Any]], sender:
     message["To"] = subscription.email
     if reply_to:
         message["Reply-To"] = reply_to
+    if unsubscribe_url:
+        message["List-Unsubscribe"] = f"<{unsubscribe_url}>"
+        if one_click_unsubscribe:
+            message["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
     message.set_content(text_body)
     message.add_alternative(html_body, subtype="html")
     return message
@@ -407,7 +470,18 @@ def smtp_config_from_env() -> dict[str, Any]:
     password = os.environ.get("SMTP_PASS", "")
     sender = os.environ.get("SMTP_FROM", user).strip()
     reply_to = os.environ.get("SMTP_REPLY_TO", "").strip()
-    return {"host": host, "port": port, "user": user, "password": password, "sender": sender, "reply_to": reply_to}
+    unsubscribe_base_url = os.environ.get("ALERT_UNSUBSCRIBE_BASE_URL", "").strip()
+    one_click_unsubscribe = parse_enabled(os.environ.get("ALERT_ONE_CLICK_UNSUBSCRIBE") or "false")
+    return {
+        "host": host,
+        "port": port,
+        "user": user,
+        "password": password,
+        "sender": sender,
+        "reply_to": reply_to,
+        "unsubscribe_base_url": unsubscribe_base_url,
+        "one_click_unsubscribe": one_click_unsubscribe,
+    }
 
 
 def send_messages(messages: list[EmailMessage], config: dict[str, Any]) -> None:
@@ -475,6 +549,8 @@ def main() -> int:
                 sender=smtp_config["sender"] or "dinnertime@kooexperience.com",
                 site_url=args.site_url,
                 reply_to=smtp_config["reply_to"],
+                unsubscribe_url=unsubscribe_url_for(subscription, salt, smtp_config["unsubscribe_base_url"]),
+                one_click_unsubscribe=smtp_config["one_click_unsubscribe"],
             )
         )
         newly_sent_keys.extend(slot_key(subscription, slot, salt) for slot in new_matches)
