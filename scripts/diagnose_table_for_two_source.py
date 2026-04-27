@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from scrape_table_for_two import DININGCITY_PROJECT, VENUES, fetch_json  # noqa: E402
+from scrape_table_for_two import DININGCITY_PROJECT, VENUES, fetch_available_dates, fetch_json  # noqa: E402
 
 
 def normalized(value: object) -> str:
@@ -94,6 +94,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("venue", nargs="?", default="Colony", help="Venue name, id, or DiningCity id")
     parser.add_argument("--date", default="2026-04-29", help="Selected date to probe in YYYY-MM-DD form")
+    parser.add_argument("--raw-generic", action="store_true", help="Print the generic DiningCity booking payload")
     args = parser.parse_args()
 
     venue = find_venue(args.venue)
@@ -103,11 +104,13 @@ def main() -> int:
 
     projects = fetch_json(f"/restaurants/{dining_city_id}/projects/program_and_event")
     amex_payload = fetch_json(f"/restaurants/{dining_city_id}/available_2018", {"project": DININGCITY_PROJECT})
+    amex_dates = fetch_available_dates(dining_city_id)
     selected_payload = fetch_json(
         f"/restaurants/{dining_city_id}/available_2018",
         {"project": DININGCITY_PROJECT, "selected_date": args.date},
+        accept_version=False,
     )
-    generic_booking = fetch_json(f"/restaurants/{dining_city_id}/book_now_available_time_slots")
+    generic_booking = fetch_json(f"/restaurants/{dining_city_id}/book_now_available_time_slots", accept_version=False)
 
     rows, slot_count, dates, times = available_2018_summary(amex_payload)
     selected_rows, selected_slot_count, selected_dates, selected_times = available_2018_summary(selected_payload)
@@ -119,6 +122,10 @@ def main() -> int:
         f"AMEXPlatSG available_2018: {rows} date rows, {slot_count} slot rows"
         f"{f' | dates={dates[:5]}' if dates else ''}"
         f"{f' | times={times[:8]}' if times else ''}"
+    )
+    print(
+        f"AMEXPlatSG dining_dates: {len(amex_dates)} available dates"
+        f"{f' | first_dates={amex_dates[:8]}' if amex_dates else ''}"
     )
     print(
         f"AMEXPlatSG available_2018 selected_date={args.date}: {selected_rows} date rows, "
@@ -133,12 +140,13 @@ def main() -> int:
     )
     print()
     print("Interpretation:")
-    print("- available_2018 with AMEXPlatSG is the cache source used by this app.")
-    print("- book_now_available_time_slots is generic DiningCity booking inventory and is not treated as Table for Two.")
-    print("- If the Amex app shows seats while AMEXPlatSG returns empty, the app is using authenticated or app-specific context we do not have in GitHub.")
-    print()
-    print("Raw generic booking response:")
-    print(json.dumps(generic_booking, indent=2, ensure_ascii=False))
+    print("- The cache first uses the bulk AMEXPlatSG response.")
+    print("- If the bulk response is empty, the scraper can use the per-date AMEXPlatSG booking flow.")
+    print("- book_now_available_time_slots is generic DiningCity booking inventory and is only shown here for comparison.")
+    if args.raw_generic:
+        print()
+        print("Raw generic booking response:")
+        print(json.dumps(generic_booking, indent=2, ensure_ascii=False))
     return 0
 
 

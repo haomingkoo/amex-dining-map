@@ -3321,10 +3321,23 @@ function tableForTwoLiveSourceUrl(record) {
   return `${TABLE_FOR_TWO_DININGCITY_API_BASE}/restaurants/${record.dining_city_id}/available_2018?${params.toString()}`;
 }
 
+function tableForTwoSelectedDateSourceUrl(record, selectedDate) {
+  if (!record?.dining_city_id || !selectedDate) return "";
+  const params = new URLSearchParams({ project: TABLE_FOR_TWO_DININGCITY_PROJECT, selected_date: selectedDate });
+  return `${TABLE_FOR_TWO_DININGCITY_API_BASE}/restaurants/${record.dining_city_id}/available_2018?${params.toString()}`;
+}
+
 function tableForTwoFetchHeaders() {
   return {
     "api-key": "cgecegcegcc",
     "accept-version": "application/json; version=2",
+    lang: "en",
+  };
+}
+
+function tableForTwoPerDateFetchHeaders() {
+  return {
+    "api-key": "cgecegcegcc",
     lang: "en",
   };
 }
@@ -3338,16 +3351,21 @@ function tableForTwoSlotSeatValues(slot) {
 
 function tableForTwoSlotMaxSeats(slot) {
   const values = tableForTwoSlotSeatValues(slot);
-  const listedMax = values.length ? Math.max(...values) : 0;
+  if (values.length) return Math.max(...values);
   const total = Number(slot?.seats?.total_available_seats || 0);
-  return Math.max(listedMax, Number.isFinite(total) ? total : 0);
+  return Number.isFinite(total) ? total : 0;
+}
+
+function tableForTwoSlotRawAvailableSeats(slot) {
+  const total = Number(slot?.seats?.total_available_seats || 0);
+  return Number.isFinite(total) ? total : 0;
 }
 
 function tableForTwoSlotHasMinimumSeats(slot, minimum = TABLE_FOR_TWO_DEFAULT_PARTY_SIZE) {
   return tableForTwoSlotMaxSeats(slot) >= minimum;
 }
 
-function tableForTwoAvailabilityFromRows(record, rows, checkedAt) {
+function tableForTwoAvailabilityFromRows(record, rows, checkedAt, sourceMode = "bulk_project", sourceUrl = tableForTwoLiveSourceUrl(record)) {
   const grouped = new Map();
   const visibleDates = new Set();
   let availableSlotCount = 0;
@@ -3370,7 +3388,9 @@ function tableForTwoAvailabilityFromRows(record, rows, checkedAt) {
         weekday: row?.weekday || "",
         time: slot.time || "",
         meal,
+        available_seats: tableForTwoSlotSeatValues(slot),
         max_seats: maxSeats,
+        raw_available_seats: tableForTwoSlotRawAvailableSeats(slot),
       });
       bucket.slotCount += 1;
       bucket.maxSeats = Math.max(bucket.maxSeats, maxSeats);
@@ -3378,7 +3398,7 @@ function tableForTwoAvailabilityFromRows(record, rows, checkedAt) {
     });
   });
 
-  const meals = [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([meal, bucket]) => ({
+  const meals = [...grouped.entries()].sort(([a], [b]) => tableForTwoCompareMealLabels(a, b)).map(([meal, bucket]) => ({
     meal,
     status: "available",
     seats: TABLE_FOR_TWO_DEFAULT_PARTY_SIZE,
@@ -3389,9 +3409,9 @@ function tableForTwoAvailabilityFromRows(record, rows, checkedAt) {
     slot_count: bucket.slotCount,
   }));
   const visibleDateList = [...visibleDates].sort();
-  const sourceUrl = tableForTwoLiveSourceUrl(record);
-  const sourceNote =
-    `Availability is from DiningCity project ${TABLE_FOR_TWO_DININGCITY_PROJECT} (${TABLE_FOR_TWO_DININGCITY_PROJECT_TITLE}). Book and redeem through the Amex Experiences App.`;
+  const sourceNote = sourceMode === "selected_date_project"
+    ? `Availability is from DiningCity project ${TABLE_FOR_TWO_DININGCITY_PROJECT} (${TABLE_FOR_TWO_DININGCITY_PROJECT_TITLE}) using the same per-date booking flow as the DiningCity restaurant page. Book and redeem through the Amex Experiences App.`
+    : `Availability is from DiningCity project ${TABLE_FOR_TWO_DININGCITY_PROJECT} (${TABLE_FOR_TWO_DININGCITY_PROJECT_TITLE}). Book and redeem through the Amex Experiences App.`;
 
   if (availableSlotCount) {
     const availableDates = uniqueValues(meals.flatMap((meal) => meal.dates || []));
@@ -3402,6 +3422,7 @@ function tableForTwoAvailabilityFromRows(record, rows, checkedAt) {
       status: "live_available",
       source: `DiningCity public API project ${TABLE_FOR_TWO_DININGCITY_PROJECT}`,
       source_url: sourceUrl,
+      source_mode: sourceMode,
       project: TABLE_FOR_TWO_DININGCITY_PROJECT,
       project_title: TABLE_FOR_TWO_DININGCITY_PROJECT_TITLE,
       captured_at: checkedAt,
@@ -3419,6 +3440,7 @@ function tableForTwoAvailabilityFromRows(record, rows, checkedAt) {
     status: "live_no_seats",
     source: `DiningCity public API project ${TABLE_FOR_TWO_DININGCITY_PROJECT}`,
     source_url: sourceUrl,
+    source_mode: sourceMode,
     project: TABLE_FOR_TWO_DININGCITY_PROJECT,
     project_title: TABLE_FOR_TWO_DININGCITY_PROJECT_TITLE,
     captured_at: checkedAt,
@@ -3441,7 +3463,42 @@ async function fetchTableForTwoLiveAvailability(record, checkedAt) {
     throw new Error(`DiningCity ${response.status}`);
   }
   const payload = await response.json();
-  return tableForTwoAvailabilityFromRows(record, payload?.data || [], checkedAt);
+  const rows = Array.isArray(payload?.data) ? payload.data : [];
+  if (rows.length) {
+    return tableForTwoAvailabilityFromRows(record, rows, checkedAt, "bulk_project", tableForTwoLiveSourceUrl(record));
+  }
+
+  const datesResponse = await fetch(
+    `${TABLE_FOR_TWO_DININGCITY_API_BASE}/restaurants/${record.dining_city_id}/dining_dates?${new URLSearchParams({ project: TABLE_FOR_TWO_DININGCITY_PROJECT }).toString()}`,
+    { headers: tableForTwoPerDateFetchHeaders() },
+  );
+  if (!datesResponse.ok) {
+    return tableForTwoAvailabilityFromRows(record, [], checkedAt, "bulk_project", tableForTwoLiveSourceUrl(record));
+  }
+  const datesPayload = await datesResponse.json();
+  const dates = Array.isArray(datesPayload)
+    ? datesPayload
+      .filter((row) => row?.available === true && row?.date)
+      .map((row) => row.date)
+      .sort()
+    : [];
+  if (!dates.length) {
+    return tableForTwoAvailabilityFromRows(record, [], checkedAt, "bulk_project", tableForTwoLiveSourceUrl(record));
+  }
+
+  const selectedResults = await Promise.allSettled(dates.map(async (selectedDate) => {
+    const selectedResponse = await fetch(tableForTwoSelectedDateSourceUrl(record, selectedDate), {
+      headers: tableForTwoPerDateFetchHeaders(),
+    });
+    if (!selectedResponse.ok) throw new Error(`DiningCity ${selectedResponse.status}`);
+    const selectedPayload = await selectedResponse.json();
+    return Array.isArray(selectedPayload?.data) ? selectedPayload.data : [];
+  }));
+  const selectedRows = selectedResults.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+  const sourceUrl = selectedRows[0]?.date
+    ? tableForTwoSelectedDateSourceUrl(record, selectedRows[0].date)
+    : tableForTwoSelectedDateSourceUrl(record, dates[0]);
+  return tableForTwoAvailabilityFromRows(record, selectedRows, checkedAt, "selected_date_project", sourceUrl);
 }
 
 async function refreshTableForTwoLiveAvailability({ force = false } = {}) {
@@ -3944,10 +4001,17 @@ function tableForTwoDateIsWeekend(dateValue) {
 
 function tableForTwoSlotMaxSeatValue(slot, fallback = TABLE_FOR_TWO_DEFAULT_PARTY_SIZE) {
   const values = Array.isArray(slot?.available_seats) ? slot.available_seats.map(Number).filter(Number.isFinite) : [];
-  const listed = values.length ? Math.max(...values) : 0;
+  if (values.length) return Math.max(...values);
   const maxSeats = Number(slot?.max_seats || 0);
+  if (Number.isFinite(maxSeats) && maxSeats) return maxSeats;
   const total = Number(slot?.total_available_seats || 0);
-  return Math.max(listed, Number.isFinite(maxSeats) ? maxSeats : 0, Number.isFinite(total) ? total : 0, fallback || 0);
+  if (Number.isFinite(total) && total) return total;
+  return fallback || 0;
+}
+
+function tableForTwoSlotRawSeatValue(slot) {
+  const raw = Number(slot?.raw_available_seats || slot?.total_available_seats || 0);
+  return Number.isFinite(raw) ? raw : 0;
 }
 
 function tableForTwoMealSlots(meal) {
@@ -3962,6 +4026,7 @@ function tableForTwoMealSlots(meal) {
         available_seats: Array.isArray(slot.available_seats) ? slot.available_seats : [],
         max_seats: Number(slot.max_seats || slot.total_available_seats || meal.max_seats || meal.seats || 0),
         total_available_seats: Number(slot.total_available_seats || slot.max_seats || meal.max_seats || meal.seats || 0),
+        raw_available_seats: Number(slot.raw_available_seats || slot.total_available_seats || 0),
       }))
       .filter((slot) => slot.time || slot.date);
   }
@@ -3978,6 +4043,7 @@ function tableForTwoMealSlots(meal) {
       available_seats: [],
       max_seats: fallbackMaxSeats,
       total_available_seats: fallbackMaxSeats,
+      raw_available_seats: 0,
     }));
   }
   return dates.flatMap((date) => times.map((time) => ({
@@ -3988,6 +4054,7 @@ function tableForTwoMealSlots(meal) {
     available_seats: [],
     max_seats: fallbackMaxSeats,
     total_available_seats: fallbackMaxSeats,
+    raw_available_seats: 0,
   })));
 }
 
@@ -4102,7 +4169,7 @@ function tableForTwoSlotGroupSummaries(slots) {
     if (!grouped.has(meal)) grouped.set(meal, []);
     grouped.get(meal).push(slot);
   });
-  return [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([meal, mealSlots]) => {
+  return [...grouped.entries()].sort(([a], [b]) => tableForTwoCompareMealLabels(a, b)).map(([meal, mealSlots]) => {
     const times = uniqueValues(mealSlots.map((slot) => slot.time).filter(Boolean)).slice(0, TABLE_FOR_TWO_MAX_TIMES);
     const maxSeats = Math.max(...mealSlots.map((slot) => tableForTwoSlotMaxSeatValue(slot)));
     const timeText = times.length ? times.join(", ") : `${mealSlots.length} slots`;
@@ -4117,6 +4184,25 @@ function tableForTwoSessionLabel(meal) {
   if (normalized === "lunch") return "Lunch";
   if (normalized === "dinner") return "Dinner";
   return meal || "Session";
+}
+
+function tableForTwoMealRank(meal) {
+  const label = tableForTwoSessionLabel(meal).toLowerCase();
+  if (label === "lunch") return 0;
+  if (label === "dinner") return 1;
+  return 9;
+}
+
+function tableForTwoCompareMealLabels(a, b) {
+  const rankDiff = tableForTwoMealRank(a) - tableForTwoMealRank(b);
+  if (rankDiff) return rankDiff;
+  return tableForTwoSessionLabel(a).localeCompare(tableForTwoSessionLabel(b));
+}
+
+function tableForTwoCompareSlots(a, b) {
+  const mealDiff = tableForTwoCompareMealLabels(a?.meal, b?.meal);
+  if (mealDiff) return mealDiff;
+  return (a?.time || "").localeCompare(b?.time || "");
 }
 
 function tableForTwoSessionShortLabel(meal) {
@@ -4144,7 +4230,7 @@ function tableForTwoDateSessionSummaries(slots) {
     grouped.get(meal).push(slot);
   });
   return [...grouped.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => tableForTwoCompareMealLabels(a, b))
     .map(([meal, mealSlots]) => {
       const times = uniqueValues(mealSlots.map((slot) => slot.time).filter(Boolean));
       const maxSeats = Math.max(...mealSlots.map((slot) => tableForTwoSlotMaxSeatValue(slot)));
@@ -4292,7 +4378,7 @@ function tableForTwoSelectedDateSlotsHtml(slots, filters = state.tableForTwoCurr
   }
   const slotsForDate = slots
     .filter((slot) => slot.date === selectedDate)
-    .sort((a, b) => `${tableForTwoSessionLabel(a.meal)} ${a.time || ""}`.localeCompare(`${tableForTwoSessionLabel(b.meal)} ${b.time || ""}`));
+    .sort(tableForTwoCompareSlots);
   if (!slotsForDate.length) {
     return `
       <div class="tft-date-detail">
@@ -4302,7 +4388,7 @@ function tableForTwoSelectedDateSlotsHtml(slots, filters = state.tableForTwoCurr
     `;
   }
   const groupedRows = [...new Set(slotsForDate.map((slot) => tableForTwoSessionLabel(slot.meal)))]
-    .sort()
+    .sort(tableForTwoCompareMealLabels)
     .map((meal) => {
       const mealSlots = slotsForDate.filter((slot) => tableForTwoSessionLabel(slot.meal) === meal);
       const timeChips = mealSlots
@@ -4311,7 +4397,9 @@ function tableForTwoSelectedDateSlotsHtml(slots, filters = state.tableForTwoCurr
           const distanceLabel = filters.time ? tableForTwoTimeDistanceLabel(distance) : "";
           const maxSeats = tableForTwoSlotMaxSeatValue(slot);
           const paxLabel = maxSeats ? `up to ${maxSeats} pax` : "";
-          return `<span class="tft-time-chip"><span>${escapeHtml(slot.time || "Time")}</span>${paxLabel ? `<em>${escapeHtml(paxLabel)}</em>` : ""}${distanceLabel ? `<em>${escapeHtml(distanceLabel)}</em>` : ""}</span>`;
+          const rawSeats = tableForTwoSlotRawSeatValue(slot);
+          const rawLabel = rawSeats > maxSeats ? `${rawSeats} raw seats left` : "";
+          return `<span class="tft-time-chip"><span>${escapeHtml(slot.time || "Time")}</span>${paxLabel ? `<em>${escapeHtml(paxLabel)}</em>` : ""}${rawLabel ? `<em>${escapeHtml(rawLabel)}</em>` : ""}${distanceLabel ? `<em>${escapeHtml(distanceLabel)}</em>` : ""}</span>`;
         })
         .join("");
       return `

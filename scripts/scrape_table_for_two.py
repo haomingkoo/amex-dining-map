@@ -368,19 +368,21 @@ def iso_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
-def fetch_json(path: str, params: dict | None = None) -> object:
+def fetch_json(path: str, params: dict | None = None, *, accept_version: bool = True) -> object:
     query = f"?{urllib.parse.urlencode(params)}" if params else ""
     url = f"{DININGCITY_API_BASE}{path}{query}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 amex-dining-map table-for-two refresh",
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "api-key": "cgecegcegcc",
+        "lang": "en",
+    }
+    if accept_version:
+        headers["accept-version"] = "application/json; version=2"
     request = urllib.request.Request(
         url,
-        headers={
-            "User-Agent": "Mozilla/5.0 amex-dining-map table-for-two refresh",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "api-key": "cgecegcegcc",
-            "accept-version": "application/json; version=2",
-            "lang": "en",
-        },
+        headers=headers,
     )
     with urllib.request.urlopen(request, timeout=30) as response:
         return json.loads(response.read().decode("utf-8"))
@@ -419,6 +421,11 @@ def diningcity_source_url(dining_city_id: str) -> str:
     return f"{DININGCITY_API_BASE}/restaurants/{dining_city_id}/available_2018?{params}"
 
 
+def diningcity_selected_date_source_url(dining_city_id: str, selected_date: str) -> str:
+    params = urllib.parse.urlencode({"project": DININGCITY_PROJECT, "selected_date": selected_date})
+    return f"{DININGCITY_API_BASE}/restaurants/{dining_city_id}/available_2018?{params}"
+
+
 def has_project(dining_city_id: str) -> bool:
     projects = fetch_json(f"/restaurants/{dining_city_id}/projects/program_and_event")
     return isinstance(projects, list) and any(
@@ -426,6 +433,39 @@ def has_project(dining_city_id: str) -> bool:
         for project in projects
         if isinstance(project, dict)
     )
+
+
+def rows_from_payload(payload: object) -> list[dict]:
+    rows = payload.get("data", []) if isinstance(payload, dict) else []
+    return rows if isinstance(rows, list) else []
+
+
+def fetch_available_dates(dining_city_id: str) -> list[str]:
+    payload = fetch_json(
+        f"/restaurants/{dining_city_id}/dining_dates",
+        {"project": DININGCITY_PROJECT},
+        accept_version=False,
+    )
+    if not isinstance(payload, list):
+        return []
+    dates = {
+        row.get("date")
+        for row in payload
+        if isinstance(row, dict) and row.get("available") is True and row.get("date")
+    }
+    return sorted(dates)
+
+
+def fetch_selected_date_rows(dining_city_id: str, dates: list[str]) -> list[dict]:
+    rows = []
+    for selected_date in dates:
+        payload = fetch_json(
+            f"/restaurants/{dining_city_id}/available_2018",
+            {"project": DININGCITY_PROJECT, "selected_date": selected_date},
+            accept_version=False,
+        )
+        rows.extend(rows_from_payload(payload))
+    return rows
 
 
 def seat_values(slot: dict) -> set[int]:
@@ -443,12 +483,28 @@ def seat_values(slot: dict) -> set[int]:
 
 def slot_max_seats(slot: dict) -> int:
     values = seat_values(slot)
-    listed_max = max(values) if values else 0
+    if values:
+        return max(values)
     try:
-        total = int(slot.get("seats", {}).get("total_available_seats") or 0)
+        return int(slot.get("seats", {}).get("total_available_seats") or 0)
     except (TypeError, ValueError):
-        total = 0
-    return max(listed_max, total)
+        return 0
+
+
+def slot_raw_available_seats(slot: dict) -> int:
+    try:
+        return int(slot.get("seats", {}).get("total_available_seats") or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def meal_sort_key(meal: str) -> tuple[int, str]:
+    normalized = (meal or "").strip().lower()
+    if normalized == "lunch":
+        return (0, normalized)
+    if normalized == "dinner":
+        return (1, normalized)
+    return (9, normalized)
 
 
 def has_minimum_seats(slot: dict, minimum: int = MIN_TABLE_FOR_TWO_SEATS) -> bool:
@@ -483,6 +539,7 @@ def build_meals(rows: list[dict]) -> tuple[list[dict], list[str], int]:
                     "time": time,
                     "meal": meal,
                     "max_seats": max_seats,
+                    "raw_available_seats": slot_raw_available_seats(slot),
                 }
             )
             bucket["slot_count"] += 1
@@ -490,7 +547,7 @@ def build_meals(rows: list[dict]) -> tuple[list[dict], list[str], int]:
             available_slot_count += 1
 
     meals = []
-    for meal, bucket in sorted(grouped.items()):
+    for meal, bucket in sorted(grouped.items(), key=lambda item: meal_sort_key(item[0])):
         dates = sorted(bucket["dates"])
         times = sorted(bucket["times"])
         slots = sorted(bucket["slots"], key=lambda item: f"{item.get('date') or ''} {item.get('time') or ''}")
@@ -523,15 +580,32 @@ def live_availability_for_venue(venue: dict, checked_at: str) -> tuple[dict | No
     except Exception as exc:  # noqa: BLE001 - keep one venue failure from killing roster refresh.
         return None, f"{type(exc).__name__}: {exc}"
 
-    rows = payload.get("data", []) if isinstance(payload, dict) else []
-    if not isinstance(rows, list):
-        rows = []
+    rows = rows_from_payload(payload)
+    source_mode = "bulk_project"
+    fallback_dates = []
+    if not rows:
+        try:
+            fallback_dates = fetch_available_dates(dining_city_id)
+            rows = fetch_selected_date_rows(dining_city_id, fallback_dates)
+            if rows:
+                source_mode = "selected_date_project"
+        except Exception:
+            rows = []
     meals, visible_dates, available_slot_count = build_meals(rows)
     source_url = diningcity_source_url(dining_city_id)
     source_note = (
         f"Availability is from DiningCity project {DININGCITY_PROJECT} "
         f"({DININGCITY_PROJECT_TITLE}). Book and redeem through the Amex Experiences App."
     )
+    if source_mode == "selected_date_project":
+        source_note = (
+            f"Availability is from DiningCity project {DININGCITY_PROJECT} "
+            f"({DININGCITY_PROJECT_TITLE}) using the same per-date booking flow as the DiningCity restaurant page. "
+            "Book and redeem through the Amex Experiences App."
+        )
+        source_date = visible_dates[0] if visible_dates else (fallback_dates[0] if fallback_dates else "")
+        if source_date:
+            source_url = diningcity_selected_date_source_url(dining_city_id, source_date)
     if available_slot_count:
         available_dates = sorted({date for meal in meals for date in meal.get("dates", [])})
         meal_summary = ", ".join(
@@ -556,6 +630,7 @@ def live_availability_for_venue(venue: dict, checked_at: str) -> tuple[dict | No
             "status": status,
             "source": f"DiningCity public API project {DININGCITY_PROJECT}",
             "source_url": source_url,
+            "source_mode": source_mode,
             "project": DININGCITY_PROJECT,
             "project_title": DININGCITY_PROJECT_TITLE,
             "captured_at": checked_at,
