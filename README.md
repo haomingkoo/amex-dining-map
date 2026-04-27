@@ -206,7 +206,9 @@ Security notes:
   in GitHub Actions secrets only.
 - The repository stores only salted hashes of sent alert keys in
   `data/table-for-two-alert-sent.json`; it should not store user emails.
-- The alert workflow sends one positive match email per signup preference scope.
+- The alert workflow sends one confirmation email per unmatched signup
+  preference scope so the user receives an unsubscribe link even before a slot
+  matches. It also sends one positive match email per signup preference scope.
   After a match email is sent, it records a salted matched key so that signup
   does not keep sending new slot-time emails. If an alert's exact dates or date
   range pass without any matching slot email having been sent, it sends one
