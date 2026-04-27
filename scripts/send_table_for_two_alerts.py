@@ -684,14 +684,16 @@ def main() -> int:
 
     for subscription in subscriptions:
         matches = matching_slots(subscription, venues)
+        fulfilled_key = subscription_state_key(subscription, "matched", salt)
+        expired_key = subscription_state_key(subscription, "expired", salt)
+        if fulfilled_key in sent_keys or fulfilled_key in pending_sent_keys:
+            continue
         new_matches = [
             slot
             for slot in matches
             if slot_key(subscription, slot, salt) not in sent_keys
             and slot_key(subscription, slot, salt) not in pending_sent_keys
         ]
-        fulfilled_key = subscription_state_key(subscription, "matched", salt)
-        expired_key = subscription_state_key(subscription, "expired", salt)
         unsubscribe_url = unsubscribe_url_for(subscription, salt, smtp_config["unsubscribe_base_url"])
         if new_matches:
             new_slot_keys = [slot_key(subscription, slot, salt) for slot in new_matches]

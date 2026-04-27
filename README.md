@@ -206,10 +206,12 @@ Security notes:
   in GitHub Actions secrets only.
 - The repository stores only salted hashes of sent alert keys in
   `data/table-for-two-alert-sent.json`; it should not store user emails.
-- The alert workflow sends positive matches only once per exact venue/date/
-  session/time/seat-count key. If an alert's exact dates or date range pass
-  without any matching slot email having been sent, it sends one expiry email
-  and records a salted expiry key so that closure email is not repeated.
+- The alert workflow sends one positive match email per signup preference scope.
+  After a match email is sent, it records a salted matched key so that signup
+  does not keep sending new slot-time emails. If an alert's exact dates or date
+  range pass without any matching slot email having been sent, it sends one
+  expiry email and records a salted expiry key so that closure email is not
+  repeated.
 - Unsubscribe links are added to email bodies and `List-Unsubscribe` headers. The
   Apps Script unsubscribe endpoint should verify the `email` and `token` query
   parameters, then mark matching rows as `enabled=false`.
