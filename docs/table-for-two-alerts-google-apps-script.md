@@ -20,10 +20,103 @@ Recommended form questions:
 - `party size`: dropdown from 2 to 8.
 - `date start` and `date end`: optional date range.
 - `dates`: optional comma-separated exact dates, e.g. `2026-05-23, 2026-06-26`.
-- `sessions`: optional checkboxes for `Lunch`, `Dinner`.
+- `sessions`: optional checkboxes for `Lunch`, `Afternoon Tea`, `Dinner`.
 - `venues`: optional checkboxes; leave blank for any venue.
 
 Add an `enabled` column to the linked Sheet and default new rows to `true`.
+
+## Form Builder
+
+If you do not want to build the Google Form by hand, create a temporary Apps
+Script project at <https://script.google.com>, paste this function, run
+`createTableForTwoAlertForm`, and approve the Google permissions. It creates the
+Form, creates a linked Sheet, and prints the signup URL plus the Sheet URL in
+the Apps Script execution log.
+
+```javascript
+function createTableForTwoAlertForm() {
+  const venues = [
+    '15 Stamford Restaurant',
+    "Bae's Cocktail Club",
+    'Capitol Bistro. Bar. Patisserie',
+    'Colony',
+    'Cultivate',
+    'HighHouse',
+    "Kee's",
+    'La Brasserie',
+    'Osteria Mozza',
+    'Peppermint',
+    'Polo Bar Steakhouse',
+    'Rappu',
+    'Sarai',
+    'TANOKE',
+    'The Feather Blade',
+    'The Plump Frenchman',
+    'Vineyard',
+    'VUE',
+  ];
+
+  const form = FormApp.create('Table for Two Alerts');
+  form.setDescription(
+    'Get an email when cached Table for Two slots match your preferences. ' +
+      'Book and redeem through the Amex Experiences App.',
+  );
+  form.setConfirmationMessage('Alert saved. You can close this tab.');
+
+  form
+    .addTextItem()
+    .setTitle('email')
+    .setRequired(true)
+    .setValidation(FormApp.createTextValidation().requireTextIsEmail().build());
+
+  form.addTextItem().setTitle('name').setRequired(false);
+
+  const partySize = form.addListItem().setTitle('party size').setRequired(true);
+  partySize.setChoices(
+    ['2', '3', '4', '5', '6', '7', '8'].map(value => partySize.createChoice(value)),
+  );
+
+  form
+    .addDateItem()
+    .setTitle('date start')
+    .setHelpText('Optional. Use this with date end for a date range.')
+    .setRequired(false);
+
+  form
+    .addDateItem()
+    .setTitle('date end')
+    .setHelpText('Optional. Use this with date start for a date range.')
+    .setRequired(false);
+
+  form
+    .addParagraphTextItem()
+    .setTitle('dates')
+    .setHelpText('Optional exact dates, comma-separated. Example: 2026-05-23, 2026-06-26')
+    .setRequired(false);
+
+  const sessions = form.addCheckboxItem().setTitle('sessions').setRequired(false);
+  sessions.setChoices(
+    ['Lunch', 'Afternoon Tea', 'Dinner', 'Any session'].map(value => sessions.createChoice(value)),
+  );
+
+  const venueItem = form.addCheckboxItem().setTitle('venues').setRequired(false);
+  venueItem.setChoices(['Any venue', ...venues].map(value => venueItem.createChoice(value)));
+
+  const enabled = form
+    .addCheckboxItem()
+    .setTitle('enabled')
+    .setHelpText('Keep checked to receive alerts. This field also supports unsubscribe links.')
+    .setRequired(true);
+  enabled.setChoices([enabled.createChoice('true')]);
+
+  const sheet = SpreadsheetApp.create('Table for Two Alert Responses');
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, sheet.getId());
+
+  console.log(`Signup URL: ${form.getPublishedUrl()}`);
+  console.log(`Form edit URL: ${form.getEditUrl()}`);
+  console.log(`Sheet URL: ${sheet.getUrl()}`);
+}
+```
 
 ## Apps Script
 

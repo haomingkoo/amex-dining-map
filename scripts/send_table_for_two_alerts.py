@@ -22,16 +22,18 @@ import sys
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from email.message import EmailMessage
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 
 DEFAULT_DATA_PATH = "data/table-for-two.json"
 DEFAULT_SENT_LOG_PATH = "data/table-for-two-alert-sent.json"
 DEFAULT_SITE_URL = "https://amex-explorer.kooexperience.com/#/table-for-two"
 MAX_MATCHES_PER_EMAIL = 24
+ALERT_TIMEZONE = "Asia/Singapore"
 
 
 @dataclass(frozen=True)
@@ -50,6 +52,10 @@ class Subscription:
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def today_singapore() -> date:
+    return datetime.now(ZoneInfo(ALERT_TIMEZONE)).date()
 
 
 def normalize_text(value: Any) -> str:
@@ -132,6 +138,8 @@ def parse_sessions(value: Any) -> tuple[str, ...]:
             continue
         if "lunch" in normalized:
             sessions.append("lunch")
+        elif "afternoon" in normalized and "tea" in normalized:
+            sessions.append("afternoon tea")
         elif "dinner" in normalized:
             sessions.append("dinner")
     return tuple(sorted(set(sessions)))
@@ -375,6 +383,65 @@ def matching_slots(subscription: Subscription, venues: list[dict[str, Any]]) -> 
     return sorted(matches, key=lambda item: (item.get("date") or "", item.get("time") or "", item.get("venue_name") or ""))
 
 
+def iso_date(value: str) -> date | None:
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value or ""):
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def subscription_expiry_date(subscription: Subscription) -> date | None:
+    exact_dates = [parsed for value in subscription.dates if (parsed := iso_date(value))]
+    if exact_dates:
+        start = iso_date(subscription.date_start)
+        end = iso_date(subscription.date_end)
+        filtered_dates = [
+            value
+            for value in exact_dates
+            if (not start or value >= start) and (not end or value <= end)
+        ]
+        return max(filtered_dates or exact_dates)
+    return iso_date(subscription.date_end)
+
+
+def subscription_is_expired(subscription: Subscription, today: date) -> bool:
+    expiry = subscription_expiry_date(subscription)
+    return bool(expiry and expiry < today)
+
+
+def subscription_scope_lines(subscription: Subscription) -> list[str]:
+    lines = [f"Party size: {subscription.party_size}"]
+    if subscription.dates:
+        lines.append(f"Dates: {', '.join(subscription.dates)}")
+    elif subscription.date_start or subscription.date_end:
+        start = subscription.date_start or "any start"
+        end = subscription.date_end or "any end"
+        lines.append(f"Date range: {start} to {end}")
+    if subscription.sessions:
+        lines.append(f"Sessions: {', '.join(session.title() for session in subscription.sessions)}")
+    if subscription.venues:
+        lines.append(f"Venues: {len(subscription.venues)} selected")
+    return lines
+
+
+def subscription_state_key(subscription: Subscription, kind: str, salt: str) -> str:
+    return salted_hash(
+        [
+            kind,
+            subscription.email.casefold(),
+            subscription.party_size,
+            subscription.dates,
+            subscription.date_start,
+            subscription.date_end,
+            subscription.sessions,
+            subscription.venues,
+        ],
+        salt,
+    )
+
+
 def slot_key(subscription: Subscription, slot: dict[str, Any], salt: str) -> str:
     return salted_hash(
         [
@@ -396,6 +463,24 @@ def format_slot(slot: dict[str, Any]) -> str:
     time = slot.get("time") or "time not specified"
     max_seats = slot.get("max_seats") or "?"
     return f"{slot.get('venue_name')} - {date} {meal} {time} (up to {max_seats} pax)"
+
+
+def add_common_headers(
+    message: EmailMessage,
+    sender: str,
+    recipient: str,
+    reply_to: str = "",
+    unsubscribe_url: str = "",
+    one_click_unsubscribe: bool = False,
+) -> None:
+    message["From"] = sender
+    message["To"] = recipient
+    if reply_to:
+        message["Reply-To"] = reply_to
+    if unsubscribe_url:
+        message["List-Unsubscribe"] = f"<{unsubscribe_url}>"
+        if one_click_unsubscribe:
+            message["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
 
 
 def build_email(
@@ -450,14 +535,52 @@ def build_email(
 
     message = EmailMessage()
     message["Subject"] = subject
-    message["From"] = sender
-    message["To"] = subscription.email
-    if reply_to:
-        message["Reply-To"] = reply_to
+    add_common_headers(message, sender, subscription.email, reply_to, unsubscribe_url, one_click_unsubscribe)
+    message.set_content(text_body)
+    message.add_alternative(html_body, subtype="html")
+    return message
+
+
+def build_expired_email(
+    subscription: Subscription,
+    sender: str,
+    signup_url: str,
+    reply_to: str = "",
+    unsubscribe_url: str = "",
+    one_click_unsubscribe: bool = False,
+) -> EmailMessage:
+    subject = "Table for Two alert expired"
+    greeting = f"Hi {subscription.name}," if subscription.name else "Hi,"
+    scope_lines = subscription_scope_lines(subscription)
+    lines = [
+        greeting,
+        "",
+        "We did not find any cached Table for Two slots matching your alert before your selected dates passed.",
+    ]
+    if scope_lines:
+        lines.extend(["", "Alert details:", *[f"- {line}" for line in scope_lines]])
+    if signup_url:
+        lines.extend(["", "You can create a new alert here:", signup_url])
     if unsubscribe_url:
-        message["List-Unsubscribe"] = f"<{unsubscribe_url}>"
-        if one_click_unsubscribe:
-            message["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+        lines.extend(["", f"Unsubscribe: {unsubscribe_url}"])
+    text_body = "\n".join(lines)
+    html_scope = "".join(f"<li>{html.escape(line)}</li>" for line in scope_lines)
+    html_body = f"""
+    <p>{html.escape(greeting)}</p>
+    <p>We did not find any cached Table for Two slots matching your alert before your selected dates passed.</p>
+    {f"<p>Alert details:</p><ul>{html_scope}</ul>" if html_scope else ""}
+    {f'<p><a href="{html.escape(signup_url)}">Create a new alert</a></p>' if signup_url else ""}
+    """
+    if unsubscribe_url:
+        html_body += f"""
+        <p style="color:#6b7280;font-size:12px">
+          <a href="{html.escape(unsubscribe_url)}">Unsubscribe from these alerts</a>
+        </p>
+        """
+
+    message = EmailMessage()
+    message["Subject"] = subject
+    add_common_headers(message, sender, subscription.email, reply_to, unsubscribe_url, one_click_unsubscribe)
     message.set_content(text_body)
     message.add_alternative(html_body, subtype="html")
     return message
@@ -511,6 +634,8 @@ def main() -> int:
     parser.add_argument("--subscriptions-csv-url", default=os.environ.get("TABLE_FOR_TWO_ALERTS_CSV_URL", ""))
     parser.add_argument("--sent-log", default=DEFAULT_SENT_LOG_PATH)
     parser.add_argument("--site-url", default=os.environ.get("ALERT_SITE_URL", DEFAULT_SITE_URL))
+    parser.add_argument("--signup-url", default=os.environ.get("TABLE_FOR_TWO_ALERT_SIGNUP_URL", ""))
+    parser.add_argument("--today", default="", help="Override today's date as YYYY-MM-DD for expiry testing")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--max-emails", type=int, default=50)
     args = parser.parse_args()
@@ -536,24 +661,46 @@ def main() -> int:
     smtp_config = smtp_config_from_env()
     messages: list[EmailMessage] = []
     newly_sent_keys: list[str] = []
+    today = iso_date(args.today) if args.today else today_singapore()
+    if today is None:
+        raise ValueError("--today must be YYYY-MM-DD")
 
     for subscription in subscriptions:
         matches = matching_slots(subscription, venues)
         new_matches = [slot for slot in matches if slot_key(subscription, slot, salt) not in sent_keys]
-        if not new_matches:
-            continue
-        messages.append(
-            build_email(
-                subscription,
-                new_matches,
-                sender=smtp_config["sender"] or "dinnertime@kooexperience.com",
-                site_url=args.site_url,
-                reply_to=smtp_config["reply_to"],
-                unsubscribe_url=unsubscribe_url_for(subscription, salt, smtp_config["unsubscribe_base_url"]),
-                one_click_unsubscribe=smtp_config["one_click_unsubscribe"],
+        fulfilled_key = subscription_state_key(subscription, "matched", salt)
+        expired_key = subscription_state_key(subscription, "expired", salt)
+        unsubscribe_url = unsubscribe_url_for(subscription, salt, smtp_config["unsubscribe_base_url"])
+        if new_matches:
+            messages.append(
+                build_email(
+                    subscription,
+                    new_matches,
+                    sender=smtp_config["sender"] or "dinnertime@kooexperience.com",
+                    site_url=args.site_url,
+                    reply_to=smtp_config["reply_to"],
+                    unsubscribe_url=unsubscribe_url,
+                    one_click_unsubscribe=smtp_config["one_click_unsubscribe"],
+                )
             )
-        )
-        newly_sent_keys.extend(slot_key(subscription, slot, salt) for slot in new_matches)
+            newly_sent_keys.extend(slot_key(subscription, slot, salt) for slot in new_matches)
+            newly_sent_keys.append(fulfilled_key)
+        elif (
+            subscription_is_expired(subscription, today)
+            and fulfilled_key not in sent_keys
+            and expired_key not in sent_keys
+        ):
+            messages.append(
+                build_expired_email(
+                    subscription,
+                    sender=smtp_config["sender"] or "dinnertime@kooexperience.com",
+                    signup_url=args.signup_url or args.site_url,
+                    reply_to=smtp_config["reply_to"],
+                    unsubscribe_url=unsubscribe_url,
+                    one_click_unsubscribe=smtp_config["one_click_unsubscribe"],
+                )
+            )
+            newly_sent_keys.append(expired_key)
         if len(messages) >= args.max_emails:
             break
 
