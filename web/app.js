@@ -3742,7 +3742,7 @@ function createTableForTwoMarker(record) {
   const color = tableForTwoPinColor(record);
   const marker = L.marker(latLngForRecord(record), {
     icon: L.divIcon({
-      html: `<div style="width: 16px; height: 16px; border-radius: 50%; background: ${color}; border: 2px solid #091018; opacity: 0.92; cursor: pointer;"></div>`,
+      html: `<div class="tft-marker-dot" style="width: 16px; height: 16px; border-radius: 50%; background: ${color}; border: 2px solid #091018; opacity: 0.92; cursor: pointer;"></div>`,
       iconSize: [16, 16],
       className: "custom-marker-icon",
     }),
@@ -3756,17 +3756,31 @@ function createTableForTwoMarker(record) {
   return marker;
 }
 
+function applyTableForTwoMarkerStyle(iconEl, record, isActive, isFilteredMatch, hasActiveFilters) {
+  if (!iconEl) return;
+  const color = tableForTwoPinColor(record);
+  iconEl.style.background = isActive ? "#ffffff" : color;
+  iconEl.style.width = isActive ? "24px" : "16px";
+  iconEl.style.height = isActive ? "24px" : "16px";
+  iconEl.style.opacity = hasActiveFilters && !isFilteredMatch && !isActive ? "0.28" : "0.94";
+  iconEl.style.transform = hasActiveFilters && !isFilteredMatch && !isActive ? "scale(0.72)" : "scale(1)";
+  iconEl.style.filter = hasActiveFilters && !isFilteredMatch && !isActive ? "saturate(0.45)" : "none";
+  iconEl.style.boxShadow = isActive
+    ? "0 0 0 4px rgba(255, 255, 255, 0.24), 0 0 20px rgba(255, 255, 255, 0.55)"
+    : isFilteredMatch && hasActiveFilters
+      ? `0 0 0 4px ${tableForTwoAvailabilityKey(record, state.tableForTwoCurrentFilters || {}) === "available" ? "rgba(95, 185, 166, 0.20)" : "rgba(214, 164, 76, 0.16)"}`
+      : "none";
+}
+
 function updateTableForTwoMarkerStyles() {
   if (!hasLeaflet || !tableForTwoMap) return;
+  const filteredIds = new Set(state.tableForTwoFiltered.map((record) => record.id));
+  const hasActiveFilters = tableForTwoActiveFilterCount() > 0;
   state.tableForTwoMarkers.forEach((marker, id) => {
-    const iconEl = marker.getElement()?.querySelector(".custom-marker-icon div");
+    const iconEl = marker.getElement()?.querySelector(".tft-marker-dot") || marker.getElement()?.querySelector(".custom-marker-icon div");
     if (!iconEl) return;
-    if (id === state.tableForTwoActiveId) {
-      applySelectedMarkerStyle(iconEl);
-      return;
-    }
     const record = tableForTwoVenues().find((item) => item.id === id);
-    applyUnselectedMarkerStyle(iconEl, tableForTwoPinColor(record));
+    applyTableForTwoMarkerStyle(iconEl, record, id === state.tableForTwoActiveId, filteredIds.has(id), hasActiveFilters);
   });
 }
 
@@ -3821,7 +3835,7 @@ function maybeScrollTableForTwoDetailsIntoView() {
   });
 }
 
-function setActiveTableForTwoRecord(id) {
+function setActiveTableForTwoRecord(id, options = {}) {
   state.tableForTwoActiveId = id;
   syncTableForTwoSelectionState();
   const record = activeTableForTwoRecord();
@@ -3835,7 +3849,7 @@ function setActiveTableForTwoRecord(id) {
   if (record) resetTableForTwoFocusScroll();
   if (record) {
     setTableForTwoToolbarOpen(false);
-    maybeScrollTableForTwoDetailsIntoView();
+    if (options.scrollDetails) maybeScrollTableForTwoDetailsIntoView();
   }
 }
 
@@ -4514,7 +4528,11 @@ function renderTableForTwoList() {
         <div>
           <div class="mobile-card-kicker">${escapeHtml(tableForTwoCategoryLabel(record.category))}${record.app_area ? ` / ${escapeHtml(record.app_area)}` : ""}</div>
           <div class="mobile-card-title">${escapeHtml(displayName)}</div>
-          <div class="mobile-card-sub"><span class="badge ${availabilityBadgeClass}">${escapeHtml(tableForTwoAvailabilityLabel(record, filters))}</span>${record.availability?.captured_at ? ` ${escapeHtml(tableForTwoFreshnessLabel(record))}` : ""}${ratingStr ? ` ${ratingStr}` : ""}</div>
+          <div class="mobile-card-sub">
+            <span class="badge ${availabilityBadgeClass}">${escapeHtml(tableForTwoAvailabilityLabel(record, filters))}</span>
+            ${record.availability?.captured_at ? `<span>${escapeHtml(tableForTwoFreshnessLabel(record))}</span>` : ""}
+            ${ratingStr}
+          </div>
         </div>
       </div>
       ${tags ? `<div class="venue-tags">${tags}</div>` : ""}
@@ -4525,7 +4543,7 @@ function renderTableForTwoList() {
       </div>
     `;
     card.addEventListener("click", () => {
-      setActiveTableForTwoRecord(record.id);
+      setActiveTableForTwoRecord(record.id, { scrollDetails: true });
     });
     tableForTwoResultsList.appendChild(card);
   });
