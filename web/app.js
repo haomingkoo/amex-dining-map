@@ -3795,7 +3795,7 @@ function filterTableForTwo() {
   const day = tableForTwoDayFilter.value || inferredFilters.day;
   const venues = tableForTwoVenues();
   const filters = { availability, partySize, session, date, time, day };
-  const autoAvailabilityOnly = !availability && tableForTwoHasSlotFilters(filters);
+  const autoAvailabilityOnly = !availability && tableForTwoHasSlotFilters(filters) && !residualSearch;
   state.tableForTwoCurrentFilters = filters;
   state.tableForTwoAutoAvailabilityOnly = autoAvailabilityOnly;
   state.tableForTwoFiltered = venues.filter((record) => {
@@ -4173,9 +4173,9 @@ function tableForTwoNoMatchLine(record, filters = state.tableForTwoCurrentFilter
   const partySize = Number(filters.partySize || tableForTwoSelectedPartySize());
   const dateText = filters.date ? ` on ${tableForTwoShortDate(filters.date)}` : "";
   const timeText = filters.time ? ` within ${TABLE_FOR_TWO_TIME_WINDOW_LABEL} of ${filters.time}` : "";
-  if (filters.time) return `No cached ${partySize}-pax match${dateText}${timeText}. Check the Amex app before ruling it out.`;
-  if (filters.date || filters.session || filters.day) return `No cached ${partySize}-pax match${dateText}. Check the Amex app before ruling it out.`;
-  return `No ${partySize}-pax slots were returned by the cached public check. Check the Amex app before ruling it out.`;
+  if (filters.time) return `No cached Table for Two ${partySize}-pax match${dateText}${timeText}. Normal DiningCity booking slots may still exist; check the Amex app.`;
+  if (filters.date || filters.session || filters.day) return `No cached Table for Two ${partySize}-pax match${dateText}. Normal DiningCity booking slots may still exist; check the Amex app.`;
+  return `No Table for Two ${partySize}-pax slots were returned by the cached public check. Normal DiningCity booking slots may still exist.`;
 }
 
 function tableForTwoCompactAvailabilityLine(record, filters = state.tableForTwoCurrentFilters || {}) {
