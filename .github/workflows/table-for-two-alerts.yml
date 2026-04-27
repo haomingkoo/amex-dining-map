@@ -72,6 +72,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git restore -- data/table-for-two.json
           if [ -f data/table-for-two-alert-sent.json ]; then
             git add data/table-for-two-alert-sent.json
           fi
