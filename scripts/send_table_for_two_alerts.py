@@ -429,7 +429,7 @@ def subscription_is_expired(subscription: Subscription, today: date) -> bool:
     return bool(expiry and expiry < today)
 
 
-def subscription_scope_lines(subscription: Subscription) -> list[str]:
+def subscription_scope_lines(subscription: Subscription, venue_labels: dict[str, str] | None = None) -> list[str]:
     lines = [f"Party size: {subscription.party_size}"]
     if subscription.dates:
         lines.append(f"Dates: {', '.join(subscription.dates)}")
@@ -440,7 +440,12 @@ def subscription_scope_lines(subscription: Subscription) -> list[str]:
     if subscription.sessions:
         lines.append(f"Sessions: {', '.join(session.title() for session in subscription.sessions)}")
     if subscription.venues:
-        lines.append(f"Venues: {len(subscription.venues)} selected")
+        venue_names = [venue_labels.get(venue_id, venue_id) for venue_id in subscription.venues] if venue_labels else []
+        if venue_names:
+            label = "Venue" if len(venue_names) == 1 else "Venues"
+            lines.append(f"{label}: {', '.join(venue_names)}")
+        else:
+            lines.append(f"Venues: {len(subscription.venues)} selected")
     return lines
 
 
@@ -563,13 +568,14 @@ def build_confirmation_email(
     subscription: Subscription,
     sender: str,
     signup_url: str,
+    venue_labels: dict[str, str] | None = None,
     reply_to: str = "",
     unsubscribe_url: str = "",
     one_click_unsubscribe: bool = False,
 ) -> EmailMessage:
     subject = "Table for Two alert confirmed"
     greeting = f"Hi {subscription.name}," if subscription.name else "Hi,"
-    scope_lines = subscription_scope_lines(subscription)
+    scope_lines = subscription_scope_lines(subscription, venue_labels)
     lines = [
         greeting,
         "",
@@ -610,13 +616,14 @@ def build_expired_email(
     subscription: Subscription,
     sender: str,
     signup_url: str,
+    venue_labels: dict[str, str] | None = None,
     reply_to: str = "",
     unsubscribe_url: str = "",
     one_click_unsubscribe: bool = False,
 ) -> EmailMessage:
     subject = "Table for Two alert expired"
     greeting = f"Hi {subscription.name}," if subscription.name else "Hi,"
-    scope_lines = subscription_scope_lines(subscription)
+    scope_lines = subscription_scope_lines(subscription, venue_labels)
     lines = [
         greeting,
         "",
@@ -708,6 +715,11 @@ def main() -> int:
     payload = load_json(args.data)
     venues = payload.get("venues") or []
     venue_aliases = build_venue_aliases(venues)
+    venue_labels = {
+        str(record.get("id")): str(record.get("app_name") or record.get("name") or record.get("id"))
+        for record in venues
+        if record.get("id")
+    }
     subscriptions = load_json_subscriptions(Path(args.subscriptions), venue_aliases)
     if args.subscriptions_csv_url:
         subscriptions.extend(load_csv_subscriptions(fetch_text(args.subscriptions_csv_url), venue_aliases, "csv"))
@@ -738,19 +750,12 @@ def main() -> int:
         expired_key = subscription_state_key(subscription, "expired", salt)
         if fulfilled_key in sent_keys or fulfilled_key in pending_sent_keys:
             continue
-        new_matches = [
-            slot
-            for slot in matches
-            if slot_key(subscription, slot, salt) not in sent_keys
-            and slot_key(subscription, slot, salt) not in pending_sent_keys
-        ]
         unsubscribe_url = unsubscribe_url_for(subscription, salt, smtp_config["unsubscribe_base_url"])
-        if new_matches:
-            new_slot_keys = [slot_key(subscription, slot, salt) for slot in new_matches]
+        if matches:
             messages.append(
                 build_email(
                     subscription,
-                    new_matches,
+                    matches,
                     sender=smtp_config["sender"] or "dinnertime@kooexperience.com",
                     site_url=args.site_url,
                     reply_to=smtp_config["reply_to"],
@@ -758,8 +763,6 @@ def main() -> int:
                     one_click_unsubscribe=smtp_config["one_click_unsubscribe"],
                 )
             )
-            newly_sent_keys.extend(new_slot_keys)
-            pending_sent_keys.update(new_slot_keys)
             newly_sent_keys.append(fulfilled_key)
             pending_sent_keys.add(fulfilled_key)
         elif (
@@ -774,6 +777,7 @@ def main() -> int:
                     subscription,
                     sender=smtp_config["sender"] or "dinnertime@kooexperience.com",
                     signup_url=args.signup_url or args.site_url,
+                    venue_labels=venue_labels,
                     reply_to=smtp_config["reply_to"],
                     unsubscribe_url=unsubscribe_url,
                     one_click_unsubscribe=smtp_config["one_click_unsubscribe"],
@@ -787,6 +791,7 @@ def main() -> int:
                     subscription,
                     sender=smtp_config["sender"] or "dinnertime@kooexperience.com",
                     signup_url=args.signup_url,
+                    venue_labels=venue_labels,
                     reply_to=smtp_config["reply_to"],
                     unsubscribe_url=unsubscribe_url,
                     one_click_unsubscribe=smtp_config["one_click_unsubscribe"],
