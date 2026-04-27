@@ -6,13 +6,14 @@ Covers:
   - data/global-restaurants.json   (Global Dining Credit, 2470 records)
   - data/japan-restaurants.json    (Pocket Concierge Japan, ~844 records)
   - data/love-dining.json          (Love Dining SG restaurants + hotel outlets, 79 records)
+  - data/table-for-two.json        (Table for Two SG, 18 records)
 
 Usage:
     # Full run (all datasets, writes to data/google-maps-ratings.json)
     python3 scripts/scrape_google_ratings.py
 
     # Specific datasets only
-    python3 scripts/scrape_google_ratings.py --datasets global japan love
+    python3 scripts/scrape_google_ratings.py --datasets global japan love tft
 
     # Dry run — generate queries file but don't run Docker
     python3 scripts/scrape_google_ratings.py --dry-run
@@ -69,6 +70,12 @@ def make_query(record: dict, dataset: str) -> str:
         if hotel:
             return f"{name} {hotel} Singapore"
         return f"{name} {addr_short} Singapore" if addr_short else f"{name} Singapore"
+
+    if dataset == "tft":
+        display_name = record.get("dining_city_name") or name
+        address = record.get("address", "")
+        addr_short = re.split(r"Singapore \d{6}", address)[0].strip().rstrip(",")
+        return f"{display_name} {addr_short} Singapore" if addr_short else f"{display_name} Singapore"
 
     # Global: use country + city
     country = record.get("country", "")
@@ -204,6 +211,12 @@ def load_datasets(names: list[str]) -> dict[str, list[dict]]:
         if f.exists():
             datasets["love"] = json.loads(f.read_text())
             print(f"  love: {len(datasets['love'])} records")
+    if "tft" in names:
+        f = DATA_DIR / "table-for-two.json"
+        if f.exists():
+            payload = json.loads(f.read_text())
+            datasets["tft"] = payload.get("venues", []) if isinstance(payload, dict) else payload
+            print(f"  tft: {len(datasets['tft'])} records")
     return datasets
 
 
@@ -211,8 +224,8 @@ def load_datasets(names: list[str]) -> dict[str, list[dict]]:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Scrape Google Maps ratings for all restaurant datasets")
-    p.add_argument("--datasets", nargs="+", default=["global", "japan", "love"],
-                   choices=["global", "japan", "love"],
+    p.add_argument("--datasets", nargs="+", default=["global", "japan", "love", "tft"],
+                   choices=["global", "japan", "love", "tft"],
                    help="Which datasets to process (default: all)")
     p.add_argument("--dry-run", action="store_true",
                    help="Generate queries file but don't run Docker")

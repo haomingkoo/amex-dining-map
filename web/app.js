@@ -44,6 +44,15 @@ const TABLE_FOR_TWO_DEFAULT_PARTY_SIZE = 2;
 const TABLE_FOR_TWO_MAX_TIMES = 12;
 const TABLE_FOR_TWO_TIME_WINDOW_MINUTES = 60;
 const TABLE_FOR_TWO_TIME_WINDOW_LABEL = "1 hour";
+const GOOGLE_RATING_ID_ALIASES = {
+  "tft-15-stamford-restaurant": "love-the-capitol-kempinski-hotel-singapore-15-stamford-restaurant",
+  "tft-capitol-bistro-bar-patisserie": "love-the-capitol-kempinski-hotel-singapore-capitol-bistro-bar-patisserie",
+  "tft-cultivate": "love-cultivate-caf",
+  "tft-sarai": "love-sarai-fine-thai",
+  "tft-tanoke": "love-tanoke",
+  "tft-vineyard": "love-vineyard-at-hortpark",
+  "tft-vue": "amex-global-singapore-vue",
+};
 const LOVE_DINING_FIXED_20_IDS = new Set([
   "love-pan-pacific-orchard-singapore-florette",
   "love-swissotel-the-stamford-skai-bar",
@@ -1025,11 +1034,16 @@ function googleMapsSearchUrl(parts) {
 }
 
 function googleRating(record) {
-  return state.googleRatings[record.id] || null;
+  const direct = state.googleRatings[record.id] || null;
+  const alias = state.googleRatings[GOOGLE_RATING_ID_ALIASES[record.id]] || null;
+  if (direct && alias && direct.review_count == null && alias.review_count != null) {
+    return { ...direct, review_count: alias.review_count };
+  }
+  return direct || alias;
 }
 
 function bestGoogleMapsUrl(record) {
-  const scraped = state.googleRatings[record.id];
+  const scraped = googleRating(record);
   if (scraped && scraped.maps_url) return scraped.maps_url;
   return null;
 }
@@ -3589,6 +3603,16 @@ function tableForTwoTimeDistanceLabel(distance) {
   return `${absDistance} min ${distance > 0 ? "after" : "before"}`;
 }
 
+function tableForTwoNormalizePreferredTime(timeValue) {
+  const minutes = tableForTwoTimeToMinutes(timeValue);
+  if (minutes === null) return "";
+  const rounded = Math.round(minutes / 30) * 30;
+  const bounded = Math.max(0, Math.min(23 * 60 + 30, rounded));
+  const hours = Math.floor(bounded / 60);
+  const mins = bounded % 60;
+  return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+}
+
 function tableForTwoAllAvailableDates(filters = {}) {
   const dates = new Set();
   tableForTwoVenues().forEach((record) => {
@@ -3709,14 +3733,11 @@ function focusTableForTwoOnMap(record) {
   smartZoomToMarker(tableForTwoMap, marker?.getLatLng?.() || latLngForRecord(record));
 }
 
-function scrollTableForTwoFocusIntoView() {
-  const panel = tableForTwoFocusCard?.closest(".focus-panel");
-  tableForTwoFocusCard?.scrollTo?.({ top: 0, behavior: "smooth" });
-  if (!panel) return;
-  panel.scrollIntoView({ behavior: "smooth", block: "start" });
+function resetTableForTwoFocusScroll() {
+  tableForTwoFocusCard?.scrollTo?.({ top: 0, behavior: "auto" });
 }
 
-function setActiveTableForTwoRecord(id, { scroll = false } = {}) {
+function setActiveTableForTwoRecord(id) {
   state.tableForTwoActiveId = id;
   const record = activeTableForTwoRecord();
   tableForTwoResultsText.textContent = record
@@ -3726,9 +3747,7 @@ function setActiveTableForTwoRecord(id, { scroll = false } = {}) {
   renderTableForTwoList();
   updateTableForTwoMarkerStyles();
   if (record) focusTableForTwoOnMap(record);
-  if (scroll && record) {
-    window.requestAnimationFrame(scrollTableForTwoFocusIntoView);
-  }
+  if (record) resetTableForTwoFocusScroll();
 }
 
 function filterTableForTwo() {
@@ -4299,6 +4318,10 @@ function renderTableForTwoList() {
     const filters = state.tableForTwoCurrentFilters || {};
     const availabilityBadgeClass = tableForTwoAvailabilityBadgeClass(record, filters);
     const menuSourceUrl = tableForTwoMenuSourceUrl(record.sample_menu);
+    const rating = googleRating(record);
+    const ratingStr = rating && rating.rating != null
+      ? `<span class="card-google-rating">★ ${escapeHtml(String(rating.rating))}${rating.review_count ? ` (${Number(rating.review_count).toLocaleString()})` : ""}</span>`
+      : "";
     const tags = [
       menuSourceUrl ? '<span class="badge amber">Menu linked</span>' : "",
     ]
@@ -4310,7 +4333,7 @@ function renderTableForTwoList() {
         <div>
           <div class="mobile-card-kicker">${escapeHtml(tableForTwoCategoryLabel(record.category))}${record.app_area ? ` / ${escapeHtml(record.app_area)}` : ""}</div>
           <div class="mobile-card-title">${escapeHtml(displayName)}</div>
-          <div class="mobile-card-sub"><span class="badge ${availabilityBadgeClass}">${escapeHtml(tableForTwoAvailabilityLabel(record, filters))}</span>${record.availability?.captured_at ? ` ${escapeHtml(tableForTwoFreshnessLabel(record))}` : ""}</div>
+          <div class="mobile-card-sub"><span class="badge ${availabilityBadgeClass}">${escapeHtml(tableForTwoAvailabilityLabel(record, filters))}</span>${record.availability?.captured_at ? ` ${escapeHtml(tableForTwoFreshnessLabel(record))}` : ""}${ratingStr ? ` ${ratingStr}` : ""}</div>
         </div>
       </div>
       ${tags ? `<div class="venue-tags">${tags}</div>` : ""}
@@ -4321,7 +4344,7 @@ function renderTableForTwoList() {
       </div>
     `;
     card.addEventListener("click", () => {
-      setActiveTableForTwoRecord(record.id, { scroll: true });
+      setActiveTableForTwoRecord(record.id);
     });
     tableForTwoResultsList.appendChild(card);
   });
@@ -4366,6 +4389,7 @@ function renderTableForTwoCard() {
   const filters = state.tableForTwoCurrentFilters || {};
   const menu = record.sample_menu;
   const menuSourceUrl = tableForTwoMenuSourceUrl(menu);
+  const gBadge = googleRatingBadge(record);
   const menuHtml = menu && menuSourceUrl
     ? `
       <div class="focus-section tft-menu">
@@ -4384,11 +4408,14 @@ function renderTableForTwoCard() {
       </div>
     `
     : "";
-  const googleMapsUrl = googleMapsSearchUrl([displayName, "Singapore"]);
+  const googleMapsUrl = bestGoogleMapsUrl(record) || googleMapsSearchUrl([displayName, "Singapore"]);
 
   tableForTwoFocusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(tableForTwoCategoryLabel(record.category))} / Singapore</div>
-    <h3 class="focus-title">${escapeHtml(displayName)}</h3>
+    <div class="focus-title-row">
+      <h3 class="focus-title">${escapeHtml(displayName)}</h3>
+      ${gBadge ? `<div class="focus-ratings">${gBadge}</div>` : ""}
+    </div>
     <div class="focus-tags">
       <span class="badge ${tableForTwoAvailabilityBadgeClass(record, filters)}">${escapeHtml(tableForTwoAvailabilityLabel(record, filters))}</span>
       ${record.app_area ? `<span class="badge blue">${escapeHtml(record.app_area)}</span>` : ""}
@@ -4441,7 +4468,6 @@ function renderTableForTwoCard() {
       tableForTwoDateFilter.value = button.getAttribute("data-tft-calendar-date") || "";
       refreshTableForTwoDateOptions();
       filterTableForTwo();
-      window.requestAnimationFrame(scrollTableForTwoFocusIntoView);
     });
   });
 }
@@ -5382,7 +5408,10 @@ tableForTwoSessionFilter.addEventListener("change", () => {
   filterTableForTwo();
 });
 tableForTwoDateFilter.addEventListener("change", filterTableForTwo);
-tableForTwoTimeFilter.addEventListener("change", filterTableForTwo);
+tableForTwoTimeFilter.addEventListener("change", () => {
+  tableForTwoTimeFilter.value = tableForTwoNormalizePreferredTime(tableForTwoTimeFilter.value);
+  filterTableForTwo();
+});
 tableForTwoDayFilter.addEventListener("change", () => {
   refreshTableForTwoDateOptions();
   filterTableForTwo();

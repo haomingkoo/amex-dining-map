@@ -8,6 +8,7 @@ Covers:
   - data/global-restaurants.json   (Global Dining Credit, ~2470 records)
   - data/japan-restaurants.json    (Pocket Concierge Japan, ~844 records)
   - data/love-dining.json          (Love Dining SG, 79 records)
+  - data/table-for-two.json        (Table for Two SG, 18 records)
   - data/plat-stays.json           (Plat Stay hotels, 69 records)
 
 Usage:
@@ -15,7 +16,7 @@ Usage:
     python3 scripts/scrape_google_ratings_playwright.py
 
     # Specific datasets
-    python3 scripts/scrape_google_ratings_playwright.py --datasets love japan stays
+    python3 scripts/scrape_google_ratings_playwright.py --datasets love japan stays tft
 
     # Only missing records
     python3 scripts/scrape_google_ratings_playwright.py --missing-only
@@ -72,6 +73,11 @@ def make_target(record: dict, dataset: str) -> str:
         if hotel:
             return f"{name} {hotel} Singapore"
         return f"{name} {addr_short} Singapore" if addr_short else f"{name} Singapore"
+    if dataset == "tft":
+        display_name = record.get("dining_city_name") or name
+        address = record.get("address", "")
+        addr_short = re.split(r"Singapore \d{6}", address)[0].strip().rstrip(",")
+        return f"{display_name} {addr_short} Singapore" if addr_short else f"{display_name} Singapore"
     if dataset == "stays":
         # For hotels, use simple query first (name + country only)
         # This avoids long addresses that may cause timeouts or mismatches
@@ -105,12 +111,14 @@ def load_datasets(names: list[str]) -> dict[str, list[dict]]:
         "global": DATA_DIR / "global-restaurants.json",
         "japan":  DATA_DIR / "japan-restaurants.json",
         "love":   DATA_DIR / "love-dining.json",
+        "tft":    DATA_DIR / "table-for-two.json",
         "stays":  DATA_DIR / "plat-stays.json",
     }
     for name in names:
         path = mapping.get(name)
         if path and path.exists():
-            datasets[name] = json.loads(path.read_text())
+            payload = json.loads(path.read_text())
+            datasets[name] = payload.get("venues", []) if name == "tft" and isinstance(payload, dict) else payload
             print(f"  {name}: {len(datasets[name])} records")
         else:
             print(f"  {name}: file not found, skipping")
@@ -353,8 +361,8 @@ async def run_scraper(
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Scrape Google Maps ratings with Playwright")
-    p.add_argument("--datasets", nargs="+", default=["global", "japan", "love", "stays"],
-                   choices=["global", "japan", "love", "stays"])
+    p.add_argument("--datasets", nargs="+", default=["global", "japan", "love", "tft", "stays"],
+                   choices=["global", "japan", "love", "tft", "stays"])
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--ids-file",
                    help="Optional newline-delimited list of record IDs to refresh")
