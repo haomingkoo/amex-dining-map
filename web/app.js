@@ -446,6 +446,7 @@ const state = {
   tableForTwoMarkers: new Map(),
   tableForTwoActiveId: null,
   tableForTwoCurrentFilters: {},
+  tableForTwoSelectedCalendarDates: {},
   tableForTwoLiveRefreshInFlight: false,
   tableForTwoLiveRefreshAt: null,
   tableForTwoLiveRefreshTimer: null,
@@ -3814,9 +3815,9 @@ function filterTableForTwo() {
     `${shown === total ? total : `${shown} of ${total}`} roster venues`,
     filterLabel,
     freshAvailableCount ? `${freshAvailableCount} with matching slots` : "",
-    freshNoSeatCount ? `${freshNoSeatCount} no match` : "",
+    freshNoSeatCount ? `${freshNoSeatCount} no slots for filters` : "",
     staleCaptureCount ? "source older than 30 min" : "",
-    pendingCount ? `${pendingCount} not checked` : "",
+    pendingCount ? `${pendingCount} source checks pending` : "",
     availabilityCheckedText,
     verifiedText,
   ].filter(Boolean);
@@ -3826,7 +3827,7 @@ function filterTableForTwo() {
   if (tableForTwoMapSummary) {
     const mappedCount = venues.filter((record) => tableForTwoHasMapPin(record)).length;
     tableForTwoMapSummary.textContent =
-      `${mappedCount}/${total} roster venues mapped. Green pins match the current filters; amber pins have no matching slot.`;
+      `${mappedCount}/${total} roster venues mapped. Green pins match the current filters; amber pins have no slots for those filters.`;
   }
   tableForTwoResultsText.textContent = state.tableForTwoActiveId
     ? "Selected venue · Table for Two"
@@ -3986,9 +3987,9 @@ function tableForTwoAvailabilityLabel(record, filters = state.tableForTwoCurrent
   const partySize = Number(filters.partySize || tableForTwoSelectedPartySize());
   const key = tableForTwoAvailabilityKey(record, filters);
   if (key === "available") return `${partySize} pax available`;
-  if (key === "no_seats" && (filters.date || filters.session || filters.time || filters.day)) return "No match";
+  if (key === "no_seats" && (filters.date || filters.session || filters.time || filters.day)) return "No slots for filters";
   if (key === "no_seats") return `No ${partySize}-pax slots`;
-  return "Not checked";
+  return "Source pending";
 }
 
 function tableForTwoAvailabilityBadgeClass(record, filters = state.tableForTwoCurrentFilters || {}) {
@@ -4111,7 +4112,7 @@ function tableForTwoCompactAvailabilityLine(record, filters = state.tableForTwoC
   const key = tableForTwoAvailabilityKey(record, filters);
   const slots = tableForTwoMatchingSlots(record, filters);
   if (!slots.length) {
-    if (key === "unknown") return "Not checked yet";
+    if (key === "unknown") return "Source check pending";
     return tableForTwoNoMatchLine(record, filters);
   }
   const dates = uniqueValues(slots.map((slot) => slot.date).filter(Boolean)).sort();
@@ -4130,7 +4131,7 @@ function tableForTwoBestAvailabilityLine(record, filters = state.tableForTwoCurr
   const key = tableForTwoAvailabilityKey(record, filters);
   const matchingSlots = tableForTwoMatchingSlots(record, filters);
   if (!matchingSlots.length) {
-    if (key === "unknown") return "No Table for Two availability check has been captured yet.";
+    if (key === "unknown") return "No Table for Two source check has been captured yet.";
     return tableForTwoNoMatchLine(record, filters);
   }
   return tableForTwoSlotGroupSummaries(matchingSlots).join(" | ");
@@ -4161,7 +4162,7 @@ function tableForTwoDateSummary(record, filters = state.tableForTwoCurrentFilter
   const availability = record.availability || {};
   const matchingDates = uniqueValues(tableForTwoMatchingSlots(record, filters).map((slot) => slot.date).filter(Boolean));
   if (matchingDates.length) return tableForTwoDateRangeSummary(matchingDates);
-  if (filters.date) return `No match on ${tableForTwoDateOptionLabel(filters.date)}`;
+  if (filters.date) return `No slots on ${tableForTwoDateOptionLabel(filters.date)}`;
   if (filters.time || filters.session || filters.day) return "No matching dates";
   const visibleDates = uniqueValues(availability.visible_dates || []);
   if (visibleDates.length) return tableForTwoDateRangeSummary(visibleDates, "No matching dates");
@@ -4213,9 +4214,9 @@ function tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedDate = "") 
   `;
 }
 
-function tableForTwoSelectedDateSlotsHtml(slots, filters = state.tableForTwoCurrentFilters || {}) {
+function tableForTwoSelectedDateSlotsHtml(slots, filters = state.tableForTwoCurrentFilters || {}, selectedDateOverride = "") {
   const dates = uniqueValues(slots.map((slot) => slot.date).filter(Boolean)).sort();
-  const selectedDate = filters.date || dates[0] || "";
+  const selectedDate = selectedDateOverride || filters.date || dates[0] || "";
   if (!selectedDate) {
     return '<div class="tft-date-detail muted">Choose a date to see exact Lunch and Dinner times.</div>';
   }
@@ -4263,7 +4264,7 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
     return `
       <div class="tft-calendar-empty">
         <div class="focus-kicker">Matching slots</div>
-        <h4>No slot match</h4>
+        <h4>No slots for filters</h4>
         <p>${escapeHtml(tableForTwoBestAvailabilityLine(record, filters))}</p>
       </div>
     `;
@@ -4272,8 +4273,12 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
   const dates = uniqueValues(slots.map((slot) => slot.date).filter(Boolean));
   const slotsByDate = tableForTwoSlotsByDate(slots);
   const monthKeys = uniqueValues(dates.map((dateValue) => dateValue.slice(0, 7))).sort();
+  const selectedCalendarDate = filters.date
+    || (dates.includes(state.tableForTwoSelectedCalendarDates[record.id]) ? state.tableForTwoSelectedCalendarDates[record.id] : "")
+    || dates[0]
+    || "";
   const monthsHtml = monthKeys
-    .map((monthKey) => tableForTwoCalendarMonthHtml(monthKey, slotsByDate, filters.date || ""))
+    .map((monthKey) => tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedCalendarDate))
     .join("");
   const headingParts = [
     tableForTwoDateRangeSummary(dates),
@@ -4291,7 +4296,7 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
         <span class="badge amber">${escapeHtml(`${slots.length} slot time${slots.length === 1 ? "" : "s"}`)}</span>
       </div>
       <div class="tft-calendar-months">${monthsHtml}</div>
-      ${tableForTwoSelectedDateSlotsHtml(slots, filters)}
+      ${tableForTwoSelectedDateSlotsHtml(slots, filters, selectedCalendarDate)}
       <div class="tft-calendar-legend">
         <span><i class="is-available"></i>Available date</span>
         <span><i class="is-selected"></i>Selected date</span>
@@ -4465,9 +4470,11 @@ function renderTableForTwoCard() {
   }
   tableForTwoFocusCard.querySelectorAll("[data-tft-calendar-date]").forEach((button) => {
     button.addEventListener("click", () => {
-      tableForTwoDateFilter.value = button.getAttribute("data-tft-calendar-date") || "";
-      refreshTableForTwoDateOptions();
-      filterTableForTwo();
+      const active = activeTableForTwoRecord();
+      const selectedDate = button.getAttribute("data-tft-calendar-date") || "";
+      if (!active || !selectedDate) return;
+      state.tableForTwoSelectedCalendarDates[active.id] = selectedDate;
+      renderTableForTwoCard();
     });
   });
 }
