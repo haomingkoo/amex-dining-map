@@ -3851,7 +3851,7 @@ function filterTableForTwo() {
     autoAvailabilityOnly ? `${shown} venues with matching slots` : `${shown === total ? total : `${shown} of ${total}`} roster venues`,
     filterLabel,
     !autoAvailabilityOnly && freshAvailableCount ? `${freshAvailableCount} with matching slots` : "",
-    !autoAvailabilityOnly && freshNoSeatCount ? `${freshNoSeatCount} no slots for filters` : "",
+    !autoAvailabilityOnly && freshNoSeatCount ? `${freshNoSeatCount} without cached matches` : "",
     staleCaptureCount ? "source older than 30 min" : "",
     pendingCount ? `${pendingCount} source checks pending` : "",
     availabilityCheckedText,
@@ -3860,12 +3860,12 @@ function filterTableForTwo() {
   tableForTwoSummaryStripText.textContent = `${statusBits.join(" · ")}.`;
   tableForTwoListSummary.textContent =
     autoAvailabilityOnly
-      ? "List shows matching cached slots; map keeps no-slot venues in amber."
+      ? "List shows matching cached slots; map keeps venues without a cached match in amber."
       : "Start with all roster venues, then narrow by party size, date, session, status, or category.";
   if (tableForTwoMapSummary) {
     const mappedCount = venues.filter((record) => tableForTwoHasMapPin(record)).length;
     tableForTwoMapSummary.textContent =
-      `${mappedCount}/${total} roster venues mapped. Green pins match the current filters; amber pins have no slots for those filters.`;
+      `${mappedCount}/${total} roster venues mapped. Green pins match the current filters; amber pins have no cached match.`;
   }
   if (tableForTwoNoMatchLegend) {
     tableForTwoNoMatchLegend.hidden = false;
@@ -4057,8 +4057,8 @@ function tableForTwoAvailabilityLabel(record, filters = state.tableForTwoCurrent
   const partySize = Number(filters.partySize || tableForTwoSelectedPartySize());
   const key = tableForTwoAvailabilityKey(record, filters);
   if (key === "available") return `${partySize} pax available`;
-  if (key === "no_seats" && (filters.date || filters.session || filters.time || filters.day)) return "No slots for filters";
-  if (key === "no_seats") return `No ${partySize}-pax slots`;
+  if (key === "no_seats" && (filters.date || filters.session || filters.time || filters.day)) return "No cached match";
+  if (key === "no_seats") return `No cached ${partySize}-pax slots`;
   return "Source pending";
 }
 
@@ -4173,9 +4173,9 @@ function tableForTwoNoMatchLine(record, filters = state.tableForTwoCurrentFilter
   const partySize = Number(filters.partySize || tableForTwoSelectedPartySize());
   const dateText = filters.date ? ` on ${tableForTwoShortDate(filters.date)}` : "";
   const timeText = filters.time ? ` within ${TABLE_FOR_TWO_TIME_WINDOW_LABEL} of ${filters.time}` : "";
-  if (filters.time) return `No ${partySize}-pax slots${dateText}${timeText}.`;
-  if (filters.date || filters.session || filters.day) return `No ${partySize}-pax match${dateText}.`;
-  return `No ${partySize}-pax slots in the cached check.`;
+  if (filters.time) return `No cached ${partySize}-pax match${dateText}${timeText}. Check the Amex app before ruling it out.`;
+  if (filters.date || filters.session || filters.day) return `No cached ${partySize}-pax match${dateText}. Check the Amex app before ruling it out.`;
+  return `No ${partySize}-pax slots were returned by the cached public check. Check the Amex app before ruling it out.`;
 }
 
 function tableForTwoCompactAvailabilityLine(record, filters = state.tableForTwoCurrentFilters || {}) {
@@ -4232,7 +4232,7 @@ function tableForTwoDateSummary(record, filters = state.tableForTwoCurrentFilter
   const availability = record.availability || {};
   const matchingDates = uniqueValues(tableForTwoMatchingSlots(record, filters).map((slot) => slot.date).filter(Boolean));
   if (matchingDates.length) return tableForTwoDateRangeSummary(matchingDates);
-  if (filters.date) return `No slots on ${tableForTwoDateOptionLabel(filters.date)}`;
+  if (filters.date) return `No cached slots on ${tableForTwoDateOptionLabel(filters.date)}`;
   if (filters.time || filters.session || filters.day) return "No matching dates";
   const visibleDates = uniqueValues(availability.visible_dates || []);
   if (visibleDates.length) return tableForTwoDateRangeSummary(visibleDates, "No matching dates");
@@ -4350,7 +4350,7 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
     return `
       <div class="tft-calendar-empty">
         <div class="focus-kicker">Matching slots</div>
-        <h4>No slots for filters</h4>
+        <h4>No cached match</h4>
         <p>${escapeHtml(tableForTwoBestAvailabilityLine(record, filters))}</p>
       </div>
     `;

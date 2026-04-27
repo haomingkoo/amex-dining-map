@@ -595,9 +595,36 @@ def should_preserve_availability(existing: dict | None, curated: dict | None) ->
     return availability.get("source") != curated.get("source") or availability.get("captured_at") != curated.get("captured_at")
 
 
+def parse_iso_datetime(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def active_app_capture(existing: dict | None, checked_at: str) -> dict | None:
+    if not existing:
+        return None
+    availability = existing.get("availability")
+    if not isinstance(availability, dict):
+        return None
+    if availability.get("status") != "captured_available":
+        return None
+    if availability.get("confidence") not in {"manual_app_screenshot", "manual_capture"}:
+        return None
+    expires_at = parse_iso_datetime(availability.get("expires_at"))
+    checked_dt = parse_iso_datetime(checked_at)
+    if expires_at and checked_dt and expires_at < checked_dt:
+        return None
+    return availability
+
+
 def normalized_venues(
     existing_by_id: dict[str, dict] | None = None,
     live_availability_by_id: dict[str, dict] | None = None,
+    checked_at: str = "",
 ) -> list[dict]:
     existing_by_id = existing_by_id or {}
     live_availability_by_id = live_availability_by_id or {}
@@ -606,8 +633,17 @@ def normalized_venues(
         curated_availability = venue.get("availability")
         existing_record = existing_by_id.get(venue["id"])
         live_availability = live_availability_by_id.get(venue["id"])
-        if live_availability:
+        app_capture = active_app_capture(existing_record, checked_at)
+        if (
+            app_capture
+            and live_availability
+            and live_availability.get("status") == "live_no_seats"
+        ):
+            availability = app_capture
+        elif live_availability:
             availability = live_availability
+        elif app_capture:
+            availability = app_capture
         elif should_preserve_availability(existing_record, curated_availability):
             availability = existing_record["availability"]
         else:
@@ -694,7 +730,7 @@ def build_payload(existing_payload: dict | None = None) -> dict:
         },
         "availability_model": {
             "live_available": "Slot availability returned by DiningCity's public AMEXPlatSG project endpoint.",
-            "live_no_seats": "DiningCity's public AMEXPlatSG project endpoint returned no qualifying slots at check time.",
+            "live_no_seats": "DiningCity's public AMEXPlatSG project endpoint returned no qualifying slots at check time; this can still be contradicted by the authenticated Amex app.",
             "captured_available": "Legacy/manual availability seen in an Amex Experiences App screenshot or local app check.",
             "captured_no_seats": "Legacy/manual no-seat result seen in a captured app screenshot or local app check.",
             "unknown": "Venue is in the official roster, but no availability source has been captured.",
@@ -706,7 +742,7 @@ def build_payload(existing_payload: dict | None = None) -> dict:
             "Generic public DiningCity restaurant availability is not treated as Table for Two inventory; only the AMEXPlatSG project endpoint is used.",
             "Do not commit user/session-specific app handoff values from app URLs or screenshots.",
         ],
-        "venues": normalized_venues(existing_by_id, live_availability_by_id),
+        "venues": normalized_venues(existing_by_id, live_availability_by_id, checked_at),
     }
 
 
