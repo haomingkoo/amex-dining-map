@@ -3720,6 +3720,23 @@ function tableForTwoHasSlotFilters(filters = {}) {
     || Boolean(filters.session || filters.date || filters.time || filters.day);
 }
 
+function tableForTwoHasVenueShortlistFilters() {
+  const search = (tableForTwoSearchInput?.value || "").trim().toLowerCase();
+  return Boolean(
+    tableForTwoResidualSearch(search)
+    || tableForTwoCategoryFilter?.value
+    || tableForTwoAvailabilityFilter?.value
+  );
+}
+
+function tableForTwoMarkerFilterTone() {
+  const filters = state.tableForTwoCurrentFilters || {};
+  if (tableForTwoHasSlotFilters(filters) && !tableForTwoHasVenueShortlistFilters()) {
+    return "availability";
+  }
+  return "shortlist";
+}
+
 function tableForTwoPinColor(record) {
   if (!record) return "#c9a55a";
   const key = tableForTwoAvailabilityKey(record, state.tableForTwoCurrentFilters || {});
@@ -3756,15 +3773,17 @@ function createTableForTwoMarker(record) {
   return marker;
 }
 
-function applyTableForTwoMarkerStyle(iconEl, record, isActive, isFilteredMatch, hasActiveFilters) {
+function applyTableForTwoMarkerStyle(iconEl, record, isActive, isFilteredMatch, hasActiveFilters, filterTone = "shortlist") {
   if (!iconEl) return;
   const color = tableForTwoPinColor(record);
+  const isMuted = hasActiveFilters && !isFilteredMatch && !isActive;
+  const availabilityTone = filterTone === "availability";
   iconEl.style.background = isActive ? "#ffffff" : color;
   iconEl.style.width = isActive ? "24px" : "16px";
   iconEl.style.height = isActive ? "24px" : "16px";
-  iconEl.style.opacity = hasActiveFilters && !isFilteredMatch && !isActive ? "0.28" : "0.94";
-  iconEl.style.transform = hasActiveFilters && !isFilteredMatch && !isActive ? "scale(0.72)" : "scale(1)";
-  iconEl.style.filter = hasActiveFilters && !isFilteredMatch && !isActive ? "saturate(0.45)" : "none";
+  iconEl.style.opacity = isMuted ? (availabilityTone ? "0.74" : "0.28") : "0.94";
+  iconEl.style.transform = isMuted ? (availabilityTone ? "scale(0.9)" : "scale(0.72)") : "scale(1)";
+  iconEl.style.filter = isMuted ? (availabilityTone ? "saturate(0.85)" : "saturate(0.45)") : "none";
   iconEl.style.boxShadow = isActive
     ? "0 0 0 4px rgba(255, 255, 255, 0.24), 0 0 20px rgba(255, 255, 255, 0.55)"
     : isFilteredMatch && hasActiveFilters
@@ -3776,11 +3795,12 @@ function updateTableForTwoMarkerStyles() {
   if (!hasLeaflet || !tableForTwoMap) return;
   const filteredIds = new Set(state.tableForTwoFiltered.map((record) => record.id));
   const hasActiveFilters = tableForTwoActiveFilterCount() > 0;
+  const filterTone = tableForTwoMarkerFilterTone();
   state.tableForTwoMarkers.forEach((marker, id) => {
     const iconEl = marker.getElement()?.querySelector(".tft-marker-dot") || marker.getElement()?.querySelector(".custom-marker-icon div");
     if (!iconEl) return;
     const record = tableForTwoVenues().find((item) => item.id === id);
-    applyTableForTwoMarkerStyle(iconEl, record, id === state.tableForTwoActiveId, filteredIds.has(id), hasActiveFilters);
+    applyTableForTwoMarkerStyle(iconEl, record, id === state.tableForTwoActiveId, filteredIds.has(id), hasActiveFilters, filterTone);
   });
 }
 
@@ -4499,6 +4519,35 @@ function tableForTwoMenuSourceUrl(menu) {
   return menu?.source_url || menu?.url || menu?.public_url || "";
 }
 
+function tableForTwoMenuSourceLabel(menu) {
+  return menu?.source_label || menu?.source || "Captured menu";
+}
+
+function tableForTwoMenuSourceText(menu) {
+  const label = tableForTwoMenuSourceLabel(menu);
+  if (menu?.source_label || !menu?.captured_at) return label;
+  return `${label} · ${menu.captured_at}`;
+}
+
+function tableForTwoMenuChoiceText(choice) {
+  if (typeof choice === "string") return choice;
+  if (!choice || typeof choice !== "object") return "";
+  return [choice.name, choice.description].filter(Boolean).join(" - ");
+}
+
+function tableForTwoProfile(record) {
+  return record?.amex_app_profile || record?.dining_city_profile || {};
+}
+
+function tableForTwoProfileDescription(record) {
+  const description = tableForTwoProfile(record).description || "";
+  return description.split(/\n+/).map((part) => part.trim()).filter(Boolean)[0] || description;
+}
+
+function tableForTwoProfileImageUrl(record) {
+  return tableForTwoProfile(record).cover_url || tableForTwoProfile(record).image_url || "";
+}
+
 function renderTableForTwoList() {
   if (!state.tableForTwoFiltered.length) {
     tableForTwoResultsList.innerHTML = '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
@@ -4512,13 +4561,12 @@ function renderTableForTwoList() {
     const displayName = record.app_name || record.name;
     const filters = state.tableForTwoCurrentFilters || {};
     const availabilityBadgeClass = tableForTwoAvailabilityBadgeClass(record, filters);
-    const menuSourceUrl = tableForTwoMenuSourceUrl(record.sample_menu);
     const rating = googleRating(record);
     const ratingStr = rating && rating.rating != null
       ? `<span class="card-google-rating">★ ${escapeHtml(String(rating.rating))}${rating.review_count ? ` (${Number(rating.review_count).toLocaleString()})` : ""}</span>`
       : "";
     const tags = [
-      menuSourceUrl ? '<span class="badge amber">Menu linked</span>' : "",
+      record.sample_menu ? '<span class="badge amber">Menu captured</span>' : "",
     ]
       .filter(Boolean)
       .join("");
@@ -4588,28 +4636,40 @@ function renderTableForTwoCard() {
   const filters = state.tableForTwoCurrentFilters || {};
   const menu = record.sample_menu;
   const menuSourceUrl = tableForTwoMenuSourceUrl(menu);
+  const menuSourceText = tableForTwoMenuSourceText(menu);
+  const profileDescription = tableForTwoProfileDescription(record);
+  const profileImageUrl = tableForTwoProfileImageUrl(record);
+  const profileSourceUrl = tableForTwoProfile(record).source_url || "";
   const gBadge = googleRatingBadge(record);
-  const menuHtml = menu && menuSourceUrl
+  const menuHtml = menu
     ? `
-      <div class="focus-section tft-menu">
-        <div class="focus-kicker">Captured menu</div>
-        <h4>${escapeHtml(menu.title || "Table for Two menu")}</h4>
+      <details class="focus-section tft-menu">
+        <summary>
+          <span class="focus-kicker">Captured menu</span>
+          <strong>${escapeHtml(menu.title || "Table for Two menu")}</strong>
+        </summary>
         ${(menu.courses || []).map((course) => `
-          <div class="focus-row">
+          <div class="tft-menu-course">
             <span class="focus-label">${escapeHtml(course.course)}</span>
-            <span>${escapeHtml((course.choices || []).join(" / "))}</span>
+            <ul class="tft-menu-list">
+              ${(course.choices || []).map((choice) => {
+                const text = tableForTwoMenuChoiceText(choice);
+                return text ? `<li>${escapeHtml(text)}</li>` : "";
+              }).join("")}
+            </ul>
           </div>
         `).join("")}
         ${menu.additional_cover_note ? `<div class="focus-note">${escapeHtml(menu.additional_cover_note)}</div>` : ""}
-        <div class="focus-actions">
-          <a class="inline-link" href="${escapeHtml(menuSourceUrl)}" target="_blank" rel="noopener">Menu source</a>
-        </div>
-      </div>
+        ${menuSourceUrl
+          ? `<div class="focus-actions"><a class="inline-link" href="${escapeHtml(menuSourceUrl)}" target="_blank" rel="noopener">Menu source</a></div>`
+          : `<div class="tft-menu-source">Source: ${escapeHtml(menuSourceText)}</div>`}
+      </details>
     `
     : "";
   const googleMapsUrl = bestGoogleMapsUrl(record) || googleMapsSearchUrl([displayName, "Singapore"]);
 
   tableForTwoFocusCard.innerHTML = `
+    ${profileImageUrl ? `<img class="tft-venue-photo" src="${escapeHtml(profileImageUrl)}" alt="${escapeHtml(displayName)}">` : ""}
     <div class="focus-kicker">${escapeHtml(tableForTwoCategoryLabel(record.category))} / Singapore</div>
     <div class="focus-title-row">
       <h3 class="focus-title">${escapeHtml(displayName)}</h3>
@@ -4618,9 +4678,10 @@ function renderTableForTwoCard() {
     <div class="focus-tags">
       <span class="badge ${tableForTwoAvailabilityBadgeClass(record, filters)}">${escapeHtml(tableForTwoAvailabilityLabel(record, filters))}</span>
       ${record.app_area ? `<span class="badge blue">${escapeHtml(record.app_area)}</span>` : ""}
-      ${menuSourceUrl ? '<span class="badge amber">Menu linked</span>' : ""}
+      ${menu ? '<span class="badge amber">Menu captured</span>' : ""}
     </div>
     ${record.address ? `<div class="focus-address">${escapeHtml(record.address)}</div>` : ""}
+    ${profileDescription ? `<p class="focus-summary tft-profile-desc">${escapeHtml(profileDescription)}</p>` : ""}
     ${tableForTwoSlotMatchesHtml(record, filters)}
     <div class="price-grid tft-status-grid">
       <div class="price-card">
@@ -4649,6 +4710,7 @@ function renderTableForTwoCard() {
       <a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
       ${record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.dining_city_public_url)}" target="_blank" rel="noopener">Public DiningCity page</a>` : ""}
       ${record.venue_source_url && !record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.venue_source_url)}" target="_blank" rel="noopener">Venue source</a>` : ""}
+      ${profileSourceUrl ? `<a class="inline-link subtle" href="${escapeHtml(profileSourceUrl)}" target="_blank" rel="noopener">DiningCity profile source</a>` : ""}
       ${tableForTwoHasMapPin(record) ? `<button type="button" class="ghost-btn secondary" data-tft-focus-map="true">Center on map</button>` : ""}
       <a class="inline-link subtle" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Official roster</a>
       <a class="inline-link subtle" href="${escapeHtml(payload.terms_url || TABLE_FOR_TWO_TNC_URL)}" target="_blank" rel="noopener">T&Cs PDF</a>

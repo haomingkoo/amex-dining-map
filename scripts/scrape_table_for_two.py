@@ -334,6 +334,47 @@ VENUES = [
         "coordinate_confidence": "diningcity_place_matched",
         "map_pin_source": "DiningCity public restaurant search",
         "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
+        "sample_menu": {
+            "source": "Amex Experiences App screenshot provided by user",
+            "source_label": "Amex Experiences App capture, 27 Apr 2026",
+            "captured_at": "2026-04-27",
+            "title": "Table for Two - Exclusively curated by American Express",
+            "courses": [
+                {
+                    "course": "Appetizers",
+                    "choices": [
+                        "Tuna Tartare - toasted sesame, fennel salad, wonton crisp, coriander",
+                        "Heirloom Tomato - apple puree, candied walnut, sesame galangal dressing",
+                    ],
+                },
+                {
+                    "course": "Main",
+                    "choices": [
+                        "Stanbroke Australian Ribeye Steak - truffle roasted baby potatoes, baby gem, parmesan, truffle beef jus",
+                        "Mediterranean Seabass - tomato confit, capsicum stew, grilled leek, white wine beurre blanc",
+                        "Truffle Spinach Rigatoni - slow cooked egg, parmesan, cream, garlic crisp",
+                    ],
+                },
+                {
+                    "course": "Dessert",
+                    "choices": [
+                        "Pandan Trifle - coffee sponge, salted pandan ice cream, chocolate pearl, toasted coconut flake",
+                        "Sea Salt Dark Chocolate Tart - 70% dark chocolate mousse, vanilla ice cream centre, quince, chocolate soil, toasted hazelnut",
+                    ],
+                },
+                {
+                    "course": "Beverage",
+                    "choices": [
+                        "Kee's Iced Tea - Mandarin Sticky Rice Pu'Er, red date honey",
+                        "Yuzu Goodness - yuzu lemon prebiotic soda, peach, raspberry",
+                    ],
+                },
+            ],
+            "additional_cover_note": (
+                "Two complimentary sets are served under Table for Two. Additional covers beyond two pax "
+                "are charged at S$85++ per pax for this menu."
+            ),
+        },
     },
     {
         "id": "tft-the-plump-frenchman",
@@ -425,6 +466,10 @@ def diningcity_source_url(dining_city_id: str) -> str:
 def diningcity_selected_date_source_url(dining_city_id: str, selected_date: str) -> str:
     params = urllib.parse.urlencode({"project": DININGCITY_PROJECT, "selected_date": selected_date})
     return f"{DININGCITY_API_BASE}/restaurants/{dining_city_id}/available_2018?{params}"
+
+
+def diningcity_profile_source_url(dining_city_id: str) -> str:
+    return f"{DININGCITY_API_BASE}/restaurants/{dining_city_id}?project={DININGCITY_PROJECT}"
 
 
 def has_project(dining_city_id: str) -> bool:
@@ -658,6 +703,68 @@ def fetch_live_availability(venues: list[dict], checked_at: str) -> tuple[dict[s
     return availability_by_id, errors
 
 
+def compact_text(value: object) -> str:
+    if not isinstance(value, str):
+        return ""
+    return re.sub(r"\n{3,}", "\n\n", value.strip())
+
+
+def normalize_diningcity_profile(venue: dict, payload: object, checked_at: str) -> dict | None:
+    if not isinstance(payload, dict):
+        return None
+    basic_info = payload.get("basic_info") if isinstance(payload.get("basic_info"), dict) else {}
+    cuisines = [
+        item.get("name")
+        for item in (payload.get("cuisines") or [])
+        if isinstance(item, dict) and item.get("name")
+    ]
+    landmarks = [
+        item.get("name")
+        for item in (payload.get("landmarks") or [])
+        if isinstance(item, dict) and item.get("name")
+    ]
+    description = compact_text(
+        basic_info.get("description")
+        or payload.get("description")
+        or payload.get("remark")
+    )
+    dining_city_id = venue.get("dining_city_id")
+    profile = {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": diningcity_profile_source_url(dining_city_id),
+        "captured_at": checked_at,
+        "description": description,
+        "cover_url": payload.get("cover") or payload.get("wide_picture") or "",
+        "cuisines": cuisines,
+        "landmarks": landmarks,
+        "location": (payload.get("location") or {}).get("name") if isinstance(payload.get("location"), dict) else "",
+        "avg_price": payload.get("format_avg_price") or "",
+        "opening_hour": compact_text(payload.get("localized_opening_hour") or payload.get("opening_hour")),
+        "website_detail_url": payload.get("website_detail_url") or venue.get("dining_city_public_url") or "",
+    }
+    return {key: value for key, value in profile.items() if value not in ("", [], None)}
+
+
+def fetch_diningcity_profiles(venues: list[dict], checked_at: str) -> tuple[dict[str, dict], dict[str, str]]:
+    profiles_by_id = {}
+    errors = {}
+    for venue in venues:
+        dining_city_id = venue.get("dining_city_id")
+        if not dining_city_id:
+            continue
+        try:
+            payload = fetch_json(
+                f"/restaurants/{dining_city_id}",
+                {"project": DININGCITY_PROJECT},
+            )
+            profile = normalize_diningcity_profile(venue, payload, checked_at)
+            if profile:
+                profiles_by_id[venue["id"]] = profile
+        except Exception as exc:  # noqa: BLE001 - venue profiles are enrichment only.
+            errors[venue["id"]] = f"{type(exc).__name__}: {exc}"
+    return profiles_by_id, errors
+
+
 def should_preserve_availability(existing: dict | None, curated: dict | None) -> bool:
     if not existing:
         return False
@@ -674,14 +781,17 @@ def should_preserve_availability(existing: dict | None, curated: dict | None) ->
 def normalized_venues(
     existing_by_id: dict[str, dict] | None = None,
     live_availability_by_id: dict[str, dict] | None = None,
+    live_profiles_by_id: dict[str, dict] | None = None,
 ) -> list[dict]:
     existing_by_id = existing_by_id or {}
     live_availability_by_id = live_availability_by_id or {}
+    live_profiles_by_id = live_profiles_by_id or {}
     records = []
     for venue in VENUES:
         curated_availability = venue.get("availability")
         existing_record = existing_by_id.get(venue["id"])
         live_availability = live_availability_by_id.get(venue["id"])
+        live_profile = live_profiles_by_id.get(venue["id"])
         if live_availability:
             availability = live_availability
         elif should_preserve_availability(existing_record, curated_availability):
@@ -689,6 +799,7 @@ def normalized_venues(
         else:
             availability = curated_availability or default_availability()
         record = {
+            **venue,
             "booking_channel": "Amex Experiences App",
             "slot_source_status": (
                 "diningcity_amex_platinum_project"
@@ -696,9 +807,12 @@ def normalized_venues(
                 else "app_handoff_required"
             ),
             "availability": availability,
-            **venue,
         }
         record["availability"] = availability
+        if live_profile:
+            record["dining_city_profile"] = live_profile
+        elif isinstance(existing_record, dict) and isinstance(existing_record.get("dining_city_profile"), dict):
+            record["dining_city_profile"] = existing_record["dining_city_profile"]
         records.append(record)
     return records
 
@@ -720,6 +834,7 @@ def build_payload(existing_payload: dict | None = None) -> dict:
     )
     checked_at = iso_now()
     live_availability_by_id, availability_errors = fetch_live_availability(VENUES, checked_at)
+    live_profiles_by_id, profile_errors = fetch_diningcity_profiles(VENUES, checked_at)
     availability_last_checked_at = (
         checked_at
         if live_availability_by_id
@@ -762,6 +877,14 @@ def build_payload(existing_payload: dict | None = None) -> dict:
             "error_count": len(availability_errors),
             "errors": availability_errors,
         },
+        "venue_profile_source": {
+            "type": "diningcity_public_detail_api",
+            "api_base": DININGCITY_API_BASE,
+            "project": DININGCITY_PROJECT,
+            "checked_venues": len(live_profiles_by_id),
+            "error_count": len(profile_errors),
+            "errors": profile_errors,
+        },
         "refresh_policy": {
             "official_roster": "Daily is enough. The public source is an official image; the script hashes it and raises manual_review_required if it changes.",
             "terms_and_faq": "Daily is enough unless Amex announces a cycle change.",
@@ -783,7 +906,7 @@ def build_payload(existing_payload: dict | None = None) -> dict:
             "Generic public DiningCity restaurant availability is not treated as Table for Two inventory; only the AMEXPlatSG project endpoint is used.",
             "Do not commit user/session-specific app handoff values from app URLs or screenshots.",
         ],
-        "venues": normalized_venues(existing_by_id, live_availability_by_id),
+        "venues": normalized_venues(existing_by_id, live_availability_by_id, live_profiles_by_id),
     }
 
 

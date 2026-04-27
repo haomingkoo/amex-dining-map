@@ -3,7 +3,7 @@
   "program": "American Express Table for Two by Platinum",
   "country": "Singapore",
   "currency": "SGD",
-  "last_verified_at": "2026-04-27T05:33:08Z",
+  "last_verified_at": "2026-04-27T06:41:41Z",
   "official_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
   "terms_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf",
   "faq_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TableforTwo_FAQ.pdf",
@@ -23,12 +23,20 @@
     "Sep - Oct",
     "Nov - Dec"
   ],
-  "availability_last_checked_at": "2026-04-27T05:33:08Z",
+  "availability_last_checked_at": "2026-04-27T06:41:41Z",
   "availability_source": {
     "type": "diningcity_public_api",
     "api_base": "https://api.diningcity.asia/public",
     "project": "AMEXPlatSG",
     "project_title": "AMEX Platinum SG",
+    "checked_venues": 18,
+    "error_count": 0,
+    "errors": {}
+  },
+  "venue_profile_source": {
+    "type": "diningcity_public_detail_api",
+    "api_base": "https://api.diningcity.asia/public",
+    "project": "AMEXPlatSG",
     "checked_venues": 18,
     "error_count": 0,
     "errors": {}
@@ -56,8 +64,25 @@
   ],
   "venues": [
     {
+      "id": "tft-15-stamford-restaurant",
+      "name": "15 Stamford Restaurant",
+      "category": "restaurant",
+      "app_area": "City Hall/Bugis",
+      "app_tags": [
+        "Table for Two",
+        "Chic Restaurant"
+      ],
       "booking_channel": "Amex Experiences App",
-      "slot_source_status": "app_handoff_required",
+      "dining_city_id": "2055188",
+      "dining_city_name": "15 Stamford Restaurant",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/15_stamford_by_alvin_leung",
+      "address": "15 Stamford Road, Singapore 178906",
+      "lat": 1.2935522,
+      "lng": 103.8515954,
+      "coordinate_confidence": "diningcity_place_matched",
+      "map_pin_source": "DiningCity public restaurant search",
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
+      "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
         "status": "live_available",
         "source": "DiningCity public API project AMEXPlatSG",
@@ -65,8 +90,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-05-01",
@@ -4004,23 +4029,6 @@
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-15-stamford-restaurant",
-      "name": "15 Stamford Restaurant",
-      "category": "restaurant",
-      "app_area": "City Hall/Bugis",
-      "app_tags": [
-        "Table for Two",
-        "Chic Restaurant"
-      ],
-      "dining_city_id": "2055188",
-      "dining_city_name": "15 Stamford Restaurant",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/15_stamford_by_alvin_leung",
-      "address": "15 Stamford Road, Singapore 178906",
-      "lat": 1.2935522,
-      "lng": 103.8515954,
-      "coordinate_confidence": "diningcity_place_matched",
-      "map_pin_source": "DiningCity public restaurant search",
-      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
       "sample_menu": {
         "source": "Amex Experiences App screenshot provided by user",
         "captured_at": "2026-04-24",
@@ -4048,9 +4056,40 @@
           }
         ],
         "additional_cover_note": "Two sets are served under Table for Two. Additional covers beyond two pax are charged at S$128++ per pax for this menu."
+      },
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/2055188?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Step into 15 Stamford Restaurant, a culinary haven that harmonizes colonial grandeur with contemporary flair. The ambiance is one of sophisticated comfort, inviting guests to savor moments in a truly unique setting.\n\nAt its heart, 15 Stamford offers a journey through modern Asian flavors, often with a focus on grill and barbecue. Their signature dish, the \"\"Chargrilled Spanish Octopus,\"\" stands out for its tender perfection and smoky notes.\n\nLocated at The Capitol Kempinski Hotel Singapore, 15 Stamford Restaurant is easily accessible via City Hall MRT station, just a short walk away. Parking is available at the Capitol Piazza basement car park. It's a place where refined dining meets a relaxed charm, with an average spend per person around S$100-S$150.",
+        "cover_url": "https://static-assets.diningcity.asia/restaurantpictures/2020/b0dfbdb2226b172c9b44e9e5ee6e2311.JPG",
+        "cuisines": [
+          "Asian",
+          "Modern"
+        ],
+        "landmarks": [
+          "CHIJMES ",
+          "City Hall "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$48",
+        "opening_hour": "Mon -Sun 12:00 - 15:00, 18:00 - 22:30",
+        "website_detail_url": "https://www.diningcity.sg/singapore/15_stamford_by_alvin_leung"
       }
     },
     {
+      "id": "tft-baes-cocktail-club",
+      "name": "Bae's Cocktail Club",
+      "category": "restaurant",
+      "dining_city_id": "205194844",
+      "dining_city_name": "Bae's Cocktail Club",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/Baes_Cocktail_Club",
+      "address": "21 Tanjong Pagar Road, #01-04/05, Singapore 088444",
+      "lat": 1.2794614,
+      "lng": 103.8440827,
+      "coordinate_confidence": "diningcity_place_matched",
+      "map_pin_source": "DiningCity public restaurant search",
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -4060,8 +4099,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-04-30",
@@ -6111,20 +6150,37 @@
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG) using the same per-date booking flow as the DiningCity restaurant page. Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-baes-cocktail-club",
-      "name": "Bae's Cocktail Club",
-      "category": "restaurant",
-      "dining_city_id": "205194844",
-      "dining_city_name": "Bae's Cocktail Club",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/Baes_Cocktail_Club",
-      "address": "21 Tanjong Pagar Road, #01-04/05, Singapore 088444",
-      "lat": 1.2794614,
-      "lng": 103.8440827,
-      "coordinate_confidence": "diningcity_place_matched",
-      "map_pin_source": "DiningCity public restaurant search",
-      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name."
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205194844?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Step into Bae's Cocktail Club, a vibrant enclave where the energy of Gangnam nightlife meets the sophistication of a modern lounge. The space invites you to linger over conversation before seamlessly transitioning into a high-energy club with live DJ sets that carry you into the early hours.\n\nThe menu celebrates Korean-inspired flavors, featuring creative small bites like uni kimbap and beef bulgogi sliders that pair perfectly with their avant-garde drinks. A standout highlight is the Kimchi Margarita, a unique blend of mezcal and roasted bell pepper that offers a bold, savory twist.\n\nConveniently located near the Maxwell MRT station, the club is also easily accessible via several bus stops along Tanjong Pagar Road. This Korean-inspired cocktail club stands out for its transition from intimate lounge to spirited dance floor, with signature cocktails typically priced between $25 and $30.",
+        "cover_url": "https://static-assets.diningcity.asia/awmom16ev1ayqfgy895grzh01fz5?",
+        "cuisines": [
+          "Korean"
+        ],
+        "landmarks": [
+          "Tanjong Pagar "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$48",
+        "opening_hour": "Monday Closed\nTuesday 6 pm–3 am\nWednesday 6 pm–3 am\nThursday 6 pm–3 am\nFriday 6 pm–3 am\nSaturday 6 pm–4 am\nSunday Closed",
+        "website_detail_url": "https://www.diningcity.sg/singapore/Baes_Cocktail_Club"
+      }
     },
     {
+      "id": "tft-cultivate",
+      "name": "Cultivate",
+      "category": "restaurant",
+      "dining_city_id": "205194002",
+      "dining_city_name": "Cultivate Café",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/Cultivate_Cafe",
+      "address": "2 Cook Street, Maxwell Reserve, Singapore 078857",
+      "lat": 1.2788723,
+      "lng": 103.8443955,
+      "coordinate_confidence": "diningcity_place_matched",
+      "map_pin_source": "DiningCity public restaurant search",
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name variant.",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -6134,8 +6190,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-05-02",
@@ -12988,20 +13044,39 @@
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-cultivate",
-      "name": "Cultivate",
-      "category": "restaurant",
-      "dining_city_id": "205194002",
-      "dining_city_name": "Cultivate Café",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/Cultivate_Cafe",
-      "address": "2 Cook Street, Maxwell Reserve, Singapore 078857",
-      "lat": 1.2788723,
-      "lng": 103.8443955,
-      "coordinate_confidence": "diningcity_place_matched",
-      "map_pin_source": "DiningCity public restaurant search",
-      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name variant."
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205194002?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Step into Cultivate Café, a serene space where mindful dining meets timeless style. It's a perfect environment to recharge, reconnect, and savor moments of tranquility.\n\nThe essence of the cuisine is pure vegan dining and plant-based gastronomy, embracing health and wellness with every plate. You can also find nature in every sip with their selection of cold-pressed juices and organic shots.",
+        "cover_url": "https://static-assets.diningcity.asia/tlbcfpoaasqzrvlw1ylzferyn3e7?",
+        "landmarks": [
+          "Tanjong Pagar "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$48",
+        "opening_hour": "Monday 11 am–9 pm\nTuesday 11 am–9 pm\nWednesday 11 am–9 pm\nThursday 11 am–9 pm\nFriday 11 am–9 pm\nSaturday 11 am–9 pm\nSunday 11 am–9 pm",
+        "website_detail_url": "https://www.diningcity.sg/singapore/Cultivate_Cafe"
+      }
     },
     {
+      "id": "tft-highhouse",
+      "name": "HighHouse",
+      "category": "restaurant",
+      "app_area": "Marina Bay/Boat Quay",
+      "app_tags": [
+        "Table for Two",
+        "Chic Restaurant"
+      ],
+      "dining_city_id": "205194016",
+      "dining_city_name": "HighHouse",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/high_house",
+      "address": "1 Raffles Place, Level 61-62, Singapore 048616",
+      "lat": 1.2844024,
+      "lng": 103.8509818,
+      "coordinate_confidence": "diningcity_place_matched",
+      "map_pin_source": "DiningCity public restaurant search",
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -13011,8 +13086,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-05-01",
@@ -16234,25 +16309,38 @@
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG) using the same per-date booking flow as the DiningCity restaurant page. Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-highhouse",
-      "name": "HighHouse",
-      "category": "restaurant",
-      "app_area": "Marina Bay/Boat Quay",
-      "app_tags": [
-        "Table for Two",
-        "Chic Restaurant"
-      ],
-      "dining_city_id": "205194016",
-      "dining_city_name": "HighHouse",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/high_house",
-      "address": "1 Raffles Place, Level 61-62, Singapore 048616",
-      "lat": 1.2844024,
-      "lng": 103.8509818,
-      "coordinate_confidence": "diningcity_place_matched",
-      "map_pin_source": "DiningCity public restaurant search",
-      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name."
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205194016?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Step into High House, a multi-sensory rooftop escape where panoramic city views meet elevated dining. The vibrant atmosphere is set to immersive music and art, creating a sophisticated yet lively experience high above the city.\n\nThe culinary journey features Mod Pan-Asian flavors inspired by the Pacific Coast, embracing diverse cultures from South America, Oceania, and beyond. Guests often highlight the Dutch Kingfish Carpaccio as a perfect palate kicker among the innovative, sharing-focused dishes.\n\nHigh House specializes in Mod Pan-Asian fusion cuisine and stands out as a rooftop restaurant and bar with stunning views. You can easily reach it via Raffles Place MRT station, and convenient parking is available at the One Raffles Place basement carpark. The approximate average spend starts from $80 per person.",
+        "cover_url": "https://static-assets.diningcity.asia/1b6cs2o6l7au6ib8den72yenp83t?",
+        "cuisines": [
+          "Pan Asian"
+        ],
+        "landmarks": [
+          "Raffles Place "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$48",
+        "opening_hour": "Monday 11:30 am–11 pm\nTuesday 11:30 am–11 pm\nWednesday 11:30 am–11 pm\nThursday 11:30 am–11 pm\nFriday 11:30 am–11 pm\nSaturday 5 pm–11 pm\nSunday Closed",
+        "website_detail_url": "https://www.diningcity.sg/singapore/high_house"
+      }
     },
     {
+      "id": "tft-la-brasserie",
+      "name": "La Brasserie",
+      "category": "restaurant",
+      "dining_city_id": "205173372",
+      "dining_city_name": "La Brasserie",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/la_brasserie_aat3",
+      "address": "80 Collyer Quay, The Fullerton Bay Hotel, Singapore 049326",
+      "lat": 1.283223278918248,
+      "lng": 103.8535571753726,
+      "coordinate_confidence": "address_geocoded",
+      "map_pin_source": "Singapore OneMap address geocode",
+      "map_pin_note": "Pin is address-geocoded from the official Fullerton Bay Hotel address; confirm the exact entrance before visiting.",
+      "venue_source_url": "https://www.fullertonhotels.com/fullerton-bay-hotel-singapore/dining/restaurants-and-bars/la-brasserie",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -16262,8 +16350,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-05-02",
@@ -17658,8 +17746,8 @@
                 "weekday": "sunday",
                 "time": "19:00",
                 "meal": "Dinner",
-                "max_seats": 6,
-                "raw_available_seats": 6
+                "max_seats": 4,
+                "raw_available_seats": 4
               },
               {
                 "date": "2026-05-03",
@@ -19093,21 +19181,38 @@
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-la-brasserie",
-      "name": "La Brasserie",
-      "category": "restaurant",
-      "dining_city_id": "205173372",
-      "dining_city_name": "La Brasserie",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/la_brasserie_aat3",
-      "address": "80 Collyer Quay, The Fullerton Bay Hotel, Singapore 049326",
-      "lat": 1.283223278918248,
-      "lng": 103.8535571753726,
-      "coordinate_confidence": "address_geocoded",
-      "map_pin_source": "Singapore OneMap address geocode",
-      "map_pin_note": "Pin is address-geocoded from the official Fullerton Bay Hotel address; confirm the exact entrance before visiting.",
-      "venue_source_url": "https://www.fullertonhotels.com/fullerton-bay-hotel-singapore/dining/restaurants-and-bars/la-brasserie"
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205173372?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Located in the heart of the historic Fullerton Heritage precinct, La Brasserie serves local and international specials including classic French bistro favourites in a sleek modern setting alongside panoramic views of the Marina Bay waterfront. With two spacious salons and a private room, all with 10-metre-high windows, and an al fresco terrace, it is an ideal choice for business lunches, intimate dinners and weekend brunch.",
+        "cover_url": "https://static-assets.diningcity.asia/3km0aua9ftwo9dlbu4myvawq8qdy?",
+        "cuisines": [
+          "French"
+        ],
+        "landmarks": [
+          "Fullerton "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$48",
+        "opening_hour": "Mon- Fri 12:00 - 14:30, 18:30 - 22:30. \nSat and Sun 12:30 – 15:30, 18:30 - 22:30.",
+        "website_detail_url": "https://www.diningcity.sg/singapore/la_brasserie_aat3"
+      }
     },
     {
+      "id": "tft-osteria-mozza",
+      "name": "Osteria Mozza",
+      "category": "restaurant",
+      "dining_city_id": "205194420",
+      "dining_city_name": "Osteria Mozza",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/Osteria_Mozza",
+      "address": "Hilton Singapore Orchard, Level 5, 333 Orchard Road, Singapore 238867",
+      "lat": 1.302064505560855,
+      "lng": 103.8363409534752,
+      "coordinate_confidence": "address_geocoded",
+      "map_pin_source": "Singapore OneMap address geocode",
+      "map_pin_note": "Pin is address-geocoded from the official Hilton Singapore Orchard address; confirm the exact restaurant entrance before visiting.",
+      "venue_source_url": "https://osteriamozza.com.sg/",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -19117,8 +19222,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-04-28",
@@ -19174,7 +19279,7 @@
           "2026-06-25",
           "2026-06-26"
         ],
-        "summary": "52 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 44 dates, Dinner 50 dates, Afternoon Tea 43 dates).",
+        "summary": "52 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 44 dates, Dinner 50 dates, Afternoon Tea 44 dates).",
         "meals": [
           {
             "meal": "Lunch",
@@ -20323,7 +20428,7 @@
                 "weekday": "friday",
                 "time": "12:00",
                 "meal": "Lunch",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -20331,7 +20436,7 @@
                 "weekday": "friday",
                 "time": "12:15",
                 "meal": "Lunch",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -20339,7 +20444,7 @@
                 "weekday": "friday",
                 "time": "12:30",
                 "meal": "Lunch",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -20347,7 +20452,7 @@
                 "weekday": "friday",
                 "time": "12:45",
                 "meal": "Lunch",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -20355,7 +20460,7 @@
                 "weekday": "friday",
                 "time": "13:00",
                 "meal": "Lunch",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -20363,7 +20468,7 @@
                 "weekday": "friday",
                 "time": "13:15",
                 "meal": "Lunch",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -20371,7 +20476,7 @@
                 "weekday": "friday",
                 "time": "13:30",
                 "meal": "Lunch",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -20379,7 +20484,7 @@
                 "weekday": "friday",
                 "time": "13:45",
                 "meal": "Lunch",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -22018,12 +22123,36 @@
                 "date": "2026-06-26",
                 "weekday": "friday",
                 "time": "13:00",
+                "meal": "Lunch",
+                "max_seats": 8,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-06-26",
+                "weekday": "friday",
+                "time": "13:15",
+                "meal": "Lunch",
+                "max_seats": 8,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-06-26",
+                "weekday": "friday",
+                "time": "13:30",
+                "meal": "Lunch",
+                "max_seats": 8,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-06-26",
+                "weekday": "friday",
+                "time": "13:45",
                 "meal": "Lunch",
                 "max_seats": 8,
                 "raw_available_seats": 0
               }
             ],
-            "slot_count": 348
+            "slot_count": 351
           },
           {
             "meal": "Dinner",
@@ -22100,86 +22229,6 @@
               {
                 "date": "2026-04-28",
                 "weekday": "tuesday",
-                "time": "17:00",
-                "meal": "Dinner",
-                "max_seats": 5,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
-                "time": "17:15",
-                "meal": "Dinner",
-                "max_seats": 5,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
-                "time": "17:30",
-                "meal": "Dinner",
-                "max_seats": 5,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
-                "time": "17:45",
-                "meal": "Dinner",
-                "max_seats": 5,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
-                "time": "18:00",
-                "meal": "Dinner",
-                "max_seats": 4,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
-                "time": "18:15",
-                "meal": "Dinner",
-                "max_seats": 4,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
-                "time": "18:30",
-                "meal": "Dinner",
-                "max_seats": 4,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
-                "time": "18:45",
-                "meal": "Dinner",
-                "max_seats": 4,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
-                "time": "19:00",
-                "meal": "Dinner",
-                "max_seats": 4,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
-                "time": "19:15",
-                "meal": "Dinner",
-                "max_seats": 4,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
                 "time": "19:30",
                 "meal": "Dinner",
                 "max_seats": 4,
@@ -22238,7 +22287,7 @@
                 "weekday": "wednesday",
                 "time": "17:00",
                 "meal": "Dinner",
-                "max_seats": 6,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -22246,7 +22295,7 @@
                 "weekday": "wednesday",
                 "time": "17:15",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 4,
                 "raw_available_seats": 0
               },
               {
@@ -24774,7 +24823,7 @@
                 "weekday": "friday",
                 "time": "17:00",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24782,7 +24831,7 @@
                 "weekday": "friday",
                 "time": "17:15",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24790,7 +24839,7 @@
                 "weekday": "friday",
                 "time": "17:30",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24798,7 +24847,7 @@
                 "weekday": "friday",
                 "time": "17:45",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24806,7 +24855,7 @@
                 "weekday": "friday",
                 "time": "18:00",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24814,7 +24863,7 @@
                 "weekday": "friday",
                 "time": "18:15",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24822,7 +24871,7 @@
                 "weekday": "friday",
                 "time": "18:30",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24830,7 +24879,7 @@
                 "weekday": "friday",
                 "time": "18:45",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24846,7 +24895,7 @@
                 "weekday": "friday",
                 "time": "19:15",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24854,7 +24903,7 @@
                 "weekday": "friday",
                 "time": "19:30",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24862,7 +24911,7 @@
                 "weekday": "friday",
                 "time": "19:45",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24870,7 +24919,7 @@
                 "weekday": "friday",
                 "time": "20:00",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24878,7 +24927,7 @@
                 "weekday": "friday",
                 "time": "20:15",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24886,7 +24935,7 @@
                 "weekday": "friday",
                 "time": "20:30",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24894,7 +24943,7 @@
                 "weekday": "friday",
                 "time": "20:45",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -24902,7 +24951,7 @@
                 "weekday": "friday",
                 "time": "21:00",
                 "meal": "Dinner",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -28786,7 +28835,7 @@
                 "raw_available_seats": 0
               }
             ],
-            "slot_count": 836
+            "slot_count": 826
           },
           {
             "meal": "Afternoon Tea",
@@ -28836,7 +28885,8 @@
               "2026-06-22",
               "2026-06-23",
               "2026-06-24",
-              "2026-06-25"
+              "2026-06-25",
+              "2026-06-26"
             ],
             "times": [
               "14:00"
@@ -28983,7 +29033,7 @@
                 "weekday": "friday",
                 "time": "14:00",
                 "meal": "Afternoon Tea",
-                "max_seats": 8,
+                "max_seats": 5,
                 "raw_available_seats": 0
               },
               {
@@ -29185,49 +29235,39 @@
                 "meal": "Afternoon Tea",
                 "max_seats": 8,
                 "raw_available_seats": 0
+              },
+              {
+                "date": "2026-06-26",
+                "weekday": "friday",
+                "time": "14:00",
+                "meal": "Afternoon Tea",
+                "max_seats": 8,
+                "raw_available_seats": 0
               }
             ],
-            "slot_count": 43
+            "slot_count": 44
           }
         ],
         "notes": [
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG) using the same per-date booking flow as the DiningCity restaurant page. Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-osteria-mozza",
-      "name": "Osteria Mozza",
-      "category": "restaurant",
-      "dining_city_id": "205194420",
-      "dining_city_name": "Osteria Mozza",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/Osteria_Mozza",
-      "address": "Hilton Singapore Orchard, Level 5, 333 Orchard Road, Singapore 238867",
-      "lat": 1.302064505560855,
-      "lng": 103.8363409534752,
-      "coordinate_confidence": "address_geocoded",
-      "map_pin_source": "Singapore OneMap address geocode",
-      "map_pin_note": "Pin is address-geocoded from the official Hilton Singapore Orchard address; confirm the exact restaurant entrance before visiting.",
-      "venue_source_url": "https://osteriamozza.com.sg/"
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205194420?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Step into Osteria Mozza at Hilton Singapore Orchard, where sophistication meets comfort in a warmly lit, elegant setting. The centerpiece, a stunning white Carrara marble Mozzarella Bar, sets the stage for a delightful Italian journey.\n\nThe essence of the cuisine is Californian-Italian, celebrated for its focus on fresh ingredients and bold flavors. Indulge in housemade fresh pastas and show-stopping pizzas from the wood-burning ovens, complemented by exquisite choices from the dedicated Mozzarella Bar.\n\nParking is available at Hilton Singapore Orchard, accessible via the Main Lobby on 333 Orchard Road or the Grange Road entrance at Mandarin Gallery. Its primary culinary style is Italian, specializing in its unique Mozzarella Bar and wood-burning oven preparations.",
+        "cover_url": "https://static-assets.diningcity.asia/f1o7zbkc0j9dis0d0grdi1325qvo?",
+        "landmarks": [
+          "Orchard "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$72",
+        "opening_hour": "Monday 12–2:30 pm, 3–10 pm\nTuesday 12–2:30 pm, 3–10 pm\nWednesday 12–2:30 pm, 3–10 pm\nThursday 12–2:30 pm, 3–10 pm\nFriday12–2:30 pm, 3–10 pm\nSaturday 12–2:30 pm, 5–10 pm\nSunday 12–2:30 pm, 5–10 pm",
+        "website_detail_url": "https://www.diningcity.sg/singapore/Osteria_Mozza"
+      }
     },
     {
-      "booking_channel": "Amex Experiences App",
-      "slot_source_status": "diningcity_amex_platinum_project",
-      "availability": {
-        "status": "live_no_seats",
-        "source": "DiningCity public API project AMEXPlatSG",
-        "source_url": "https://api.diningcity.asia/public/restaurants/205194006/available_2018?project=AMEXPlatSG",
-        "source_mode": "bulk_project",
-        "project": "AMEXPlatSG",
-        "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
-        "confidence": "diningcity_amex_platinum_project",
-        "visible_dates": [],
-        "summary": "No Table for Two slots were returned by DiningCity AMEXPlatSG at this check.",
-        "meals": [],
-        "notes": [
-          "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
-        ]
-      },
       "id": "tft-polo-bar-steakhouse",
       "name": "Polo Bar Steakhouse",
       "category": "restaurant",
@@ -29239,9 +29279,58 @@
       "lng": 103.8443955,
       "coordinate_confidence": "diningcity_place_matched",
       "map_pin_source": "DiningCity public restaurant search",
-      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name."
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "diningcity_amex_platinum_project",
+      "availability": {
+        "status": "live_no_seats",
+        "source": "DiningCity public API project AMEXPlatSG",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205194006/available_2018?project=AMEXPlatSG",
+        "source_mode": "bulk_project",
+        "project": "AMEXPlatSG",
+        "project_title": "AMEX Platinum SG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
+        "confidence": "diningcity_amex_platinum_project",
+        "visible_dates": [],
+        "summary": "No Table for Two slots were returned by DiningCity AMEXPlatSG at this check.",
+        "meals": [],
+        "notes": [
+          "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
+        ]
+      },
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205194006?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Step into Polo Bar Steakhouse and discover a world of refined elegance and comfortable charm. The decor, rich with polished wood and plush leather seating, creates an intimate, club-like atmosphere. It’s the perfect setting for a relaxed yet sophisticated evening.\n\nThe essence of the cuisine is classic American, focusing on timeless, satisfying dishes, including high-quality steaks. The menu offers a genuine taste of traditional flavors, prepared with care.\n\nThis restaurant specializes in Steakhouse cuisine, offering an upscale dining experience.",
+        "cover_url": "https://static-assets.diningcity.asia/e0prft0p9x9j6qkriyiwiuthcoyb?",
+        "cuisines": [
+          "Steakhouse"
+        ],
+        "landmarks": [
+          "Tanjong Pagar "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$88",
+        "opening_hour": "Monday Closed\nTuesday 12–2:30 pm, 5–11 pm\nWednesday 12–2:30 pm, 5–11 pm\nThursday 12–2:30 pm, 5–11 pm\nFriday 12–2:30 pm, 5 pm–12 am\nSaturday 12–2:30 pm, 5 pm–12 am\nSunday Closed",
+        "website_detail_url": "https://www.diningcity.sg/singapore/Polo_Bar_Steakhouse"
+      }
     },
     {
+      "id": "tft-rappu",
+      "name": "Rappu",
+      "category": "restaurant",
+      "dining_city_id": "205194830",
+      "dining_city_name": "RAPPU",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/RAPPU",
+      "address": "52 Duxton Road, Singapore 089516",
+      "lat": 1.278218928878857,
+      "lng": 103.843345507949,
+      "coordinate_confidence": "address_geocoded",
+      "map_pin_source": "Singapore OneMap address geocode",
+      "map_pin_note": "Pin is address-geocoded from RAPPU's published address; confirm the exact entrance before visiting.",
+      "venue_source_url": "https://www.rappu.sg/",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -29251,8 +29340,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-05-03",
@@ -32895,21 +32984,33 @@
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-rappu",
-      "name": "Rappu",
-      "category": "restaurant",
-      "dining_city_id": "205194830",
-      "dining_city_name": "RAPPU",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/RAPPU",
-      "address": "52 Duxton Road, Singapore 089516",
-      "lat": 1.278218928878857,
-      "lng": 103.843345507949,
-      "coordinate_confidence": "address_geocoded",
-      "map_pin_source": "Singapore OneMap address geocode",
-      "map_pin_note": "Pin is address-geocoded from RAPPU's published address; confirm the exact entrance before visiting.",
-      "venue_source_url": "https://www.rappu.sg/"
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205194830?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Step into RAPPU, a vibrant hand roll and sake joint that replaces the typical hushed sushi counter with a fun, lively atmosphere and great music. It’s a place designed for relaxed, intimate dining where the energy is always welcoming.\n\nThe culinary style is dedicated to authentic Japanese hand rolls, crafted using premium seaweed, high-quality seafood, and perfectly seasoned sushi rice. A favorite is their six-course meal, featuring extremely fresh, value-for-money hand rolls.\n\nRAPPU is located on Duxton Road, easily accessible from Tanjong Pagar MRT station. This spot specializes in Japanese cuisine, focusing on sushi hand rolls.",
+        "cover_url": "https://static-assets.diningcity.asia/6b7k3j8fffviq3szol29z1r4vn3f?",
+        "cuisines": [
+          "Japanese"
+        ],
+        "avg_price": "S$70",
+        "opening_hour": "Monday 6–10:30 pm\nTuesday 11:45 am–2:30 pm, 6–10:30 pm\nWednesday 11:45 am–2:30 pm, 6–10:30 pm\nThursday 11:45 am–2:30 pm, 6–10:30 pm\nFriday 11:45 am–2:30 pm, 6–10:30 pm\nSaturday 11:45 am–2:30 pm, 6–10:30 pm\nSunday 11:45 am–2:30 pm, 6–10:30 pm",
+        "website_detail_url": "https://www.diningcity.sg/singapore/RAPPU"
+      }
     },
     {
+      "id": "tft-sarai",
+      "name": "Sarai",
+      "category": "restaurant",
+      "dining_city_id": "205178290",
+      "dining_city_name": "Sarai",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/Sarai",
+      "address": "163 Tanglin Road, #03-122 Tanglin Mall, Singapore 247933",
+      "lat": 1.3051081,
+      "lng": 103.823845,
+      "coordinate_confidence": "diningcity_place_matched",
+      "map_pin_source": "DiningCity public restaurant search",
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -32919,8 +33020,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-05-02",
@@ -40683,20 +40784,43 @@
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-sarai",
-      "name": "Sarai",
-      "category": "restaurant",
-      "dining_city_id": "205178290",
-      "dining_city_name": "Sarai",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/Sarai",
-      "address": "163 Tanglin Road, #03-122 Tanglin Mall, Singapore 247933",
-      "lat": 1.3051081,
-      "lng": 103.823845,
-      "coordinate_confidence": "diningcity_place_matched",
-      "map_pin_source": "DiningCity public restaurant search",
-      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name."
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205178290?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Setting itself apart, Sarai aims to bring you on a journey of rediscovering Thai cuisine. With more than 27 years of culinary experience, Isan-born Chef de Cuisine – Chimkit Khamphuang, or better known as Chef Lisa, is dedicated to bringing a part of her Thai heritage to Sarai. Sit comfortably and enjoy the traditional Thai-style dining known only as สำรับ (sumrub), with beautifully crafted menus that have been delicately and meticulously curated to conjure warm feelings of belonging and gastronomic contentment. Indulge in classical Thai dishes well-loved by the royal family, with each encompassing a touch of innovation and modern embellishment, taking your taste buds on an adventure of enticing flavors, inviting aromas and exquisite textures.",
+        "cover_url": "https://static-assets.diningcity.asia/4mkw2tqmtewlxsekr6kg8c052549?",
+        "cuisines": [
+          "Thai",
+          "Asian"
+        ],
+        "landmarks": [
+          "Tanglin "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$58",
+        "opening_hour": "Monday 11:30 am–3 pm, 5:30 pm–10:30 pm\nTuesday 11:30 am–3 pm, 5:30 pm–10:30 pm\nWednesday 11:30 am–3 pm, 5:30 pm–10:30 pm\nThursday 11:30 am–3 pm, 5:30 pm–10:30 pm\nFriday 11:30 am–3 pm, 5:30 pm–10:30 pm\nSaturday 11:30 am–3 pm, 5:30 pm–10:30 pm\nSunday 11:30 am–3 pm, 5:30 pm–10:30 pm",
+        "website_detail_url": "https://www.diningcity.sg/singapore/Sarai"
+      }
     },
     {
+      "id": "tft-tanoke",
+      "name": "TANOKE",
+      "category": "restaurant",
+      "app_area": "City Hall/Bugis",
+      "app_tags": [
+        "Table for Two",
+        "Chic Restaurant"
+      ],
+      "dining_city_id": "205174962",
+      "dining_city_name": "TANOKE",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/tanoke",
+      "address": "7 Purvis Street, Level 2, Singapore 188586",
+      "lat": 1.2967501,
+      "lng": 103.8551743,
+      "coordinate_confidence": "diningcity_place_matched",
+      "map_pin_source": "DiningCity public restaurant search",
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -40706,8 +40830,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-04-30",
@@ -43195,7 +43319,7 @@
                 "time": "18:00",
                 "meal": "Dinner",
                 "max_seats": 8,
-                "raw_available_seats": 15
+                "raw_available_seats": 13
               },
               {
                 "date": "2026-05-23",
@@ -43989,25 +44113,38 @@
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-tanoke",
-      "name": "TANOKE",
-      "category": "restaurant",
-      "app_area": "City Hall/Bugis",
-      "app_tags": [
-        "Table for Two",
-        "Chic Restaurant"
-      ],
-      "dining_city_id": "205174962",
-      "dining_city_name": "TANOKE",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/tanoke",
-      "address": "7 Purvis Street, Level 2, Singapore 188586",
-      "lat": 1.2967501,
-      "lng": 103.8551743,
-      "coordinate_confidence": "diningcity_place_matched",
-      "map_pin_source": "DiningCity public restaurant search",
-      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name."
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205174962?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Step into TANOKE, where modern Japanese artistry meets a cozy, inviting ambiance. The space whispers of refined simplicity, with warm lighting and natural wood accents creating a tranquil escape. It's a setting perfect for savoring delicate flavors and engaging in quiet conversation.\n\nAt its heart, TANOKE celebrates contemporary Japanese cuisine with a focus on premium ingredients and innovative techniques. Their charcoal-grilled dishes, particularly the Wagyu A5 Striploin, are a highlight, offering a symphony of smoky aromas and rich, melt-in-your-mouth textures. Each dish is a testament to meticulous preparation and a deep respect for culinary tradition.\n\nTANOKE is conveniently located near Telok Ayer MRT station, a short walk away. Ample parking can be found at the nearby Amoy Street Food Centre. The restaurant's modern Japanese culinary style, with its emphasis on charcoal grilling and a refined dining experience, typically ranges from $80 to $120 per person.",
+        "cover_url": "https://static-assets.diningcity.asia/5iu6xgf41b0ryf74a04oorlg7e0j?",
+        "cuisines": [
+          "Japanese",
+          "Modern"
+        ],
+        "landmarks": [
+          "Bugis "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$88",
+        "opening_hour": "Monday\t12–2:30 pm, 6–10 pm\nTuesday\t12–2:30 pm, 6–10 pm\nWednesday 12–2:30 pm, 6–10 pm\nThursday 12–2:30 pm, 6–10 pm\nFriday 12–2:30 pm, 6–10 pm\nSaturday 12–2:30 pm, 6–10 pm\nSunday 12–2:30 pm, 6–10 pm",
+        "website_detail_url": "https://www.diningcity.sg/singapore/tanoke"
+      }
     },
     {
+      "id": "tft-the-feather-blade",
+      "name": "The Feather Blade",
+      "category": "restaurant",
+      "dining_city_id": "205194812",
+      "dining_city_name": "The Feather Blade",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/The_Feather_Blade",
+      "address": "61 Tanjong Pagar Road, Singapore 088482",
+      "lat": 1.2783375,
+      "lng": 103.8439166,
+      "coordinate_confidence": "diningcity_place_matched",
+      "map_pin_source": "DiningCity public restaurant search",
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -44017,8 +44154,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-05-05",
@@ -49677,20 +49814,38 @@
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-the-feather-blade",
-      "name": "The Feather Blade",
-      "category": "restaurant",
-      "dining_city_id": "205194812",
-      "dining_city_name": "The Feather Blade",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/The_Feather_Blade",
-      "address": "61 Tanjong Pagar Road, Singapore 088482",
-      "lat": 1.2783375,
-      "lng": 103.8439166,
-      "coordinate_confidence": "diningcity_place_matched",
-      "map_pin_source": "DiningCity public restaurant search",
-      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name."
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205194812?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Step into The Feather Blade, an intimate space that keeps the focus squarely on quality, offering a relaxed yet specialized dining experience. It’s the perfect setting for an unpretentious and satisfying meal.\n\nThe essence of the cuisine is refined comfort, specializing in high-quality cuts of beef, particularly their signature Feather Blade Steak. You can also explore their decadent sides like Creamy Spinach or Triple Cooked Fries.\n\nThe primary culinary style Steakhouse is conveniently located near the Tanjong Pagar MRT station.",
+        "cover_url": "https://static-assets.diningcity.asia/3pz52b4kd0yq8j8y2hknyqfna57i?",
+        "cuisines": [
+          "Steakhouse"
+        ],
+        "landmarks": [
+          "Tanjong Pagar "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$38",
+        "opening_hour": "Monday 5:30–10:30 pm\nTuesday 5:30–10:30 pm\nWednesday 11:45 am–2:30 pm, 5:30–10:30 pm\nThursday 11:45 am–2:30 pm, 5:30–10:30 pm\nFriday 11:45 am–2:30 pm, 5:30–10:30 pm\nSaturday 11:45 am–2:30 pm, 5:30–10:30 pm\nSunday 11:45 am–2:30 pm, 5:30–10:30 pm",
+        "website_detail_url": "https://www.diningcity.sg/singapore/The_Feather_Blade"
+      }
     },
     {
+      "id": "tft-vineyard",
+      "name": "Vineyard",
+      "category": "restaurant",
+      "dining_city_id": "2055283",
+      "dining_city_name": "Vineyard @ Hort Park",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/vineyard_hort_park",
+      "address": "33 Hyderabad Road, #02-02 HortPark, Singapore 119578",
+      "lat": 1.2786197,
+      "lng": 103.8015439,
+      "coordinate_confidence": "love_dining_place_matched",
+      "map_pin_source": "Existing Love Dining geocode for Vineyard at HortPark",
+      "map_pin_note": "Pin reuses the existing source-backed Love Dining geocode for Vineyard at HortPark.",
+      "venue_source_url": "https://www.vineyardhortpark.com.sg/contact-us-1",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -49700,8 +49855,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-05-02",
@@ -55943,40 +56098,26 @@
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-vineyard",
-      "name": "Vineyard",
-      "category": "restaurant",
-      "dining_city_id": "2055283",
-      "dining_city_name": "Vineyard @ Hort Park",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/vineyard_hort_park",
-      "address": "33 Hyderabad Road, #02-02 HortPark, Singapore 119578",
-      "lat": 1.2786197,
-      "lng": 103.8015439,
-      "coordinate_confidence": "love_dining_place_matched",
-      "map_pin_source": "Existing Love Dining geocode for Vineyard at HortPark",
-      "map_pin_note": "Pin reuses the existing source-backed Love Dining geocode for Vineyard at HortPark.",
-      "venue_source_url": "https://www.vineyardhortpark.com.sg/contact-us-1"
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/2055283?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Nestled amidst the lush greenery of HortPark, Vineyard offers a serene escape, a place where tranquility meets culinary delight. Its charming, rustic ambiance, with an al fresco dining option, creates a peaceful setting perfect for unwinding.\n\nThe essence of Vineyard's cuisine lies in its contemporary French-Italian dishes, prepared with fresh, seasonal ingredients. Their pan-seared foie gras with fig jam is a notable highlight.\n\nTo reach this verdant haven, the nearest MRT station is Labrador Park. Parking is available within HortPark. This charming spot is known for its beautiful garden setting, making it an ideal choice for a relaxed meal. Expect an average spend of around $50-$70 per person.",
+        "cover_url": "https://static-assets.diningcity.asia/n1kn87vboj76uesbwkpdsfojfuso?",
+        "cuisines": [
+          "Italian",
+          "French"
+        ],
+        "landmarks": [
+          "Telok Blangah "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$38",
+        "opening_hour": "Mon - Fri 12:00 15:00, 18:00 - 22:00. Sat and Sun 10:30 - 22:00",
+        "website_detail_url": "https://www.diningcity.sg/singapore/vineyard_hort_park"
+      }
     },
     {
-      "booking_channel": "Amex Experiences App",
-      "slot_source_status": "diningcity_amex_platinum_project",
-      "availability": {
-        "status": "live_no_seats",
-        "source": "DiningCity public API project AMEXPlatSG",
-        "source_url": "https://api.diningcity.asia/public/restaurants/205194014/available_2018?project=AMEXPlatSG",
-        "source_mode": "bulk_project",
-        "project": "AMEXPlatSG",
-        "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
-        "confidence": "diningcity_amex_platinum_project",
-        "visible_dates": [],
-        "summary": "No Table for Two slots were returned by DiningCity AMEXPlatSG at this check.",
-        "meals": [],
-        "notes": [
-          "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
-        ]
-      },
       "id": "tft-vue",
       "name": "VUE",
       "category": "restaurant",
@@ -55988,23 +56129,76 @@
       "lng": 103.8529553,
       "coordinate_confidence": "diningcity_place_matched",
       "map_pin_source": "DiningCity public restaurant search",
-      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name."
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
+      "booking_channel": "Amex Experiences App",
+      "slot_source_status": "diningcity_amex_platinum_project",
+      "availability": {
+        "status": "live_no_seats",
+        "source": "DiningCity public API project AMEXPlatSG",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205194014/available_2018?project=AMEXPlatSG",
+        "source_mode": "bulk_project",
+        "project": "AMEXPlatSG",
+        "project_title": "AMEX Platinum SG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
+        "confidence": "diningcity_amex_platinum_project",
+        "visible_dates": [],
+        "summary": "No Table for Two slots were returned by DiningCity AMEXPlatSG at this check.",
+        "meals": [],
+        "notes": [
+          "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
+        ]
+      },
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205194014?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Step into VUE, a rooftop haven where the city's pulse softens into a rhythm of luxury and refinement.\nThe stunning panoramic skyline views and open-air ambiance create a perfect backdrop for romantic dinners and intimate gatherings.\n\nAt its core, VUE is celebrated for its focus on grilling, offering a menu that embraces premium ingredients and chef-driven creations.\nExpect sophisticated modern cuisine with a strong emphasis on expertly prepared dishes from the grill.\n\nThe culinary style is that of a Grill Restaurant & Wine Bar. Its standout feature is its breathtaking rooftop location and sophisticated late-night bar experience.",
+        "cover_url": "https://static-assets.diningcity.asia/ycciv8am9u3nrep2kped2i1wllr2?",
+        "cuisines": [
+          "Grill Dining"
+        ],
+        "landmarks": [
+          "Fullerton "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$68",
+        "opening_hour": "Monday 11:30 am–2 pm, 5:30 pm–1 am\nTuesday 11:30 am–2 pm, 5:30 pm–1 am\nWednesday 11:30 am–2 pm, 5:30 pm–1 am\nThursday 11:30 am–2 pm, 5:30 pm–1 am\nFriday 11:30 am–2 pm, 5:30 pm–2 am\nSaturday 11:30 am–3 pm, 5:30 pm–2 am\nSunday Closed",
+        "website_detail_url": "https://www.diningcity.sg/singapore/vue"
+      }
     },
     {
+      "id": "tft-colony",
+      "name": "Colony",
+      "category": "buffet",
+      "app_name": "Colony @ The Ritz-Carlton",
+      "app_area": "Marina Bay/Boat Quay",
+      "app_tags": [
+        "Table for Two",
+        "Buffet"
+      ],
+      "dining_city_id": "205191500",
+      "dining_city_name": "Colony",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/colony",
+      "address": "The Ritz-Carlton, Millenia Singapore, 7 Raffles Avenue, Singapore 039799",
+      "lat": 1.2909392,
+      "lng": 103.8599895,
+      "coordinate_confidence": "diningcity_place_matched",
+      "map_pin_source": "DiningCity public restaurant search",
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
         "status": "live_available",
         "source": "DiningCity public API project AMEXPlatSG",
-        "source_url": "https://api.diningcity.asia/public/restaurants/205191500/available_2018?project=AMEXPlatSG&selected_date=2026-04-28",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205191500/available_2018?project=AMEXPlatSG&selected_date=2026-05-04",
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
-          "2026-04-28",
           "2026-05-04",
           "2026-05-05",
           "2026-05-06",
@@ -56042,7 +56236,7 @@
           "2026-06-26",
           "2026-06-27"
         ],
-        "summary": "37 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 36 dates, Dinner 12 dates).",
+        "summary": "36 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 36 dates, Dinner 10 dates).",
         "meals": [
           {
             "meal": "Lunch",
@@ -56188,6 +56382,14 @@
               {
                 "date": "2026-05-06",
                 "weekday": "wednesday",
+                "time": "12:15",
+                "meal": "Lunch",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-05-06",
+                "weekday": "wednesday",
                 "time": "12:30",
                 "meal": "Lunch",
                 "max_seats": 2,
@@ -56221,6 +56423,14 @@
                 "date": "2026-05-06",
                 "weekday": "wednesday",
                 "time": "13:30",
+                "meal": "Lunch",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-05-07",
+                "weekday": "thursday",
+                "time": "12:00",
                 "meal": "Lunch",
                 "max_seats": 2,
                 "raw_available_seats": 0
@@ -56365,14 +56575,6 @@
                 "date": "2026-05-12",
                 "weekday": "tuesday",
                 "time": "13:30",
-                "meal": "Lunch",
-                "max_seats": 2,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-05-13",
-                "weekday": "wednesday",
-                "time": "12:00",
                 "meal": "Lunch",
                 "max_seats": 2,
                 "raw_available_seats": 0
@@ -57994,7 +58196,7 @@
                 "raw_available_seats": 0
               }
             ],
-            "slot_count": 237
+            "slot_count": 238
           },
           {
             "meal": "Dinner",
@@ -58002,8 +58204,6 @@
             "seats": 2,
             "max_seats": 2,
             "dates": [
-              "2026-04-28",
-              "2026-05-18",
               "2026-06-08",
               "2026-06-09",
               "2026-06-10",
@@ -58023,70 +58223,6 @@
             ],
             "slots": [
               {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
-                "time": "18:00",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
-                "time": "18:30",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
-                "time": "19:00",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-04-28",
-                "weekday": "tuesday",
-                "time": "21:00",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-05-18",
-                "weekday": "monday",
-                "time": "18:00",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-05-18",
-                "weekday": "monday",
-                "time": "18:30",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-05-18",
-                "weekday": "monday",
-                "time": "19:00",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-05-18",
-                "weekday": "monday",
-                "time": "21:00",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 0
-              },
-              {
                 "date": "2026-06-08",
                 "weekday": "monday",
                 "time": "18:00",
@@ -58407,33 +58543,45 @@
                 "raw_available_seats": 0
               }
             ],
-            "slot_count": 48
+            "slot_count": 40
           }
         ],
         "notes": [
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG) using the same per-date booking flow as the DiningCity restaurant page. Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-colony",
-      "name": "Colony",
-      "category": "buffet",
-      "app_name": "Colony @ The Ritz-Carlton",
-      "app_area": "Marina Bay/Boat Quay",
-      "app_tags": [
-        "Table for Two",
-        "Buffet"
-      ],
-      "dining_city_id": "205191500",
-      "dining_city_name": "Colony",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/colony",
-      "address": "The Ritz-Carlton, Millenia Singapore, 7 Raffles Avenue, Singapore 039799",
-      "lat": 1.2909392,
-      "lng": 103.8599895,
-      "coordinate_confidence": "diningcity_place_matched",
-      "map_pin_source": "DiningCity public restaurant search",
-      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name."
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205191500?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "In the late 18th century, the British traveled to the East Indies for trade and commerce; that story is told through the experience at Colony. The restaurant showcases local, Chinese, Indian, Indonesian, Malaysian and Western dishes through seven open kitchens and breakfast, lunch and dinner buffets. Distinct experiences include a Sunday champagne brunch, and a bakery offering fresh items each day",
+        "cover_url": "https://static-assets.diningcity.asia/8dug08av97j594kbcv0qy53k57vp?",
+        "cuisines": [
+          "International"
+        ],
+        "landmarks": [
+          "Esplanade "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$98",
+        "opening_hour": "Monday\t6:30–10:30 am, 12–2:30 pm, 3:30–5:30 pm, 6:30–10:30 pm\nTuesday\t6:30–10:30 am, 12–2:30 pm, 3:30–5:30 pm, 6:30–10:30 pm\nWednesday\t6:30–10:30 am, 12–2:30 pm, 3:30–5:30 pm, 6:30–10:30 pm\nThursday\t6:30–10:30 am, 12–2:30 pm, 3:30–5:30 pm, 6:30–10:30 pm\nFriday\t6:30–10:30 am, 12–2:30 pm, 3:30–5:30 pm, 6:30–10:30 pm\nSaturday\t6:30–10:30 am, 12–2:30 pm, 3:30–5:30 pm, 6:30–10:30 pm\nSunday\t6:30–10:30 am, 12–3:30 pm, 6:30–10:30 pm",
+        "website_detail_url": "https://www.diningcity.sg/singapore/colony"
+      }
     },
     {
+      "id": "tft-peppermint",
+      "name": "Peppermint",
+      "category": "buffet",
+      "dining_city_id": "205194942",
+      "dining_city_name": "Peppermint",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/Peppermint",
+      "address": "PARKROYAL COLLECTION Marina Bay, Level 4, 6 Raffles Boulevard, Singapore 039594",
+      "lat": 1.291573956548436,
+      "lng": 103.8570269553721,
+      "coordinate_confidence": "address_geocoded",
+      "map_pin_source": "Singapore OneMap address geocode",
+      "map_pin_note": "Pin is address-geocoded from PARKROYAL COLLECTION Marina Bay's published address; confirm the exact restaurant entrance before visiting.",
+      "venue_source_url": "https://www.panpacific.com/en/hotels-and-resorts/pr-collection-marina-bay/dining/peppermint.html",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -58443,8 +58591,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-05-02",
@@ -61663,21 +61811,42 @@
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-peppermint",
-      "name": "Peppermint",
-      "category": "buffet",
-      "dining_city_id": "205194942",
-      "dining_city_name": "Peppermint",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/Peppermint",
-      "address": "PARKROYAL COLLECTION Marina Bay, Level 4, 6 Raffles Boulevard, Singapore 039594",
-      "lat": 1.291573956548436,
-      "lng": 103.8570269553721,
-      "coordinate_confidence": "address_geocoded",
-      "map_pin_source": "Singapore OneMap address geocode",
-      "map_pin_note": "Pin is address-geocoded from PARKROYAL COLLECTION Marina Bay's published address; confirm the exact restaurant entrance before visiting.",
-      "venue_source_url": "https://www.panpacific.com/en/hotels-and-resorts/pr-collection-marina-bay/dining/peppermint.html"
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205194942?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Step into Peppermint, a serene sanctuary where the \"\"garden-in-a-hotel\"\" concept comes to life with lush greenery and vibrant garden views. The space is filled with the gentle sounds of real birds and soft, natural lighting, offering a utopian escape from the city’s bustle.\n\nThe essence of the cuisine lies in a healthful farm-to-table philosophy, featuring a rotating variety of international and Asian flavors crafted from locally sourced ingredients. You can savor signature favorites like the Singapore Chicken Rice or explore fresh seafood and succulent meats prepared at the open display kitchen.\n\nTo visit, the restaurant is located on Level 4 of PARKROYAL COLLECTION Marina Bay, just minutes from the Esplanade, Promenade, and City Hall MRT stations. Complimentary parking is available at Marina Square for the first two hours for dine-in guests. Peppermint specializes in a halal-certified international buffet.",
+        "cover_url": "https://static-assets.diningcity.asia/mimm39lqv5mmiynw3ryusvxxuj8e?",
+        "cuisines": [
+          "Buffet"
+        ],
+        "landmarks": [
+          "Marina Bay "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$88",
+        "opening_hour": "Monday 6:30 am–10 pm\nTuesday 6:30 am–10 pm\nWednesday 6:30 am–10 pm\nThursday 6:30 am–10 pm\nFriday 6:30 am–10 pm\nSaturday 6:30 am–10 pm\nSunday 6:30 am–10 pm",
+        "website_detail_url": "https://www.diningcity.sg/singapore/Peppermint"
+      }
     },
     {
+      "id": "tft-capitol-bistro-bar-patisserie",
+      "name": "Capitol Bistro. Bar. Patisserie",
+      "category": "cafe",
+      "app_area": "City Hall/Bugis",
+      "app_tags": [
+        "Table for Two",
+        "Cafe"
+      ],
+      "dining_city_id": "205192162",
+      "dining_city_name": "Capitol Bistro. Bar. Patisserie",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/capitol_bistro_bar_patisserie",
+      "address": "13 Stamford Road, #01-86/87, Arcade @ The Capitol Kempinski, Singapore 178905",
+      "lat": 1.293546,
+      "lng": 103.8511091,
+      "coordinate_confidence": "diningcity_place_matched",
+      "map_pin_source": "DiningCity public restaurant search",
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -61687,8 +61856,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-04-30",
@@ -64472,8 +64641,8 @@
                 "weekday": "thursday",
                 "time": "18:30",
                 "meal": "Dinner",
-                "max_seats": 4,
-                "raw_available_seats": 4
+                "max_seats": 2,
+                "raw_available_seats": 2
               },
               {
                 "date": "2026-04-30",
@@ -68251,25 +68420,76 @@
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-capitol-bistro-bar-patisserie",
-      "name": "Capitol Bistro. Bar. Patisserie",
-      "category": "cafe",
-      "app_area": "City Hall/Bugis",
-      "app_tags": [
-        "Table for Two",
-        "Cafe"
-      ],
-      "dining_city_id": "205192162",
-      "dining_city_name": "Capitol Bistro. Bar. Patisserie",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/capitol_bistro_bar_patisserie",
-      "address": "13 Stamford Road, #01-86/87, Arcade @ The Capitol Kempinski, Singapore 178905",
-      "lat": 1.293546,
-      "lng": 103.8511091,
-      "coordinate_confidence": "diningcity_place_matched",
-      "map_pin_source": "DiningCity public restaurant search",
-      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name."
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205192162?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Welcome to Capitol Bistro. Bar. Patisserie! Exuding a modern, tropical-inspired interior amidst an inviting semi-alfresco setting, the venue offers a well-rounded dining experience, making it the perfect spot for any occasion.\n\nBistro: Enjoy a casual but delectable a la carte menu featuring artisanal breads, gourmet starters, and exquisite main courses. Breakfast, lunch and dinner are available. \nBar: Delight in our refreshing cocktails, mocktails and specialty beverages, expertly crafted for any time of the day.\nPatisserie: Indulge in our selection of fine pastries and desserts, all freshly made to satisfy your sweet tooth.\n\nWhether a casual lunch, a celebratory dinner, or simply to unwind with friends, Capitol offers a casual yet sophisticated dining experience for everyone.",
+        "cover_url": "https://static-assets.diningcity.asia/mn3eavnqqbfkbdaxxnharepd2m1n?",
+        "cuisines": [
+          "International",
+          "Modern"
+        ],
+        "landmarks": [
+          "City Hall "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$58",
+        "opening_hour": "Monday\t8 am–10:30 pm\nTuesday\t8 am–10:30 pm\nWednesday\t8 am–10:30 pm\nThursday\t8 am–10:30 pm\nFriday\t8 am–10:30 pm\nSaturday\t8 am–10:30 pm\nSunday\t8 am–10:30 pm",
+        "website_detail_url": "https://www.diningcity.sg/singapore/capitol_bistro_bar_patisserie"
+      }
     },
     {
+      "id": "tft-kees",
+      "name": "Kee's",
+      "category": "cafe",
+      "dining_city_id": "205194842",
+      "dining_city_name": "Kee's",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/Kees",
+      "address": "21 Carpenter Street, Singapore 059984",
+      "lat": 1.2885226,
+      "lng": 103.8474019,
+      "coordinate_confidence": "diningcity_place_matched",
+      "map_pin_source": "DiningCity public restaurant search",
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
+      "sample_menu": {
+        "source": "Amex Experiences App screenshot provided by user",
+        "source_label": "Amex Experiences App capture, 27 Apr 2026",
+        "captured_at": "2026-04-27",
+        "title": "Table for Two - Exclusively curated by American Express",
+        "courses": [
+          {
+            "course": "Appetizers",
+            "choices": [
+              "Tuna Tartare - toasted sesame, fennel salad, wonton crisp, coriander",
+              "Heirloom Tomato - apple puree, candied walnut, sesame galangal dressing"
+            ]
+          },
+          {
+            "course": "Main",
+            "choices": [
+              "Stanbroke Australian Ribeye Steak - truffle roasted baby potatoes, baby gem, parmesan, truffle beef jus",
+              "Mediterranean Seabass - tomato confit, capsicum stew, grilled leek, white wine beurre blanc",
+              "Truffle Spinach Rigatoni - slow cooked egg, parmesan, cream, garlic crisp"
+            ]
+          },
+          {
+            "course": "Dessert",
+            "choices": [
+              "Pandan Trifle - coffee sponge, salted pandan ice cream, chocolate pearl, toasted coconut flake",
+              "Sea Salt Dark Chocolate Tart - 70% dark chocolate mousse, vanilla ice cream centre, quince, chocolate soil, toasted hazelnut"
+            ]
+          },
+          {
+            "course": "Beverage",
+            "choices": [
+              "Kee's Iced Tea - Mandarin Sticky Rice Pu'Er, red date honey",
+              "Yuzu Goodness - yuzu lemon prebiotic soda, peach, raspberry"
+            ]
+          }
+        ],
+        "additional_cover_note": "Two complimentary sets are served under Table for Two. Additional covers beyond two pax are charged at S$85++ per pax for this menu."
+      },
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -68279,8 +68499,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-05-01",
@@ -68336,7 +68556,7 @@
           "2026-06-26",
           "2026-06-27"
         ],
-        "summary": "52 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 52 dates, Dinner 51 dates, Afternoon Tea 51 dates).",
+        "summary": "52 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 52 dates, Dinner 51 dates, Afternoon Tea 52 dates).",
         "meals": [
           {
             "meal": "Lunch",
@@ -71727,9 +71947,17 @@
                 "meal": "Lunch",
                 "max_seats": 8,
                 "raw_available_seats": 0
+              },
+              {
+                "date": "2026-06-27",
+                "weekday": "saturday",
+                "time": "13:45",
+                "meal": "Lunch",
+                "max_seats": 8,
+                "raw_available_seats": 0
               }
             ],
-            "slot_count": 415
+            "slot_count": 416
           },
           {
             "meal": "Dinner",
@@ -77167,7 +77395,8 @@
               "2026-06-23",
               "2026-06-24",
               "2026-06-25",
-              "2026-06-26"
+              "2026-06-26",
+              "2026-06-27"
             ],
             "times": [
               "14:00",
@@ -82079,29 +82308,76 @@
                 "meal": "Afternoon Tea",
                 "max_seats": 8,
                 "raw_available_seats": 0
+              },
+              {
+                "date": "2026-06-27",
+                "weekday": "saturday",
+                "time": "14:00",
+                "meal": "Afternoon Tea",
+                "max_seats": 8,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-06-27",
+                "weekday": "saturday",
+                "time": "14:15",
+                "meal": "Afternoon Tea",
+                "max_seats": 8,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-06-27",
+                "weekday": "saturday",
+                "time": "14:30",
+                "meal": "Afternoon Tea",
+                "max_seats": 8,
+                "raw_available_seats": 0
               }
             ],
-            "slot_count": 612
+            "slot_count": 615
           }
         ],
         "notes": [
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG) using the same per-date booking flow as the DiningCity restaurant page. Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-kees",
-      "name": "Kee's",
-      "category": "cafe",
-      "dining_city_id": "205194842",
-      "dining_city_name": "Kee's",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/Kees",
-      "address": "21 Carpenter Street, Singapore 059984",
-      "lat": 1.2885226,
-      "lng": 103.8474019,
-      "coordinate_confidence": "diningcity_place_matched",
-      "map_pin_source": "DiningCity public restaurant search",
-      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name."
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205194842?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Step into Kee's, where a gentle vibrancy fills the air, blending the energy of a lively bar with the focus of a glowing chef's table.\n\nIt’s a place designed for moments worth lingering over, offering a stylish escape right in the neighborhood.\n\nThe cuisine at Kee's is a compelling meeting of bold European flavors and refined Pan-Asian expressions.\nThis unique fusion creates a menu crafted for discovery and shared enjoyment.\n\nKee's primary culinary style is best described as European-Pan-Asian fusion. It stands out with its dynamic bar scene, exceptional cocktails, and music spun by DJ Aldrin, creating a perfect backdrop for a sophisticated evening.",
+        "cover_url": "https://static-assets.diningcity.asia/2ha463k26s4bni9ejh249vyq24n3?",
+        "cuisines": [
+          "European",
+          "Pan Asian"
+        ],
+        "landmarks": [
+          "Clarke Quay "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$48",
+        "opening_hour": "Monday 7 am–11 pm\nTuesday 7 am–11 pm\nWednesday 7 am–11 pm\nThursday 7 am–11 pm\nFriday 7 am–11 pm\nSaturday 7 am–11 pm\nSunday 7 am–11 pm",
+        "website_detail_url": "https://www.diningcity.sg/singapore/kees"
+      }
     },
     {
+      "id": "tft-the-plump-frenchman",
+      "name": "The Plump Frenchman",
+      "category": "cafe",
+      "app_area": "City Hall/Bugis",
+      "app_tags": [
+        "Table for Two",
+        "Cafe"
+      ],
+      "dining_city_id": "205194944",
+      "dining_city_name": "The Plump Frenchman",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/The_Plump_Frenchman",
+      "address": "20 Tan Quee Lan Street, #01-20 Guoco Midtown II, Singapore 188107",
+      "lat": 1.2985824,
+      "lng": 103.8568306,
+      "coordinate_confidence": "diningcity_place_matched",
+      "map_pin_source": "DiningCity public restaurant search",
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -82111,8 +82387,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-04-27T05:33:08Z",
-        "checked_at": "2026-04-27T05:33:08Z",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "checked_at": "2026-04-27T06:41:41Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-05-04",
@@ -83178,7 +83454,7 @@
                 "time": "13:00",
                 "meal": "Lunch",
                 "max_seats": 8,
-                "raw_available_seats": 10
+                "raw_available_seats": 8
               },
               {
                 "date": "2026-05-23",
@@ -90764,23 +91040,23 @@
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
         ]
       },
-      "id": "tft-the-plump-frenchman",
-      "name": "The Plump Frenchman",
-      "category": "cafe",
-      "app_area": "City Hall/Bugis",
-      "app_tags": [
-        "Table for Two",
-        "Cafe"
-      ],
-      "dining_city_id": "205194944",
-      "dining_city_name": "The Plump Frenchman",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/The_Plump_Frenchman",
-      "address": "20 Tan Quee Lan Street, #01-20 Guoco Midtown II, Singapore 188107",
-      "lat": 1.2985824,
-      "lng": 103.8568306,
-      "coordinate_confidence": "diningcity_place_matched",
-      "map_pin_source": "DiningCity public restaurant search",
-      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name."
+      "dining_city_profile": {
+        "source": "DiningCity public restaurant detail API",
+        "source_url": "https://api.diningcity.asia/public/restaurants/205194944?project=AMEXPlatSG",
+        "captured_at": "2026-04-27T06:41:41Z",
+        "description": "Step into The Plump Frenchman, a cozy brasserie where the warmth of wood and the hum of convivial chatter create the charm of a bustling Parisian neighborhood bistro. It is a place that celebrates the joy of slow meals and soulful French comfort food, where garlic, wine, and butter are treated with the highest respect.\n\nThe heart of the kitchen is the spinning rotisserie, producing the signature roasted chicken served with house-made sriracha and pickles. Be sure to save room for the viral chocolate mousse, which is generously spooned onto your plate right at your table for a touch of interactive indulgence.\n\nLocated at Guoco Midtown II, the restaurant is a short walk from Bugis MRT station via Exit D. For those visiting by car, the most convenient parking can be found within the Guoco Midtown building.\n\nThe Plump Frenchman specializes in classic French brasserie fare with special features like a tableside dessert service and a roaming magician.",
+        "cover_url": "https://static-assets.diningcity.asia/8blkznvsugziacanyos1v6yll685?",
+        "cuisines": [
+          "French"
+        ],
+        "landmarks": [
+          "Bugis "
+        ],
+        "location": "Central Singapore",
+        "avg_price": "S$48",
+        "opening_hour": "Monday 11:30 am–2:30 pm, 5:30–11 pm\nTuesday 11:30 am–2:30 pm, 5:30–11 pm\nWednesday 11:30 am–2:30 pm, 5:30–11 pm\nThursday 11:30 am–2:30 pm, 5:30–11 pm\nFriday 11:30 am–2:30 pm, 5:30–11 pm\nSaturday 11:30 am–2:30 pm, 5:30–11 pm\nSunday 11:30 am–2:30 pm, 5:30–11 pm",
+        "website_detail_url": "https://www.diningcity.sg/singapore/theplump_frenchman"
+      }
     }
   ]
 }
