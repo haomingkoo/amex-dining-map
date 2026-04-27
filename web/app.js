@@ -4560,7 +4560,7 @@ function renderTableForTwoList() {
       <p class="mobile-card-desc">${escapeHtml(tableForTwoCompactAvailabilityLine(record, filters))}</p>
       <div class="mobile-card-meta">
         <span>${escapeHtml(tableForTwoDateSummary(record, filters))}</span>
-        <span>Amex app</span>
+        <span>${record.menu_pdf?.status === "published" ? "Set menu · Amex app" : "Amex app"}</span>
       </div>
     `;
     card.addEventListener("click", () => {
@@ -4612,6 +4612,13 @@ function renderTableForTwoCard() {
   const profileSourceUrl = tableForTwoProfile(record).source_url || "";
   const gBadge = googleRatingBadge(record);
   const googleMapsUrl = bestGoogleMapsUrl(record) || googleMapsSearchUrl([displayName, "Singapore"]);
+  const menuPdf = record.menu_pdf || {};
+  const menuPdfLink = menuPdf.status === "published" && menuPdf.url
+    ? `<a class="inline-link primary-action" href="${escapeHtml(menuPdf.url)}" target="_blank" rel="noopener">View set menu (PDF)</a>`
+    : "";
+  const menuPdfNote = menuPdf.status === "buffet_no_menu_expected"
+    ? `<div class="focus-note">Buffet venue — no set menu PDF.</div>`
+    : "";
 
   tableForTwoFocusCard.innerHTML = `
     ${profileImageUrl ? `<img class="tft-venue-photo" src="${escapeHtml(profileImageUrl)}" alt="${escapeHtml(displayName)}">` : ""}
@@ -4649,8 +4656,10 @@ function renderTableForTwoCard() {
         <span>${escapeHtml(tableForTwoFreshnessLabel(record))}</span>
       </div>
     </div>
+    ${menuPdfNote}
     <div class="focus-actions">
-      <a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
+      ${menuPdfLink}
+      <a class="inline-link${menuPdfLink ? "" : " primary-action"}" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
       ${record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.dining_city_public_url)}" target="_blank" rel="noopener">Public DiningCity page</a>` : ""}
       ${record.venue_source_url && !record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.venue_source_url)}" target="_blank" rel="noopener">Venue source</a>` : ""}
       ${profileSourceUrl ? `<a class="inline-link subtle" href="${escapeHtml(profileSourceUrl)}" target="_blank" rel="noopener">DiningCity profile source</a>` : ""}
