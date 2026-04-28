@@ -2557,6 +2557,39 @@ a.google-badge:hover {
   color: var(--text-dim) !important;
 }
 
+.marker-cluster.benefit-marker-cluster {
+  background: rgba(201, 165, 90, 0.18);
+  border-radius: 999px;
+}
+
+.marker-cluster.benefit-marker-cluster .benefit-cluster-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  border: 2px solid rgba(255, 255, 255, 0.82);
+  border-radius: 999px;
+  background: var(--gold);
+  box-shadow:
+    0 0 0 4px rgba(201, 165, 90, 0.18),
+    0 10px 22px rgba(0, 0, 0, 0.38);
+  color: #08111a;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.marker-cluster.benefit-marker-cluster-medium .benefit-cluster-inner {
+  font-size: 14px;
+}
+
+.marker-cluster.benefit-marker-cluster-large .benefit-cluster-inner {
+  font-size: 15px;
+}
+
 
 /* ═══════════════════════════════════════════════════════════
    SHARED TYPOGRAPHY

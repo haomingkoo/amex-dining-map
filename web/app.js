@@ -473,6 +473,7 @@ const dataLoadPromises = {
 let routeApplyToken = 0;
 
 const hasLeaflet = typeof window !== "undefined" && typeof window.L !== "undefined";
+const hasMarkerCluster = hasLeaflet && typeof L.markerClusterGroup === "function";
 const mapElement = document.getElementById("map");
 const staysMapElement = document.getElementById("stays-map");
 const loveDiningMapElement = document.getElementById("love-map");
@@ -484,6 +485,85 @@ let map = null;
 let staysMap = null;
 let loveMap = null;
 let tableForTwoMap = null;
+let markerClusterGroup = null;
+let stayMarkerClusterGroup = null;
+let loveDiningMarkerClusterGroup = null;
+let tableForTwoMarkerClusterGroup = null;
+
+function createMarkerClusterIcon(cluster) {
+  const count = cluster.getChildCount();
+  const size = count >= 100 ? "large" : count >= 10 ? "medium" : "small";
+  const sizePx = size === "large" ? 48 : size === "medium" ? 42 : 36;
+  return L.divIcon({
+    html: `<div class="benefit-cluster-inner benefit-cluster-${size}"><span>${count}</span></div>`,
+    className: `marker-cluster benefit-marker-cluster benefit-marker-cluster-${size}`,
+    iconSize: [sizePx, sizePx],
+  });
+}
+
+function createMarkerClusterGroup() {
+  if (!hasMarkerCluster) return null;
+  return L.markerClusterGroup({
+    showCoverageOnHover: false,
+    removeOutsideVisibleBounds: true,
+    spiderfyOnMaxZoom: true,
+    chunkedLoading: true,
+    chunkInterval: 80,
+    chunkDelay: 16,
+    disableClusteringAtZoom: 14,
+    maxClusterRadius: (zoom) => (zoom < 5 ? 52 : zoom < 10 ? 44 : 34),
+    iconCreateFunction: createMarkerClusterIcon,
+  });
+}
+
+function ensureMarkerClusterGroup(mapInstance, clusterGroup) {
+  if (!hasMarkerCluster || !mapInstance) return null;
+  const group = clusterGroup || createMarkerClusterGroup();
+  if (group && !mapInstance.hasLayer(group)) {
+    group.addTo(mapInstance);
+  }
+  return group;
+}
+
+function clearMarkerLayerGroup(mapInstance, clusterGroup, markerStore) {
+  if (!mapInstance) {
+    markerStore.clear();
+    return;
+  }
+  if (clusterGroup) {
+    clusterGroup.clearLayers();
+  } else {
+    markerStore.forEach((marker) => mapInstance.removeLayer(marker));
+  }
+  markerStore.clear();
+}
+
+function addMarkerLayer(mapInstance, clusterGroup, marker) {
+  if (clusterGroup) {
+    clusterGroup.addLayer(marker);
+  } else {
+    marker.addTo(mapInstance);
+  }
+}
+
+function focusClusteredMarkerOnMap(mapInstance, clusterGroup, marker, fallbackLatLng) {
+  const latLng = marker?.getLatLng?.() || fallbackLatLng;
+  if (!mapInstance || !latLng) return;
+  if (
+    clusterGroup &&
+    marker &&
+    typeof clusterGroup.zoomToShowLayer === "function" &&
+    clusterGroup.hasLayer(marker)
+  ) {
+    clusterGroup.zoomToShowLayer(marker, () => {
+      smartZoomToMarker(mapInstance, latLng);
+      marker.closePopup?.();
+    });
+    return;
+  }
+  smartZoomToMarker(mapInstance, latLng);
+  marker?.closePopup?.();
+}
 
 function addThemedTileLayer(instance) {
   if (!hasLeaflet || !instance) return;
@@ -1900,8 +1980,8 @@ function clearMarkers() {
     state.markers.clear();
     return;
   }
-  state.markers.forEach((marker) => map.removeLayer(marker));
-  state.markers.clear();
+  markerClusterGroup = ensureMarkerClusterGroup(map, markerClusterGroup);
+  clearMarkerLayerGroup(map, markerClusterGroup, state.markers);
 }
 
 function clearStayMarkers() {
@@ -1909,8 +1989,8 @@ function clearStayMarkers() {
     state.stayMarkers.clear();
     return;
   }
-  state.stayMarkers.forEach((marker) => staysMap.removeLayer(marker));
-  state.stayMarkers.clear();
+  stayMarkerClusterGroup = ensureMarkerClusterGroup(staysMap, stayMarkerClusterGroup);
+  clearMarkerLayerGroup(staysMap, stayMarkerClusterGroup, state.stayMarkers);
 }
 
 function resetFilterControls() {
@@ -2127,13 +2207,13 @@ function renderStats() {
 
 function renderMarkers() {
   if (!hasLeaflet || !map) return;
-  state.markers.forEach((marker) => map.removeLayer(marker));
-  state.markers.clear();
+  markerClusterGroup = ensureMarkerClusterGroup(map, markerClusterGroup);
+  clearMarkerLayerGroup(map, markerClusterGroup, state.markers);
 
   state.filtered.forEach((record) => {
     const marker = createMarker(record);
     if (!marker) return;
-    marker.addTo(map);
+    addMarkerLayer(map, markerClusterGroup, marker);
     state.markers.set(record.id, marker);
   });
 }
@@ -2893,8 +2973,7 @@ function focusActiveRecordOnMap() {
   if (!record) return;
   const marker = state.markers.get(record.id);
   if (!marker) return;
-  smartZoomToMarker(map, marker.getLatLng());
-  marker.closePopup();
+  focusClusteredMarkerOnMap(map, markerClusterGroup, marker);
 }
 
 function stayGoogleMapsUrl(record) {
@@ -3354,12 +3433,13 @@ function renderStayDownloads(route) {
 
 function renderStayMarkers() {
   if (!hasLeaflet || !staysMap) return;
+  stayMarkerClusterGroup = ensureMarkerClusterGroup(staysMap, stayMarkerClusterGroup);
   clearStayMarkers();
 
   state.stayFiltered.forEach((record) => {
     const marker = createStayMarker(record);
     if (!marker) return;
-    marker.addTo(staysMap);
+    addMarkerLayer(staysMap, stayMarkerClusterGroup, marker);
     state.stayMarkers.set(record.id, marker);
   });
 }
@@ -3548,8 +3628,7 @@ function focusActiveStayOnMap() {
   if (!record) return;
   const marker = state.stayMarkers.get(record.id);
   if (!marker) return;
-  smartZoomToMarker(staysMap, marker.getLatLng());
-  marker.closePopup();
+  focusClusteredMarkerOnMap(staysMap, stayMarkerClusterGroup, marker);
 }
 
 // ─── Table for Two ───────────────────────────────────────────────────────────
@@ -3998,8 +4077,8 @@ function clearTableForTwoMarkers() {
     state.tableForTwoMarkers.clear();
     return;
   }
-  state.tableForTwoMarkers.forEach((marker) => tableForTwoMap.removeLayer(marker));
-  state.tableForTwoMarkers.clear();
+  tableForTwoMarkerClusterGroup = ensureMarkerClusterGroup(tableForTwoMap, tableForTwoMarkerClusterGroup);
+  clearMarkerLayerGroup(tableForTwoMap, tableForTwoMarkerClusterGroup, state.tableForTwoMarkers);
 }
 
 function createTableForTwoMarker(record) {
@@ -4054,11 +4133,12 @@ function updateTableForTwoMarkerStyles() {
 
 function renderTableForTwoMarkers() {
   if (!hasLeaflet || !tableForTwoMap) return;
+  tableForTwoMarkerClusterGroup = ensureMarkerClusterGroup(tableForTwoMap, tableForTwoMarkerClusterGroup);
   clearTableForTwoMarkers();
   tableForTwoVenues().forEach((record) => {
     const marker = createTableForTwoMarker(record);
     if (!marker) return;
-    marker.addTo(tableForTwoMap);
+    addMarkerLayer(tableForTwoMap, tableForTwoMarkerClusterGroup, marker);
     state.tableForTwoMarkers.set(record.id, marker);
   });
   updateTableForTwoMarkerStyles();
@@ -4083,7 +4163,7 @@ function fitTableForTwoMap() {
 function focusTableForTwoOnMap(record) {
   if (!hasLeaflet || !tableForTwoMap || !tableForTwoHasMapPin(record)) return;
   const marker = state.tableForTwoMarkers.get(record.id);
-  smartZoomToMarker(tableForTwoMap, marker?.getLatLng?.() || latLngForRecord(record));
+  focusClusteredMarkerOnMap(tableForTwoMap, tableForTwoMarkerClusterGroup, marker, latLngForRecord(record));
 }
 
 function resetTableForTwoFocusScroll() {
@@ -5012,8 +5092,8 @@ function clearLoveDiningMarkers() {
     state.loveDiningMarkers.clear();
     return;
   }
-  state.loveDiningMarkers.forEach((m) => loveMap.removeLayer(m));
-  state.loveDiningMarkers.clear();
+  loveDiningMarkerClusterGroup = ensureMarkerClusterGroup(loveMap, loveDiningMarkerClusterGroup);
+  clearMarkerLayerGroup(loveMap, loveDiningMarkerClusterGroup, state.loveDiningMarkers);
 }
 
 function createLoveDiningMarker(record) {
@@ -5064,11 +5144,12 @@ function updateLoveDiningMarkerStyles() {
 
 function renderLoveDiningMarkers() {
   if (!hasLeaflet || !loveMap) return;
+  loveDiningMarkerClusterGroup = ensureMarkerClusterGroup(loveMap, loveDiningMarkerClusterGroup);
   clearLoveDiningMarkers();
   state.loveDiningFiltered.forEach((record) => {
     const marker = createLoveDiningMarker(record);
     if (!marker) return;
-    marker.addTo(loveMap);
+    addMarkerLayer(loveMap, loveDiningMarkerClusterGroup, marker);
     state.loveDiningMarkers.set(record.id, marker);
   });
 }
@@ -5088,7 +5169,8 @@ function fitLoveDiningMap() {
 
 function focusLoveDiningOnMap(record) {
   if (!hasLeaflet || !loveMap || !loveDiningHasMapPin(record)) return;
-  loveMap.setView(latLngForRecord(record), 14);
+  const marker = state.loveDiningMarkers.get(record.id);
+  focusClusteredMarkerOnMap(loveMap, loveDiningMarkerClusterGroup, marker, latLngForRecord(record));
 }
 
 function normalizeInlineText(value) {
