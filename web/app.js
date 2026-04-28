@@ -454,7 +454,23 @@ const state = {
   tableForTwoLiveRefreshAt: null,
   tableForTwoLiveRefreshTimer: null,
   googleRatings: {},
+  googleRatingsLoaded: false,
+  dataLoaded: {
+    dining: false,
+    stays: false,
+    loveDining: false,
+    tableForTwo: false,
+  },
 };
+
+const dataLoadPromises = {
+  dining: null,
+  stays: null,
+  loveDining: null,
+  tableForTwo: null,
+  googleRatings: null,
+};
+let routeApplyToken = 0;
 
 const hasLeaflet = typeof window !== "undefined" && typeof window.L !== "undefined";
 const mapElement = document.getElementById("map");
@@ -463,46 +479,76 @@ const loveDiningMapElement = document.getElementById("love-map");
 const tableForTwoMapElement = document.getElementById("tft-map");
 let themedTileLayers = [];
 
-// Maps are initialized in init() after DOM is ready
+// Maps are initialized lazily when a section becomes visible.
 let map = null;
 let staysMap = null;
 let loveMap = null;
 let tableForTwoMap = null;
 
-function initMaps() {
-  if (!hasLeaflet) return;
+function addThemedTileLayer(instance) {
+  if (!hasLeaflet || !instance) return;
+  const tileUrl = THEME_TILE_URLS[normalizeTheme(currentTheme)];
+  themedTileLayers.push({
+    instance,
+    layer: L.tileLayer(tileUrl, TILE_OPTS).addTo(instance),
+  });
+}
 
-  // Create Leaflet map instances now that DOM is ready
+function ensureDiningMap() {
+  if (!hasLeaflet) return;
   if (mapElement && !map) {
     map = L.map("map", {
       zoomControl: true,
       scrollWheelZoom: true,
     }).setView([25, 15], 2);
+    addThemedTileLayer(map);
   }
+}
 
+function ensureStaysMap() {
+  if (!hasLeaflet) return;
   if (staysMapElement && !staysMap) {
     staysMap = L.map("stays-map", {
       zoomControl: true,
       scrollWheelZoom: true,
     }).setView([20, 10], 2);
+    addThemedTileLayer(staysMap);
   }
+}
 
+function ensureLoveDiningMap() {
+  if (!hasLeaflet) return;
   if (loveDiningMapElement && !loveMap) {
     loveMap = L.map("love-map", {
       zoomControl: true,
       scrollWheelZoom: true,
     }).setView([1.3521, 103.8198], 12);
+    addThemedTileLayer(loveMap);
   }
+}
 
+function ensureTableForTwoMap() {
+  if (!hasLeaflet) return;
   if (tableForTwoMapElement && !tableForTwoMap) {
     tableForTwoMap = L.map("tft-map", {
       zoomControl: true,
       scrollWheelZoom: true,
     }).setView([1.2903, 103.8519], 12);
+    addThemedTileLayer(tableForTwoMap);
   }
+}
 
-  // Set up tile layers for all maps
-  setupTileLayers();
+function ensureMapForRoute(route = currentRoute()) {
+  if (!hasLeaflet) return;
+  if (isStayRoute(route)) {
+    ensureStaysMap();
+  } else if (isLoveDiningRoute(route)) {
+    ensureLoveDiningMap();
+  } else if (isTableForTwoRoute(route)) {
+    ensureTableForTwoMap();
+  } else if (isDiningRoute(route)) {
+    ensureDiningMap();
+  }
 }
 
 function setupTileLayers() {
@@ -513,14 +559,10 @@ function setupTileLayers() {
     if (instance && layer) instance.removeLayer(layer);
   });
 
-  // Add new tile layers for current theme
-  const tileUrl = THEME_TILE_URLS[normalizeTheme(currentTheme)];
-  themedTileLayers = [map, staysMap, loveMap, tableForTwoMap]
+  themedTileLayers = [];
+  [map, staysMap, loveMap, tableForTwoMap]
     .filter(Boolean)
-    .map((instance) => ({
-      instance,
-      layer: L.tileLayer(tileUrl, TILE_OPTS).addTo(instance),
-    }));
+    .forEach(addThemedTileLayer);
 }
 
 function syncMapTheme(theme) {
@@ -529,8 +571,7 @@ function syncMapTheme(theme) {
   setupTileLayers();
 }
 
-// Note: Maps are initialized in init() after DOM is ready
-// Tile layers are set up in setupTileLayers() called from initMaps()
+// Maps are initialized only when their route is opened.
 if (!hasLeaflet) {
   if (mapElement) mapElement.innerHTML =
     '<div class="empty-state">Map library failed to load. Dining results are still available below.</div>';
@@ -1319,6 +1360,213 @@ function isTableForTwoRoute(route = currentRoute()) {
 
 function isLiveDataRoute(route = currentRoute()) {
   return isDiningRoute(route) || isStayRoute(route) || isLoveDiningRoute(route) || isTableForTwoRoute(route);
+}
+
+function dataKeyForRoute(route = currentRoute()) {
+  if (isStayRoute(route)) return "stays";
+  if (isLoveDiningRoute(route)) return "loveDining";
+  if (isTableForTwoRoute(route)) return "tableForTwo";
+  if (isDiningRoute(route)) return "dining";
+  return null;
+}
+
+async function fetchJson(url) {
+  const response = await fetch(url).catch(() => null);
+  if (!response || !response.ok) return null;
+  return response.json().catch(() => null);
+}
+
+function rerenderCurrentRouteAfterAuxiliaryData() {
+  const route = currentRoute();
+  if (isDiningRoute(route) && state.dataLoaded.dining) {
+    filterRestaurants();
+    return;
+  }
+  if (isStayRoute(route) && state.dataLoaded.stays) {
+    filterStays();
+    return;
+  }
+  if (isLoveDiningRoute(route) && state.dataLoaded.loveDining) {
+    filterLoveDining();
+    return;
+  }
+  if (isTableForTwoRoute(route) && state.dataLoaded.tableForTwo) {
+    filterTableForTwo();
+  }
+}
+
+async function loadGoogleRatings({ refreshCurrentRoute = false } = {}) {
+  if (state.googleRatingsLoaded) return;
+  if (!dataLoadPromises.googleRatings) {
+    dataLoadPromises.googleRatings = (async () => {
+      const ratings = await fetchJson(GOOGLE_RATINGS_URL);
+      state.googleRatings = ratings && typeof ratings === "object" ? ratings : {};
+      state.googleRatingsLoaded = true;
+    })();
+  }
+
+  await dataLoadPromises.googleRatings;
+  if (refreshCurrentRoute) rerenderCurrentRouteAfterAuxiliaryData();
+}
+
+function currentRouteNeedsGoogleRatings(route = currentRoute()) {
+  if (isDiningRoute(route)) {
+    return Boolean(googleRatingFilter.value)
+      || ["rating_high", "reviews_high"].includes(sortFilter.value);
+  }
+  if (isStayRoute(route)) {
+    return Boolean(staysGoogleRatingFilter.value)
+      || ["rating_high", "reviews_high"].includes(staysSortFilter.value);
+  }
+  return false;
+}
+
+async function ensureDiningDataLoaded() {
+  if (state.dataLoaded.dining) return;
+  if (!dataLoadPromises.dining) {
+    dataLoadPromises.dining = (async () => {
+      const [japanRecords, japanMeta, globalRecords, globalMeta] = await Promise.all([
+        fetchJson(DATA_URL),
+        fetchJson(JAPAN_META_URL),
+        fetchJson(GLOBAL_DATA_URL),
+        fetchJson(GLOBAL_META_URL),
+      ]);
+      state.restaurants = [
+        ...(Array.isArray(japanRecords) ? japanRecords : []),
+        ...(Array.isArray(globalRecords) ? globalRecords : []),
+      ];
+      state.japanSourceMeta = japanMeta || null;
+      state.globalSourceMeta = globalMeta || null;
+      state.restaurants.forEach((record) => {
+        record.search_text = (record.search_text || "").toLowerCase();
+      });
+      state.dataLoaded.dining = true;
+    })();
+  }
+  await dataLoadPromises.dining;
+}
+
+async function ensureStaysDataLoaded() {
+  if (state.dataLoaded.stays) return;
+  if (!dataLoadPromises.stays) {
+    dataLoadPromises.stays = (async () => {
+      const [stays, staysMeta] = await Promise.all([
+        fetchJson(STAYS_DATA_URL),
+        fetchJson(STAYS_META_URL),
+      ]);
+      state.stays = Array.isArray(stays) ? stays : [];
+      state.stays.forEach((record) => {
+        record.search_text = (record.search_text || "").toLowerCase();
+      });
+      state.staysSourceMeta = staysMeta || null;
+      state.dataLoaded.stays = true;
+    })();
+  }
+  await dataLoadPromises.stays;
+}
+
+async function ensureLoveDiningDataLoaded() {
+  if (state.dataLoaded.loveDining) return;
+  if (!dataLoadPromises.loveDining) {
+    dataLoadPromises.loveDining = (async () => {
+      const [loveDining, loveDiningMeta] = await Promise.all([
+        fetchJson(LOVE_DINING_DATA_URL),
+        fetchJson(LOVE_DINING_META_URL),
+      ]);
+      state.loveDining = Array.isArray(loveDining) ? loveDining : [];
+      state.loveDining.forEach((record) => {
+        const benefit = loveDiningBenefitProfile(record);
+        record.search_text = [
+          record.search_text,
+          record.name,
+          record.hotel,
+          record.cuisine,
+          record.address,
+          benefit.savingsLabel,
+          benefit.orderLabel,
+          benefit.orderDetail,
+          benefit.appliesTo,
+          benefit.appliesLabel,
+          benefit.ladder,
+          benefit.exclusions,
+          loveDiningBookingLabel(record),
+          loveDiningLocationFilterLabel(record),
+        ].filter(Boolean).join(" ").toLowerCase();
+      });
+      state.loveDiningSourceMeta = loveDiningMeta || null;
+      refreshLoveDiningCuisineOptions();
+      state.dataLoaded.loveDining = true;
+    })();
+  }
+  await dataLoadPromises.loveDining;
+}
+
+async function ensureTableForTwoDataLoaded() {
+  if (state.dataLoaded.tableForTwo) return;
+  if (!dataLoadPromises.tableForTwo) {
+    dataLoadPromises.tableForTwo = (async () => {
+      state.tableForTwo = await fetchJson(TABLE_FOR_TWO_DATA_URL);
+      tableForTwoVenues().forEach((record) => {
+        record.search_text = tableForTwoSearchText(record);
+      });
+      refreshTableForTwoCategoryOptions();
+      state.dataLoaded.tableForTwo = true;
+    })();
+  }
+  await dataLoadPromises.tableForTwo;
+}
+
+async function ensureRouteDataLoaded(route = currentRoute()) {
+  if (isDiningRoute(route)) {
+    await ensureDiningDataLoaded();
+  } else if (isStayRoute(route)) {
+    await ensureStaysDataLoaded();
+  } else if (isLoveDiningRoute(route)) {
+    await ensureLoveDiningDataLoaded();
+  } else if (isTableForTwoRoute(route)) {
+    await ensureTableForTwoDataLoaded();
+  }
+
+  if (currentRouteNeedsGoogleRatings(route)) {
+    await loadGoogleRatings();
+  } else if (isLiveDataRoute(route)) {
+    void loadGoogleRatings({ refreshCurrentRoute: true });
+  }
+}
+
+function renderRouteLoadingState(route = currentRoute()) {
+  if (isDiningRoute(route)) {
+    summaryStripText.textContent = "Loading dining records...";
+    resultsText.textContent = "Loading venues...";
+    focusCard.innerHTML = '<div class="empty-state">Loading dining records...</div>';
+    resultsTableBody.innerHTML = '<tr><td colspan="8" class="empty-table">Loading dining records...</td></tr>';
+    mobileResultsList.innerHTML = '<div class="empty-state">Loading dining records...</div>';
+    return;
+  }
+
+  if (isStayRoute(route)) {
+    staysSummaryStripText.textContent = "Loading Plat Stay properties...";
+    staysResultsText.textContent = "Loading properties...";
+    staysFocusCard.innerHTML = '<div class="empty-state">Loading properties...</div>';
+    staysResultsTableBody.innerHTML = '<tr><td colspan="5" class="empty-table">Loading properties...</td></tr>';
+    staysMobileResultsList.innerHTML = '<div class="empty-state">Loading properties...</div>';
+    return;
+  }
+
+  if (isLoveDiningRoute(route)) {
+    loveSummaryStripText.textContent = "Loading Love Dining venues...";
+    loveResultsText.textContent = "Loading venues...";
+    loveFocusCard.innerHTML = '<div class="empty-state">Loading venues...</div>';
+    loveMobileResultsList.innerHTML = '<div class="empty-state">Loading venues...</div>';
+    return;
+  }
+
+  if (isTableForTwoRoute(route)) {
+    tableForTwoSummaryStripText.textContent = "Loading Table for Two availability...";
+    tableForTwoResultsText.textContent = "Loading venues...";
+    tableForTwoFocusCard.innerHTML = '<div class="empty-state">Loading Table for Two venues...</div>';
+    tableForTwoResultsList.innerHTML = '<div class="empty-state">Loading Table for Two venues...</div>';
+  }
 }
 
 function currentJourneyId(route = currentRoute()) {
@@ -5326,10 +5574,13 @@ function eventOccurredWithin(event, container) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-function applyRoute(routeId) {
+async function applyRoute(routeId) {
+  const applyToken = routeApplyToken + 1;
+  routeApplyToken = applyToken;
   state.routeId = ROUTES[routeId] ? routeId : PROGRAMS.dining.defaultRoute;
   const route = currentRoute();
   const program = currentProgram();
+  const dataKey = dataKeyForRoute(route);
 
   // Dismiss all mobile sheets when switching routes
   Object.values(sheetElements).forEach(sheet => {
@@ -5342,12 +5593,19 @@ function applyRoute(routeId) {
   renderProgramBrief(route);
   renderScopeShell(route);
 
+  if (dataKey && !state.dataLoaded[dataKey]) {
+    renderRouteLoadingState(route);
+  }
+
   if (isStayRoute(route)) {
     dataExplorer.hidden = true;
     staysExplorer.hidden = false;
     loveDiningExplorer.hidden = true;
     tableForTwoExplorer.hidden = true;
     clearTableForTwoMarkers();
+    ensureMapForRoute(route);
+    await ensureRouteDataLoaded(route);
+    if (applyToken !== routeApplyToken) return;
     renderStayDownloads(route);
     refreshStayFilterOptions();
     filterStays();
@@ -5368,6 +5626,9 @@ function applyRoute(routeId) {
     clearTableForTwoMarkers();
     setLoveToolbarOpen(false);
     state.loveDiningActiveId = null;
+    ensureMapForRoute(route);
+    await ensureRouteDataLoaded(route);
+    if (applyToken !== routeApplyToken) return;
     filterLoveDining();
     if (hasLeaflet && loveMap) {
       setTimeout(() => {
@@ -5384,6 +5645,9 @@ function applyRoute(routeId) {
     loveDiningExplorer.hidden = true;
     tableForTwoExplorer.hidden = false;
     state.tableForTwoActiveId = null;
+    ensureMapForRoute(route);
+    await ensureRouteDataLoaded(route);
+    if (applyToken !== routeApplyToken) return;
     refreshTableForTwoCategoryOptions();
     refreshTableForTwoDateOptions();
     renderTableForTwoAlertSignup();
@@ -5425,6 +5689,9 @@ function applyRoute(routeId) {
   tableForTwoExplorer.hidden = true;
   clearTableForTwoMarkers();
   setToolbarOpen(false);
+  ensureMapForRoute(route);
+  await ensureRouteDataLoaded(route);
+  if (applyToken !== routeApplyToken) return;
   state.scopeRecords = state.restaurants.filter((record) => route.matcher(record));
   state.activeId = null;
   resetFilterControls();
@@ -5439,104 +5706,20 @@ function applyRoute(routeId) {
 }
 
 function handleHashRoute() {
-  applyRoute(resolveRouteFromHash());
+  void applyRoute(resolveRouteFromHash());
 }
 
 function navigateToRouteHash(routeHash) {
   const nextHash = routeHash && routeHash.startsWith("#") ? routeHash : `#/${routeHash || ""}`;
   if (window.location.hash !== nextHash) {
     window.location.hash = nextHash;
+    return;
   }
-  applyRoute(resolveRouteFromHash(nextHash));
+  void applyRoute(resolveRouteFromHash(nextHash));
 }
 
 async function init() {
   initTheme();
-
-  const [
-    restaurantResponse,
-    japanMetaResponse,
-    globalResponse,
-    globalMetaResponse,
-    staysResponse,
-    staysMetaResponse,
-    loveDiningResponse,
-    loveDiningMetaResponse,
-    tableForTwoResponse,
-    ratingsResponse,
-  ] = await Promise.all([
-    fetch(DATA_URL).catch(() => null),
-    fetch(JAPAN_META_URL).catch(() => null),
-    fetch(GLOBAL_DATA_URL).catch(() => null),
-    fetch(GLOBAL_META_URL).catch(() => null),
-    fetch(STAYS_DATA_URL).catch(() => null),
-    fetch(STAYS_META_URL).catch(() => null),
-    fetch(LOVE_DINING_DATA_URL).catch(() => null),
-    fetch(LOVE_DINING_META_URL).catch(() => null),
-    fetch(TABLE_FOR_TWO_DATA_URL).catch(() => null),
-    fetch(GOOGLE_RATINGS_URL).catch(() => null),
-  ]);
-  if (restaurantResponse && restaurantResponse.ok) {
-    state.restaurants = await restaurantResponse.json();
-  }
-  if (japanMetaResponse && japanMetaResponse.ok) {
-    state.japanSourceMeta = await japanMetaResponse.json();
-  }
-  if (globalResponse && globalResponse.ok) {
-    const globalRecs = await globalResponse.json();
-    state.restaurants = [...state.restaurants, ...globalRecs];
-  }
-  if (globalMetaResponse && globalMetaResponse.ok) {
-    state.globalSourceMeta = await globalMetaResponse.json();
-  }
-  state.restaurants.forEach((record) => {
-    record.search_text = (record.search_text || "").toLowerCase();
-  });
-  if (staysResponse && staysResponse.ok) {
-    state.stays = await staysResponse.json();
-    state.stays.forEach((record) => {
-      record.search_text = (record.search_text || "").toLowerCase();
-    });
-  }
-  if (staysMetaResponse && staysMetaResponse.ok) {
-    state.staysSourceMeta = await staysMetaResponse.json();
-  }
-  if (loveDiningResponse && loveDiningResponse.ok) {
-    state.loveDining = await loveDiningResponse.json();
-    state.loveDining.forEach((record) => {
-      const benefit = loveDiningBenefitProfile(record);
-      record.search_text = [
-        record.search_text,
-        record.name,
-        record.hotel,
-        record.cuisine,
-        record.address,
-        benefit.savingsLabel,
-        benefit.orderLabel,
-        benefit.orderDetail,
-        benefit.appliesTo,
-        benefit.appliesLabel,
-        benefit.ladder,
-        benefit.exclusions,
-        loveDiningBookingLabel(record),
-        loveDiningLocationFilterLabel(record),
-      ].filter(Boolean).join(" ").toLowerCase();
-    });
-    refreshLoveDiningCuisineOptions();
-  }
-  if (loveDiningMetaResponse && loveDiningMetaResponse.ok) {
-    state.loveDiningSourceMeta = await loveDiningMetaResponse.json();
-  }
-  if (tableForTwoResponse && tableForTwoResponse.ok) {
-    state.tableForTwo = await tableForTwoResponse.json();
-    tableForTwoVenues().forEach((record) => {
-      record.search_text = tableForTwoSearchText(record);
-    });
-    refreshTableForTwoCategoryOptions();
-  }
-  if (ratingsResponse && ratingsResponse.ok) {
-    state.googleRatings = await ratingsResponse.json();
-  }
 
   // Set min date on stays date inputs to today
   const today = new Date().toISOString().split("T")[0];
@@ -5548,13 +5731,10 @@ async function init() {
   setStayToolbarOpen(false);
   setLoveToolbarOpen(false);
 
-  // Initialize Leaflet maps now that DOM is fully ready
-  initMaps();
-
-  handleHashRoute();
   if (!window.location.hash) {
-    window.location.hash = "#/dining/world";
+    window.history.replaceState(null, "", "#/dining/world");
   }
+  handleHashRoute();
   showIntroGate();
 }
 
