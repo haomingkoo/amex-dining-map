@@ -1458,6 +1458,7 @@ button.tft-calendar-cell:hover {
   border: 1px solid var(--surface-border-soft);
   border-radius: var(--radius-md);
   margin-bottom: 10px;
+  min-width: 0;
   transition: background-color 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
 }
 
@@ -1494,6 +1495,7 @@ button.tft-calendar-cell:hover {
   grid-template-columns: 1fr 1fr;
   gap: 8px;
   grid-column: span 2;
+  min-width: 0;
 }
 
 .filter-actions {
@@ -1503,6 +1505,7 @@ button.tft-calendar-cell:hover {
   align-items: flex-end;
   grid-column: span 2;
   padding-top: 2px;
+  min-width: 0;
 }
 
 /* 3-column filter grid on wide screens when open */
@@ -1533,6 +1536,7 @@ button.tft-calendar-cell:hover {
 .filter-wrap {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .search-wrap input,
@@ -1541,6 +1545,8 @@ button.tft-calendar-cell:hover {
 .filter-wrap input[type="time"],
 .filter-wrap input[type="number"] {
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 7px 10px;
   border: 1px solid var(--surface-border-soft);
   border-radius: var(--radius-xs);
@@ -2639,17 +2645,21 @@ h1, h2, h3 {
   }
 
   .map-panel {
+    position: relative;
     flex: none;
     min-height: 0;
     order: 1;
+    z-index: 5;
   }
 
   .focus-panel {
+    position: relative;
     display: flex;
     flex-direction: column;
     order: 2;
     max-height: none;
     border-top: 1px solid var(--border);
+    z-index: 1;
   }
 
   .focus-body {
@@ -2684,13 +2694,16 @@ h1, h2, h3 {
   }
 
   .tft-map-panel {
+    position: relative;
     order: 0;
+    z-index: 5;
   }
 
   #table-for-two-explorer .tft-grid > .focus-panel {
     display: none;
     order: 1;
     scroll-margin-top: 10px;
+    z-index: 1;
   }
 
   #table-for-two-explorer.has-tft-selection .tft-grid > .focus-panel {
@@ -2706,7 +2719,9 @@ h1, h2, h3 {
   }
 
   .tft-list-panel {
+    position: relative;
     order: 2;
+    z-index: 1;
   }
 
   .tft-toolbar-toggle {
@@ -2778,17 +2793,53 @@ h1, h2, h3 {
     top: 50px;
     right: 8px;
     left: auto;
-    width: 280px;
-    max-width: calc(100% - 16px);
+    width: min(320px, calc(100vw - 16px));
+    max-width: calc(100vw - 16px);
     z-index: 1999;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 10px;
     background: rgba(7, 13, 22, 0.98);
     border-radius: 8px;
     border: 1px solid rgba(201, 165, 90, 0.2);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     max-height: 60vh;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     padding: 12px;
     margin: 0;
+  }
+
+  .map-filter-shell .toolbar > .search-wrap,
+  .map-filter-shell .toolbar > .filter-date-group,
+  .map-filter-shell .toolbar > .filter-actions {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .map-filter-shell .toolbar > .filter-wrap {
+    min-width: 0;
+  }
+
+  .map-filter-shell .toolbar .filter-date-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .map-filter-shell .toolbar .filter-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-top: 2px;
+    padding-top: 10px;
+    background: rgba(7, 13, 22, 0.98);
+    box-shadow: 0 -10px 18px rgba(7, 13, 22, 0.92);
+  }
+
+  .map-filter-shell .toolbar .filter-actions .ghost-btn {
+    flex: 1 1 120px;
+    min-width: 0;
+    min-height: 40px;
   }
 
   /* Make toolbar button compact and top-right (away from Leaflet zoom controls) */
@@ -2895,7 +2946,8 @@ h1, h2, h3 {
     left: auto;
     width: min(310px, calc(100vw - 32px));
     max-width: calc(100vw - 32px);
-    max-height: 330px;
+    grid-template-columns: minmax(0, 1fr);
+    max-height: min(350px, calc(100vh - 128px));
     overflow-y: auto;
     margin: 0;
     padding: 12px;
