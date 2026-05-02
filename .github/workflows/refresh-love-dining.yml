@@ -45,13 +45,17 @@ jobs:
             --program "Love Dining" \
             --meta data/love-dining-source.json \
             --data data/love-dining.json \
-            --output /tmp/love-dining-alert.md
+            --output /tmp/love-dining-alert.md \
+            --changelog data/changelog-love-dining.md
 
       - name: Commit refreshed Love Dining data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/love-dining.json data/love-dining-source.json
+          if [ -f data/changelog-love-dining.md ]; then
+            git add data/changelog-love-dining.md
+          fi
           if git diff --cached --quiet; then
             echo "No Love Dining changes detected."
             exit 0

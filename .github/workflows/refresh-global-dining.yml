@@ -45,30 +45,23 @@ jobs:
             --program "Global Dining" \
             --meta data/global-dining-source.json \
             --data data/global-restaurants.json \
-            --output /tmp/global-dining-alert.md
+            --output /tmp/global-dining-alert.md \
+            --changelog data/changelog-global-dining.md
 
       - name: Commit updated data
+        env:
+          COMMIT_MESSAGE: "chore: monthly refresh of global dining data"
+          MUST_STAGE: |
+            data/global-restaurants.json
+            data/global-dining-source.json
+            data/global-dining-geocode-cache.json
+            data/changelog-global-dining.md
+          KEEP_LOCAL_ON_CONFLICT: |
+            data/global-dining-geocode-cache.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add \
-            data/global-restaurants.json \
-            data/global-dining-source.json \
-            data/global-dining-geocode-cache.json
-          if git diff --staged --quiet; then
-            echo "No data changes detected."
-            exit 0
-          fi
-          git commit -m "chore: monthly refresh of global dining data"
-          for attempt in 1 2 3; do
-            git pull --rebase origin main
-            if git push origin HEAD:main; then
-              exit 0
-            fi
-            echo "Push failed on attempt ${attempt}; retrying after remote sync."
-            sleep $((attempt * 5))
-          done
-          exit 1
+          bash scripts/commit_and_push.sh
 
       - name: Open Global Dining alert issue
         if: steps.global_alert.outputs.alert_required == 'true'
