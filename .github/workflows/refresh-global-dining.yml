@@ -6,6 +6,10 @@ on:
     - cron: "0 1 1 * *"
   workflow_dispatch:
 
+concurrency:
+  group: global-dining-refresh
+  cancel-in-progress: true
+
 jobs:
   scrape:
     runs-on: ubuntu-latest
@@ -14,11 +18,11 @@ jobs:
       issues: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -47,7 +51,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/global-restaurants.json data/global-dining-source.json
+          git add \
+            data/global-restaurants.json \
+            data/global-dining-source.json \
+            data/global-dining-snapshot.json \
+            data/global-dining-geocode-cache.json
           if git diff --staged --quiet; then
             echo "No data changes detected."
             exit 0
