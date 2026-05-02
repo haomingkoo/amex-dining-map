@@ -54,7 +54,6 @@ jobs:
           git add \
             data/global-restaurants.json \
             data/global-dining-source.json \
-            data/global-dining-snapshot.json \
             data/global-dining-geocode-cache.json
           if git diff --staged --quiet; then
             echo "No data changes detected."
