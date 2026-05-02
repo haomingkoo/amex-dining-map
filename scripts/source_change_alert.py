@@ -26,6 +26,18 @@ IGNORED_RECORD_FIELDS = {
     "last_synced_at",
     "last_verified_at",
     "availability",
+    "slot_source_status",
+}
+
+# Nested keys (under any dict, at any depth) that flip every scrape but do not
+# represent a real change to the venue. Stripped before hashing.
+IGNORED_NESTED_KEYS = {
+    "captured_at",
+    "checked_at",
+    "fetched_at",
+    "last_checked_at",
+    "last_synced_at",
+    "last_verified_at",
 }
 
 META_FIELD_LABELS = {
@@ -97,9 +109,21 @@ def record_label(record: dict[str, Any]) -> str:
     return " / ".join(str(part) for part in parts if part)
 
 
+def _strip_nested(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            key: _strip_nested(sub)
+            for key, sub in value.items()
+            if key not in IGNORED_NESTED_KEYS
+        }
+    if isinstance(value, list):
+        return [_strip_nested(item) for item in value]
+    return value
+
+
 def stable_record_hash(record: dict[str, Any]) -> str:
     cleaned = {
-        key: value
+        key: _strip_nested(value)
         for key, value in record.items()
         if key not in IGNORED_RECORD_FIELDS
     }
@@ -138,12 +162,54 @@ def format_limited(items: list[str], limit: int = 12) -> list[str]:
     return items[:limit] + [f"... and {len(items) - limit} more"]
 
 
+def append_changelog(
+    changelog_path: Path,
+    program: str,
+    record_diffs: list[tuple[str, dict[str, list[str]]]],
+) -> None:
+    """Append a dated entry to the per-program changelog.
+
+    Only logs additions and removals — those are the interesting events
+    (new venues, dropped venues). Field-level changes are intentionally
+    omitted; they're noisy and most useful in the issue body, not a
+    permanent log.
+    """
+    has_changes = any(diff["added"] or diff["removed"] for _, diff in record_diffs)
+    if not has_changes:
+        return
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    lines: list[str] = [f"## {timestamp} — {program}", ""]
+    for data_path, diff in record_diffs:
+        if not (diff["added"] or diff["removed"]):
+            continue
+        lines.append(f"Source: `{data_path}`")
+        lines.append("")
+        for key, title in (("added", "Added"), ("removed", "Removed")):
+            items = diff[key]
+            if not items:
+                continue
+            lines.append(f"- **{title} ({len(items)})**")
+            lines.extend(f"  - {item}" for item in format_limited(items, limit=50))
+        lines.append("")
+
+    if changelog_path.exists():
+        existing = changelog_path.read_text(encoding="utf-8").rstrip() + "\n\n"
+    else:
+        existing = f"# {program} change log\n\n"
+    changelog_path.write_text(existing + "\n".join(lines).rstrip() + "\n", encoding="utf-8")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--program", required=True)
     parser.add_argument("--meta", required=True)
     parser.add_argument("--data", action="append", default=[])
     parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--changelog",
+        help="Append a dated entry to this changelog file when records changed.",
+    )
     args = parser.parse_args()
 
     current_meta = load_json(args.meta)
@@ -179,6 +245,9 @@ def main() -> int:
 
     alert_required = bool(reasons or record_diffs)
     append_output("alert_required", "true" if alert_required else "false")
+
+    if args.changelog:
+        append_changelog(Path(args.changelog), args.program, record_diffs)
 
     lines = [
         f"# {args.program} source changed" if alert_required else f"# {args.program} source unchanged",

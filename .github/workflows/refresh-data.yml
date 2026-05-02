@@ -44,7 +44,8 @@ jobs:
             --program "Japan Dining" \
             --meta data/japan-dining-source.json \
             --data data/japan-restaurants.json \
-            --output /tmp/japan-dining-alert.md
+            --output /tmp/japan-dining-alert.md \
+            --changelog data/changelog-japan-dining.md
 
       - name: Sync Plat Stay
         env:
@@ -60,7 +61,8 @@ jobs:
             --program "Plat Stay" \
             --meta data/plat-stay-source.json \
             --data data/plat-stays.json \
-            --output /tmp/plat-stay-alert.md
+            --output /tmp/plat-stay-alert.md \
+            --changelog data/changelog-plat-stay.md
 
       - name: Commit refreshed data
         run: |
