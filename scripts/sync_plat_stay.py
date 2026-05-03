@@ -6,14 +6,17 @@ from __future__ import annotations
 import difflib
 import hashlib
 import html
+import http.client
 import json
 import math
 import os
 import re
+import socket
 import subprocess
 import tempfile
 import time
 import unicodedata
+import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
@@ -39,6 +42,8 @@ USER_AGENT = "AmexBenefitsExplorer/0.1 (+https://kooexperience.com/amex-dining-m
 DEFAULT_BLACKOUT_YEAR = 2026
 GEOAPIFY_API_KEY = os.environ.get("GEOAPIFY_API_KEY")
 TOMTOM_API_KEY = os.environ.get("TOMTOM_API_KEY")
+PDF_FETCH_TIMEOUTS = (30, 60, 90)
+MIN_PDF_BYTES = 1024
 
 COUNTRY_ALIASES = {
     "singapore": "Singapore",
@@ -155,7 +160,26 @@ def slugify(value: str) -> str:
     return value.strip("-")
 
 
-def fetch_pdf(url: str) -> tuple[bytes, str]:
+def previous_resolved_source_url() -> str | None:
+    try:
+        previous_meta = load_json(SOURCE_META_PATH, {})
+    except (OSError, json.JSONDecodeError):
+        return None
+    resolved_url = previous_meta.get("resolved_url")
+    if isinstance(resolved_url, str) and resolved_url.startswith("https://"):
+        return resolved_url
+    return None
+
+
+def validate_pdf_bytes(body: bytes, source_url: str) -> None:
+    if len(body) < MIN_PDF_BYTES:
+        raise RuntimeError(f"Short PDF response from {source_url}: {len(body)} bytes")
+    if not body.startswith(b"%PDF-"):
+        prefix = body[:32].decode("utf-8", errors="replace").replace("\n", "\\n")
+        raise RuntimeError(f"Non-PDF response from {source_url}: starts with {prefix!r}")
+
+
+def fetch_pdf_once(url: str, timeout: int) -> tuple[bytes, str]:
     request = urllib.request.Request(
         url,
         headers={
@@ -164,8 +188,42 @@ def fetch_pdf(url: str) -> tuple[bytes, str]:
             "Accept-Language": "en-US,en;q=0.9",
         },
     )
-    with urllib.request.urlopen(request, timeout=45) as response:
-        return response.read(), response.geturl()
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        body = response.read()
+        resolved_url = response.geturl()
+    validate_pdf_bytes(body, resolved_url)
+    return body, resolved_url
+
+
+def fetch_pdf(url: str) -> tuple[bytes, str]:
+    candidate_urls = [url]
+    resolved_url = previous_resolved_source_url()
+    if resolved_url and resolved_url not in candidate_urls:
+        candidate_urls.append(resolved_url)
+
+    errors: list[str] = []
+    for attempt, timeout in enumerate(PDF_FETCH_TIMEOUTS, start=1):
+        for candidate_url in candidate_urls:
+            try:
+                return fetch_pdf_once(candidate_url, timeout)
+            except (
+                TimeoutError,
+                socket.timeout,
+                OSError,
+                urllib.error.URLError,
+                http.client.HTTPException,
+                RuntimeError,
+            ) as exc:
+                message = (
+                    f"{candidate_url} attempt {attempt}/{len(PDF_FETCH_TIMEOUTS)} "
+                    f"timed out/failed after {timeout}s: {exc}"
+                )
+                errors.append(message)
+                print(f"WARNING: {message}", flush=True)
+        if attempt < len(PDF_FETCH_TIMEOUTS):
+            time.sleep(attempt * 3)
+
+    raise RuntimeError("Failed to fetch Plat Stay PDF after retries:\n" + "\n".join(errors))
 
 
 def pdf_page_count(pdf_path: Path) -> int | None:
