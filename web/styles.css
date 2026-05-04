@@ -2157,9 +2157,21 @@ a.google-badge:hover {
 }
 
 .credit-terms-intro a {
+  display: inline-block;
+  margin-left: 8px;
   color: var(--gold);
   font-weight: 700;
   text-decoration: none;
+}
+
+.credit-terms-warning {
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border-left: 2px solid var(--rose-line);
+  background: var(--rose-surface);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .credit-terms-list {

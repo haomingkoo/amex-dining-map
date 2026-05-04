@@ -54,6 +54,8 @@ META_FIELD_LABELS = {
     "source_images.voucher_cycles_sha256": "Voucher cycles image hash",
     "terms_hashes.restaurants": "Restaurant T&C PDF hash",
     "terms_hashes.hotels": "Hotel T&C PDF hash",
+    "terms_hashes.global_dining_credit": "Global Dining Credit T&C text hash",
+    "terms_hashes.global_dining_credit_pdf": "Global Dining Credit T&C PDF hash",
 }
 
 

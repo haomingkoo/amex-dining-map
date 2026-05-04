@@ -27,8 +27,8 @@ const TILE_OPTS = {
 const GLOBAL_DINING_OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/diningbenefit/";
 const SINGAPORE_LOCAL_DINING_NOTICE =
   "Singapore restaurants are Local Dining Credit entries, not the abroad Global Dining Credit. For Singapore-issued Platinum Cards, the abroad Global Dining Credit applies to participating restaurants outside Singapore.";
-const GLOBAL_DINING_CREDIT_TERMS_CAPTURED_AT = "4 May 2026";
-const GLOBAL_DINING_CREDIT_TERMS = [
+const FALLBACK_GLOBAL_DINING_CREDIT_TERMS_CAPTURED_AT = "4 May 2026";
+const FALLBACK_GLOBAL_DINING_CREDIT_TERMS = [
   {
     title: "Maximum amount back is SGD$200",
     body:
@@ -1370,10 +1370,51 @@ function diningCreditEligibilityNote(record) {
   return "";
 }
 
+function globalDiningCreditTermsPayload() {
+  const meta = state.globalSourceMeta?.global_dining_credit_terms;
+  if (meta && Array.isArray(meta.items) && meta.items.length) {
+    return {
+      items: meta.items,
+      capturedAt: meta.captured_at,
+      sourceUrl: meta.source_url,
+      sourceLabel: "Terms PDF",
+      validUntil: meta.valid_until,
+    };
+  }
+  return {
+    items: FALLBACK_GLOBAL_DINING_CREDIT_TERMS,
+    capturedAt: FALLBACK_GLOBAL_DINING_CREDIT_TERMS_CAPTURED_AT,
+    sourceUrl: "",
+    sourceLabel: "",
+    validUntil: "2026-12-31",
+  };
+}
+
+function termsCapturedLabel(value) {
+  if (!value) return "unknown date";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return formatTimestamp(value);
+}
+
+function globalDiningCreditTermsWarning(payload) {
+  if (!payload?.validUntil) return "";
+  const expiry = new Date(`${payload.validUntil}T23:59:59+08:00`);
+  if (!Number.isNaN(expiry.getTime()) && Date.now() > expiry.getTime()) {
+    return "This terms snapshot has passed its stated benefit expiry. Confirm the saved Amex offer before dining.";
+  }
+  return "";
+}
+
 function globalDiningCreditTermsMarkup(record) {
   if (!isGlobalDiningCreditRecord(record)) return "";
 
-  const termItems = GLOBAL_DINING_CREDIT_TERMS
+  const payload = globalDiningCreditTermsPayload();
+  const warning = globalDiningCreditTermsWarning(payload);
+  const sourceLink = payload.sourceUrl
+    ? `<a href="${escapeHtml(payload.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(payload.sourceLabel || "Terms source")}</a>`
+    : "";
+  const termItems = payload.items
     .map(
       (term) => `
         <div class="credit-terms-item">
@@ -1389,10 +1430,12 @@ function globalDiningCreditTermsMarkup(record) {
       <summary>Credit terms</summary>
       <div class="credit-terms-content">
         <p class="credit-terms-intro">
-          Offer T&Cs captured from Amex on ${escapeHtml(GLOBAL_DINING_CREDIT_TERMS_CAPTURED_AT)}.
+          Offer T&Cs captured from Amex on ${escapeHtml(termsCapturedLabel(payload.capturedAt))}.
           Confirm the saved offer in your Amex account before dining.
+          ${sourceLink}
           <a href="${escapeHtml(GLOBAL_DINING_OFFICIAL_URL)}" target="_blank" rel="noopener">Official restaurant list</a>
         </p>
+        ${warning ? `<div class="credit-terms-warning">${escapeHtml(warning)}</div>` : ""}
         <div class="credit-terms-list">
           ${termItems}
         </div>

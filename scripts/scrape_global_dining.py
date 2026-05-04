@@ -14,13 +14,16 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import shutil
 import hashlib
 import json
 import difflib
 from math import atan2, cos, radians, sin, sqrt
 import re
+import subprocess
 import sys
 import time
+import tempfile
 import unicodedata
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -40,6 +43,8 @@ GEOCODE_CACHE_PATH = DATA_DIR / "global-dining-geocode-cache.json"
 GOOGLE_RATINGS_PATH = DATA_DIR / "google-maps-ratings.json"
 
 OFFICIAL_PAGE_URL = "https://www.americanexpress.com/en-sg/benefits/diningbenefit/"
+OFFICIAL_BENEFITS_PAGE_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/"
+GLOBAL_DINING_TERMS_PDF_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/2026_Platinum_TermsandConditions.pdf"
 API_BASE_URL = "https://dining-offers-prod.amex.r53.tuimedia.com"
 COUNTRIES_API_URL = f"{API_BASE_URL}/api/countries"
 ORIGIN_MARKET = "SG"
@@ -71,6 +76,7 @@ POSTCODE_TOKEN_RE = re.compile(
     r")$",
     re.IGNORECASE,
 )
+NUMBERED_TERM_RE = re.compile(r"^\s*(\d+)\.\s*(.+)$")
 
 
 def http_get(url: str, retries: int = 3, timeout: int = 15) -> str:
@@ -94,6 +100,27 @@ def http_get(url: str, retries: int = 3, timeout: int = 15) -> str:
                 raise
             time.sleep(1.5 ** attempt)
     return ""
+
+
+def http_bytes(url: str, retries: int = 3, timeout: int = 30) -> bytes:
+    """Simple binary HTTP GET with retries."""
+    req = urllib.request.Request(url, headers=HEADERS)
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                return resp.read()
+        except urllib.error.HTTPError as e:
+            if e.code in {429, 500, 502, 503, 504} and attempt < retries - 1:
+                time.sleep(1.5 ** attempt)
+                continue
+            if attempt == retries - 1:
+                raise
+            time.sleep(1.5 ** attempt)
+        except Exception:
+            if attempt == retries - 1:
+                raise
+            time.sleep(1.5 ** attempt)
+    return b""
 
 
 def http_json(url: str, retries: int = 3, timeout: int = 30) -> Any:
@@ -1068,6 +1095,125 @@ def fetch_official_records(limit: int = 0) -> tuple[list[dict[str, Any]], dict[s
     }
 
 
+def pdf_text(pdf_bytes: bytes) -> str:
+    """Extract text from PDF bytes with poppler's pdftotext."""
+    pdftotext = shutil.which("pdftotext")
+    if not pdftotext:
+        raise RuntimeError("pdftotext is required to refresh Global Dining Credit terms")
+
+    with tempfile.NamedTemporaryFile(suffix=".pdf") as pdf_file:
+        pdf_file.write(pdf_bytes)
+        pdf_file.flush()
+        result = subprocess.run(
+            [pdftotext, "-layout", pdf_file.name, "-"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    return result.stdout
+
+
+def normalize_terms_text(value: str) -> str:
+    value = unicodedata.normalize("NFKC", value or "")
+    value = value.replace("\u00a0", " ").replace("\ufeff", "")
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def extract_global_dining_credit_terms(text: str) -> list[dict[str, Any]]:
+    normalized = unicodedata.normalize("NFKC", text or "")
+    lines = normalized.splitlines()
+    start_index = -1
+    for index, line in enumerate(lines):
+        heading = line.replace("\f", "").strip()
+        lookahead = " ".join(item.strip() for item in lines[index + 1 : index + 6])
+        if heading == "Global Dining Credit" and "Maximum amount back" in lookahead:
+            start_index = index + 1
+            break
+    if start_index < 0:
+        raise RuntimeError("Could not find Global Dining Credit terms in Platinum terms PDF")
+
+    items: list[dict[str, Any]] = []
+    current: dict[str, Any] | None = None
+    for raw_line in lines[start_index:]:
+        line = raw_line.replace("\f", "").rstrip()
+        if not line.strip():
+            continue
+
+        numbered = NUMBERED_TERM_RE.match(line)
+        if numbered:
+            if current:
+                items.append(current)
+            current = {
+                "number": int(numbered.group(1)),
+                "raw": [numbered.group(2).strip()],
+            }
+            continue
+
+        if current is None:
+            continue
+
+        if not raw_line.startswith((" ", "\t")):
+            break
+        current["raw"].append(line.strip())
+
+    if current:
+        items.append(current)
+
+    parsed: list[dict[str, Any]] = []
+    for item in items:
+        raw_text = normalize_terms_text(" ".join(item.pop("raw")))
+        if ":" in raw_text:
+            title, body = raw_text.split(":", 1)
+        else:
+            title, body = raw_text, ""
+        parsed.append(
+            {
+                "number": item["number"],
+                "title": title.strip(),
+                "body": body.strip(),
+            }
+        )
+
+    expected_numbers = list(range(1, 11))
+    actual_numbers = [item["number"] for item in parsed]
+    if actual_numbers != expected_numbers:
+        raise RuntimeError(f"Unexpected Global Dining Credit term numbering: {actual_numbers}")
+    return parsed
+
+
+def global_dining_terms_meta(checked_at: str) -> dict[str, Any]:
+    pdf_bytes_payload = http_bytes(GLOBAL_DINING_TERMS_PDF_URL, retries=4, timeout=45)
+    if not pdf_bytes_payload.startswith(b"%PDF"):
+        raise RuntimeError(f"Unexpected non-PDF response from {GLOBAL_DINING_TERMS_PDF_URL}")
+
+    items = extract_global_dining_credit_terms(pdf_text(pdf_bytes_payload))
+    text_projection = json.dumps(items, ensure_ascii=False, sort_keys=True)
+    return {
+        "source_url": GLOBAL_DINING_TERMS_PDF_URL,
+        "source_page_url": OFFICIAL_BENEFITS_PAGE_URL,
+        "source_page_hint": 12,
+        "captured_at": checked_at,
+        "valid_until": "2026-12-31",
+        "pdf_sha256": hashlib.sha256(pdf_bytes_payload).hexdigest(),
+        "text_sha256": hashlib.sha256(text_projection.encode("utf-8")).hexdigest(),
+        "items": items,
+    }
+
+
+def global_dining_terms_meta_fields(checked_at: str) -> dict[str, Any]:
+    terms_meta = global_dining_terms_meta(checked_at)
+    return {
+        "terms": {
+            "global_dining_credit": terms_meta["source_url"],
+        },
+        "terms_hashes": {
+            "global_dining_credit": terms_meta["text_sha256"],
+            "global_dining_credit_pdf": terms_meta["pdf_sha256"],
+        },
+        "global_dining_credit_terms": terms_meta,
+    }
+
+
 def record_hash(record: dict[str, Any]) -> str:
     """Stable hash of a restaurant record for change detection."""
     key = json.dumps({
@@ -1126,7 +1272,19 @@ def main() -> None:
                         help="Seconds to pause between requests (default: 0.25)")
     parser.add_argument("--limit", type=int, default=0,
                         help="Limit to N restaurants (for testing)")
+    parser.add_argument("--terms-only", action="store_true",
+                        help="Refresh only Global Dining Credit terms metadata")
     args = parser.parse_args()
+    fetched_at = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+
+    if args.terms_only:
+        if not SOURCE_META_PATH.exists():
+            raise RuntimeError(f"{SOURCE_META_PATH} does not exist; run a full scrape first")
+        meta = json.loads(SOURCE_META_PATH.read_text())
+        meta.update(global_dining_terms_meta_fields(fetched_at))
+        SOURCE_META_PATH.write_text(json.dumps(meta, indent=2, ensure_ascii=False) + "\n")
+        print(f"Wrote Global Dining Credit terms metadata → {SOURCE_META_PATH}")
+        return
 
     # ── 1. Fetch current restaurant data from the official Amex app API ──
     records, official_stats = fetch_official_records(limit=args.limit)
@@ -1164,8 +1322,6 @@ def main() -> None:
                 corrected += 1
 
     # ── 3. Apply manual overrides and compute stats ───────────────────
-    fetched_at = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
-
     # ── Disambiguate IDs first (before applying overrides) ──
     from collections import Counter
     raw_duplicate_ids = count_duplicate_values([r["id"] for r in records])
@@ -1244,7 +1400,8 @@ def main() -> None:
         "official_expanded_counts": dict(sorted(official_stats["expanded_counts"].items())),
         "failed_count": len(failed),
     }
-    SOURCE_META_PATH.write_text(json.dumps(meta, indent=2) + "\n")
+    meta.update(global_dining_terms_meta_fields(fetched_at))
+    SOURCE_META_PATH.write_text(json.dumps(meta, indent=2, ensure_ascii=False) + "\n")
     print(f"Wrote metadata → {SOURCE_META_PATH}")
     print(f"\nRun again with --diff to detect changes on next scrape.")
 
