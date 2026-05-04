@@ -25,9 +25,60 @@ const TILE_OPTS = {
   maxZoom: 20,
 };
 const GLOBAL_DINING_OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/diningbenefit/";
-const GLOBAL_DINING_CREDIT_TERMS_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/global-dining-credit/?extlink=SG-Web-null-sgplatdincredit";
 const SINGAPORE_LOCAL_DINING_NOTICE =
   "Singapore restaurants are Local Dining Credit entries, not the abroad Global Dining Credit. For Singapore-issued Platinum Cards, the abroad Global Dining Credit applies to participating restaurants outside Singapore.";
+const GLOBAL_DINING_CREDIT_TERMS_CAPTURED_AT = "4 May 2026";
+const GLOBAL_DINING_CREDIT_TERMS = [
+  {
+    title: "Maximum amount back is SGD$200",
+    body:
+      "The redemption period is from 2 March 2026 to 31 December 2026. If you spend on the last day of a redemption period, your transaction may not get captured within that redemption period, so it is recommended to redeem at least 1 day earlier in the period.",
+  },
+  {
+    title: "Primary Card Member only",
+    body:
+      "The benefit is only available to basic Card Members of The Platinum Card issued by American Express in Singapore. Transactions made with a Supplementary Card or Additional Card are not eligible for this Platinum Card benefit.",
+  },
+  {
+    title: "Save this benefit first",
+    body:
+      "You must first save the benefit to your Platinum Card before making payment to qualify. If you use another card to make a payment at any time, you will not be eligible for the benefit on that card.",
+  },
+  {
+    title: "Eligible transactions",
+    body:
+      "Benefit only available for dine-in services made in-person at a participating restaurant outside Singapore. The participating restaurant list is subject to change without notice, so check before dining. For Japan, this benefit is only available for bookings on Pocket Concierge that are paid upfront via Pocket Concierge.",
+  },
+  {
+    title: "Excluded transactions",
+    body:
+      "Benefit excludes purchases of gift cards and vouchers, deposits charged upfront by the venue, booking charges, cancellation charges, no-show charges, takeaway, and dine-at-home services. Currency conversion fees do not count towards the benefit.",
+  },
+  {
+    title: "Direct payments only",
+    body:
+      "Payments through processors such as QR payment or in-restaurant app purchases may not be eligible. Request to pay at the restaurant's designated till point.",
+  },
+  {
+    title: "Award of credits",
+    body:
+      "Credits should appear on your billing statement within 30 days from the date of payment, but may take longer. Credits are not redeemable for cash or any other payment form.",
+  },
+  {
+    title: "Expiry or withdrawal",
+    body:
+      "The benefit expires on 31 December 2026. American Express can withdraw the benefit at any time by giving 30 days' notice.",
+  },
+  {
+    title: "Participating restaurants",
+    body:
+      "Purchases from participating brands are governed by their respective terms and privacy policies. American Express is not responsible for their goods or services.",
+  },
+  {
+    title: "General offer terms",
+    body: "American Express General Offer Terms also apply to the benefit.",
+  },
+];
 const LOVE_DINING_RESTAURANTS_URL = "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html";
 const LOVE_DINING_HOTELS_URL = "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html";
 const LOVE_DINING_RESTAURANTS_TNC_URL = "https://www.americanexpress.com/content/dam/amex/sg/benefits/Love_Dining_Restaurants_TnCs.pdf";
@@ -1150,10 +1201,19 @@ function diningCreditBadge(record) {
   if (record.country === "Singapore") {
     return '<span class="badge amber">SG Local Dining Credit</span>';
   }
-  if (record.source === "Amex Platinum Dining" && record.country && record.country !== "Japan") {
+  if (isGlobalDiningCreditRecord(record)) {
     return '<span class="badge green">Abroad Global Dining Credit</span>';
   }
   return "";
+}
+
+function isGlobalDiningCreditRecord(record) {
+  return Boolean(
+    record &&
+    record.source === "Amex Platinum Dining" &&
+    record.country &&
+    !["Japan", "Singapore"].includes(record.country)
+  );
 }
 
 function googleMapsSearchUrl(parts) {
@@ -1308,6 +1368,37 @@ function diningCreditEligibilityNote(record) {
     return SINGAPORE_LOCAL_DINING_NOTICE;
   }
   return "";
+}
+
+function globalDiningCreditTermsMarkup(record) {
+  if (!isGlobalDiningCreditRecord(record)) return "";
+
+  const termItems = GLOBAL_DINING_CREDIT_TERMS
+    .map(
+      (term) => `
+        <div class="credit-terms-item">
+          <h4>${escapeHtml(term.title)}</h4>
+          <p>${escapeHtml(term.body)}</p>
+        </div>
+      `
+    )
+    .join("");
+
+  return `
+    <details class="credit-terms">
+      <summary>Credit terms</summary>
+      <div class="credit-terms-content">
+        <p class="credit-terms-intro">
+          Offer T&Cs captured from Amex on ${escapeHtml(GLOBAL_DINING_CREDIT_TERMS_CAPTURED_AT)}.
+          Confirm the saved offer in your Amex account before dining.
+          <a href="${escapeHtml(GLOBAL_DINING_OFFICIAL_URL)}" target="_blank" rel="noopener">Official restaurant list</a>
+        </p>
+        <div class="credit-terms-list">
+          ${termItems}
+        </div>
+      </div>
+    </details>
+  `;
 }
 
 function formatAddress(raw, country) {
@@ -2321,6 +2412,7 @@ function renderFocusCard() {
     ${diningCreditEligibilityNote(record) ? `<div class="focus-note focus-note-warn">${escapeHtml(diningCreditEligibilityNote(record))}</div>` : ""}
     ${sourceCacheLabel ? `<div class="focus-note">Data source: ${escapeHtml(sourceCacheLabel)}.</div>` : ""}
     ${focusLocationNote(record) ? `<div class="focus-note">${escapeHtml(focusLocationNote(record))}</div>` : ""}
+    ${globalDiningCreditTermsMarkup(record)}
     <div class="focus-actions">
       ${
         googleMapsUrl
@@ -2337,11 +2429,6 @@ function renderFocusCard() {
           ? `<a class="inline-link subtle" href="${escapeHtml(record.website_url)}" target="_blank" rel="noopener">Restaurant website</a>`
           : record.source_url
           ? `<a class="inline-link subtle" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">${record.source === "Amex Platinum Dining" ? "Amex Dining page" : "Pocket Concierge"}</a>`
-          : ""
-      }
-      ${
-        record.source === "Amex Platinum Dining"
-          ? `<a class="inline-link subtle" href="${escapeHtml(GLOBAL_DINING_CREDIT_TERMS_URL)}" target="_blank" rel="noopener">Credit terms</a>`
           : ""
       }
       ${

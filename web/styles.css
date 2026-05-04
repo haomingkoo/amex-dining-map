@@ -2122,6 +2122,66 @@ a.google-badge:hover {
   background: var(--rose-surface);
 }
 
+.credit-terms {
+  margin: 12px 0;
+  border: 1px solid var(--surface-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-overlay);
+  overflow: hidden;
+}
+
+.credit-terms summary {
+  cursor: pointer;
+  list-style-position: inside;
+  padding: 10px 14px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.credit-terms summary:hover {
+  color: var(--gold);
+  background: var(--gold-faint);
+}
+
+.credit-terms-content {
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.credit-terms-intro {
+  margin: 12px 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.credit-terms-intro a {
+  color: var(--gold);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.credit-terms-list {
+  display: grid;
+  gap: 10px;
+}
+
+.credit-terms-item h4 {
+  margin: 0 0 3px;
+  color: var(--text);
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+.credit-terms-item p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .focus-actions {
   display: flex;
   flex-wrap: wrap;
