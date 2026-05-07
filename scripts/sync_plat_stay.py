@@ -341,16 +341,25 @@ def line_segments(line: str) -> list[tuple[int, str]]:
     ]
 
 
-def segment_bucket(start: int) -> str:
+def segment_bucket(start: int, text: str = "") -> str:
+    normalized = text.strip().lower()
+    if (
+        start >= 88
+        or "@" in normalized
+        or normalized.endswith(".com")
+        or normalized.startswith("+")
+        or normalized.startswith(("reservations-", "reservations.", "wreservations.", "tlc.sinlb."))
+    ):
+        return "reservation"
+    if normalized.startswith(("subject to availability", "opening q2")) or normalized.startswith("•"):
+        return "blackout"
     if start < 16:
         return "name"
     if start < 40:
         return "address"
     if start < 64:
         return "room"
-    if start < 92:
-        return "blackout"
-    return "reservation"
+    return "blackout"
 
 
 def clean_whitespace(value: str) -> str:
@@ -503,13 +512,14 @@ def normalize_reservation(lines: list[str]) -> tuple[str, str | None, str | None
         return "", None, None, "unknown"
 
     phone = next((part for part in line_parts if part.startswith("+")), None)
-    email_candidates = [part for part in line_parts if "@" in part or part.endswith(".com")]
-    email = "".join(email_candidates) if email_candidates else None
-
     if any("reserve your room" in part.lower() for part in line_parts):
         mode = "booking_link_prompt"
         raw = clean_whitespace(" ".join(line_parts))
         return raw, phone, None, mode
+
+    email_parts = [part for part in line_parts if part != phone]
+    stitched_email = re.sub(r"\s+", "", "".join(email_parts))
+    email = stitched_email if "@" in stitched_email and "." in stitched_email.rsplit("@", 1)[-1] else None
 
     if email:
         raw_parts = [phone] if phone else []
@@ -535,7 +545,7 @@ def parse_block(block_lines: list[str]) -> ParsedBlock:
     for line in block_lines:
         per_line = {key: [] for key in buckets}
         for start, text in line_segments(line):
-            per_line[segment_bucket(start)].append(text)
+            per_line[segment_bucket(start, text)].append(text)
         for key, values in per_line.items():
             if values:
                 buckets[key].append(clean_whitespace(" ".join(values)))
