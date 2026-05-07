@@ -89,6 +89,7 @@ Useful targeted checks:
 ```bash
 python3 scripts/verify_global_dining_official.py --country-code TW --max-list 40
 python3 scripts/scrape_love_dining.py --diff --no-geocode
+python3 scripts/scrape_table_for_two.py --availability-only
 python3 scripts/check_table_for_two_availability.py --venue-id tft-15-stamford-restaurant --meal Lunch --times 12:00,12:30 --date 2026-04-28
 python3 scripts/source_change_alert.py --program "Plat Stay" --meta data/plat-stay-source.json --data data/plat-stays.json --output /tmp/plat-stay-alert.md
 ```
@@ -102,8 +103,10 @@ python3 scripts/source_change_alert.py --program "Plat Stay" --meta data/plat-st
   `AMEXPlatSG` availability refresh at `01:30 UTC`. The browser also refreshes
   Table for Two availability while the page is open.
 - `table-for-two-alerts.yml`: twice-hourly Table for Two availability refresh
-  and SMTP alert sender. It reads signup rows from a configured CSV endpoint,
-  sends only newly matched slots, and stores salted sent-key hashes.
+  and SMTP alert sender. It uses `--availability-only` so email alerts are not
+  blocked by official Amex source-review changes. It reads signup rows from a
+  configured CSV endpoint, sends only newly matched slots, and stores salted
+  sent-key hashes.
 - `refresh-global-dining.yml`: monthly Amex Global/Local Dining refresh on the
   first day of the month at `01:00 UTC`.
 - Source-change workflows open/update GitHub Issues labelled `data-alert` when

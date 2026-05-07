@@ -940,9 +940,78 @@ def build_payload(existing_payload: dict | None = None) -> dict:
     }
 
 
+def refresh_availability_payload(existing_payload: dict, *, include_profiles: bool = False) -> dict:
+    venues = [
+        record for record in existing_payload.get("venues", [])
+        if isinstance(record, dict) and record.get("id")
+    ]
+    if not venues:
+        raise RuntimeError("Cannot refresh Table for Two availability without existing venue records.")
+
+    checked_at = iso_now()
+    live_availability_by_id, availability_errors = fetch_live_availability(venues, checked_at)
+    live_profiles_by_id: dict[str, dict] = {}
+    profile_errors: dict[str, str] = {}
+    if include_profiles:
+        live_profiles_by_id, profile_errors = fetch_diningcity_profiles(venues, checked_at)
+    records = []
+    for venue in venues:
+        venue_id = venue["id"]
+        availability = live_availability_by_id.get(venue_id) or venue.get("availability") or default_availability()
+        record = {
+            **venue,
+            "slot_source_status": (
+                "diningcity_amex_platinum_project"
+                if availability.get("confidence") == "diningcity_amex_platinum_project"
+                else "app_handoff_required"
+            ),
+            "availability": availability,
+        }
+        if venue_id in live_profiles_by_id:
+            record["dining_city_profile"] = live_profiles_by_id[venue_id]
+        records.append(record)
+
+    payload = {
+        **existing_payload,
+        "alert_signup_url": os.environ.get("TABLE_FOR_TWO_ALERT_SIGNUP_URL", "").strip()
+        or existing_payload.get("alert_signup_url", ""),
+        "availability_last_checked_at": checked_at if live_availability_by_id else existing_payload.get("availability_last_checked_at"),
+        "availability_source": {
+            "type": "diningcity_public_api",
+            "api_base": DININGCITY_API_BASE,
+            "project": DININGCITY_PROJECT,
+            "project_title": DININGCITY_PROJECT_TITLE,
+            "checked_venues": len(live_availability_by_id),
+            "error_count": len(availability_errors),
+            "errors": availability_errors,
+        },
+        "venues": records,
+    }
+    if include_profiles:
+        payload["venue_profile_source"] = {
+            "type": "diningcity_public_detail_api",
+            "api_base": DININGCITY_API_BASE,
+            "project": DININGCITY_PROJECT,
+            "checked_venues": len(live_profiles_by_id),
+            "error_count": len(profile_errors),
+            "errors": profile_errors,
+        }
+    return payload
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="data/table-for-two.json")
+    parser.add_argument(
+        "--availability-only",
+        action="store_true",
+        help=(
+            "Refresh only DiningCity AMEXPlatSG availability data from the "
+            "existing roster. This intentionally skips Amex official source image, "
+            "T&C, FAQ hash, and DiningCity profile checks so scheduled email alerts "
+            "are not blocked by manual source review."
+        ),
+    )
     parser.add_argument(
         "--fail-on-manual-review",
         action="store_true",
@@ -958,11 +1027,19 @@ def main() -> int:
     existing_payload = None
     if output_path.exists():
         existing_payload = json.loads(output_path.read_text(encoding="utf-8"))
-    payload = build_payload(existing_payload)
+    if args.availability_only:
+        if existing_payload is None:
+            raise RuntimeError(f"{output_path} does not exist; availability-only refresh needs an existing roster.")
+        payload = refresh_availability_payload(existing_payload)
+    else:
+        payload = build_payload(existing_payload)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     count = len(payload["venues"])
+    if args.availability_only:
+        print(f"Refreshed Table for Two availability for {count} venues in {output_path}.")
+        return 0
     review = " manual review required" if payload.get("manual_review_required") else ""
     print(f"Wrote {count} Table for Two venues to {output_path}.{review}")
     return 2 if args.fail_on_manual_review and payload.get("manual_review_required") else 0

@@ -49,7 +49,7 @@ jobs:
         if: steps.config.outputs.enabled == 'true'
         env:
           TABLE_FOR_TWO_ALERT_SIGNUP_URL: ${{ secrets.TABLE_FOR_TWO_ALERT_SIGNUP_URL }}
-        run: python3 scripts/scrape_table_for_two.py
+        run: python3 scripts/scrape_table_for_two.py --availability-only
 
       - name: Send matching alert emails
         if: steps.config.outputs.enabled == 'true'
