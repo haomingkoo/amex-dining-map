@@ -858,6 +858,15 @@ def build_payload(existing_payload: dict | None = None) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="data/table-for-two.json")
+    parser.add_argument(
+        "--fail-on-manual-review",
+        action="store_true",
+        help=(
+            "Exit 2 when source hashes require review. By default the script writes "
+            "manual_review_required to the payload and exits 0 so workflows can build "
+            "and open the source-alert issue."
+        ),
+    )
     args = parser.parse_args()
 
     output_path = Path(args.output)
@@ -871,7 +880,7 @@ def main() -> int:
     count = len(payload["venues"])
     review = " manual review required" if payload.get("manual_review_required") else ""
     print(f"Wrote {count} Table for Two venues to {output_path}.{review}")
-    return 2 if payload.get("manual_review_required") else 0
+    return 2 if args.fail_on_manual_review and payload.get("manual_review_required") else 0
 
 
 if __name__ == "__main__":
