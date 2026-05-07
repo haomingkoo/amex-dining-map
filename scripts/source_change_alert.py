@@ -52,6 +52,8 @@ META_FIELD_LABELS = {
     "manual_review_required": "Manual review flag",
     "source_images.participating_merchants_sha256": "Participating merchants image hash",
     "source_images.voucher_cycles_sha256": "Voucher cycles image hash",
+    "source_documents.terms_sha256": "Table for Two T&C PDF hash",
+    "source_documents.faq_sha256": "Table for Two FAQ PDF hash",
     "terms_hashes.restaurants": "Restaurant T&C PDF hash",
     "terms_hashes.hotels": "Hotel T&C PDF hash",
     "terms_hashes.global_dining_credit": "Global Dining Credit T&C text hash",

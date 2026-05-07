@@ -27,8 +27,10 @@ from pathlib import Path
 OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/"
 TERMS_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf"
 FAQ_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TableforTwo_FAQ.pdf"
-KNOWN_PARTICIPATING_SHA256 = "ab8ca3926779acf298933fd234153efeaaac66c37421677103ea3ece2215a8a5"
-KNOWN_CYCLES_SHA256 = "fe025896cb9eded177e770fb23c00f162fac3e238a74ff1e348750d37b453a6c"
+KNOWN_PARTICIPATING_SHA256 = "5a2c3eb79ad86ee737b8aa125bcdfffa3195954ccfcfd4ced5d86aa649398ec5"
+KNOWN_CYCLES_SHA256 = "58fe005ae32d9a294f0064677bf96c7c8bcc035a108a6ab9318e201672326696"
+KNOWN_TERMS_SHA256 = "7ba815581e6c0cb0c50775e6db642f81b040a65ff5568a70f6aeb4ed4cc0a7ec"
+KNOWN_FAQ_SHA256 = "432c2d23d7f9f931b78a798972dc634ce4fa6a1b3cb3fea996c175bf2baeb4af"
 DININGCITY_API_BASE = "https://api.diningcity.asia/public"
 DININGCITY_PROJECT = "AMEXPlatSG"
 DININGCITY_PROJECT_TITLE = "AMEX Platinum SG"
@@ -172,6 +174,21 @@ VENUES = [
         "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
     },
     {
+        "id": "tft-kaya-at-the-standard",
+        "name": "Kaya at The Standard",
+        "category": "restaurant",
+        "dining_city_id": "205192104",
+        "dining_city_name": "Kaya at The Standard",
+        "dining_city_public_url": "https://www.diningcity.sg/singapore/kaya_at_the_standard",
+        "address": "The Standard, Singapore, 2nd Floor, 12 Orange Grove Road, Singapore 258353",
+        "lat": 1.3101799,
+        "lng": 103.8261714,
+        "coordinate_confidence": "diningcity_place_matched",
+        "map_pin_source": "DiningCity public restaurant search",
+        "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
+        "venue_source_url": "https://www.kayaatthestandard.com/",
+    },
+    {
         "id": "tft-rappu",
         "name": "Rappu",
         "category": "restaurant",
@@ -260,6 +277,36 @@ VENUES = [
         "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
     },
     {
+        "id": "tft-one-ninety",
+        "name": "One-Ninety",
+        "category": "restaurant",
+        "dining_city_id": "205174978",
+        "dining_city_name": "One-Ninety Restaurant",
+        "dining_city_public_url": "https://www.diningcity.sg/singapore/one-ninety_restaurant",
+        "address": "Four Seasons Hotel Singapore, Lobby Level, 190 Orchard Boulevard, Singapore 248646",
+        "lat": 1.3051922,
+        "lng": 103.8284188,
+        "coordinate_confidence": "diningcity_place_matched",
+        "map_pin_source": "DiningCity public restaurant search",
+        "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
+        "venue_source_url": "https://www.fourseasons.com/singapore/dining/restaurants/one_ninety/",
+    },
+    {
+        "id": "tft-latido",
+        "name": "Latido",
+        "category": "restaurant",
+        "dining_city_id": "205195352",
+        "dining_city_name": "Latido",
+        "dining_city_public_url": "https://www.diningcity.sg/singapore/Latido",
+        "address": "40 Tras Street, Singapore 078979",
+        "lat": 1.278353910844276,
+        "lng": 103.8442552602603,
+        "coordinate_confidence": "address_geocoded",
+        "map_pin_source": "Singapore OneMap address geocode",
+        "map_pin_note": "DiningCity currently publishes an empty address and 0,0 coordinates for this venue; pin is address-geocoded from the published Latido address.",
+        "venue_source_url": "https://guide.michelin.com/sg/en/singapore-region/singapore/restaurant/latido",
+    },
+    {
         "id": "tft-colony",
         "name": "Colony",
         "category": "buffet",
@@ -277,6 +324,21 @@ VENUES = [
         "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
     },
     {
+        "id": "tft-estate",
+        "name": "Estate",
+        "category": "buffet",
+        "dining_city_id": "205195358",
+        "dining_city_name": "Estate",
+        "dining_city_public_url": "https://www.diningcity.sg/singapore/Estate",
+        "address": "Hilton Singapore Orchard, Level 5, 333 Orchard Road, Singapore 238867",
+        "lat": 1.3021167,
+        "lng": 103.8360388,
+        "coordinate_confidence": "diningcity_place_matched",
+        "map_pin_source": "DiningCity public restaurant search",
+        "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
+        "venue_source_url": "https://www.hilton.com/en/hotels/sinorhi-hilton-singapore-orchard/dining/estate/",
+    },
+    {
         "id": "tft-peppermint",
         "name": "Peppermint",
         "category": "buffet",
@@ -290,6 +352,21 @@ VENUES = [
         "map_pin_source": "Singapore OneMap address geocode",
         "map_pin_note": "Pin is address-geocoded from PARKROYAL COLLECTION Marina Bay's published address; confirm the exact restaurant entrance before visiting.",
         "venue_source_url": "https://www.panpacific.com/en/hotels-and-resorts/pr-collection-marina-bay/dining/peppermint.html",
+    },
+    {
+        "id": "tft-ginger",
+        "name": "Ginger",
+        "category": "buffet",
+        "dining_city_id": "205195398",
+        "dining_city_name": "Ginger at Park Royal",
+        "dining_city_public_url": "https://www.diningcity.sg/singapore/Ginger_at_Park_Royal",
+        "address": "PARKROYAL on Beach Road, 7500 Beach Road, Singapore 199591",
+        "lat": 1.2995382,
+        "lng": 103.8593887,
+        "coordinate_confidence": "diningcity_place_matched",
+        "map_pin_source": "DiningCity public restaurant search",
+        "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name variant.",
+        "venue_source_url": "https://www.panpacific.com/en/hotels-and-resorts/pr-beach-road/eat/ginger.html",
     },
     {
         "id": "tft-capitol-bistro-bar-patisserie",
@@ -773,9 +850,13 @@ def build_payload(existing_payload: dict | None = None) -> dict:
     cycles_url = extract_image_url(html, "Voucher Cycles 2026")
     participating_hash = hashlib.sha256(fetch_bytes(participating_url)).hexdigest()
     cycles_hash = hashlib.sha256(fetch_bytes(cycles_url)).hexdigest()
+    terms_hash = hashlib.sha256(fetch_bytes(TERMS_URL)).hexdigest()
+    faq_hash = hashlib.sha256(fetch_bytes(FAQ_URL)).hexdigest()
     manual_review_required = (
         participating_hash != KNOWN_PARTICIPATING_SHA256
         or cycles_hash != KNOWN_CYCLES_SHA256
+        or terms_hash != KNOWN_TERMS_SHA256
+        or faq_hash != KNOWN_FAQ_SHA256
     )
     checked_at = iso_now()
     live_availability_by_id, availability_errors = fetch_live_availability(VENUES, checked_at)
@@ -802,6 +883,10 @@ def build_payload(existing_payload: dict | None = None) -> dict:
         "source_images": {
             "participating_merchants_sha256": participating_hash,
             "voucher_cycles_sha256": cycles_hash,
+        },
+        "source_documents": {
+            "terms_sha256": terms_hash,
+            "faq_sha256": faq_hash,
         },
         "manual_review_required": manual_review_required,
         "voucher_cycles_2026": [
