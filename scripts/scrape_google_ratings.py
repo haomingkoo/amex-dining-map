@@ -5,7 +5,7 @@ Enrich all restaurant datasets with Google Maps ratings using gosom/google-maps-
 Covers:
   - data/global-restaurants.json   (Global Dining Credit, 2470 records)
   - data/japan-restaurants.json    (Pocket Concierge Japan, ~844 records)
-  - data/love-dining.json          (Love Dining SG restaurants + hotel outlets, 79 records)
+  - data/love-dining.json          (Love Dining SG restaurants + hotel outlets, 78 records)
   - data/table-for-two.json        (Table for Two SG, 23 records)
 
 Usage:

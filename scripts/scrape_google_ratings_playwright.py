@@ -7,7 +7,7 @@ Extracts: rating, review_count (when available), google_name, google_address, ma
 Covers:
   - data/global-restaurants.json   (Global Dining Credit, ~2470 records)
   - data/japan-restaurants.json    (Pocket Concierge Japan, ~844 records)
-  - data/love-dining.json          (Love Dining SG, 79 records)
+  - data/love-dining.json          (Love Dining SG, 78 records)
   - data/table-for-two.json        (Table for Two SG, 23 records)
   - data/plat-stays.json           (Plat Stay hotels, 69 records)
 

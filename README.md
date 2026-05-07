@@ -127,9 +127,10 @@ git diff --check
 
 Current coordinate audit notes:
 
-- Global Dining: 1,479 mapped records, 457 records without coordinates.
-- Japan Dining: 845 mapped records, no missing coordinates.
-- Love Dining: 73 mapped records, 6 bundled/unmapped records.
+- Global Dining: 1,819 mapped records, 112 records without coordinates.
+- Japan Dining: 844 mapped records, no missing coordinates.
+- Plat Stay: 76 mapped records, no missing coordinates.
+- Love Dining: 70 mapped records, 8 bundled/unmapped records.
 - Table for Two: 23 mapped records, no missing coordinates.
 - The bounds audit catches impossible country-level pins; it does not prove
   every pin is within 20m of a restaurant entrance.
