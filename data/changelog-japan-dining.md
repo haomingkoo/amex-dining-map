@@ -22,3 +22,10 @@ Source: `data/japan-restaurants.json`
   - Azabudai Sui Inaba / Tokyo
   - Ginza En Tamura / Tokyo
   - Sushi Rizaki Shibuya / Tokyo
+
+## 2026-05-11 04:58 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Shinyashiki Kofukuron / Kumamoto
