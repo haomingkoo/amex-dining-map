@@ -29,3 +29,11 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Shinyashiki Kofukuron / Kumamoto
+
+## 2026-05-13 04:45 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (2)**
+  - Ginza Unagi no Miyau / Tokyo
+  - Washoku no mori Yuki / Tokyo
