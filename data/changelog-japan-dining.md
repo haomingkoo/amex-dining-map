@@ -37,3 +37,13 @@ Source: `data/japan-restaurants.json`
 - **Added (2)**
   - Ginza Unagi no Miyau / Tokyo
   - Washoku no mori Yuki / Tokyo
+
+## 2026-05-14 04:43 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (4)**
+  - Imobo Hiranoya Honten / Kyoto
+  - Kitashinchi Yamagata-ya / Osaka
+  - Mokubei / Kyoto
+  - Sushi Taro / Fukuoka
