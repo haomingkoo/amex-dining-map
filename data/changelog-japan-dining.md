@@ -47,3 +47,12 @@ Source: `data/japan-restaurants.json`
   - Kitashinchi Yamagata-ya / Osaka
   - Mokubei / Kyoto
   - Sushi Taro / Fukuoka
+
+## 2026-05-16 04:29 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (3)**
+  - Sirokanedai Kobayashi / Tokyo
+  - Sushi Kozue / Tokyo
+  - ZURRIOLA / Tokyo
