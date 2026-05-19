@@ -56,3 +56,10 @@ Source: `data/japan-restaurants.json`
   - Sirokanedai Kobayashi / Tokyo
   - Sushi Kozue / Tokyo
   - ZURRIOLA / Tokyo
+
+## 2026-05-19 05:02 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Alter Ego / Tokyo
