@@ -63,3 +63,10 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Alter Ego / Tokyo
+
+## 2026-05-20 05:05 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Sushi Onikai / Tokyo
