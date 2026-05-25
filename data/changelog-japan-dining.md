@@ -70,3 +70,11 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - Sushi Onikai / Tokyo
+
+## 2026-05-25 05:20 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (2)**
+  - Kai / Tokyo
+  - Kohou / Tokyo
