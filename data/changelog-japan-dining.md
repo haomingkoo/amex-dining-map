@@ -78,3 +78,12 @@ Source: `data/japan-restaurants.json`
 - **Removed (2)**
   - Kai / Tokyo
   - Kohou / Tokyo
+
+## 2026-05-29 05:14 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Sushi Yuden / Osaka
+- **Removed (1)**
+  - Japanies restaurant SHINCHAYA / Oshu
