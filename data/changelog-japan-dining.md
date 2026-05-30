@@ -87,3 +87,10 @@ Source: `data/japan-restaurants.json`
   - Sushi Yuden / Osaka
 - **Removed (1)**
   - Japanies restaurant SHINCHAYA / Oshu
+
+## 2026-05-30 04:53 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Mumyo / Chino
