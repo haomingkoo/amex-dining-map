@@ -94,3 +94,10 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Mumyo / Chino
+
+## 2026-06-01 06:03 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Sushi Ryo / Tokyo
