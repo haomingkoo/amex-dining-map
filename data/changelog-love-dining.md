@@ -6,3 +6,16 @@ Source: `data/love-dining.json`
 
 - **Added (1)**
   - TWG Tea / Singapore
+
+## 2026-06-02 06:24 UTC — Love Dining
+
+Source: `data/love-dining.json`
+
+- **Added (3)**
+  - Blue Potato / Singapore
+  - Crossroads Bar / Singapore
+  - Ellenborough Market Café / Singapore
+- **Removed (3)**
+  - Blue Potato / Singapore
+  - Crossroads Bar / Singapore
+  - Ellenborough Market Café / Singapore
