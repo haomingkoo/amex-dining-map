@@ -101,3 +101,12 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Sushi Ryo / Tokyo
+
+## 2026-06-03 06:04 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - OGGI  / Tokyo
+- **Removed (1)**
+  - Ginza Shin Fu En / Tokyo
