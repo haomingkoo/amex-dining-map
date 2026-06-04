@@ -110,3 +110,14 @@ Source: `data/japan-restaurants.json`
   - OGGI  / Tokyo
 - **Removed (1)**
   - Ginza Shin Fu En / Tokyo
+
+## 2026-06-04 05:57 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (3)**
+  - Sushi Uta / Tokyo
+  - Tokusen Takasakadori Katsudori / Tokyo
+  - Yakitori Shinoda Azabu Juban / Tokyo
+- **Removed (1)**
+  - RRR otemachi Kobebeef&wine / Tokyo
