@@ -19,3 +19,12 @@ Source: `data/love-dining.json`
   - Blue Potato / Singapore
   - Crossroads Bar / Singapore
   - Ellenborough Market Café / Singapore
+
+## 2026-06-08 06:25 UTC — Love Dining
+
+Source: `data/love-dining.json`
+
+- **Added (1)**
+  - Connections Lounge / Singapore
+- **Removed (1)**
+  - Connections / Singapore
