@@ -121,3 +121,10 @@ Source: `data/japan-restaurants.json`
   - Yakitori Shinoda Azabu Juban / Tokyo
 - **Removed (1)**
   - RRR otemachi Kobebeef&wine / Tokyo
+
+## 2026-06-11 05:49 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Kohou / Tokyo
