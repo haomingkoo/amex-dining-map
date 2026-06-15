@@ -128,3 +128,12 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - Kohou / Tokyo
+
+## 2026-06-15 06:25 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (3)**
+  - CRAZY BRAVO  / Tokyo
+  - Kaishokuan Nakatake  / Nagoya
+  - Ningyocho Sushi Kaki  / Tokyo
