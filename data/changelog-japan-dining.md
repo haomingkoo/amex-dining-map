@@ -137,3 +137,11 @@ Source: `data/japan-restaurants.json`
   - CRAZY BRAVO  / Tokyo
   - Kaishokuan Nakatake  / Nagoya
   - Ningyocho Sushi Kaki  / Tokyo
+
+## 2026-06-22 06:30 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (2)**
+  - Bistro Simba / Tokyo
+  - Sushi Kaminari / Tokyo
