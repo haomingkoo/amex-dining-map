@@ -15,7 +15,6 @@ import json
 import os
 import re
 import sys
-import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -32,9 +31,7 @@ DEFAULT_SENT_LOG_PATH = "data/table-for-two-alert-sent.json"
 DEFAULT_SITE_URL = "https://amex-explorer.kooexperience.com/#/table-for-two"
 MAX_MATCHES_PER_EMAIL = 24
 ALERT_TIMEZONE = "Asia/Singapore"
-CSV_FETCH_ATTEMPTS = 3
 CSV_FETCH_TIMEOUT_SECONDS = 60
-CSV_FETCH_BACKOFF_SECONDS = 5
 UNSUBSCRIBE_COPY = "Stop future Table for Two emails for this email address:"
 UNSUBSCRIBE_LINK_TEXT = "Stop future Table for Two emails"
 
@@ -81,26 +78,6 @@ def write_json(path: str | Path, payload: Any) -> None:
     output = Path(path)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-
-def fetch_text(url: str) -> str:
-    last_error: BaseException | None = None
-    for attempt in range(1, CSV_FETCH_ATTEMPTS + 1):
-        request = urllib.request.Request(
-            url,
-            headers={"User-Agent": "amex-dining-map table-for-two alerts"},
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=CSV_FETCH_TIMEOUT_SECONDS) as response:
-                return response.read().decode("utf-8-sig")
-        except urllib.error.HTTPError:
-            raise
-        except (TimeoutError, OSError, urllib.error.URLError) as exc:
-            last_error = exc
-            if attempt >= CSV_FETCH_ATTEMPTS:
-                break
-            time.sleep(CSV_FETCH_BACKOFF_SECONDS * attempt)
-    raise RuntimeError("Could not fetch subscriptions CSV after retries") from last_error
 
 
 def split_values(value: Any) -> list[str]:
@@ -550,54 +527,6 @@ def build_email(
     return message
 
 
-def build_confirmation_email(
-    subscription: Subscription,
-    sender: str,
-    signup_url: str,
-    venue_labels: dict[str, str] | None = None,
-    reply_to: str = "",
-    unsubscribe_url: str = "",
-    one_click_unsubscribe: bool = False,
-) -> EmailMessage:
-    subject = "Table for Two alert confirmed"
-    greeting = f"Hi {subscription.name}," if subscription.name else "Hi,"
-    scope_lines = subscription_scope_lines(subscription, venue_labels)
-    lines = [
-        greeting,
-        "",
-        "We received your Table for Two alert signup.",
-        "We will email you once if cached Table for Two slots match these preferences.",
-    ]
-    if scope_lines:
-        lines.extend(["", "Alert details:", *[f"- {line}" for line in scope_lines]])
-    if signup_url:
-        lines.extend(["", "Create another alert:", signup_url])
-    if unsubscribe_url:
-        lines.extend(["", UNSUBSCRIBE_COPY, unsubscribe_url])
-    text_body = "\n".join(lines)
-    html_scope = "".join(f"<li>{html.escape(line)}</li>" for line in scope_lines)
-    html_body = f"""
-    <p>{html.escape(greeting)}</p>
-    <p>We received your Table for Two alert signup.</p>
-    <p>We will email you once if cached Table for Two slots match these preferences.</p>
-    {f"<p>Alert details:</p><ul>{html_scope}</ul>" if html_scope else ""}
-    {f'<p><a href="{html.escape(signup_url)}">Create another alert</a></p>' if signup_url else ""}
-    """
-    if unsubscribe_url:
-        html_body += f"""
-        <p style="color:#6b7280;font-size:12px">
-          <a href="{html.escape(unsubscribe_url)}">{UNSUBSCRIBE_LINK_TEXT}</a>
-        </p>
-        """
-
-    message = EmailMessage()
-    message["Subject"] = subject
-    add_common_headers(message, sender, subscription.email, reply_to, unsubscribe_url, one_click_unsubscribe)
-    message.set_content(text_body)
-    message.add_alternative(html_body, subtype="html")
-    return message
-
-
 def build_expired_email(
     subscription: Subscription,
     sender: str,
@@ -780,7 +709,6 @@ def main() -> int:
 
     for subscription in subscriptions:
         matches = matching_slots(subscription, venues)
-        confirmed_key = subscription_state_key(subscription, "confirmed", salt)
         fulfilled_key = subscription_state_key(subscription, "matched", salt)
         expired_key = subscription_state_key(subscription, "expired", salt)
         if fulfilled_key in sent_keys or fulfilled_key in pending_sent_keys:
@@ -820,20 +748,6 @@ def main() -> int:
             )
             newly_sent_keys.append(expired_key)
             pending_sent_keys.add(expired_key)
-        elif confirmed_key not in sent_keys and confirmed_key not in pending_sent_keys:
-            messages.append(
-                build_confirmation_email(
-                    subscription,
-                    sender=resend_config["sender"] or "dinnertime@kooexperience.com",
-                    signup_url=args.signup_url,
-                    venue_labels=venue_labels,
-                    reply_to=resend_config["reply_to"],
-                    unsubscribe_url=unsubscribe_url,
-                    one_click_unsubscribe=resend_config["one_click_unsubscribe"],
-                )
-            )
-            newly_sent_keys.append(confirmed_key)
-            pending_sent_keys.add(confirmed_key)
         if len(messages) >= args.max_emails:
             break
 
