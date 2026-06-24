@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import secrets
 import sqlite3
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS subscribers (
   venues TEXT NOT NULL,
   date_start TEXT NOT NULL,
   date_end TEXT NOT NULL,
+  dates TEXT NOT NULL DEFAULT '[]',
   status TEXT NOT NULL DEFAULT 'pending',
   confirm_token TEXT,
   confirm_token_expires_ts TEXT,
@@ -51,6 +52,7 @@ class SubscriberInput:
     venues: list[str]
     date_start: str
     date_end: str
+    dates: list[str] = field(default_factory=list)
 
 
 def _now() -> datetime:
@@ -84,6 +86,14 @@ def init_db(path: Path | str) -> None:
     conn = connect(path)
     try:
         conn.executescript(SCHEMA)
+        columns = {
+            row["name"]
+            for row in conn.execute("PRAGMA table_info(subscribers)").fetchall()
+        }
+        if "dates" not in columns:  # migrate older DBs created before specific dates
+            conn.execute(
+                "ALTER TABLE subscribers ADD COLUMN dates TEXT NOT NULL DEFAULT '[]'"
+            )
         conn.commit()
     finally:
         conn.close()
@@ -106,6 +116,7 @@ def upsert_pending(
     now_iso = _iso(now)
     sessions = json.dumps(sub.sessions)
     venues = json.dumps(sub.venues)
+    dates = json.dumps(sub.dates)
     existing = conn.execute(
         "SELECT id FROM subscribers WHERE email = ?", (sub.email,)
     ).fetchone()
@@ -114,14 +125,14 @@ def upsert_pending(
             """
             UPDATE subscribers
             SET name = ?, party_size = ?, sessions = ?, venues = ?,
-                date_start = ?, date_end = ?, status = 'pending',
+                date_start = ?, date_end = ?, dates = ?, status = 'pending',
                 confirm_token = ?, confirm_token_expires_ts = ?, source_ip = ?,
                 created_ts = ?, confirmed_ts = NULL, unsubscribed_ts = NULL
             WHERE id = ?
             """,
             (
                 sub.name, sub.party_size, sessions, venues, sub.date_start,
-                sub.date_end, confirm_token, confirm_expires, ip, now_iso,
+                sub.date_end, dates, confirm_token, confirm_expires, ip, now_iso,
                 existing["id"],
             ),
         )
@@ -130,13 +141,13 @@ def upsert_pending(
             """
             INSERT INTO subscribers (
                 email, name, party_size, sessions, venues, date_start, date_end,
-                status, confirm_token, confirm_token_expires_ts, unsubscribe_token,
-                source_ip, created_ts
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
+                dates, status, confirm_token, confirm_token_expires_ts,
+                unsubscribe_token, source_ip, created_ts
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
             """,
             (
                 sub.email, sub.name, sub.party_size, sessions, venues,
-                sub.date_start, sub.date_end, confirm_token, confirm_expires,
+                sub.date_start, sub.date_end, dates, confirm_token, confirm_expires,
                 new_token(), ip, now_iso,
             ),
         )
@@ -178,7 +189,7 @@ def active_subscribers(conn: sqlite3.Connection) -> list[dict]:
     rows = conn.execute(
         """
         SELECT email, name, party_size, sessions, venues, date_start, date_end,
-               unsubscribe_token
+               dates, unsubscribe_token
         FROM subscribers WHERE status = 'active' ORDER BY id
         """
     ).fetchall()
@@ -191,6 +202,7 @@ def active_subscribers(conn: sqlite3.Connection) -> list[dict]:
             "venues": json.loads(row["venues"]),
             "date_start": row["date_start"],
             "date_end": row["date_end"],
+            "dates": json.loads(row["dates"]),
             "unsubscribe_token": row["unsubscribe_token"],
         }
         for row in rows
@@ -203,7 +215,8 @@ def get_by_unsubscribe_token(conn: sqlite3.Connection, token: str) -> dict | Non
         return None
     row = conn.execute(
         """
-        SELECT email, name, party_size, sessions, venues, date_start, date_end, status
+        SELECT email, name, party_size, sessions, venues, date_start, date_end,
+               dates, status
         FROM subscribers WHERE unsubscribe_token = ?
         """,
         (token,),
@@ -218,6 +231,7 @@ def get_by_unsubscribe_token(conn: sqlite3.Connection, token: str) -> dict | Non
         "venues": json.loads(row["venues"]),
         "date_start": row["date_start"],
         "date_end": row["date_end"],
+        "dates": json.loads(row["dates"]),
         "status": row["status"],
     }
 
@@ -232,12 +246,12 @@ def update_preferences(
         """
         UPDATE subscribers
         SET name = ?, party_size = ?, sessions = ?, venues = ?,
-            date_start = ?, date_end = ?
+            date_start = ?, date_end = ?, dates = ?
         WHERE unsubscribe_token = ? AND status != 'unsubscribed'
         """,
         (
             sub.name, sub.party_size, json.dumps(sub.sessions), json.dumps(sub.venues),
-            sub.date_start, sub.date_end, token,
+            sub.date_start, sub.date_end, json.dumps(sub.dates), token,
         ),
     )
     conn.commit()

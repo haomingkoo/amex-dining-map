@@ -35,6 +35,7 @@ class SubscribeRequest(BaseModel):
     venues: list[str]
     date_start: date
     date_end: date
+    dates: list[date] = []  # optional specific dates; empty = match the whole range
     website: str = ""  # honeypot — handled in the route, not validated here
 
     @field_validator("party_size")
@@ -72,15 +73,27 @@ class SubscribeRequest(BaseModel):
                 raise ValueError(f"unknown venue(s): {', '.join(unknown)}")
         return list(dict.fromkeys(cleaned))
 
+    @field_validator("dates")
+    @classmethod
+    def _specific_dates(cls, value: list[date]) -> list[date]:
+        unique = sorted(dict.fromkeys(value))
+        if len(unique) > 31:
+            raise ValueError("pick at most 31 specific dates")
+        return unique
+
     @model_validator(mode="after")
-    def _dates(self) -> "SubscribeRequest":
+    def _dates_window(self) -> "SubscribeRequest":
         today = date.today()
+        horizon = today + timedelta(days=MAX_HORIZON_DAYS)
         if self.date_start > self.date_end:
             raise ValueError("date_start must be on or before date_end")
         if self.date_start < today:
             raise ValueError("date_start must not be in the past")
-        if self.date_end > today + timedelta(days=MAX_HORIZON_DAYS):
+        if self.date_end > horizon:
             raise ValueError(f"date_end must be within {MAX_HORIZON_DAYS} days")
+        for value in self.dates:
+            if value < today or value > horizon:
+                raise ValueError(f"each date must be within {MAX_HORIZON_DAYS} days")
         return self
 
     def to_input(self) -> SubscriberInput:
@@ -92,4 +105,5 @@ class SubscribeRequest(BaseModel):
             venues=self.venues,
             date_start=self.date_start.isoformat(),
             date_end=self.date_end.isoformat(),
+            dates=[value.isoformat() for value in self.dates],
         )

@@ -75,9 +75,19 @@ def confirm_email_html(
     confirm_url: str,
     unsubscribe_url: str,
     manage_url: str | None = None,
+    matches_exist: bool = False,
 ) -> str:
     greeting = f"Hi {name}," if name else "Hi,"
+    good_news = (
+        '<p style="font-size:15px;line-height:1.5;margin:0 0 16px;padding:10px 12px;'
+        "background:#eaf7f3;border-radius:8px;color:#0f5132\">\U0001f389 Good news — "
+        "there are already open tables at venues you picked. Confirm to start getting "
+        "matched.</p>"
+        if matches_exist
+        else ""
+    )
     body = f"""\
+  {good_news}
   <p style="font-size:15px;line-height:1.5;margin:0 0 16px">{greeting} please confirm
      your email to start receiving Table for Two availability reminders.</p>
   <p style="margin:0 0 20px">

@@ -38,10 +38,12 @@ def client(tmp_path: Path, monkeypatch):
         allowed_origin="https://amex-explorer.kooexperience.com",
         public_base_url="https://svc",
         confirm_token_expiry_hours=168,
+        table_data_url="http://example.invalid/data.json",
     )
     app.dependency_overrides[get_settings] = lambda: test_settings
     sent: list = []
     monkeypatch.setattr(routes, "send_email", lambda *a, **k: sent.append((a, k)))
+    monkeypatch.setattr(routes, "open_tables_exist", lambda *a, **k: False)
 
     test_client = TestClient(app)
     test_client.sent = sent  # type: ignore[attr-defined]

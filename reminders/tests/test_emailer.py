@@ -72,3 +72,12 @@ def test_confirm_email_html_contains_links():
     assert "https://svc/api/confirm?token=abc" in html
     assert "https://svc/api/unsubscribe?token=xyz" in html
     assert "Alice" in html
+    assert "Confirm my email" in html  # full body survived the good-news prepend
+
+
+def test_confirm_email_html_shows_matches_only_when_present():
+    without = emailer.confirm_email_html("Al", "c", "u", "m", matches_exist=False)
+    with_matches = emailer.confirm_email_html("Al", "c", "u", "m", matches_exist=True)
+
+    assert "Good news" not in without
+    assert "Good news" in with_matches

@@ -865,12 +865,11 @@
                       <span>Party size</span>
                       <input type="number" id="tft-alert-party" name="party_size" min="1" max="20" value="2" required />
                     </label>
-                    <label class="tft-field tft-field--full">
-                      <span>Venue</span>
-                      <select id="tft-alert-venue" name="venue">
-                        <option value="any">Any venue</option>
-                      </select>
-                    </label>
+                    <fieldset class="tft-field tft-field--full tft-field--venues">
+                      <span>Venues</span>
+                      <label class="tft-venue-any"><input type="checkbox" id="tft-alert-any" checked /> Any venue</label>
+                      <div class="tft-venue-list" id="tft-alert-venue-list"></div>
+                    </fieldset>
                     <fieldset class="tft-field tft-field--full tft-field--sessions">
                       <span>Session</span>
                       <div class="tft-checks">
@@ -886,6 +885,15 @@
                       <span>To</span>
                       <input type="date" id="tft-alert-to" name="date_end" required />
                     </label>
+                    <fieldset class="tft-field tft-field--full tft-field--dates">
+                      <span>Specific dates <em>(optional)</em></span>
+                      <div class="tft-date-adder">
+                        <input type="date" id="tft-alert-date-pick" />
+                        <button type="button" class="tft-date-add" id="tft-alert-date-add">Add date</button>
+                      </div>
+                      <div class="tft-date-chips" id="tft-alert-date-chips"></div>
+                      <p class="tft-date-hint">Leave empty to get alerts for any date in your range above.</p>
+                    </fieldset>
                     <input type="text" id="tft-alert-website" name="website" class="tft-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
                   </div>
                   <button type="submit" class="tft-alert-submit" id="tft-alert-submit">Email me when a table opens</button>

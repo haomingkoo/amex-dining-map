@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -137,6 +138,61 @@ def test_update_preferences(conn):
     record = db.get_by_unsubscribe_token(conn, token)
     assert record["party_size"] == 4
     assert record["sessions"] == ["Lunch"]
+
+
+def test_init_db_migrates_missing_dates_column(tmp_path: Path):
+    path = tmp_path / "old.db"
+    conn = db.connect(path)
+    conn.executescript(
+        """
+        CREATE TABLE subscribers (
+          id INTEGER PRIMARY KEY, email TEXT NOT NULL, name TEXT,
+          party_size INTEGER NOT NULL, sessions TEXT NOT NULL, venues TEXT NOT NULL,
+          date_start TEXT NOT NULL, date_end TEXT NOT NULL,
+          status TEXT NOT NULL DEFAULT 'pending', confirm_token TEXT,
+          confirm_token_expires_ts TEXT, unsubscribe_token TEXT NOT NULL,
+          source_ip TEXT, created_ts TEXT NOT NULL, confirmed_ts TEXT,
+          unsubscribed_ts TEXT
+        );
+        """
+    )
+    conn.execute(
+        "INSERT INTO subscribers (email, party_size, sessions, venues, date_start, "
+        "date_end, unsubscribe_token, created_ts) VALUES "
+        "('x@e.com', 2, '[\"Dinner\"]', '[\"any\"]', '2026-07-01', '2026-07-10', "
+        "'tok', '2026-06-24T00:00:00+00:00')"
+    )
+    conn.commit()
+    conn.close()
+
+    db.init_db(path)  # must add the missing 'dates' column without losing data
+
+    conn = db.connect(path)
+    columns = {
+        row["name"]
+        for row in conn.execute("PRAGMA table_info(subscribers)").fetchall()
+    }
+    assert "dates" in columns
+    row = conn.execute("SELECT dates FROM subscribers").fetchone()
+    assert json.loads(row["dates"]) == []
+    conn.close()
+
+
+def test_specific_dates_round_trip(conn):
+    sub = SubscriberInput(
+        email="d@example.com",
+        name="Dee",
+        party_size=2,
+        sessions=["Dinner"],
+        venues=["any"],
+        date_start="2026-07-04",
+        date_end="2026-07-18",
+        dates=["2026-07-04", "2026-07-18"],
+    )
+    token = db.upsert_pending(conn, sub, ip="1.2.3.4")
+    db.confirm(conn, token)
+
+    assert db.active_subscribers(conn)[0]["dates"] == ["2026-07-04", "2026-07-18"]
 
 
 def test_event_count_window(conn):

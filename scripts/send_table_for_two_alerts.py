@@ -653,6 +653,7 @@ def fetch_api_subscriptions(
             "party size": str(record.get("party_size") or 2),
             "date start": record.get("date_start", ""),
             "date end": record.get("date_end", ""),
+            "dates": ",".join(record.get("dates") or []),
             "sessions": ",".join(record.get("sessions") or []),
             "venues": ",".join(record.get("venues") or []),
             "unsubscribe url": record.get("unsubscribe_url", ""),
