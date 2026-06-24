@@ -12,6 +12,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import ValidationError
 
 from app import db
+from app.availability import open_tables_exist
 from app.config import Settings, load_settings
 from app.emailer import confirm_email_html, send_email
 from app.schemas import VENUES_PATH, SubscribeRequest
@@ -83,10 +84,15 @@ def subscribe(
     confirm_url = f"{settings.public_base_url}/api/confirm?token={confirm_token}"
     unsub_url = f"{settings.public_base_url}/api/unsubscribe?token={unsub_token}"
     manage_url = f"{settings.public_base_url}/api/manage?token={unsub_token}"
+    matches_exist = open_tables_exist(
+        sub_input.venues, sub_input.sessions, settings.table_data_url
+    )
     send_email(
         sub_input.email,
         "Confirm your Table for Two reminders",
-        confirm_email_html(sub_input.name, confirm_url, unsub_url, manage_url),
+        confirm_email_html(
+            sub_input.name, confirm_url, unsub_url, manage_url, matches_exist
+        ),
         api_key=settings.resend_api_key,
         sender=settings.resend_from,
         list_unsubscribe_url=unsub_url,

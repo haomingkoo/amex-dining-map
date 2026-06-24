@@ -16,6 +16,7 @@ class Settings:
     allowed_origin: str
     public_base_url: str
     confirm_token_expiry_hours: int
+    table_data_url: str
 
 
 def load_settings() -> Settings:
@@ -29,4 +30,8 @@ def load_settings() -> Settings:
         ).strip(),
         public_base_url=os.getenv("PUBLIC_BASE_URL", "http://localhost:8000").rstrip("/"),
         confirm_token_expiry_hours=int(os.getenv("CONFIRM_TOKEN_EXPIRY_HOURS", "168")),
+        table_data_url=os.getenv(
+            "TABLE_DATA_URL",
+            "https://amex-explorer.kooexperience.com/data/table-for-two.json",
+        ).strip(),
     )
