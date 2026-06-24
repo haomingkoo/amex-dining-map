@@ -260,3 +260,43 @@ Large binary/cache files are gitignored. Committed:
 - `data/japan-restaurants.geojson`
 - `data/restaurant-quality-signals.json`
 - `data/tabelog-url-cache.json`  ← commit this, it's the Claude-searched URL index
+
+---
+
+## Table for Two Reminders Service (`reminders/`)
+
+Self-hosted signup for Table for Two availability alerts. Replaced the old
+Google Form + Google Sheet + Gmail SMTP flow (all removed).
+
+**Service:** `reminders/` — FastAPI + SQLite on Railway (project `amex-reminders`,
+URL `https://amex-reminders-production.up.railway.app`, SQLite on a `/data` volume).
+Email via the Resend HTTP API (no SDK), sending from `dinnertime@kooexperience.com`
+(the `kooexperience.com` domain is already verified in the shared Resend account,
+reused from `trader-koo`).
+
+```
+Native form on the site (web/, #/table-for-two)
+   POST /api/subscribe  → store 'pending', send double opt-in confirm email
+   GET  /api/confirm     → activate
+   GET  /api/manage?token=  → token-only self-service page (view/edit/unsubscribe, no login)
+   GET  /api/unsubscribe?token= → one-click off
+   GET  /api/subscribers → Bearer ALERT_EXPORT_TOKEN export for the alert job
+        │
+        ▼
+scripts/send_table_for_two_alerts.py  (GitHub Action, runs from main)
+   fetches active subscribers from /api/subscribers, sends matches/expired via Resend
+```
+
+Security: double opt-in; per-IP rate limit + honeypot on subscribe; CORS locked to
+the site origin; manage/unsubscribe authed by a per-subscriber 256-bit token
+delivered only to the subscriber's inbox (no email-lookup, no passwords).
+
+**Deploy the service:** `cd reminders && railway up -c` (linked to the `amex-reminders`
+project). Local dev/tests use a Python 3.11–3.13 venv (`reminders/.venv`); Railway
+pins 3.12. Run `reminders/.venv/bin/python -m pytest reminders/tests`.
+
+**Secrets** (Railway service + GitHub Actions): `RESEND_API_KEY`, `RESEND_FROM`,
+`ALERT_EXPORT_TOKEN`, `REMINDERS_API_BASE`, plus service-only `DB_PATH`,
+`ALLOWED_ORIGIN`, `PUBLIC_BASE_URL`, `CONFIRM_TOKEN_EXPIRY_HOURS`, and the existing
+`ALERT_HASH_SALT`. The `Table for Two Alerts` workflow runs from `main`, so the
+alert job only picks up rewires after a merge.
