@@ -168,6 +168,12 @@ _MANAGE_TEMPLATE = """<!doctype html>
  .status{font-size:13px;color:#4db8a6;margin:0}
  .status.err{color:#ff8585}
  .unsub{display:inline-block;margin-top:18px;color:#8a94a6;font-size:13px}
+ .vany{flex-direction:row;align-items:center;gap:6px;font-size:14px;color:#e8edf5;font-weight:500}
+ .vany input{width:auto;accent-color:#4db8a6}
+ .venuelist{display:grid;gap:6px;max-height:140px;overflow-y:auto;padding:8px 10px;margin-top:6px;
+   border:1px solid rgba(255,255,255,.12);border-radius:10px;background:#070d16}
+ .venuelist label{flex-direction:row;align-items:center;gap:8px;font-size:13px;color:#e8edf5;font-weight:500}
+ .venuelist input{width:auto;accent-color:#4db8a6}
 </style></head><body><div class="card">
 <h1>Your Table for Two reminders</h1>
 <p class="sub">__EMAIL__</p>
@@ -175,7 +181,10 @@ __STATUS_NOTE__
 <form id="mform">
  <label>Name<input id="m_name" type="text" value="__NAME__" placeholder="Your name"></label>
  <label>Party size<input id="m_party" type="number" min="1" max="20" value="__PARTY__"></label>
- <label>Venue<select id="m_venue">__VENUE_OPTIONS__</select></label>
+ <fieldset><legend>Venues</legend>
+   <label class="vany"><input type="checkbox" id="m_any" __ANY_CHECKED__> Any venue</label>
+   <div class="venuelist" id="m_venue_list">__VENUE_CHECKBOXES__</div>
+ </fieldset>
  <fieldset><legend>Session</legend><div class="checks">
    <label><input type="checkbox" name="session" value="Lunch" __LUNCH__> Lunch</label>
    <label><input type="checkbox" name="session" value="Dinner" __DINNER__> Dinner</label>
@@ -187,12 +196,16 @@ __STATUS_NOTE__
 </form>
 <a class="unsub" href="__BASE__/api/unsubscribe?token=__TOKEN__">Unsubscribe from all reminders</a>
 <script>
+var mList=document.getElementById('m_venue_list'), mAny=document.getElementById('m_any');
+if(mList){mList.addEventListener('change',function(){if(mAny)mAny.checked=mList.querySelectorAll('.m_venue_cb:checked').length===0;});}
+if(mAny){mAny.addEventListener('change',function(){if(mAny.checked){Array.prototype.slice.call(mList.querySelectorAll('.m_venue_cb:checked')).forEach(function(c){c.checked=false;});}});}
 document.getElementById('mform').addEventListener('submit', async function(e){
  e.preventDefault();
  var sessions = Array.prototype.slice.call(document.querySelectorAll('input[name=session]:checked')).map(function(x){return x.value;});
+ var venues = Array.prototype.slice.call(document.querySelectorAll('.m_venue_cb:checked')).map(function(x){return x.value;});
  var body = {name:(document.getElementById('m_name').value||'').trim()||null,
    party_size:Number(document.getElementById('m_party').value||2),sessions:sessions,
-   venues:[document.getElementById('m_venue').value],
+   venues:venues.length?venues:['any'],
    date_start:document.getElementById('m_start').value,date_end:document.getElementById('m_end').value};
  var s=document.getElementById('status'); s.textContent='Saving…'; s.className='status';
  try{
@@ -206,13 +219,15 @@ document.getElementById('mform').addEventListener('submit', async function(e){
 
 
 def _manage_page(record: dict, token: str, base: str, venue_names: list[str]) -> str:
-    selected_venue = record["venues"][0] if record["venues"] else "any"
-    options = [
-        f'<option value="any"{" selected" if selected_venue == "any" else ""}>Any venue</option>'
-    ]
+    selected = set(record["venues"])
+    any_selected = "any" in selected or not selected
+    checkboxes = []
     for name in venue_names:
-        chosen = " selected" if name == selected_venue else ""
-        options.append(f'<option value="{html_escape(name)}"{chosen}>{html_escape(name)}</option>')
+        checked = " checked" if name in selected else ""
+        checkboxes.append(
+            f'<label><input type="checkbox" class="m_venue_cb" '
+            f'value="{html_escape(name)}"{checked}> {html_escape(name)}</label>'
+        )
     note = ""
     if record["status"] == "pending":
         note = (
@@ -223,7 +238,8 @@ def _manage_page(record: dict, token: str, base: str, venue_names: list[str]) ->
         "__EMAIL__": html_escape(record["email"]),
         "__NAME__": html_escape(record["name"] or ""),
         "__PARTY__": str(record["party_size"]),
-        "__VENUE_OPTIONS__": "".join(options),
+        "__VENUE_CHECKBOXES__": "".join(checkboxes),
+        "__ANY_CHECKED__": "checked" if any_selected else "",
         "__LUNCH__": "checked" if "Lunch" in record["sessions"] else "",
         "__DINNER__": "checked" if "Dinner" in record["sessions"] else "",
         "__START__": html_escape(record["date_start"]),

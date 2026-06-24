@@ -4179,13 +4179,34 @@ function renderTableForTwoAlertSignup() {
   if (!tableForTwoAlertSignupPanel || !form) return;
   tableForTwoAlertSignupPanel.hidden = false;
 
-  const venueSelect = document.getElementById("tft-alert-venue");
-  if (venueSelect && venueSelect.options.length <= 1) {
+  const venueList = document.getElementById("tft-alert-venue-list");
+  const anyToggle = document.getElementById("tft-alert-any");
+  if (venueList && venueList.children.length === 0) {
     for (const name of tableForTwoAlertVenueNames()) {
-      const option = document.createElement("option");
-      option.value = name;
-      option.textContent = name;
-      venueSelect.appendChild(option);
+      const label = document.createElement("label");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.value = name;
+      checkbox.className = "tft-venue-cb";
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(" " + name));
+      venueList.appendChild(label);
+    }
+    venueList.addEventListener("change", () => {
+      const anyChecked =
+        venueList.querySelectorAll(".tft-venue-cb:checked").length > 0;
+      if (anyToggle) anyToggle.checked = !anyChecked;
+    });
+    if (anyToggle) {
+      anyToggle.addEventListener("change", () => {
+        if (anyToggle.checked) {
+          venueList
+            .querySelectorAll(".tft-venue-cb:checked")
+            .forEach((checkbox) => {
+              checkbox.checked = false;
+            });
+        }
+      });
     }
   }
 
@@ -4237,12 +4258,15 @@ async function submitTableForTwoAlert(event) {
     return;
   }
 
+  const checkedVenues = Array.from(
+    form.querySelectorAll(".tft-venue-cb:checked"),
+  ).map((input) => input.value);
   const payload = {
     email: form.querySelector("#tft-alert-email").value.trim(),
     name: form.querySelector("#tft-alert-name").value.trim() || null,
     party_size: Number(form.querySelector("#tft-alert-party").value || 2),
     sessions,
-    venues: [form.querySelector("#tft-alert-venue").value],
+    venues: checkedVenues.length ? checkedVenues : ["any"],
     date_start: form.querySelector("#tft-alert-from").value,
     date_end: form.querySelector("#tft-alert-to").value,
     website: form.querySelector("#tft-alert-website").value,
