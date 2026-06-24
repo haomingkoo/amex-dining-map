@@ -49,7 +49,14 @@ def send_email(
         raise RuntimeError(f"Resend connect failed: {exc.reason}") from exc
 
 
-def _shell(title: str, body_html: str, unsubscribe_url: str) -> str:
+def _shell(
+    title: str, body_html: str, unsubscribe_url: str, manage_url: str | None = None
+) -> str:
+    manage_link = (
+        f'<a href="{manage_url}" style="color:#8a94a6">Manage your reminders</a> · '
+        if manage_url
+        else ""
+    )
     return f"""\
 <div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
             max-width:480px;margin:0 auto;padding:24px;color:#1a2332">
@@ -57,13 +64,18 @@ def _shell(title: str, body_html: str, unsubscribe_url: str) -> str:
   {body_html}
   <hr style="border:none;border-top:1px solid #e5e9f0;margin:24px 0 12px">
   <p style="font-size:12px;color:#8a94a6;margin:0">
-    Table for Two reminders · Unofficial Platinum Experience.
-    <a href="{unsubscribe_url}" style="color:#8a94a6">Unsubscribe</a>.
+    Table for Two reminders · Unofficial Platinum Experience.<br>
+    {manage_link}<a href="{unsubscribe_url}" style="color:#8a94a6">Unsubscribe</a>.
   </p>
 </div>"""
 
 
-def confirm_email_html(name: str | None, confirm_url: str, unsubscribe_url: str) -> str:
+def confirm_email_html(
+    name: str | None,
+    confirm_url: str,
+    unsubscribe_url: str,
+    manage_url: str | None = None,
+) -> str:
     greeting = f"Hi {name}," if name else "Hi,"
     body = f"""\
   <p style="font-size:15px;line-height:1.5;margin:0 0 16px">{greeting} please confirm
@@ -75,4 +87,4 @@ def confirm_email_html(name: str | None, confirm_url: str, unsubscribe_url: str)
   </p>
   <p style="font-size:13px;color:#8a94a6;margin:0">If you didn't request this, ignore
      this email — nothing will be sent.</p>"""
-    return _shell("Confirm your Table for Two reminders", body, unsubscribe_url)
+    return _shell("Confirm your Table for Two reminders", body, unsubscribe_url, manage_url)

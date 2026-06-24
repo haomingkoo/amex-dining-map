@@ -197,6 +197,53 @@ def active_subscribers(conn: sqlite3.Connection) -> list[dict]:
     ]
 
 
+def get_by_unsubscribe_token(conn: sqlite3.Connection, token: str) -> dict | None:
+    """Look up a subscriber by their secret unsubscribe/manage token."""
+    if not token:
+        return None
+    row = conn.execute(
+        """
+        SELECT email, name, party_size, sessions, venues, date_start, date_end, status
+        FROM subscribers WHERE unsubscribe_token = ?
+        """,
+        (token,),
+    ).fetchone()
+    if not row:
+        return None
+    return {
+        "email": row["email"],
+        "name": row["name"],
+        "party_size": row["party_size"],
+        "sessions": json.loads(row["sessions"]),
+        "venues": json.loads(row["venues"]),
+        "date_start": row["date_start"],
+        "date_end": row["date_end"],
+        "status": row["status"],
+    }
+
+
+def update_preferences(
+    conn: sqlite3.Connection, token: str, sub: SubscriberInput
+) -> bool:
+    """Update an active/pending subscriber's preferences in place (email unchanged)."""
+    if not token:
+        return False
+    cur = conn.execute(
+        """
+        UPDATE subscribers
+        SET name = ?, party_size = ?, sessions = ?, venues = ?,
+            date_start = ?, date_end = ?
+        WHERE unsubscribe_token = ? AND status != 'unsubscribed'
+        """,
+        (
+            sub.name, sub.party_size, json.dumps(sub.sessions), json.dumps(sub.venues),
+            sub.date_start, sub.date_end, token,
+        ),
+    )
+    conn.commit()
+    return cur.rowcount > 0
+
+
 def log_event(conn: sqlite3.Connection, ip: str, event_type: str) -> None:
     conn.execute(
         "INSERT INTO subscribe_events (source_ip, event_type, created_ts) "

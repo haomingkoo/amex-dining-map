@@ -117,6 +117,38 @@ def test_export_requires_valid_token(client):
     )
 
 
+def test_manage_page_shows_subscription_and_updates(client):
+    client.post("/api/subscribe", json=_body())
+    token = _token(client.db_path, "unsubscribe_token")
+
+    page = client.get(f"/api/manage?token={token}")
+    assert page.status_code == 200
+    assert "guest@example.com" in page.text
+
+    updated = client.post(
+        f"/api/manage?token={token}",
+        json={
+            "name": "Alice",
+            "party_size": 4,
+            "sessions": ["Lunch"],
+            "venues": ["any"],
+            "date_start": (date.today() + timedelta(days=5)).isoformat(),
+            "date_end": (date.today() + timedelta(days=15)).isoformat(),
+        },
+    )
+    assert updated.status_code == 200
+
+    conn = db.connect(client.db_path)
+    row = conn.execute("SELECT party_size, sessions FROM subscribers").fetchone()
+    conn.close()
+    assert row["party_size"] == 4
+
+
+def test_manage_invalid_token_rejected(client):
+    assert client.get("/api/manage?token=nope").status_code == 400
+    assert client.post("/api/manage?token=nope", json={}).status_code == 400
+
+
 def test_unsubscribe_removes_from_export(client):
     client.post("/api/subscribe", json=_body())
     confirm_token = _token(client.db_path, "confirm_token")

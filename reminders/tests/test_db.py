@@ -103,6 +103,42 @@ def test_active_subscribers_export_shape(conn):
     assert "unsubscribe_token" in record
 
 
+def test_get_by_unsubscribe_token(conn):
+    db.upsert_pending(conn, _sub(), ip="1.2.3.4")
+    token = conn.execute(
+        "SELECT unsubscribe_token FROM subscribers"
+    ).fetchone()["unsubscribe_token"]
+
+    record = db.get_by_unsubscribe_token(conn, token)
+
+    assert record is not None
+    assert record["email"] == "a@example.com"
+    assert record["status"] == "pending"
+    assert db.get_by_unsubscribe_token(conn, "nope") is None
+
+
+def test_update_preferences(conn):
+    db.upsert_pending(conn, _sub(), ip="1.2.3.4")
+    token = conn.execute(
+        "SELECT unsubscribe_token FROM subscribers"
+    ).fetchone()["unsubscribe_token"]
+
+    changed = SubscriberInput(
+        email="a@example.com",
+        name="Alice",
+        party_size=4,
+        sessions=["Lunch"],
+        venues=["any"],
+        date_start="2026-08-01",
+        date_end="2026-08-10",
+    )
+    assert db.update_preferences(conn, token, changed) is True
+
+    record = db.get_by_unsubscribe_token(conn, token)
+    assert record["party_size"] == 4
+    assert record["sessions"] == ["Lunch"]
+
+
 def test_event_count_window(conn):
     db.log_event(conn, "9.9.9.9", "subscribe_attempt")
     db.log_event(conn, "9.9.9.9", "subscribe_attempt")
