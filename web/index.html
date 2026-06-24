@@ -846,12 +846,51 @@
                 </div>
               </div>
 
-              <div class="tft-alert-panel" id="tft-alert-signup-panel" hidden>
-                <div>
-                  <h3>Booking alerts</h3>
-                  <p>Get an email when cached Table for Two slots match your dates, session, venue, and party size.</p>
+              <div class="tft-alert-panel" id="tft-alert-signup-panel">
+                <div class="tft-alert-intro">
+                  <h3>Get a booking alert</h3>
+                  <p>We'll email you the moment a Table for Two slot matches your dates — only when there's real availability.</p>
                 </div>
-                <a class="inline-link primary-action compact" id="tft-alert-signup-link" href="#" target="_blank" rel="noopener">Create alert</a>
+                <form class="tft-alert-form" id="tft-alert-form" novalidate>
+                  <div class="tft-alert-form__grid">
+                    <label class="tft-field tft-field--full">
+                      <span>Email</span>
+                      <input type="email" id="tft-alert-email" name="email" required autocomplete="email" placeholder="you@example.com" />
+                    </label>
+                    <label class="tft-field">
+                      <span>Name <em>(optional)</em></span>
+                      <input type="text" id="tft-alert-name" name="name" autocomplete="name" placeholder="Your name" />
+                    </label>
+                    <label class="tft-field">
+                      <span>Party size</span>
+                      <input type="number" id="tft-alert-party" name="party_size" min="1" max="20" value="2" required />
+                    </label>
+                    <label class="tft-field tft-field--full">
+                      <span>Venue</span>
+                      <select id="tft-alert-venue" name="venue">
+                        <option value="any">Any venue</option>
+                      </select>
+                    </label>
+                    <fieldset class="tft-field tft-field--full tft-field--sessions">
+                      <span>Session</span>
+                      <div class="tft-checks">
+                        <label><input type="checkbox" name="session" value="Lunch" checked /> Lunch</label>
+                        <label><input type="checkbox" name="session" value="Dinner" checked /> Dinner</label>
+                      </div>
+                    </fieldset>
+                    <label class="tft-field">
+                      <span>From</span>
+                      <input type="date" id="tft-alert-from" name="date_start" required />
+                    </label>
+                    <label class="tft-field">
+                      <span>To</span>
+                      <input type="date" id="tft-alert-to" name="date_end" required />
+                    </label>
+                    <input type="text" id="tft-alert-website" name="website" class="tft-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+                  </div>
+                  <button type="submit" class="tft-alert-submit" id="tft-alert-submit">Email me when a table opens</button>
+                  <p class="tft-alert-status" id="tft-alert-status" role="status" aria-live="polite" hidden></p>
+                </form>
               </div>
 
               <div class="mobile-results-list tft-results-list" id="tft-results-list"></div>

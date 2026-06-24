@@ -857,7 +857,8 @@ const tableForTwoResultsList = document.getElementById("tft-results-list");
 const tableForTwoResultsText = document.getElementById("tft-results-text");
 const tableForTwoFocusCard = document.getElementById("tft-focus-card");
 const tableForTwoAlertSignupPanel = document.getElementById("tft-alert-signup-panel");
-const tableForTwoAlertSignupLink = document.getElementById("tft-alert-signup-link");
+// Reminders signup service (Railway). Updated to the live URL at deploy time.
+const REMINDERS_API_BASE = "https://amex-reminders.up.railway.app";
 
 function updateThemeToggle(theme) {
   if (!themeToggleButton) return;
@@ -4158,12 +4159,122 @@ function refreshTableForTwoDateOptions() {
   tableForTwoDateFilter.value = current;
 }
 
+let tableForTwoAlertWired = false;
+
+function tableForTwoAlertVenueNames() {
+  return (tableForTwoPayload().venues || [])
+    .map((venue) => venue && venue.name)
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
+}
+
+function isoLocalDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+    date.getDate(),
+  ).padStart(2, "0")}`;
+}
+
 function renderTableForTwoAlertSignup() {
-  if (!tableForTwoAlertSignupPanel || !tableForTwoAlertSignupLink) return;
-  const signupUrl = tableForTwoPayload().alert_signup_url || "";
-  tableForTwoAlertSignupPanel.hidden = !signupUrl;
-  if (signupUrl) {
-    tableForTwoAlertSignupLink.href = signupUrl;
+  const form = document.getElementById("tft-alert-form");
+  if (!tableForTwoAlertSignupPanel || !form) return;
+  tableForTwoAlertSignupPanel.hidden = false;
+
+  const venueSelect = document.getElementById("tft-alert-venue");
+  if (venueSelect && venueSelect.options.length <= 1) {
+    for (const name of tableForTwoAlertVenueNames()) {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      venueSelect.appendChild(option);
+    }
+  }
+
+  const fromInput = document.getElementById("tft-alert-from");
+  const toInput = document.getElementById("tft-alert-to");
+  const today = new Date();
+  const inThirtyDays = new Date(today.getTime() + 30 * 86400000);
+  if (fromInput && !fromInput.value) {
+    fromInput.min = isoLocalDate(today);
+    fromInput.value = isoLocalDate(today);
+  }
+  if (toInput && !toInput.value) {
+    toInput.min = isoLocalDate(today);
+    toInput.value = isoLocalDate(inThirtyDays);
+  }
+
+  if (!tableForTwoAlertWired) {
+    tableForTwoAlertWired = true;
+    form.addEventListener("submit", submitTableForTwoAlert);
+  }
+}
+
+function showTableForTwoAlertStatus(message, isError) {
+  const status = document.getElementById("tft-alert-status");
+  if (!status) return;
+  status.textContent = message;
+  status.hidden = false;
+  status.classList.toggle("is-error", Boolean(isError));
+}
+
+function tableForTwoAlertErrorMessage(data) {
+  if (!data) return "";
+  if (typeof data.detail === "string") return data.detail;
+  if (Array.isArray(data.detail) && data.detail[0] && data.detail[0].msg) {
+    return data.detail[0].msg;
+  }
+  return "";
+}
+
+async function submitTableForTwoAlert(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const submit = document.getElementById("tft-alert-submit");
+  const sessions = Array.from(
+    form.querySelectorAll('input[name="session"]:checked'),
+  ).map((input) => input.value);
+  if (!sessions.length) {
+    showTableForTwoAlertStatus("Pick at least one session (lunch or dinner).", true);
+    return;
+  }
+
+  const payload = {
+    email: form.querySelector("#tft-alert-email").value.trim(),
+    name: form.querySelector("#tft-alert-name").value.trim() || null,
+    party_size: Number(form.querySelector("#tft-alert-party").value || 2),
+    sessions,
+    venues: [form.querySelector("#tft-alert-venue").value],
+    date_start: form.querySelector("#tft-alert-from").value,
+    date_end: form.querySelector("#tft-alert-to").value,
+    website: form.querySelector("#tft-alert-website").value,
+  };
+
+  submit.disabled = true;
+  showTableForTwoAlertStatus("Sending…", false);
+  try {
+    const response = await fetch(`${REMINDERS_API_BASE}/api/subscribe`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) {
+      showTableForTwoAlertStatus(
+        data.message || "Check your email to confirm your reminder.",
+        false,
+      );
+    } else if (response.status === 429) {
+      showTableForTwoAlertStatus("Too many attempts — please try again later.", true);
+    } else {
+      showTableForTwoAlertStatus(
+        tableForTwoAlertErrorMessage(data) ||
+          "Something went wrong. Check your details and try again.",
+        true,
+      );
+    }
+  } catch (error) {
+    showTableForTwoAlertStatus("Couldn't reach the server. Try again in a moment.", true);
+  } finally {
+    submit.disabled = false;
   }
 }
 
