@@ -5,7 +5,9 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app import db
 from app.config import load_settings
+from app.routes import router
 
 settings = load_settings()
 
@@ -16,6 +18,9 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
+
+db.init_db(settings.db_path)
+app.include_router(router)
 
 
 @app.get("/healthz")
