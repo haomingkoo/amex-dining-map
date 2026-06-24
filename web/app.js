@@ -857,8 +857,8 @@ const tableForTwoResultsList = document.getElementById("tft-results-list");
 const tableForTwoResultsText = document.getElementById("tft-results-text");
 const tableForTwoFocusCard = document.getElementById("tft-focus-card");
 const tableForTwoAlertSignupPanel = document.getElementById("tft-alert-signup-panel");
-// Reminders signup service (Railway). Updated to the live URL at deploy time.
-const REMINDERS_API_BASE = "https://amex-reminders.up.railway.app";
+// Reminders signup service (Railway).
+const REMINDERS_API_BASE = "https://amex-reminders-production.up.railway.app";
 
 function updateThemeToggle(theme) {
   if (!themeToggleButton) return;
