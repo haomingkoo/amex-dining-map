@@ -174,6 +174,15 @@ _MANAGE_TEMPLATE = """<!doctype html>
    border:1px solid rgba(255,255,255,.12);border-radius:10px;background:#070d16}
  .venuelist label{flex-direction:row;align-items:center;gap:8px;font-size:13px;color:#e8edf5;font-weight:500}
  .venuelist input{width:auto;accent-color:#4db8a6}
+ .dateadder{display:flex;gap:8px}
+ .dateadder input{flex:1;min-width:0}
+ .dateadder button{flex:none;padding:0 14px;font-size:13px}
+ .datechips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+ .datechips:empty{display:none}
+ .datechip{display:inline-flex;align-items:center;gap:4px;padding:4px 4px 4px 9px;font-size:12px;
+   color:#e8edf5;background:rgba(15,27,43,.7);border:1px solid rgba(255,255,255,.12);border-radius:999px}
+ .datechip button{border:none;background:none;color:#8a94a6;font-size:15px;line-height:1;cursor:pointer;padding:0 4px}
+ .hint{margin:6px 0 0;font-size:11px;color:#8a94a6}
 </style></head><body><div class="card">
 <h1>Your Table for Two reminders</h1>
 <p class="sub">__EMAIL__</p>
@@ -191,6 +200,11 @@ __STATUS_NOTE__
  </div></fieldset>
  <label>From<input id="m_start" type="date" value="__START__" min="__TODAY__"></label>
  <label>To<input id="m_end" type="date" value="__END__" min="__TODAY__"></label>
+ <fieldset><legend>Specific dates (optional)</legend>
+   <div class="dateadder"><input type="date" id="m_date_pick"><button type="button" id="m_date_add">Add</button></div>
+   <div class="datechips" id="m_date_chips">__DATE_CHIPS__</div>
+   <p class="hint">Leave empty for any date in the range above.</p>
+ </fieldset>
  <button type="submit">Save changes</button>
  <p id="status" class="status"></p>
 </form>
@@ -199,13 +213,23 @@ __STATUS_NOTE__
 var mList=document.getElementById('m_venue_list'), mAny=document.getElementById('m_any');
 if(mList){mList.addEventListener('change',function(){if(mAny)mAny.checked=mList.querySelectorAll('.m_venue_cb:checked').length===0;});}
 if(mAny){mAny.addEventListener('change',function(){if(mAny.checked){Array.prototype.slice.call(mList.querySelectorAll('.m_venue_cb:checked')).forEach(function(c){c.checked=false;});}});}
+var dPick=document.getElementById('m_date_pick'), dAdd=document.getElementById('m_date_add'), dChips=document.getElementById('m_date_chips');
+if(dAdd){dAdd.addEventListener('click',function(){
+ var v=dPick.value; if(!v) return;
+ var have=Array.prototype.slice.call(dChips.querySelectorAll('.datechip')).map(function(c){return c.dataset.value;});
+ if(have.indexOf(v)>=0) return;
+ var c=document.createElement('span'); c.className='datechip'; c.dataset.value=v; c.textContent=v+' ';
+ var b=document.createElement('button'); b.type='button'; b.textContent='×'; b.addEventListener('click',function(){c.remove();});
+ c.appendChild(b); dChips.appendChild(c); dPick.value='';
+});}
 document.getElementById('mform').addEventListener('submit', async function(e){
  e.preventDefault();
  var sessions = Array.prototype.slice.call(document.querySelectorAll('input[name=session]:checked')).map(function(x){return x.value;});
  var venues = Array.prototype.slice.call(document.querySelectorAll('.m_venue_cb:checked')).map(function(x){return x.value;});
+ var dates = Array.prototype.slice.call(document.querySelectorAll('.datechip')).map(function(c){return c.dataset.value;});
  var body = {name:(document.getElementById('m_name').value||'').trim()||null,
    party_size:Number(document.getElementById('m_party').value||2),sessions:sessions,
-   venues:venues.length?venues:['any'],
+   venues:venues.length?venues:['any'],dates:dates,
    date_start:document.getElementById('m_start').value,date_end:document.getElementById('m_end').value};
  var s=document.getElementById('status'); s.textContent='Saving…'; s.className='status';
  try{
@@ -228,6 +252,11 @@ def _manage_page(record: dict, token: str, base: str, venue_names: list[str]) ->
             f'<label><input type="checkbox" class="m_venue_cb" '
             f'value="{html_escape(name)}"{checked}> {html_escape(name)}</label>'
         )
+    date_chips = "".join(
+        f'<span class="datechip" data-value="{html_escape(value)}">{html_escape(value)} '
+        f'<button type="button" onclick="this.parentNode.remove()">×</button></span>'
+        for value in record.get("dates", [])
+    )
     note = ""
     if record["status"] == "pending":
         note = (
@@ -240,6 +269,7 @@ def _manage_page(record: dict, token: str, base: str, venue_names: list[str]) ->
         "__PARTY__": str(record["party_size"]),
         "__VENUE_CHECKBOXES__": "".join(checkboxes),
         "__ANY_CHECKED__": "checked" if any_selected else "",
+        "__DATE_CHIPS__": date_chips,
         "__LUNCH__": "checked" if "Lunch" in record["sessions"] else "",
         "__DINNER__": "checked" if "Dinner" in record["sessions"] else "",
         "__START__": html_escape(record["date_start"]),

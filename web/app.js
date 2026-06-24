@@ -4223,6 +4223,40 @@ function renderTableForTwoAlertSignup() {
     toInput.value = isoLocalDate(inThirtyDays);
   }
 
+  const dateAdd = document.getElementById("tft-alert-date-add");
+  const datePick = document.getElementById("tft-alert-date-pick");
+  const dateChips = document.getElementById("tft-alert-date-chips");
+  if (dateAdd && !dateAdd.dataset.wired) {
+    dateAdd.dataset.wired = "1";
+    const syncBounds = () => {
+      if (datePick && fromInput) datePick.min = fromInput.value || "";
+      if (datePick && toInput) datePick.max = toInput.value || "";
+    };
+    if (fromInput) fromInput.addEventListener("change", syncBounds);
+    if (toInput) toInput.addEventListener("change", syncBounds);
+    syncBounds();
+    dateAdd.addEventListener("click", () => {
+      const value = datePick.value;
+      if (!value) return;
+      const existing = Array.from(dateChips.querySelectorAll(".tft-date-chip")).map(
+        (chip) => chip.dataset.value,
+      );
+      if (existing.includes(value)) return;
+      const chip = document.createElement("span");
+      chip.className = "tft-date-chip";
+      chip.dataset.value = value;
+      chip.textContent = value + " ";
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = "×";
+      remove.setAttribute("aria-label", "Remove " + value);
+      remove.addEventListener("click", () => chip.remove());
+      chip.appendChild(remove);
+      dateChips.appendChild(chip);
+      datePick.value = "";
+    });
+  }
+
   if (!tableForTwoAlertWired) {
     tableForTwoAlertWired = true;
     form.addEventListener("submit", submitTableForTwoAlert);
@@ -4261,12 +4295,16 @@ async function submitTableForTwoAlert(event) {
   const checkedVenues = Array.from(
     form.querySelectorAll(".tft-venue-cb:checked"),
   ).map((input) => input.value);
+  const specificDates = Array.from(
+    form.querySelectorAll(".tft-date-chip"),
+  ).map((chip) => chip.dataset.value);
   const payload = {
     email: form.querySelector("#tft-alert-email").value.trim(),
     name: form.querySelector("#tft-alert-name").value.trim() || null,
     party_size: Number(form.querySelector("#tft-alert-party").value || 2),
     sessions,
     venues: checkedVenues.length ? checkedVenues : ["any"],
+    dates: specificDates,
     date_start: form.querySelector("#tft-alert-from").value,
     date_end: form.querySelector("#tft-alert-to").value,
     website: form.querySelector("#tft-alert-website").value,
