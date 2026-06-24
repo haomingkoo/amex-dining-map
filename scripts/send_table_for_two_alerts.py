@@ -9,15 +9,11 @@ emails for newly matched slots, then store only salted sent-key hashes.
 from __future__ import annotations
 
 import argparse
-import csv
 import hashlib
 import html
-import io
 import json
 import os
 import re
-import smtplib
-import ssl
 import sys
 import time
 import urllib.error
@@ -246,16 +242,6 @@ def subscription_from_row(row: dict[str, Any], venue_aliases: dict[str, str], so
         ).strip(),
         source_label=source_label,
     )
-
-
-def load_csv_subscriptions(raw_csv: str, venue_aliases: dict[str, str], source_label: str) -> list[Subscription]:
-    reader = csv.DictReader(io.StringIO(raw_csv))
-    rows = list(reader)
-    return [
-        subscription
-        for index, row in enumerate(rows, start=1)
-        if (subscription := subscription_from_row(row, venue_aliases, f"{source_label} row {index}"))
-    ]
 
 
 def load_json_subscriptions(path: Path, venue_aliases: dict[str, str]) -> list[Subscription]:
@@ -658,52 +644,99 @@ def build_expired_email(
     return message
 
 
-def smtp_config_from_env() -> dict[str, Any]:
-    host = os.environ.get("SMTP_HOST", "").strip()
-    port = int(os.environ.get("SMTP_PORT") or "587")
-    user = os.environ.get("SMTP_USER", "").strip()
-    password = os.environ.get("SMTP_PASS", "")
-    sender = os.environ.get("SMTP_FROM", user).strip()
-    reply_to = os.environ.get("SMTP_REPLY_TO", "").strip()
-    unsubscribe_base_url = os.environ.get("ALERT_UNSUBSCRIBE_BASE_URL", "").strip()
-    one_click_unsubscribe = parse_enabled(os.environ.get("ALERT_ONE_CLICK_UNSUBSCRIBE") or "false")
+def resend_config_from_env() -> dict[str, Any]:
     return {
-        "host": host,
-        "port": port,
-        "user": user,
-        "password": password,
-        "sender": sender,
-        "reply_to": reply_to,
-        "unsubscribe_base_url": unsubscribe_base_url,
-        "one_click_unsubscribe": one_click_unsubscribe,
+        "api_key": os.environ.get("RESEND_API_KEY", "").strip(),
+        "sender": os.environ.get("RESEND_FROM", "dinnertime@kooexperience.com").strip(),
+        "reply_to": os.environ.get("ALERT_REPLY_TO", "").strip(),
+        "unsubscribe_base_url": os.environ.get("ALERT_UNSUBSCRIBE_BASE_URL", "").strip(),
+        "one_click_unsubscribe": parse_enabled(
+            os.environ.get("ALERT_ONE_CLICK_UNSUBSCRIBE") or "false"
+        ),
+        "timeout": int(os.environ.get("RESEND_TIMEOUT_SEC", "30")),
     }
+
+
+def _send_resend_message(message: EmailMessage, config: dict[str, Any]) -> None:
+    html_part = message.get_body(preferencelist=("html",))
+    html_body = html_part.get_content() if html_part else message.get_content()
+    payload: dict[str, Any] = {
+        "from": config["sender"],
+        "to": [message["To"]],
+        "subject": message["Subject"],
+        "html": html_body,
+    }
+    headers = {}
+    if message["List-Unsubscribe"]:
+        headers["List-Unsubscribe"] = message["List-Unsubscribe"]
+        if message["List-Unsubscribe-Post"]:
+            headers["List-Unsubscribe-Post"] = message["List-Unsubscribe-Post"]
+    if message["Reply-To"]:
+        payload["reply_to"] = message["Reply-To"]
+    if headers:
+        payload["headers"] = headers
+    request = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {config['api_key']}",
+            "Content-Type": "application/json",
+            "User-Agent": "amex-reminders/1.0",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=config["timeout"]) as response:
+            status = int(getattr(response, "status", 200))
+            body = response.read().decode("utf-8", errors="replace")
+        if status >= 300:
+            raise RuntimeError(f"Resend API failed status={status} body={body[:500]}")
+    except urllib.error.HTTPError as exc:
+        err_body = exc.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"Resend API HTTP {exc.code}: {err_body[:500]}") from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(f"Resend connect failed: {exc.reason}") from exc
 
 
 def send_messages(messages: list[EmailMessage], config: dict[str, Any]) -> None:
     if not messages:
         return
-    if not config["host"] or not config["sender"]:
-        raise RuntimeError("SMTP_HOST and SMTP_FROM or SMTP_USER are required when matches need emails")
-    if config["port"] == 465:
-        with smtplib.SMTP_SSL(config["host"], config["port"], context=ssl.create_default_context(), timeout=30) as server:
-            if config["user"]:
-                server.login(config["user"], config["password"])
-            for message in messages:
-                server.send_message(message)
-        return
-    with smtplib.SMTP(config["host"], config["port"], timeout=30) as server:
-        server.starttls(context=ssl.create_default_context())
-        if config["user"]:
-            server.login(config["user"], config["password"])
-        for message in messages:
-            server.send_message(message)
+    if not config["api_key"] or not config["sender"]:
+        raise RuntimeError("RESEND_API_KEY and RESEND_FROM are required when matches need emails")
+    for message in messages:
+        _send_resend_message(message, config)
+
+
+def fetch_api_subscriptions(
+    base_url: str, token: str, venue_aliases: dict[str, str]
+) -> list[Subscription]:
+    """Fetch active subscribers from the reminders service export endpoint."""
+    url = base_url.rstrip("/") + "/api/subscribers"
+    request = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
+    with urllib.request.urlopen(request, timeout=CSV_FETCH_TIMEOUT_SECONDS) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    records = payload.get("subscriptions", []) if isinstance(payload, dict) else []
+    subscriptions = []
+    for index, record in enumerate(records, start=1):
+        row = {
+            "email": record.get("email", ""),
+            "name": record.get("name") or "",
+            "party size": str(record.get("party_size") or 2),
+            "date start": record.get("date_start", ""),
+            "date end": record.get("date_end", ""),
+            "sessions": ",".join(record.get("sessions") or []),
+            "venues": ",".join(record.get("venues") or []),
+            "unsubscribe url": record.get("unsubscribe_url", ""),
+        }
+        if subscription := subscription_from_row(row, venue_aliases, f"api row {index}"):
+            subscriptions.append(subscription)
+    return subscriptions
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", default=DEFAULT_DATA_PATH)
     parser.add_argument("--subscriptions", default="data/table-for-two-alerts.json")
-    parser.add_argument("--subscriptions-csv-url", default=os.environ.get("TABLE_FOR_TWO_ALERTS_CSV_URL", ""))
     parser.add_argument("--sent-log", default=DEFAULT_SENT_LOG_PATH)
     parser.add_argument("--site-url", default=os.environ.get("ALERT_SITE_URL", DEFAULT_SITE_URL))
     parser.add_argument("--signup-url", default=os.environ.get("TABLE_FOR_TWO_ALERT_SIGNUP_URL", ""))
@@ -721,8 +754,10 @@ def main() -> int:
         if record.get("id")
     }
     subscriptions = load_json_subscriptions(Path(args.subscriptions), venue_aliases)
-    if args.subscriptions_csv_url:
-        subscriptions.extend(load_csv_subscriptions(fetch_text(args.subscriptions_csv_url), venue_aliases, "csv"))
+    api_base = os.environ.get("REMINDERS_API_BASE", "").strip()
+    export_token = os.environ.get("ALERT_EXPORT_TOKEN", "").strip()
+    if api_base and export_token:
+        subscriptions.extend(fetch_api_subscriptions(api_base, export_token, venue_aliases))
 
     if not subscriptions:
         print("No Table for Two alert subscriptions configured.")
@@ -735,7 +770,7 @@ def main() -> int:
     sent_log_path = Path(args.sent_log)
     sent_log = load_sent_log(sent_log_path)
     sent_keys: dict[str, str] = sent_log["sent_keys"]
-    smtp_config = smtp_config_from_env()
+    resend_config = resend_config_from_env()
     messages: list[EmailMessage] = []
     newly_sent_keys: list[str] = []
     pending_sent_keys: set[str] = set()
@@ -750,17 +785,17 @@ def main() -> int:
         expired_key = subscription_state_key(subscription, "expired", salt)
         if fulfilled_key in sent_keys or fulfilled_key in pending_sent_keys:
             continue
-        unsubscribe_url = unsubscribe_url_for(subscription, salt, smtp_config["unsubscribe_base_url"])
+        unsubscribe_url = unsubscribe_url_for(subscription, salt, resend_config["unsubscribe_base_url"])
         if matches:
             messages.append(
                 build_email(
                     subscription,
                     matches,
-                    sender=smtp_config["sender"] or "dinnertime@kooexperience.com",
+                    sender=resend_config["sender"] or "dinnertime@kooexperience.com",
                     site_url=args.site_url,
-                    reply_to=smtp_config["reply_to"],
+                    reply_to=resend_config["reply_to"],
                     unsubscribe_url=unsubscribe_url,
-                    one_click_unsubscribe=smtp_config["one_click_unsubscribe"],
+                    one_click_unsubscribe=resend_config["one_click_unsubscribe"],
                 )
             )
             newly_sent_keys.append(fulfilled_key)
@@ -775,12 +810,12 @@ def main() -> int:
             messages.append(
                 build_expired_email(
                     subscription,
-                    sender=smtp_config["sender"] or "dinnertime@kooexperience.com",
+                    sender=resend_config["sender"] or "dinnertime@kooexperience.com",
                     signup_url=args.signup_url or args.site_url,
                     venue_labels=venue_labels,
-                    reply_to=smtp_config["reply_to"],
+                    reply_to=resend_config["reply_to"],
                     unsubscribe_url=unsubscribe_url,
-                    one_click_unsubscribe=smtp_config["one_click_unsubscribe"],
+                    one_click_unsubscribe=resend_config["one_click_unsubscribe"],
                 )
             )
             newly_sent_keys.append(expired_key)
@@ -789,12 +824,12 @@ def main() -> int:
             messages.append(
                 build_confirmation_email(
                     subscription,
-                    sender=smtp_config["sender"] or "dinnertime@kooexperience.com",
+                    sender=resend_config["sender"] or "dinnertime@kooexperience.com",
                     signup_url=args.signup_url,
                     venue_labels=venue_labels,
-                    reply_to=smtp_config["reply_to"],
+                    reply_to=resend_config["reply_to"],
                     unsubscribe_url=unsubscribe_url,
-                    one_click_unsubscribe=smtp_config["one_click_unsubscribe"],
+                    one_click_unsubscribe=resend_config["one_click_unsubscribe"],
                 )
             )
             newly_sent_keys.append(confirmed_key)
@@ -808,7 +843,7 @@ def main() -> int:
             print(f"- {message['To']}: {message['Subject']}")
         return 0
 
-    send_messages(messages, smtp_config)
+    send_messages(messages, resend_config)
     timestamp = now_iso()
     for key in newly_sent_keys:
         sent_keys[key] = timestamp
