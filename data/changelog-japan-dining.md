@@ -145,3 +145,10 @@ Source: `data/japan-restaurants.json`
 - **Removed (2)**
   - Bistro Simba / Tokyo
   - Sushi Kaminari / Tokyo
+
+## 2026-06-25 05:06 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Mokubei / Kyoto
