@@ -779,16 +779,6 @@ const mobileSummary = document.getElementById("mobile-summary");
 const resultsTableBody = document.getElementById("results-table-body");
 const mobileResultsList = document.getElementById("mobile-results-list");
 
-// New unified mobile sheets (redesigned)
-const mobileDiningSheet = document.getElementById("mobile-dining-sheet");
-const mobileStaysSheet = document.getElementById("mobile-stays-sheet");
-const mobileLoveDiningSheet = document.getElementById("mobile-love-dining-sheet");
-
-const sheetElements = {
-  dining: mobileDiningSheet,
-  stays: mobileStaysSheet,
-  loveDining: mobileLoveDiningSheet,
-};
 const staysExplorer = document.getElementById("stays-explorer");
 const staysMapFilterShell = document.getElementById("stays-map-filter-shell");
 const staysToolbar = document.getElementById("stays-filter-toolbar");
@@ -2711,22 +2701,7 @@ function setActiveRecord(id) {
   }
   renderMobileCards(false);
   updateDiningMarkerStyles();
-  const record = activeRecord();
-  if (record) renderMobileSheet("dining", record);
 }
-
-/** Mobile Sheet Renderer - DISABLED on mobile
- * On mobile, details show inline in .focus-panel below the map (via renderFocusCard)
- * This function is kept for potential future use but doesn't show popups on mobile
- */
-function renderMobileSheet(type, record) {
-  // On mobile, details are shown inline via renderFocusCard()
-  // No popup sheet should appear
-  // This function is a no-op on mobile
-}
-
-
-// ─── Mobile Sheet Rendering Helpers ────────────────────────────────────────
 
 /** Centralized zoom configuration - single source of truth */
 const ZOOM_CONFIG = {
@@ -2757,310 +2732,6 @@ function smartZoomToMarker(map, latLng) {
   } else {
     map.flyTo(latLng, currentZoom, { duration: ZOOM_CONFIG.PAN_ANIMATION_DURATION });
   }
-}
-
-/** Build a single detail line with icon and text */
-function buildDetailLine(icon, text) {
-  return `
-    <div class="detail-line">
-      <span class="detail-icon">${icon}</span>
-      <span class="detail-text">${escapeHtml(text)}</span>
-    </div>
-  `;
-}
-
-/** Build warnings list HTML */
-function buildWarningsList(warnings) {
-  return warnings.length > 0 ? warnings.join(" • ") : "";
-}
-
-/** Build action buttons for maps and phone */
-function buildActionButtons(mapsUrl, phone) {
-  return `
-    ${mapsUrl ? `<a class="btn primary" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">📍 Maps</a>` : ""}
-    ${phone ? `<a class="btn secondary" href="tel:${escapeHtml(phone)}">☎ Call</a>` : ""}
-  `;
-}
-
-/** Dining-specific sheet rendering - RUTHLESSLY MINIMAL upfront */
-function renderDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl) {
-  // Quick info: cuisine + price + kid policy (upfront)
-  const cuisines = (record.cuisines || []).join(", ") || "Cuisine";
-  const priceLabel = record.price_dinner_band_label || "—";
-  const kidPolicyLabel = record.child_policy_norm && record.child_policy_norm !== "unknown"
-    ? kidLabel(record.child_policy_norm)
-    : null;
-
-  quickInfoEl.innerHTML = `
-    <span class="quick-tag">${escapeHtml(cuisines)}</span>
-    <span class="divider">•</span>
-    <span class="quick-price">${escapeHtml(priceLabel)}</span>
-    ${kidPolicyLabel ? `<span class="divider">•</span><span class="quick-tag">${escapeHtml(kidPolicyLabel)}</span>` : ""}
-  `;
-
-  // UPFRONT details: address + phone + hours ONLY (what fits without scroll)
-  const address = record.source_localized_address;
-  const phone = record.phone_number;
-  const hours = record.hours;
-  const district = record.district || "";
-
-  let detailsHTML = "";
-
-  // Only show address if it exists
-  if (address) {
-    detailsHTML += `
-      <div class="detail-line">
-        <span class="detail-icon">📍</span>
-        <span class="detail-text">${escapeHtml(address)}${district ? ` (${escapeHtml(district)})` : ""}</span>
-      </div>
-    `;
-  }
-
-  // Only show phone/hours if they exist
-  if (phone) {
-    detailsHTML += buildDetailLine("☎", phone);
-  }
-
-  if (hours) {
-    detailsHTML += buildDetailLine("🕐", hours);
-  }
-
-  // SCROLLABLE SECTION: station, prices, summary (hidden until scroll)
-  const station = record.station;
-  const summary = diningSummaryPayload(record);
-
-  if (station || (record.price_lunch_min_jpy || record.price_lunch_max_jpy) || (record.price_dinner_min_jpy || record.price_dinner_max_jpy) || summary) {
-    detailsHTML += `<div class="detail-divider"></div>`;
-
-    if (station) {
-      detailsHTML += buildDetailLine("🚇", station);
-    }
-
-    // Price tiers
-    if (record.price_lunch_min_jpy || record.price_lunch_max_jpy) {
-      const lunchMin = record.price_lunch_min_jpy || "—";
-      const lunchMax = record.price_lunch_max_jpy || "—";
-      detailsHTML += `
-        <div class="detail-line">
-          <span class="detail-icon">🍽️</span>
-          <span class="detail-text">Lunch: ¥${escapeHtml(String(lunchMin))}${lunchMin !== lunchMax ? `–¥${escapeHtml(String(lunchMax))}` : ""}</span>
-        </div>
-      `;
-    }
-
-    if (record.price_dinner_min_jpy || record.price_dinner_max_jpy) {
-      const dinnerMin = record.price_dinner_min_jpy || "—";
-      const dinnerMax = record.price_dinner_max_jpy || "—";
-      detailsHTML += `
-        <div class="detail-line">
-          <span class="detail-icon">🍷</span>
-          <span class="detail-text">Dinner: ¥${escapeHtml(String(dinnerMin))}${dinnerMin !== dinnerMax ? `–¥${escapeHtml(String(dinnerMax))}` : ""}</span>
-        </div>
-      `;
-    }
-
-    // Summary at bottom
-    if (summary) {
-      detailsHTML += `
-        <div class="detail-line detail-summary-divider">
-          <span class="detail-text detail-summary-text">${escapeHtml(summary.text)}</span>
-        </div>
-      `;
-    }
-  }
-
-  detailsEl.innerHTML = detailsHTML;
-
-  // Warnings (scrollable section)
-  const warningsList = [];
-  if (record.only_kids_allowed) warningsList.push("👨‍👧‍👦 Kids only");
-  if (record.no_kids_under_12) warningsList.push("⚠️ No kids under 12");
-  if (record.english_menu) warningsList.push("🇬🇧 English menu available");
-  if (record.reservation_type) warningsList.push(`📅 ${escapeHtml(record.reservation_type)}`);
-
-  if (warningsList.length > 0) {
-    warningsEl.innerHTML = warningsList.join(" • ");
-    warningsEl.classList.add("active");
-  } else {
-    warningsEl.classList.remove("active");
-  }
-
-  // Actions: Only 2 buttons - Google Maps + Call
-  const mapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
-  actionsEl.innerHTML = buildActionButtons(mapsUrl, phone);
-}
-
-/** Stays-specific sheet rendering - RUTHLESSLY MINIMAL upfront */
-function renderStaysSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl) {
-  const roomType = record.eligible_room_type || "Room";
-  const availabilityStatus = stayAvailability(record);
-  // Don't show price for Amex benefit properties - they're discounted/free
-  const priceDisplay = record.price_per_night ? `$${record.price_per_night}/night` : null;
-  const priceTag = priceDisplay ? `<span class="divider">•</span><span class="quick-price">${escapeHtml(priceDisplay)}</span>` : "";
-
-  quickInfoEl.innerHTML = `
-    <span class="quick-tag">${escapeHtml(roomType)}</span>
-    <span class="divider">•</span>
-    <span class="quick-status ${availabilityStatus.key === "available" ? "" : "closed"}">${escapeHtml(availabilityStatus.label)}</span>
-  `;
-
-  // UPFRONT details: address + city + phone ONLY
-  const address = record.address || "Address not available";
-  const city = record.city || "";
-  const phone = record.reservation_phone;
-
-  let detailsHTML = `
-    <div class="detail-line">
-      <span class="detail-icon">📍</span>
-      <span class="detail-text">${escapeHtml(address)}${city ? `, ${escapeHtml(city)}` : ""}</span>
-    </div>
-  `;
-
-  if (phone) {
-    detailsHTML += buildDetailLine("☎", phone);
-  }
-
-  // SCROLLABLE SECTION: check-in/out, pricing, amenities, summary
-  const checkIn = record.check_in_date;
-  const checkOut = record.check_out_date;
-  const nights = record.nights || 1;
-  const totalPrice = record.price_per_night ? `$${record.price_per_night * nights}` : null;
-  const amenities = record.amenities ? (Array.isArray(record.amenities) ? record.amenities : [record.amenities]) : [];
-  const summary = record.summary || record.description || "";
-
-  if (checkIn || checkOut || totalPrice || amenities.length > 0 || summary) {
-    detailsHTML += `<div class="detail-divider"></div>`;
-
-    if (checkIn) {
-      detailsHTML += `
-        <div class="detail-line">
-          <span class="detail-icon">📅</span>
-          <span class="detail-text">Check-in: ${escapeHtml(checkIn)}</span>
-        </div>
-      `;
-    }
-
-    if (checkOut) {
-      detailsHTML += `
-        <div class="detail-line">
-          <span class="detail-icon">📅</span>
-          <span class="detail-text">Check-out: ${escapeHtml(checkOut)}</span>
-        </div>
-      `;
-    }
-
-    if (totalPrice) {
-      detailsHTML += `
-        <div class="detail-line">
-          <span class="detail-icon">💰</span>
-          <span class="detail-text">Total: ${escapeHtml(totalPrice)} (${nights} night${nights !== 1 ? 's' : ''})</span>
-        </div>
-      `;
-    }
-
-    if (amenities.length > 0) {
-      detailsHTML += `
-        <div class="detail-line" style="margin-top: 8px;">
-          <span class="detail-icon">✨</span>
-          <span class="detail-text">${escapeHtml(amenities.join(", "))}</span>
-        </div>
-      `;
-    }
-
-    if (summary) {
-      detailsHTML += `
-        <div class="detail-line detail-summary-divider">
-          <span class="detail-text detail-summary-text">${escapeHtml(summary)}</span>
-        </div>
-      `;
-    }
-  }
-
-  detailsEl.innerHTML = detailsHTML;
-
-  // Warnings
-  const warningsList = [];
-  if (record.is_closing_soon) warningsList.push("⚠️ Closing soon");
-  if (record.is_refurbishing) warningsList.push("🔨 Currently refurbishing");
-
-  const warningsHtml = buildWarningsList(warningsList);
-  if (warningsHtml) {
-    warningsEl.innerHTML = warningsHtml;
-    warningsEl.classList.add("active");
-  } else {
-    warningsEl.classList.remove("active");
-  }
-
-  // Actions: Only 2 buttons - Google Maps + Call
-  const mapsUrl = stayGoogleMapsUrl(record);
-  actionsEl.innerHTML = buildActionButtons(mapsUrl, phone);
-}
-
-/** Love Dining-specific sheet rendering */
-/** Love Dining-specific sheet rendering - RUTHLESSLY MINIMAL upfront */
-function renderLoveDiningSheet(record, quickInfoEl, detailsEl, warningsEl, actionsEl) {
-  const venueType = record.type === "hotel" ? "Hotel" : "Restaurant";
-  const cuisine = record.cuisine || "Venue";
-
-  quickInfoEl.innerHTML = `
-    <span class="quick-tag">${escapeHtml(venueType)}</span>
-    <span class="divider">•</span>
-    <span class="quick-tag">${escapeHtml(cuisine)}</span>
-  `;
-
-  // UPFRONT: address only (essential for location)
-  const address = record.address;
-  const city = record.city;
-  const phone = record.phone;
-
-  let detailsHTML = "";
-
-  if (address || city) {
-    detailsHTML += `
-      <div class="detail-line">
-        <span class="detail-icon">📍</span>
-        <span class="detail-text">${escapeHtml(address)}${city ? `, ${escapeHtml(city)}` : ""}</span>
-      </div>
-    `;
-  }
-
-  // SCROLLABLE: phone only if it exists
-  if (phone) {
-    detailsHTML += `
-      <div class="detail-line">
-        <span class="detail-icon">☎</span>
-        <span class="detail-text"><a href="tel:${escapeHtml(phone)}">${escapeHtml(phone)}</a></span>
-      </div>
-    `;
-  }
-
-  // Add benefit/discount info and notes
-  if (record.notes) {
-    detailsHTML += `
-      <div class="detail-summary-divider">
-        <div class="detail-summary-text">💳 ${escapeHtml(record.notes)}</div>
-      </div>
-    `;
-  }
-
-  detailsEl.innerHTML = detailsHTML;
-
-  // Warnings
-  const warningsList = [];
-  if (record.is_closing) warningsList.push("⚠️ Permanently closed");
-  if (record.is_halal) warningsList.push("✓ Halal certified");
-
-  const warningsHtml = buildWarningsList(warningsList);
-  if (warningsHtml) {
-    warningsEl.innerHTML = warningsHtml;
-    warningsEl.classList.add("active");
-  } else {
-    warningsEl.classList.remove("active");
-  }
-
-  // Actions: Only 2 buttons - Google Maps + Call
-  const mapsUrl = record.maps_url || record.google_maps_url;
-  actionsEl.innerHTML = buildActionButtons(mapsUrl, phone);
 }
 
 /** Apply selected (active) marker styling: white with glow, larger size */
@@ -3734,8 +3405,6 @@ function setActiveStayRecord(id) {
   renderStayTable();
   renderStayMobileCards();
   updateStayMarkerStyles();
-  const record = activeStayRecord();
-  if (record) renderMobileSheet("stays", record);
 }
 
 function updateStayMarkerStyles() {
@@ -5340,7 +5009,6 @@ function setActiveLoveDiningRecord(id) {
     renderLoveDiningCard();
     renderLoveDiningMobileList();
     updateLoveDiningMarkerStyles();
-    renderMobileSheet("loveDining", record);
   }
 }
 
@@ -5967,11 +5635,6 @@ async function applyRoute(routeId) {
   const program = currentProgram();
   const dataKey = dataKeyForRoute(route);
 
-  // Dismiss all mobile sheets when switching routes
-  Object.values(sheetElements).forEach(sheet => {
-    if (sheet) sheet.classList.remove("sheet-visible");
-  });
-
   document.title = `${route.title} | Unofficial Platinum Experience`;
   renderJourneyShell(route);
   renderProgramShell(program, route);
@@ -6323,18 +5986,10 @@ document.addEventListener("click", (event) => {
   }
 });
 
-// ─── Mobile Bottom Sheet Handling ───────────────────────────────────────────
-// The mobile-venue-sheet is already rendered by renderMobileSheet() in setActiveRecord()
-// No additional JS needed - CSS handles the bottom sheet animation via sheet-visible class
-
-// Re-initialize on hash route change (when switching between dining/stays/love)
-const originalHashChange = window.onhashchange;
 window.addEventListener("hashchange", () => {
-  // Collapse all sheets when changing routes
   document.querySelectorAll('.focus-panel.expanded').forEach(panel => {
     panel.classList.remove('expanded');
   });
-  if (originalHashChange) originalHashChange();
 });
 
 window.addEventListener("keydown", (event) => {
@@ -6361,90 +6016,7 @@ window.addEventListener("resize", () => {
     map.invalidateSize();
     fitDiningMapToVisibleMarkers();
   }
-  // Hide all sheets if resized to desktop
-  if (window.innerWidth > MOBILE_BREAKPOINT) {
-    mobileDiningSheet?.classList.remove("sheet-visible");
-    mobileStaysSheet?.classList.remove("sheet-visible");
-    mobileLoveDiningSheet?.classList.remove("sheet-visible");
-  }
 });
-
-// Mobile sheet dismiss handlers removed - sheets are now disabled
-// Details show inline via .focus-panel on mobile instead of popup overlay
-
-// Mobile sheet dismissal removed - sheets no longer used
-
-// Hide header clutter on mobile to maximize map visibility
-let mobileClutterObserver = null;
-
-function hideMobileClutter() {
-  const selectors = [
-    '.context-title',
-    '.context-strip',
-    '.summary-strip',
-    '.map-instructions',
-    '.refine-panel',
-    '#summary-strip-text',
-    // '.focus-panel',  -- REMOVED: we want to show details inline on mobile, not hide them
-    '.map-panel .panel-head',
-    '.toolbar-toggle-meta'
-  ];
-
-  if (window.innerWidth <= MOBILE_BREAKPOINT) {
-    // Hide clutter elements on mobile
-    selectors.forEach(selector => {
-      document.querySelectorAll(selector).forEach(el => {
-        el.hidden = true;
-      });
-    });
-
-    // Start observer only on mobile to catch dynamically inserted elements
-    startMobileClutterObserver();
-  } else {
-    // Unhide all elements on desktop
-    selectors.forEach(selector => {
-      document.querySelectorAll(selector).forEach(el => {
-        el.hidden = false;
-      });
-    });
-
-    // Disconnect observer on desktop to save CPU
-    stopMobileClutterObserver();
-  }
-}
-
-function startMobileClutterObserver() {
-  if (mobileClutterObserver) return;
-  mobileClutterObserver = new MutationObserver(() => {
-    hideMobileClutter();
-  });
-  mobileClutterObserver.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
-}
-
-function stopMobileClutterObserver() {
-  if (mobileClutterObserver) {
-    mobileClutterObserver.disconnect();
-    mobileClutterObserver = null;
-  }
-}
-
-// Debounced resize handler to avoid excessive calls
-let resizeTimeout;
-function onResizeDebounced() {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(hideMobileClutter, 150);
-}
-
-// Run on init and when content changes
-hideMobileClutter();
-window.addEventListener('resize', onResizeDebounced);
-document.addEventListener('readystatechange', hideMobileClutter);
-
-// Cleanup on page unload to prevent memory leaks
-window.addEventListener('beforeunload', stopMobileClutterObserver);
 
 init().catch(() => {
   focusCard.innerHTML =

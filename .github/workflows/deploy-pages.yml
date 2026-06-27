@@ -39,7 +39,21 @@ jobs:
         run: |
           mkdir -p site
           cp -R web/. site/
-          cp -R data site/data
+          mkdir -p site/data
+          for file in \
+            japan-restaurants.json \
+            japan-dining-source.json \
+            global-restaurants.json \
+            global-dining-source.json \
+            plat-stays.json \
+            plat-stay-source.json \
+            love-dining.json \
+            love-dining-source.json \
+            table-for-two.json \
+            google-maps-ratings.json
+          do
+            cp "data/${file}" site/data/
+          done
           cp .nojekyll site/
           cp CNAME site/
           short_sha="${GITHUB_SHA::7}"
