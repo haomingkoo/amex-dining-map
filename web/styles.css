@@ -1049,9 +1049,7 @@ input,
 }
 
 .tft-alert-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: block;
   margin: 0 16px 12px;
   padding: 14px;
   border: 1px solid var(--surface-border-soft);
@@ -1059,19 +1057,44 @@ input,
   background: var(--surface-soft);
 }
 
+.tft-alert-form {
+  margin-top: 12px;
+}
+
 .tft-alert-panel[hidden] {
   display: none;
 }
 
-.tft-alert-panel h3 {
-  margin: 0 0 4px;
-  font-size: 15px;
-  font-weight: 650;
-  letter-spacing: 0;
+.tft-alert-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  list-style: none;
 }
 
-.tft-alert-panel p {
+.tft-alert-summary::-webkit-details-marker {
+  display: none;
+}
+
+.tft-alert-summary h3 {
   margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.tft-alert-chevron {
+  color: var(--muted);
+  font-size: 13px;
+  transition: transform 0.15s ease;
+}
+
+.tft-alert-panel[open] .tft-alert-chevron {
+  transform: rotate(180deg);
+}
+
+.tft-alert-lead {
+  margin: 12px 0 0;
   color: var(--muted);
   font-size: 13px;
   line-height: 1.35;
