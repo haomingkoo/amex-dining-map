@@ -503,6 +503,7 @@ const state = {
   tableForTwoAutoAvailabilityOnly: false,
   tableForTwoSelectedCalendarDates: {},
   tableForTwoCalendarMonths: {},
+  pocketCalendarMonths: {},
   tableForTwoLiveRefreshInFlight: false,
   tableForTwoLiveRefreshAt: null,
   tableForTwoLiveRefreshTimer: null,
@@ -759,11 +760,12 @@ const dinnerFilterWrap = document.getElementById("dinner-filter-wrap");
 const kidsFilterWrap = document.getElementById("kids-filter-wrap");
 const menuFilterWrap = document.getElementById("menu-filter-wrap");
 const reservationFilterWrap = document.getElementById("reservation-filter-wrap");
+const pocketAvailabilityFilterWrap = document.getElementById("pocket-availability-filter-wrap");
 const pocketDateFilterWrap = document.getElementById("pocket-date-filter-wrap");
 const pocketPartyFilterWrap = document.getElementById("pocket-party-filter-wrap");
 const googleRatingFilterWrap = document.getElementById("google-rating-filter-wrap");
 const sortFilterWrap = document.getElementById("sort-filter-wrap");
-const JAPAN_ONLY_FILTER_WRAPS = [tabelogFilterWrap, lunchFilterWrap, dinnerFilterWrap, kidsFilterWrap, menuFilterWrap, reservationFilterWrap, pocketDateFilterWrap, pocketPartyFilterWrap];
+const JAPAN_ONLY_FILTER_WRAPS = [tabelogFilterWrap, lunchFilterWrap, dinnerFilterWrap, kidsFilterWrap, menuFilterWrap, reservationFilterWrap, pocketAvailabilityFilterWrap, pocketDateFilterWrap, pocketPartyFilterWrap];
 const cuisineFilter = document.getElementById("cuisine-filter");
 const tabelogFilter = document.getElementById("tabelog-filter");
 const googleRatingFilter = document.getElementById("google-rating-filter");
@@ -773,6 +775,7 @@ const dinnerFilter = document.getElementById("dinner-filter");
 const kidsFilter = document.getElementById("kids-filter");
 const menuFilter = document.getElementById("menu-filter");
 const reservationFilter = document.getElementById("reservation-filter");
+const pocketAvailabilityFilter = document.getElementById("pocket-availability-filter");
 const pocketDateFilter = document.getElementById("pocket-date-filter");
 const pocketPartyFilter = document.getElementById("pocket-party-filter");
 const resetFiltersButton = document.getElementById("reset-filters");
@@ -1230,6 +1233,10 @@ function pocketPartySizeValue() {
   return Number.isFinite(value) && value > 0 ? value : 0;
 }
 
+function pocketHasCheckedSlots(record) {
+  return Object.keys(pocketDateSummaries(record)).length > 0;
+}
+
 function pocketPartyRangeMatches(summary, partySize) {
   if (!partySize) return true;
   const ranges = Array.isArray(summary?.party_ranges) ? summary.party_ranges : [];
@@ -1240,12 +1247,18 @@ function pocketPartyRangeMatches(summary, partySize) {
   });
 }
 
-function pocketAvailabilityMatches(record, selectedDate, partySize) {
-  if (!selectedDate && !partySize) return true;
+function pocketAvailabilityMatches(record, mode, selectedDate, partySize) {
+  if (!mode && !selectedDate && !partySize) return true;
   if (record.country !== "Japan") return false;
   const availability = pocketAvailabilityRecord(record);
   if (!availability) return false;
   const dateSummaries = pocketDateSummaries(record);
+  if (mode === "bookable" && !(availability.reservation_dates || []).length) return false;
+  if (mode === "slots" && !pocketHasCheckedSlots(record)) return false;
+  if (mode === "waitlist") {
+    if (selectedDate) return (availability.waitlist_dates || []).includes(selectedDate);
+    return (availability.waitlist_dates || []).length > 0;
+  }
 
   if (selectedDate) {
     if (partySize) {
@@ -1261,7 +1274,7 @@ function pocketAvailabilityBadge(record) {
   if (record.country !== "Japan") return "";
   const availability = pocketAvailabilityRecord(record);
   if (!availability) return "";
-  if (Object.keys(pocketDateSummaries(record)).length) return '<span class="badge green">Pocket slots</span>';
+  if (pocketHasCheckedSlots(record)) return '<span class="badge green">Pocket slots</span>';
   if ((availability.reservation_dates || []).length) return '<span class="badge blue">Pocket dates</span>';
   if ((availability.waitlist_dates || []).length) return '<span class="badge amber">Pocket waitlist</span>';
   return "";
@@ -1295,6 +1308,101 @@ function pocketAvailabilityNote(record) {
     return "Pocket availability: waitlist dates cached, no bookable dates in the current cache.";
   }
   return "";
+}
+
+function pocketAvailabilitySlots(record) {
+  return Object.entries(pocketDateSummaries(record)).flatMap(([date, summary]) => {
+    const times = (summary.times || []).length ? summary.times : [""];
+    const meal = (summary.sessions || []).map(tableForTwoSessionLabel).join(" + ") || "Pocket";
+    const maxSeats = Number(summary.max_party_size || 0);
+    return times.map((time) => ({
+      date,
+      time,
+      meal,
+      max_seats: maxSeats,
+      total_available_seats: maxSeats,
+      available_seats: maxSeats ? [maxSeats] : [],
+    }));
+  });
+}
+
+function pocketAvailabilityFallbackRows(record) {
+  const availability = pocketAvailabilityRecord(record);
+  const reservationDates = (availability?.reservation_dates || []).slice(0, 8);
+  if (!reservationDates.length) return "";
+  return `
+    <div class="focus-section">
+      <div class="focus-kicker">Pocket availability</div>
+      <div class="focus-row">
+        <span class="focus-label">Dates</span>
+        <span>${escapeHtml(reservationDates.map(diningDateLabel).join(", "))}${availability.reservation_dates.length > reservationDates.length ? " +" : ""}</span>
+      </div>
+      <div class="focus-note">Exact times were not in the checked slot window.</div>
+    </div>
+  `;
+}
+
+function pocketAvailabilityDetailsMarkup(record) {
+  if (record.country !== "Japan" || !pocketAvailabilityRecord(record)) return "";
+  const slots = pocketAvailabilitySlots(record);
+  if (!slots.length) return pocketAvailabilityFallbackRows(record);
+  const dates = uniqueValues(slots.map((slot) => slot.date).filter(Boolean)).sort();
+  const slotsByDate = tableForTwoSlotsByDate(slots);
+  const selectedDate = dates.includes(pocketDateFilter.value) ? pocketDateFilter.value : dates[0];
+  const monthKeys = uniqueValues(dates.map((dateValue) => dateValue.slice(0, 7))).sort();
+  const selectedMonthKey = selectedDate ? selectedDate.slice(0, 7) : "";
+  const preferredMonthKey = state.pocketCalendarMonths[record.id] || selectedMonthKey || monthKeys[0] || "";
+  const activeMonthKey = monthKeys.includes(preferredMonthKey) ? preferredMonthKey : (selectedMonthKey || monthKeys[0] || "");
+  const monthsHtml = activeMonthKey ? tableForTwoCalendarMonthHtml(activeMonthKey, slotsByDate, selectedDate) : "";
+  const checkedDateCount = dates.length;
+  const reservationDateCount = (pocketAvailabilityRecord(record)?.reservation_dates || []).length;
+  const meta = state.pocketAvailability?.fetched_at ? `Cached ${formatTimestamp(state.pocketAvailability.fetched_at)}` : "Cached availability";
+  return `
+    <div class="tft-calendar-card pocket-calendar-card">
+      <div class="tft-calendar-head">
+        <div>
+          <div class="focus-kicker">Pocket availability</div>
+          <h4>${escapeHtml(`${reservationDateCount} reservation date${reservationDateCount === 1 ? "" : "s"} cached`)}</h4>
+        </div>
+        ${checkedDateCount ? `<span class="badge green">${escapeHtml(`${checkedDateCount} checked`)}</span>` : ""}
+      </div>
+      ${tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey)}
+      <div class="tft-calendar-months">${monthsHtml}</div>
+      ${tableForTwoSelectedDateSlotsHtml(slots, { date: selectedDate }, selectedDate)}
+      <div class="tft-calendar-legend">
+        <span><i class="is-available"></i>Checked slots</span>
+        <span><i class="is-selected"></i>Selected date</span>
+      </div>
+      <div class="focus-note">Planning cache only. Confirm and book on Pocket Concierge.</div>
+      <div class="focus-note">${escapeHtml(meta)}</div>
+    </div>
+  `;
+}
+
+function shouldPromptJapanPocketFilters(record) {
+  if (record.country !== "Japan" || !pocketAvailabilityRecord(record)) return false;
+  if (countryFilter.value === "Japan") return false;
+  return state.scopeRecords.some((scopeRecord) => scopeRecord.country !== "Japan");
+}
+
+function pocketFilterPrompt(record) {
+  if (!shouldPromptJapanPocketFilters(record)) return "";
+  return '<button type="button" class="ghost-btn secondary" data-select-japan-pocket="true">Select Japan to filter Pocket availability</button>';
+}
+
+function selectJapanForPocketFilters(selectedDate = "") {
+  const dateValue = typeof selectedDate === "string" ? selectedDate : "";
+  if (Array.from(countryFilter.options).some((option) => option.value === "Japan")) {
+    countryFilter.value = "Japan";
+  }
+  pocketAvailabilityFilter.value = "bookable";
+  if (dateValue) {
+    pocketDateFilter.value = dateValue;
+    if (state.activeId) state.pocketCalendarMonths[state.activeId] = dateValue.slice(0, 7);
+  }
+  refreshFilterOptions();
+  setToolbarOpen(true);
+  filterRestaurants();
 }
 
 function isGlobalDiningCreditRecord(record) {
@@ -2012,6 +2120,7 @@ function activeFilterCount() {
   if (kidsFilter.value) count += 1;
   if (menuFilter.value) count += 1;
   if (reservationFilter.value) count += 1;
+  if (pocketAvailabilityFilter.value) count += 1;
   if (pocketDateFilter.value) count += 1;
   if (pocketPartyFilter.value) count += 1;
   return count;
@@ -2239,6 +2348,7 @@ function resetFilterControls() {
   kidsFilter.value = "";
   menuFilter.value = "";
   reservationFilter.value = "";
+  pocketAvailabilityFilter.value = "";
   pocketDateFilter.value = "";
   pocketPartyFilter.value = "";
   cityFilter.value = route.fixedCity || "";
@@ -2342,6 +2452,7 @@ function filterRestaurants(options = {}) {
   const kids = kidsFilter.value;
   const menu = menuFilter.value;
   const reservation = reservationFilter.value;
+  const pocketMode = pocketAvailabilityFilter.value;
   const pocketDate = pocketDateFilter.value;
   const pocketPartySize = pocketPartySizeValue();
 
@@ -2375,7 +2486,7 @@ function filterRestaurants(options = {}) {
     if (menu === "yes" && !record.english_menu) return false;
     if (menu === "no" && record.english_menu) return false;
     if (reservation && record.reservation_type !== reservation) return false;
-    if (!pocketAvailabilityMatches(record, pocketDate, pocketPartySize)) return false;
+    if (!pocketAvailabilityMatches(record, pocketMode, pocketDate, pocketPartySize)) return false;
     if (search && !fuzzyMatchSearch(record.search_text || "", search)) return false;
     return true;
   });
@@ -2524,6 +2635,7 @@ function renderFocusCard() {
   const summary = diningSummaryPayload(record);
   const sourceCacheLabel = diningSourceCacheLabel(record);
   const availabilityNote = pocketAvailabilityNote(record);
+  const availabilityDetails = pocketAvailabilityDetailsMarkup(record);
 
   focusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(diningKicker(record))}</div>
@@ -2548,6 +2660,7 @@ function renderFocusCard() {
     ${tagSection("Known for", record.known_for_tags, "gold")}
     ${tagSection("Signature dishes", record.signature_dish_tags, "blue")}
     ${summary ? `<p class="focus-summary${summary.isAi ? " focus-summary-ai" : ""}">${escapeHtml(summary.text)}</p>` : ""}
+    ${availabilityDetails}
     ${showPriceGrid ? `
     <div class="price-grid">
       ${hasDinnerPrice ? `<div class="price-card">
@@ -2582,6 +2695,7 @@ function renderFocusCard() {
           ? `<a class="inline-link subtle" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">${record.source === "Amex Platinum Dining" ? "Amex Dining page" : "Pocket Concierge"}</a>`
           : ""
       }
+      ${pocketFilterPrompt(record)}
       ${
         record.lat != null && record.lng != null
           ? `<button type="button" class="ghost-btn secondary" data-focus-map="true">Center on map</button>`
@@ -2596,6 +2710,23 @@ function renderFocusCard() {
       focusActiveRecordOnMap();
     });
   }
+  const japanPocketButton = focusCard.querySelector("[data-select-japan-pocket]");
+  if (japanPocketButton) {
+    japanPocketButton.addEventListener("click", selectJapanForPocketFilters);
+  }
+  focusCard.querySelectorAll("[data-tft-calendar-date]").forEach((button) => {
+    button.addEventListener("click", () => {
+      selectJapanForPocketFilters(button.getAttribute("data-tft-calendar-date") || "");
+    });
+  });
+  focusCard.querySelectorAll("[data-tft-calendar-month]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const selectedMonth = button.getAttribute("data-tft-calendar-month") || "";
+      if (!selectedMonth || !state.activeId) return;
+      state.pocketCalendarMonths[state.activeId] = selectedMonth;
+      renderFocusCard();
+    });
+  });
 }
 
 function renderTable() {
@@ -2781,6 +2912,10 @@ function renderMobileCards(resetPage = true) {
         }
       });
     }
+    card.addEventListener("click", (event) => {
+      if (event.target instanceof Element && event.target.closest("a, button")) return;
+      setActiveRecord(record.id, { scrollDetails: true });
+    });
 
     mobileResultsList.appendChild(card);
   });
@@ -2803,7 +2938,15 @@ function renderMobileCards(resetPage = true) {
   });
 }
 
-function setActiveRecord(id) {
+function maybeScrollDiningDetailsIntoView() {
+  const focusPanel = focusCard?.closest(".focus-panel");
+  if (!focusPanel) return;
+  window.requestAnimationFrame(() => {
+    focusPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
+
+function setActiveRecord(id, options = {}) {
   state.activeId = id;
   const route = currentRoute();
   resultsText.textContent = id ? `Selected venue · ${route.label}` : `Click a dot to select · ${route.label}`;
@@ -2819,6 +2962,7 @@ function setActiveRecord(id) {
   }
   renderMobileCards(false);
   updateDiningMarkerStyles();
+  if (id && options.scrollDetails) maybeScrollDiningDetailsIntoView();
 }
 
 /** Centralized zoom configuration - single source of truth */
@@ -5863,6 +6007,9 @@ async function applyRoute(routeId) {
   resetFilterControls();
   refreshFilterOptions();
   filterRestaurants();
+  if (route.id === "dining/japan" && window.innerWidth > MOBILE_BREAKPOINT) {
+    setToolbarOpen(true);
+  }
   if (hasLeaflet && map) {
     setTimeout(() => {
       map.invalidateSize();
@@ -5908,6 +6055,11 @@ async function init() {
 searchInput.addEventListener("input", filterRestaurants);
 countryFilter.addEventListener("change", () => {
   cityFilter.value = "";
+  if (countryFilter.value !== "Japan") {
+    pocketAvailabilityFilter.value = "";
+    pocketDateFilter.value = "";
+    pocketPartyFilter.value = "";
+  }
   refreshFilterOptions();
   filterRestaurants();
 });
@@ -5932,6 +6084,7 @@ cityFilter.addEventListener("change", () => {
   kidsFilter,
   menuFilter,
   reservationFilter,
+  pocketAvailabilityFilter,
   pocketDateFilter,
 ].forEach((element) => {
   element.addEventListener("change", filterRestaurants);
