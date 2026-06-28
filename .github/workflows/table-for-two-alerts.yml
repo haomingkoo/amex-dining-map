@@ -45,7 +45,6 @@ jobs:
           fi
 
       - name: Refresh Table for Two availability
-        if: steps.config.outputs.enabled == 'true'
         env:
           TABLE_FOR_TWO_ALERT_SIGNUP_URL: ${{ secrets.TABLE_FOR_TWO_ALERT_SIGNUP_URL }}
         run: python3 scripts/scrape_table_for_two.py --availability-only
@@ -62,26 +61,16 @@ jobs:
           RESEND_FROM: ${{ secrets.RESEND_FROM }}
         run: python3 scripts/send_table_for_two_alerts.py
 
-      - name: Commit refreshed alert state
-        if: steps.config.outputs.enabled == 'true'
+      - name: Commit refreshed availability and alert state
+        env:
+          COMMIT_MESSAGE: "chore: refresh table for two availability"
+          MUST_STAGE: |
+            data/table-for-two.json
+            data/table-for-two-alert-sent.json
+          KEEP_LOCAL_ON_CONFLICT: |
+            data/table-for-two.json
+            data/table-for-two-alert-sent.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git restore -- data/table-for-two.json
-          if [ -f data/table-for-two-alert-sent.json ]; then
-            git add data/table-for-two-alert-sent.json
-          fi
-          if git diff --cached --quiet; then
-            echo "No Table for Two alert state changes detected."
-            exit 0
-          fi
-          git commit -m "chore: refresh table for two alert state"
-          for attempt in 1 2 3; do
-            git pull --rebase origin main
-            if git push origin HEAD:main; then
-              exit 0
-            fi
-            echo "Push failed on attempt ${attempt}; retrying after remote sync."
-            sleep $((attempt * 5))
-          done
-          exit 1
+          bash scripts/commit_and_push.sh
