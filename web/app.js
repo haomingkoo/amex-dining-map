@@ -752,10 +752,13 @@ const tableToggleMeta = document.getElementById("table-toggle-meta");
 const searchInput = document.getElementById("search-input");
 const countryFilter = document.getElementById("country-filter");
 const countryFilterWrap = document.getElementById("country-filter-wrap");
+const prefectureFilterWrap = document.getElementById("prefecture-filter-wrap");
+const prefectureFilter = document.getElementById("prefecture-filter");
 const cityFilter = document.getElementById("city-filter");
 const districtFilter = document.getElementById("district-filter");
 const districtFilterWrap = document.getElementById("district-filter-wrap");
 const tabelogFilterWrap = document.getElementById("tabelog-filter-wrap");
+const tabelogTopFilterWrap = document.getElementById("tabelog-top-filter-wrap");
 const lunchFilterWrap = document.getElementById("lunch-filter-wrap");
 const dinnerFilterWrap = document.getElementById("dinner-filter-wrap");
 const kidsFilterWrap = document.getElementById("kids-filter-wrap");
@@ -767,11 +770,12 @@ const pocketDateFilterWrap = document.getElementById("pocket-date-filter-wrap");
 const pocketPartyFilterWrap = document.getElementById("pocket-party-filter-wrap");
 const googleRatingFilterWrap = document.getElementById("google-rating-filter-wrap");
 const sortFilterWrap = document.getElementById("sort-filter-wrap");
-const JAPAN_ONLY_FILTER_WRAPS = [tabelogFilterWrap, lunchFilterWrap, dinnerFilterWrap, kidsFilterWrap, menuFilterWrap, reservationFilterWrap, pocketAvailabilityFilterWrap, pocketSessionFilterWrap, pocketDateFilterWrap, pocketPartyFilterWrap];
+const JAPAN_ONLY_FILTER_WRAPS = [prefectureFilterWrap, tabelogFilterWrap, tabelogTopFilterWrap, lunchFilterWrap, dinnerFilterWrap, kidsFilterWrap, menuFilterWrap, reservationFilterWrap, pocketAvailabilityFilterWrap, pocketSessionFilterWrap, pocketDateFilterWrap, pocketPartyFilterWrap];
 const cuisineFilter = document.getElementById("cuisine-filter");
 const tabelogFilter = document.getElementById("tabelog-filter");
 const googleRatingFilter = document.getElementById("google-rating-filter");
 const sortFilter = document.getElementById("sort-filter");
+const tabelogTopFilter = document.getElementById("tabelog-top-filter");
 const lunchFilter = document.getElementById("lunch-filter");
 const dinnerFilter = document.getElementById("dinner-filter");
 const kidsFilter = document.getElementById("kids-filter");
@@ -1020,6 +1024,11 @@ function qualitySignals(record) {
     return {};
   }
   return record.external_signals;
+}
+
+function tabelogReviewCount(record) {
+  const count = Number(qualitySignals(record).tabelog?.review_count || 0);
+  return Number.isFinite(count) ? count : 0;
 }
 
 function externalSignalCard(source, signal) {
@@ -2176,10 +2185,12 @@ function activeFilterCount() {
   let count = 0;
   if (searchInput.value.trim()) count += 1;
   if (countryFilter.value) count += 1;
+  if (prefectureFilter.value) count += 1;
   if (!route.fixedCity && cityFilter.value) count += 1;
   if (districtFilter.value) count += 1;
   if (cuisineFilter.value) count += 1;
   if (tabelogFilter.value) count += 1;
+  if (tabelogTopFilter.value) count += 1;
   if (lunchFilter.value) count += 1;
   if (dinnerFilter.value) count += 1;
   if (kidsFilter.value) count += 1;
@@ -2404,9 +2415,11 @@ function resetFilterControls() {
   const route = currentRoute();
   searchInput.value = "";
   countryFilter.value = "";
+  prefectureFilter.value = "";
   districtFilter.value = "";
   cuisineFilter.value = "";
   tabelogFilter.value = "";
+  tabelogTopFilter.value = "";
   googleRatingFilter.value = "";
   sortFilter.value = "";
   lunchFilter.value = "";
@@ -2445,8 +2458,15 @@ function refreshFilterOptions() {
   const countryPool = selectedCountry
     ? scopeRecords.filter((r) => r.country === selectedCountry)
     : scopeRecords;
+  if (showJapanFilters) {
+    fillSelect(prefectureFilter, uniqueValues(countryPool.map((record) => record.prefecture)), "All prefectures");
+  }
 
+  const selectedPrefecture = prefectureFilter.value;
   const selectedCity = route.fixedCity || cityFilter.value;
+  const prefecturePool = selectedPrefecture
+    ? countryPool.filter((record) => record.prefecture === selectedPrefecture)
+    : countryPool;
 
   if (route.fixedCity) {
     cityFilter.innerHTML = `<option value="${route.fixedCity}">${route.fixedCity}</option>`;
@@ -2454,11 +2474,10 @@ function refreshFilterOptions() {
     cityFilter.disabled = true;
   } else {
     cityFilter.disabled = false;
-    fillSelect(cityFilter, uniqueValues(countryPool.map((record) => record.city)), "All cities");
+    fillSelect(cityFilter, uniqueValues(prefecturePool.map((record) => record.city)), "All cities");
   }
 
-  const districtPool = scopeRecords.filter((record) => {
-    if (selectedCountry && record.country !== selectedCountry) return false;
+  const districtPool = prefecturePool.filter((record) => {
     if (!selectedCity) return true;
     return record.city === selectedCity;
   });
@@ -2508,12 +2527,14 @@ function filterRestaurants(options = {}) {
   const route = currentRoute();
   const country = countryFilter.value;
   const hasSelectedCity = Object.prototype.hasOwnProperty.call(options, "selectedCity");
+  const prefecture = prefectureFilter.value;
   const city = route.fixedCity || (hasSelectedCity ? options.selectedCity : cityFilter.value);
   const district = districtFilter.value;
   const cuisine = cuisineFilter.value;
   const tabelog = tabelogFilter.value;
   const googleRatingFilterValue = googleRatingFilter.value;
   const sort = sortFilter.value;
+  const tabelogTop = Number(tabelogTopFilter.value || 0);
   const lunchBand = lunchFilter.value;
   const dinnerBand = dinnerFilter.value;
   const kids = kidsFilter.value;
@@ -2526,6 +2547,7 @@ function filterRestaurants(options = {}) {
 
   state.filtered = state.scopeRecords.filter((record) => {
     if (country && record.country !== country) return false;
+    if (prefecture && record.prefecture !== prefecture) return false;
     if (city && record.city !== city) return false;
     if (district && (record.district || record.region || record.area_title) !== district) return false;
     if (cuisine && !(record.cuisines || []).includes(cuisine)) return false;
@@ -2560,7 +2582,10 @@ function filterRestaurants(options = {}) {
   });
 
   // Apply sorting
-  if (sort === "rating_high") {
+  if (tabelogTop) {
+    state.filtered.sort((a, b) => tabelogReviewCount(b) - tabelogReviewCount(a));
+    state.filtered = state.filtered.filter((record) => tabelogReviewCount(record) > 0).slice(0, tabelogTop);
+  } else if (sort === "rating_high") {
     state.filtered.sort((a, b) => {
       const aRating = googleRating(a)?.rating ?? -1;
       const bRating = googleRating(b)?.rating ?? -1;
@@ -2572,6 +2597,8 @@ function filterRestaurants(options = {}) {
       const bCount = googleRating(b)?.review_count ?? 0;
       return bCount - aCount;
     });
+  } else if (sort === "tabelog_reviews_high") {
+    state.filtered.sort((a, b) => tabelogReviewCount(b) - tabelogReviewCount(a));
   } else if (sort === "name_a") {
     state.filtered.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
   }
@@ -6130,13 +6157,28 @@ async function init() {
 
 searchInput.addEventListener("input", filterRestaurants);
 countryFilter.addEventListener("change", () => {
+  prefectureFilter.value = "";
   cityFilter.value = "";
+  districtFilter.value = "";
   if (countryFilter.value !== "Japan") {
+    tabelogFilter.value = "";
+    tabelogTopFilter.value = "";
+    lunchFilter.value = "";
+    dinnerFilter.value = "";
+    kidsFilter.value = "";
+    menuFilter.value = "";
+    reservationFilter.value = "";
     pocketAvailabilityFilter.value = "";
     pocketSessionFilter.value = "";
     pocketDateFilter.value = "";
     pocketPartyFilter.value = "";
   }
+  refreshFilterOptions();
+  filterRestaurants();
+});
+prefectureFilter.addEventListener("change", () => {
+  cityFilter.value = "";
+  districtFilter.value = "";
   refreshFilterOptions();
   filterRestaurants();
 });
@@ -6156,6 +6198,7 @@ cityFilter.addEventListener("change", () => {
   tabelogFilter,
   googleRatingFilter,
   sortFilter,
+  tabelogTopFilter,
   lunchFilter,
   dinnerFilter,
   kidsFilter,

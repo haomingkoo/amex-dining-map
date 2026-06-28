@@ -266,6 +266,13 @@
                   </select>
                 </label>
 
+                <label class="filter-wrap" id="prefecture-filter-wrap">
+                  <span class="label">Prefecture</span>
+                  <select id="prefecture-filter">
+                    <option value="">All prefectures</option>
+                  </select>
+                </label>
+
                 <label class="filter-wrap">
                   <span class="label">City</span>
                   <select id="city-filter">
@@ -317,7 +324,19 @@
                     <option value="">Default</option>
                     <option value="rating_high">Rating (highest)</option>
                     <option value="reviews_high">Reviews (most)</option>
+                    <option value="tabelog_reviews_high">Tabelog reviews (most)</option>
                     <option value="name_a">Name (A-Z)</option>
+                  </select>
+                </label>
+
+                <label class="filter-wrap" id="tabelog-top-filter-wrap">
+                  <span class="label">Tabelog top</span>
+                  <select id="tabelog-top-filter">
+                    <option value="">All</option>
+                    <option value="10">Top 10</option>
+                    <option value="25">Top 25</option>
+                    <option value="50">Top 50</option>
+                    <option value="100">Top 100</option>
                   </select>
                 </label>
 
