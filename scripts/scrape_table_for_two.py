@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import json
 import os
@@ -36,6 +37,7 @@ DININGCITY_PROJECT = "AMEXPlatSG"
 DININGCITY_PROJECT_TITLE = "AMEX Platinum SG"
 MIN_TABLE_FOR_TWO_SEATS = 2
 MAX_AVAILABILITY_TIMES = 12
+AVAILABILITY_WORKERS = 6
 
 
 VENUES = [
@@ -716,12 +718,22 @@ def live_availability_for_venue(venue: dict, checked_at: str) -> tuple[dict | No
 def fetch_live_availability(venues: list[dict], checked_at: str) -> tuple[dict[str, dict], dict[str, str]]:
     availability_by_id = {}
     errors = {}
-    for venue in venues:
-        availability, error = live_availability_for_venue(venue, checked_at)
-        if availability:
-            availability_by_id[venue["id"]] = availability
-        elif error:
-            errors[venue["id"]] = error
+    workers = min(AVAILABILITY_WORKERS, len(venues)) or 1
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        futures = {
+            executor.submit(live_availability_for_venue, venue, checked_at): venue
+            for venue in venues
+        }
+        for future in as_completed(futures):
+            venue = futures[future]
+            try:
+                availability, error = future.result()
+            except Exception as exc:  # noqa: BLE001 - keep one venue failure from killing the refresh.
+                availability, error = None, f"{type(exc).__name__}: {exc}"
+            if availability:
+                availability_by_id[venue["id"]] = availability
+            elif error:
+                errors[venue["id"]] = error
     return availability_by_id, errors
 
 
