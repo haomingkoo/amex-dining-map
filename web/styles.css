@@ -1991,6 +1991,102 @@ button.tft-calendar-cell:hover {
   animation: fade-up 0.22s ease both;
 }
 
+body.route-japan-top .explorer-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+}
+
+body.route-japan-top .map-filter-shell,
+body.route-japan-top .table-shell,
+body.route-japan-top .mobile-results-panel {
+  display: none;
+}
+
+.rank-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rank-controls .filter-wrap:first-child {
+  grid-column: 1 / -1;
+}
+
+.rank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.rank-card {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--surface-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.rank-card:hover,
+.rank-card.active {
+  border-color: var(--border-strong);
+  box-shadow: var(--focus-ring);
+}
+
+.rank-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--control-chip-bg);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.rank-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rank-copy strong,
+.rank-copy span,
+.rank-copy em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rank-copy strong {
+  font-size: 13px;
+}
+
+.rank-copy span,
+.rank-copy em {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.rank-metric {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .table-scroll {
   overflow-x: auto;
 }

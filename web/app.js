@@ -230,6 +230,19 @@ const ROUTES = {
     defaultView: [35.676, 137.5],
     defaultZoom: 5,
   },
+  "dining/japan/top": {
+    id: "dining/japan/top",
+    programId: "dining",
+    label: "Japan Rankings",
+    eyebrow: "Dining / Japan Rankings",
+    title: "Japan Rankings",
+    description: "Map-first Japan shortlist ranked by Tabelog signals.",
+    note: "Ranked Japan restaurants.",
+    mapSummary: "Top-ranked Japan restaurants. Click a ranked venue to move the map.",
+    matcher: (record) => record.country === "Japan",
+    defaultView: [35.676, 137.5],
+    defaultZoom: 5,
+  },
   "dining/singapore": {
     id: "dining/singapore",
     programId: "dining",
@@ -481,6 +494,9 @@ const state = {
   mobileToolbarOpen: false,
   tableOpen: false,
   tableSearchQuery: "",
+  japanRankPrefecture: "",
+  japanRankMetric: "reviews",
+  japanRankLimit: 25,
   stayScopeRecords: [],
   stayFiltered: [],
   stayMarkers: new Map(),
@@ -721,6 +737,7 @@ if (!hasLeaflet) {
 const routeEyebrow = document.getElementById("route-eyebrow");
 const routeTitle = document.getElementById("route-title");
 const routeDescription = document.getElementById("route-description");
+const focusPanelTitle = document.getElementById("focus-panel-title");
 const introGate = document.getElementById("intro-gate");
 const introSkipTopButton = document.getElementById("intro-skip-top");
 const introSkipBottomButton = document.getElementById("intro-skip-bottom");
@@ -1029,6 +1046,12 @@ function qualitySignals(record) {
 function tabelogReviewCount(record) {
   const count = Number(qualitySignals(record).tabelog?.review_count || 0);
   return Number.isFinite(count) ? count : 0;
+}
+
+function tabelogScore(record) {
+  const signal = qualitySignals(record).tabelog;
+  const score = Number(signal?.score_raw ?? signal?.honest_stars ?? 0);
+  return Number.isFinite(score) ? score : 0;
 }
 
 function externalSignalCard(source, signal) {
@@ -1836,6 +1859,10 @@ function isDiningRoute(route = currentRoute()) {
   return route.programId === "dining";
 }
 
+function isJapanRankRoute(route = currentRoute()) {
+  return route.id === "dining/japan/top";
+}
+
 function isStayRoute(route = currentRoute()) {
   return route.programId === "stays";
 }
@@ -2255,6 +2282,9 @@ function resolveRouteFromHash(hashValue = window.location.hash) {
     all: "dining/world",
     world: "dining/world",
     japan: "dining/japan",
+    "japan-top": "dining/japan/top",
+    rankings: "dining/japan/top",
+    "japan-rankings": "dining/japan/top",
     tokyo: "dining/japan",
     kyoto: "dining/japan",
     osaka: "dining/japan",
@@ -2292,15 +2322,21 @@ function renderProgramShell(program, route) {
   document.body.classList.toggle("route-love-dining", route.programId === "love-dining");
   document.body.classList.toggle("route-table-for-two", route.programId === "table-for-two");
   document.body.classList.toggle("route-alerts", route.programId === "alerts");
+  document.body.classList.toggle("route-japan-top", isJapanRankRoute(route));
   if (routeEyebrow) routeEyebrow.textContent = route.eyebrow;
   if (routeDescription) routeDescription.textContent = route.description;
-  programTitle.textContent = program.title;
-  programDescription.textContent = program.description;
+  programTitle.textContent = isJapanRankRoute(route) ? route.title : program.title;
+  programDescription.textContent = isJapanRankRoute(route) ? route.description : program.description;
 
   // Always keep primary nav visible — mark active tab only
+  const activeRouteLink = programLinks.some((link) => link.dataset.route === route.id);
   programLinks.forEach((link) => {
     link.hidden = false;
-    link.classList.toggle("active", link.dataset.program === program.id);
+    const isSpecificRoute = Boolean(link.dataset.route);
+    link.classList.toggle(
+      "active",
+      isSpecificRoute ? link.dataset.route === route.id : link.dataset.program === program.id && !activeRouteLink
+    );
   });
 }
 
@@ -2522,9 +2558,35 @@ function ensureActiveRecord() {
   }
 }
 
+function japanRankValue(record) {
+  return state.japanRankMetric === "score" ? tabelogScore(record) : tabelogReviewCount(record);
+}
+
+function filterJapanRankings() {
+  state.filtered = state.scopeRecords
+    .filter((record) => !state.japanRankPrefecture || record.prefecture === state.japanRankPrefecture)
+    .filter((record) => japanRankValue(record) > 0)
+    .sort((a, b) => {
+      const diff = japanRankValue(b) - japanRankValue(a);
+      if (diff) return diff;
+      return (a.name || "").localeCompare(b.name || "");
+    })
+    .slice(0, state.japanRankLimit);
+}
+
 function filterRestaurants(options = {}) {
   const search = searchInput.value.trim().toLowerCase();
   const route = currentRoute();
+  if (isJapanRankRoute(route)) {
+    filterJapanRankings();
+    ensureActiveRecord();
+    renderStats();
+    renderMarkers();
+    fitDiningMapToVisibleMarkers();
+    renderFocusCard();
+    return;
+  }
+
   const country = countryFilter.value;
   const hasSelectedCity = Object.prototype.hasOwnProperty.call(options, "selectedCity");
   const prefecture = prefectureFilter.value;
@@ -2553,7 +2615,7 @@ function filterRestaurants(options = {}) {
     if (cuisine && !(record.cuisines || []).includes(cuisine)) return false;
     const tabelogSignal = qualitySignals(record).tabelog;
     if (tabelog === "available" && !tabelogSignal) return false;
-    const tScore = tabelogSignal ? (tabelogSignal.score_raw ?? tabelogSignal.honest_stars) : null;
+    const tScore = tabelogScore(record) || null;
     if (tabelog === "3_5plus" && !(tScore != null && tScore >= 3.5)) return false;
     if (tabelog === "3_8plus" && !(tScore != null && tScore >= 3.8)) return false;
     if (tabelog === "4plus" && !(tScore != null && tScore >= 4.0)) return false;
@@ -2636,12 +2698,20 @@ function renderStats() {
     .join(" · ");
   const cacheText = cacheSummary ? ` · ${cacheSummary}.` : ".";
 
-  summaryStripText.textContent =
-    filterCount > 0
-      ? `${state.filtered.length} of ${state.scopeRecords.length} venues shown across ${filteredLoc}${mappedText}${cacheText}`
-      : `${state.scopeRecords.length} venues across ${scopeLoc}${scopeMappedText}${cacheText}`;
+  if (isJapanRankRoute(route)) {
+    const metric = state.japanRankMetric === "score" ? "Tabelog score" : "Tabelog reviews";
+    const place = state.japanRankPrefecture || "Japan";
+    summaryStripText.textContent = `Top ${state.filtered.length} ${place} venues by ${metric}${cacheText}`;
+    resultsText.textContent = state.activeId ? `Selected ranked venue · ${route.label}` : `Top ${state.japanRankLimit} · click a venue to move the map`;
+  } else {
+    summaryStripText.textContent =
+      filterCount > 0
+        ? `${state.filtered.length} of ${state.scopeRecords.length} venues shown across ${filteredLoc}${mappedText}${cacheText}`
+        : `${state.scopeRecords.length} venues across ${scopeLoc}${scopeMappedText}${cacheText}`;
 
-  resultsText.textContent = state.activeId ? `Selected venue · ${route.label}` : `Click a dot to select · ${route.label}`;
+    resultsText.textContent = state.activeId ? `Selected venue · ${route.label}` : `Click a dot to select · ${route.label}`;
+  }
+  if (focusPanelTitle) focusPanelTitle.textContent = isJapanRankRoute(route) ? "Japan rankings" : "Selected venue";
   tableSummary.textContent =
     filterCount > 0 ? "Current filtered shortlist in table form." : "Current route list in table form.";
   mobileSummary.textContent = `${state.filtered.length} venues${state.filtered.length > MOBILE_PAGE_SIZE ? ` — scroll to browse all` : ""}`;
@@ -2663,7 +2733,87 @@ function renderMarkers() {
   });
 }
 
+function japanRankMetricLabel(record) {
+  if (state.japanRankMetric === "score") {
+    const score = tabelogScore(record);
+    return score ? `${score.toFixed(2).replace(/\.?0+$/, "")} Tabelog` : "No score";
+  }
+  return formatReviewCount(tabelogReviewCount(record)) || "No reviews";
+}
+
+function renderJapanRankPanel() {
+  const prefectures = uniqueValues(state.scopeRecords.map((record) => record.prefecture));
+  const prefectureOptions = [
+    '<option value="">All prefectures</option>',
+    ...prefectures.map((prefecture) => `<option value="${escapeHtml(prefecture)}"${state.japanRankPrefecture === prefecture ? " selected" : ""}>${escapeHtml(prefecture)}</option>`),
+  ].join("");
+  const rows = state.filtered.map((record, index) => {
+    const isActive = record.id === state.activeId;
+    const location = [record.prefecture, record.city, record.district].filter(Boolean).join(" / ");
+    const cuisines = (record.cuisines || []).slice(0, 3).join(", ");
+    return `
+      <button type="button" class="rank-card${isActive ? " active" : ""}" data-rank-id="${escapeHtml(record.id)}">
+        <span class="rank-number">${index + 1}</span>
+        <span class="rank-copy">
+          <strong>${escapeHtml(record.name)}</strong>
+          <span>${escapeHtml(location || "Japan")}</span>
+          ${cuisines ? `<em>${escapeHtml(cuisines)}</em>` : ""}
+        </span>
+        <span class="rank-metric">${escapeHtml(japanRankMetricLabel(record))}</span>
+      </button>
+    `;
+  }).join("");
+
+  focusCard.innerHTML = `
+    <div class="rank-controls">
+      <label class="filter-wrap">
+        <span class="label">Prefecture</span>
+        <select id="rank-prefecture-filter">${prefectureOptions}</select>
+      </label>
+      <label class="filter-wrap">
+        <span class="label">Rank by</span>
+        <select id="rank-metric-filter">
+          <option value="reviews"${state.japanRankMetric === "reviews" ? " selected" : ""}>Tabelog reviews</option>
+          <option value="score"${state.japanRankMetric === "score" ? " selected" : ""}>Tabelog score</option>
+        </select>
+      </label>
+      <label class="filter-wrap">
+        <span class="label">Show</span>
+        <select id="rank-limit-filter">
+          <option value="25"${state.japanRankLimit === 25 ? " selected" : ""}>Top 25</option>
+          <option value="50"${state.japanRankLimit === 50 ? " selected" : ""}>Top 50</option>
+        </select>
+      </label>
+    </div>
+    <div class="rank-list">${rows || '<div class="empty-state">No ranked venues for this selection.</div>'}</div>
+  `;
+
+  focusCard.querySelector("#rank-prefecture-filter")?.addEventListener("change", (event) => {
+    state.japanRankPrefecture = event.target.value;
+    filterRestaurants();
+  });
+  focusCard.querySelector("#rank-metric-filter")?.addEventListener("change", (event) => {
+    state.japanRankMetric = event.target.value === "score" ? "score" : "reviews";
+    filterRestaurants();
+  });
+  focusCard.querySelector("#rank-limit-filter")?.addEventListener("change", (event) => {
+    state.japanRankLimit = Number(event.target.value || 25);
+    filterRestaurants();
+  });
+  focusCard.querySelectorAll("[data-rank-id]").forEach((button) => {
+    button.addEventListener("click", () => {
+      setActiveRecord(button.getAttribute("data-rank-id") || "");
+      focusActiveRecordOnMap();
+    });
+  });
+}
+
 function renderFocusCard() {
+  if (isJapanRankRoute()) {
+    renderJapanRankPanel();
+    return;
+  }
+
   const record = activeRecord();
   const diningFocusPanel = focusCard.closest(".focus-panel");
   if (!record) {
@@ -3052,18 +3202,22 @@ function maybeScrollDiningDetailsIntoView() {
 function setActiveRecord(id, options = {}) {
   state.activeId = id;
   const route = currentRoute();
-  resultsText.textContent = id ? `Selected venue · ${route.label}` : `Click a dot to select · ${route.label}`;
+  resultsText.textContent = isJapanRankRoute(route)
+    ? id ? `Selected ranked venue · ${route.label}` : `Top ${state.japanRankLimit} · click a venue to move the map`
+    : id ? `Selected venue · ${route.label}` : `Click a dot to select · ${route.label}`;
   renderFocusCard();
-  renderTable();
-  // Ensure the active card's page is loaded on mobile
-  if (id) {
-    const idx = state.filtered.findIndex((r) => r.id === id);
-    if (idx >= 0) {
-      const neededPage = Math.ceil((idx + 1) / MOBILE_PAGE_SIZE);
-      if (neededPage > mobileCardPage) mobileCardPage = neededPage;
+  if (!isJapanRankRoute(route)) {
+    renderTable();
+    // Ensure the active card's page is loaded on mobile
+    if (id) {
+      const idx = state.filtered.findIndex((r) => r.id === id);
+      if (idx >= 0) {
+        const neededPage = Math.ceil((idx + 1) / MOBILE_PAGE_SIZE);
+        if (neededPage > mobileCardPage) mobileCardPage = neededPage;
+      }
     }
+    renderMobileCards(false);
   }
-  renderMobileCards(false);
   updateDiningMarkerStyles();
   if (id && options.scrollDetails) maybeScrollDiningDetailsIntoView();
 }
