@@ -1326,6 +1326,54 @@ function pocketAvailabilitySlots(record) {
   });
 }
 
+function pocketPartyRangeLabel(summary) {
+  const ranges = Array.isArray(summary?.party_ranges) ? summary.party_ranges : [];
+  return ranges
+    .map((range) => {
+      const min = Number(range?.[0] || 0);
+      const max = Number(range?.[1] || 0);
+      if (!min || !max) return "";
+      return min === max ? `${min} pax` : `${min}-${max} pax`;
+    })
+    .filter(Boolean)
+    .join(", ");
+}
+
+function pocketSelectedDateSlotsHtml(record, selectedDate) {
+  const summary = selectedDate ? pocketDateSummaries(record)[selectedDate] : null;
+  if (!selectedDate) return '<div class="tft-date-detail muted">Choose a date to see Pocket times and seats.</div>';
+  if (!summary) {
+    return `
+      <div class="tft-date-detail">
+        <h5>${escapeHtml(tableForTwoDateOptionLabel(selectedDate))}</h5>
+        <p>No checked Pocket slots for this date in the current cache.</p>
+      </div>
+    `;
+  }
+  const times = (summary.times || [])
+    .map((time) => `<span class="tft-time-chip"><span>${escapeHtml(time)}</span></span>`)
+    .join("");
+  const sessions = (summary.sessions || []).map(tableForTwoSessionLabel).join(" + ");
+  const seats = pocketPartyRangeLabel(summary);
+  const seating = (summary.seating || [])
+    .filter((value) => value && value !== "NONE")
+    .map((value) => value.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase()))
+    .join(", ");
+  return `
+    <div class="tft-date-detail">
+      <h5>${escapeHtml(tableForTwoDateOptionLabel(selectedDate))}</h5>
+      <div class="tft-date-session">
+        <span class="focus-label">Times</span>
+        <span class="tft-time-chip-row">${times || '<span class="focus-note">Times not listed</span>'}</span>
+      </div>
+      ${sessions ? `<div class="tft-date-session"><span class="focus-label">Session</span><span>${escapeHtml(sessions)}</span></div>` : ""}
+      ${seats ? `<div class="tft-date-session"><span class="focus-label">Seats</span><span>${escapeHtml(seats)}</span></div>` : ""}
+      ${summary.slot_count ? `<div class="tft-date-session"><span class="focus-label">Slots</span><span>${escapeHtml(`${summary.slot_count} checked`)}</span></div>` : ""}
+      ${seating ? `<div class="tft-date-session"><span class="focus-label">Seating</span><span>${escapeHtml(seating)}</span></div>` : ""}
+    </div>
+  `;
+}
+
 function pocketAvailabilityFallbackRows(record) {
   const availability = pocketAvailabilityRecord(record);
   const reservationDates = (availability?.reservation_dates || []).slice(0, 8);
@@ -1368,7 +1416,7 @@ function pocketAvailabilityDetailsMarkup(record) {
       </div>
       ${tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey)}
       <div class="tft-calendar-months">${monthsHtml}</div>
-      ${tableForTwoSelectedDateSlotsHtml(slots, { date: selectedDate }, selectedDate)}
+      ${pocketSelectedDateSlotsHtml(record, selectedDate)}
       <div class="tft-calendar-legend">
         <span><i class="is-available"></i>Checked slots</span>
         <span><i class="is-selected"></i>Selected date</span>
