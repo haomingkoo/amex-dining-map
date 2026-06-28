@@ -1322,8 +1322,8 @@ function pocketAvailabilityBadge(record) {
   if (record.country !== "Japan") return "";
   const availability = pocketAvailabilityRecord(record);
   if (!availability) return "";
-  if (pocketHasCheckedSlots(record)) return '<span class="badge green">Pocket slots</span>';
-  if ((availability.reservation_dates || []).length) return '<span class="badge blue">Pocket dates</span>';
+  if (pocketHasCheckedSlots(record)) return '<span class="badge green">Checked times</span>';
+  if ((availability.reservation_dates || []).length) return '<span class="badge blue">Bookable dates</span>';
   if ((availability.waitlist_dates || []).length) return '<span class="badge amber">Pocket waitlist</span>';
   return "";
 }
@@ -1350,7 +1350,7 @@ function pocketAvailabilityNote(record) {
   }
   const dateCount = (availability.reservation_dates || []).length;
   if (dateCount) {
-    return `Pocket availability: ${dateCount} reservation date${dateCount === 1 ? "" : "s"} cached.`;
+    return `Pocket availability: ${dateCount} bookable date${dateCount === 1 ? "" : "s"} listed.`;
   }
   if ((availability.waitlist_dates || []).length) {
     return "Pocket availability: waitlist dates cached, no bookable dates in the current cache.";
@@ -1394,7 +1394,7 @@ function pocketSelectedDateSlotsHtml(record, selectedDate) {
     return `
       <div class="tft-date-detail">
         <h5>${escapeHtml(tableForTwoDateOptionLabel(selectedDate))}</h5>
-        <p>No checked Pocket slots for this date in the current cache.</p>
+        <p>No checked Pocket times for this date in the current cache.</p>
       </div>
     `;
   }
@@ -1433,9 +1433,17 @@ function pocketAvailabilityFallbackRows(record) {
         <span class="focus-label">Dates</span>
         <span>${escapeHtml(reservationDates.map(diningDateLabel).join(", "))}${availability.reservation_dates.length > reservationDates.length ? " +" : ""}</span>
       </div>
-      <div class="focus-note">Exact times were not in the checked slot window.</div>
+      <div class="focus-note">Pocket lists these dates, but no exact times/seats were returned in the current slot check.</div>
     </div>
   `;
+}
+
+function pocketAvailabilityEmptyNote(record) {
+  if (record.country !== "Japan") return "";
+  const availability = pocketAvailabilityRecord(record);
+  if (!availability) return "Pocket availability was not checked for this venue yet.";
+  if ((availability.waitlist_dates || []).length) return "Pocket checked: waitlist dates only, no bookable dates/times in the current cache.";
+  return "Pocket checked: no bookable dates/times in the current cache.";
 }
 
 function pocketAvailabilityDetailsMarkup(record) {
@@ -1460,7 +1468,7 @@ function pocketAvailabilityDetailsMarkup(record) {
       <div class="tft-calendar-head">
         <div>
           <div class="focus-kicker">Pocket availability</div>
-          <h4>${escapeHtml(`${reservationDateCount} reservation date${reservationDateCount === 1 ? "" : "s"} cached`)}</h4>
+          <h4>${escapeHtml(`${reservationDateCount} bookable date${reservationDateCount === 1 ? "" : "s"} listed`)}</h4>
         </div>
         ${checkedDateCount ? `<span class="badge green">${escapeHtml(`${checkedDateCount} checked`)}</span>` : ""}
       </div>
@@ -1470,7 +1478,7 @@ function pocketAvailabilityDetailsMarkup(record) {
         ${tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey)}
         <div class="tft-calendar-months">${monthsHtml}</div>
         <div class="tft-calendar-legend">
-          <span><i class="is-available"></i>Checked slots</span>
+          <span><i class="is-available"></i>Checked times</span>
           <span><i class="is-selected"></i>Selected date</span>
         </div>
       </details>
@@ -2806,7 +2814,7 @@ function japanRankDetailMarkup(record) {
       ${tagSection("Known for", record.known_for_tags, "gold")}
       ${tagSection("Signature dishes", record.signature_dish_tags, "blue")}
       ${summary ? `<p class="focus-summary${summary.isAi ? " focus-summary-ai" : ""}">${escapeHtml(summary.text)}</p>` : ""}
-      ${availabilityDetails || '<div class="focus-note">No Pocket availability cache for this venue yet.</div>'}
+      ${availabilityDetails || `<div class="focus-note">${escapeHtml(pocketAvailabilityEmptyNote(record))}</div>`}
       ${isJapan && (hasDinnerPrice || hasLunchPrice) ? `
         <div class="price-grid">
           ${hasDinnerPrice ? `<div class="price-card"><span class="price-label">Dinner</span>${priceMarkup(record.price_dinner_min_jpy, record.price_dinner_max_jpy, record.price_dinner_band_tier, record.price_dinner_band_label)}</div>` : ""}
@@ -2868,8 +2876,8 @@ function renderJapanRankPanel() {
         <span class="label">Availability</span>
         <select id="rank-availability-filter">
           <option value=""${state.japanRankAvailability === "" ? " selected" : ""}>All venues</option>
-          <option value="bookable"${state.japanRankAvailability === "bookable" ? " selected" : ""}>Pocket dates</option>
-          <option value="slots"${state.japanRankAvailability === "slots" ? " selected" : ""}>Checked slots</option>
+          <option value="bookable"${state.japanRankAvailability === "bookable" ? " selected" : ""}>Bookable dates</option>
+          <option value="slots"${state.japanRankAvailability === "slots" ? " selected" : ""}>Checked times</option>
         </select>
       </label>
     </div>
