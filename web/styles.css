@@ -2020,6 +2020,12 @@ body.route-japan-top .mobile-results-panel {
   padding-top: 12px;
 }
 
+.rank-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .rank-card {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr) auto;
@@ -2085,6 +2091,38 @@ body.route-japan-top .mobile-results-panel {
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.rank-pager {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.rank-pager span {
+  text-align: center;
+}
+
+.rank-pager .ghost-btn {
+  min-height: 34px;
+  padding: 7px 10px;
+  font-size: 10px;
+}
+
+.rank-pager .ghost-btn:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.rank-detail {
+  padding: 12px;
+  border: 1px solid var(--surface-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--surface);
 }
 
 .table-scroll {
