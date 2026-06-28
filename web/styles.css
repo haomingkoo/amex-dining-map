@@ -938,6 +938,7 @@ input,
   display: grid;
   grid-template-columns: 1fr minmax(0, 380px);
   gap: 12px;
+  align-items: start;
   margin-bottom: 12px;
   animation: fade-up 0.6s ease both;
   animation-delay: 0.12s;
@@ -947,6 +948,7 @@ input,
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
 }
 
 #map,
@@ -956,6 +958,15 @@ input,
   flex: 1;
   min-height: 440px;
   border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+@media (min-width: 821px) {
+  .explorer-grid > .map-panel {
+    position: sticky;
+    top: 12px;
+    height: min(820px, calc(100vh - 24px));
+    min-height: 560px;
+  }
 }
 
 .map-downloads {

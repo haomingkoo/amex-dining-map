@@ -504,6 +504,7 @@ const state = {
   tableForTwoSelectedCalendarDates: {},
   tableForTwoCalendarMonths: {},
   pocketCalendarMonths: {},
+  pocketCalendarOpen: {},
   tableForTwoLiveRefreshInFlight: false,
   tableForTwoLiveRefreshAt: null,
   tableForTwoLiveRefreshTimer: null,
@@ -761,11 +762,12 @@ const kidsFilterWrap = document.getElementById("kids-filter-wrap");
 const menuFilterWrap = document.getElementById("menu-filter-wrap");
 const reservationFilterWrap = document.getElementById("reservation-filter-wrap");
 const pocketAvailabilityFilterWrap = document.getElementById("pocket-availability-filter-wrap");
+const pocketSessionFilterWrap = document.getElementById("pocket-session-filter-wrap");
 const pocketDateFilterWrap = document.getElementById("pocket-date-filter-wrap");
 const pocketPartyFilterWrap = document.getElementById("pocket-party-filter-wrap");
 const googleRatingFilterWrap = document.getElementById("google-rating-filter-wrap");
 const sortFilterWrap = document.getElementById("sort-filter-wrap");
-const JAPAN_ONLY_FILTER_WRAPS = [tabelogFilterWrap, lunchFilterWrap, dinnerFilterWrap, kidsFilterWrap, menuFilterWrap, reservationFilterWrap, pocketAvailabilityFilterWrap, pocketDateFilterWrap, pocketPartyFilterWrap];
+const JAPAN_ONLY_FILTER_WRAPS = [tabelogFilterWrap, lunchFilterWrap, dinnerFilterWrap, kidsFilterWrap, menuFilterWrap, reservationFilterWrap, pocketAvailabilityFilterWrap, pocketSessionFilterWrap, pocketDateFilterWrap, pocketPartyFilterWrap];
 const cuisineFilter = document.getElementById("cuisine-filter");
 const tabelogFilter = document.getElementById("tabelog-filter");
 const googleRatingFilter = document.getElementById("google-rating-filter");
@@ -776,6 +778,7 @@ const kidsFilter = document.getElementById("kids-filter");
 const menuFilter = document.getElementById("menu-filter");
 const reservationFilter = document.getElementById("reservation-filter");
 const pocketAvailabilityFilter = document.getElementById("pocket-availability-filter");
+const pocketSessionFilter = document.getElementById("pocket-session-filter");
 const pocketDateFilter = document.getElementById("pocket-date-filter");
 const pocketPartyFilter = document.getElementById("pocket-party-filter");
 const resetFiltersButton = document.getElementById("reset-filters");
@@ -1247,8 +1250,17 @@ function pocketPartyRangeMatches(summary, partySize) {
   });
 }
 
-function pocketAvailabilityMatches(record, mode, selectedDate, partySize) {
-  if (!mode && !selectedDate && !partySize) return true;
+function pocketSessionMatches(summary, session) {
+  if (!session) return true;
+  return (summary?.sessions || []).some((value) => String(value || "").trim().toLowerCase() === session);
+}
+
+function pocketSummaryMatches(summary, partySize, session) {
+  return pocketPartyRangeMatches(summary, partySize) && pocketSessionMatches(summary, session);
+}
+
+function pocketAvailabilityMatches(record, mode, selectedDate, partySize, session) {
+  if (!mode && !selectedDate && !partySize && !session) return true;
   if (record.country !== "Japan") return false;
   const availability = pocketAvailabilityRecord(record);
   if (!availability) return false;
@@ -1256,18 +1268,19 @@ function pocketAvailabilityMatches(record, mode, selectedDate, partySize) {
   if (mode === "bookable" && !(availability.reservation_dates || []).length) return false;
   if (mode === "slots" && !pocketHasCheckedSlots(record)) return false;
   if (mode === "waitlist") {
+    if (session) return false;
     if (selectedDate) return (availability.waitlist_dates || []).includes(selectedDate);
     return (availability.waitlist_dates || []).length > 0;
   }
 
   if (selectedDate) {
-    if (partySize) {
-      return pocketPartyRangeMatches(dateSummaries[selectedDate], partySize);
+    if (partySize || session) {
+      return pocketSummaryMatches(dateSummaries[selectedDate], partySize, session);
     }
     return (availability.reservation_dates || []).includes(selectedDate);
   }
 
-  return Object.values(dateSummaries).some((summary) => pocketPartyRangeMatches(summary, partySize));
+  return Object.values(dateSummaries).some((summary) => pocketSummaryMatches(summary, partySize, session));
 }
 
 function pocketAvailabilityBadge(record) {
@@ -1396,7 +1409,8 @@ function pocketAvailabilityDetailsMarkup(record) {
   if (!slots.length) return pocketAvailabilityFallbackRows(record);
   const dates = uniqueValues(slots.map((slot) => slot.date).filter(Boolean)).sort();
   const slotsByDate = tableForTwoSlotsByDate(slots);
-  const selectedDate = dates.includes(pocketDateFilter.value) ? pocketDateFilter.value : dates[0];
+  const matchingDates = dates.filter((date) => pocketSummaryMatches(pocketDateSummaries(record)[date], pocketPartySizeValue(), pocketSessionFilter.value));
+  const selectedDate = dates.includes(pocketDateFilter.value) ? pocketDateFilter.value : (matchingDates[0] || dates[0]);
   const monthKeys = uniqueValues(dates.map((dateValue) => dateValue.slice(0, 7))).sort();
   const selectedMonthKey = selectedDate ? selectedDate.slice(0, 7) : "";
   const preferredMonthKey = state.pocketCalendarMonths[record.id] || selectedMonthKey || monthKeys[0] || "";
@@ -1405,6 +1419,7 @@ function pocketAvailabilityDetailsMarkup(record) {
   const checkedDateCount = dates.length;
   const reservationDateCount = (pocketAvailabilityRecord(record)?.reservation_dates || []).length;
   const meta = state.pocketAvailability?.fetched_at ? `Cached ${formatTimestamp(state.pocketAvailability.fetched_at)}` : "Cached availability";
+  const calendarOpen = Boolean(state.pocketCalendarOpen[record.id]);
   return `
     <div class="tft-calendar-card pocket-calendar-card">
       <div class="tft-calendar-head">
@@ -1415,7 +1430,7 @@ function pocketAvailabilityDetailsMarkup(record) {
         ${checkedDateCount ? `<span class="badge green">${escapeHtml(`${checkedDateCount} checked`)}</span>` : ""}
       </div>
       ${pocketSelectedDateSlotsHtml(record, selectedDate)}
-      <details class="pocket-calendar-toggle">
+      <details class="pocket-calendar-toggle"${calendarOpen ? " open" : ""}>
         <summary>View calendar</summary>
         ${tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey)}
         <div class="tft-calendar-months">${monthsHtml}</div>
@@ -1424,8 +1439,7 @@ function pocketAvailabilityDetailsMarkup(record) {
           <span><i class="is-selected"></i>Selected date</span>
         </div>
       </details>
-      <div class="focus-note">Planning cache only. Confirm and book on Pocket Concierge.</div>
-      <div class="focus-note">${escapeHtml(meta)}</div>
+      <div class="focus-note">${escapeHtml(`${meta}. Confirm on Pocket Concierge.`)}</div>
     </div>
   `;
 }
@@ -2172,6 +2186,7 @@ function activeFilterCount() {
   if (menuFilter.value) count += 1;
   if (reservationFilter.value) count += 1;
   if (pocketAvailabilityFilter.value) count += 1;
+  if (pocketSessionFilter.value) count += 1;
   if (pocketDateFilter.value) count += 1;
   if (pocketPartyFilter.value) count += 1;
   return count;
@@ -2400,6 +2415,7 @@ function resetFilterControls() {
   menuFilter.value = "";
   reservationFilter.value = "";
   pocketAvailabilityFilter.value = "";
+  pocketSessionFilter.value = "";
   pocketDateFilter.value = "";
   pocketPartyFilter.value = "";
   cityFilter.value = route.fixedCity || "";
@@ -2504,6 +2520,7 @@ function filterRestaurants(options = {}) {
   const menu = menuFilter.value;
   const reservation = reservationFilter.value;
   const pocketMode = pocketAvailabilityFilter.value;
+  const pocketSession = pocketSessionFilter.value;
   const pocketDate = pocketDateFilter.value;
   const pocketPartySize = pocketPartySizeValue();
 
@@ -2537,7 +2554,7 @@ function filterRestaurants(options = {}) {
     if (menu === "yes" && !record.english_menu) return false;
     if (menu === "no" && record.english_menu) return false;
     if (reservation && record.reservation_type !== reservation) return false;
-    if (!pocketAvailabilityMatches(record, pocketMode, pocketDate, pocketPartySize)) return false;
+    if (!pocketAvailabilityMatches(record, pocketMode, pocketDate, pocketPartySize, pocketSession)) return false;
     if (search && !fuzzyMatchSearch(record.search_text || "", search)) return false;
     return true;
   });
@@ -2765,8 +2782,15 @@ function renderFocusCard() {
   if (japanPocketButton) {
     japanPocketButton.addEventListener("click", selectJapanForPocketFilters);
   }
+  const pocketCalendarToggle = focusCard.querySelector(".pocket-calendar-toggle");
+  if (pocketCalendarToggle && state.activeId) {
+    pocketCalendarToggle.addEventListener("toggle", () => {
+      state.pocketCalendarOpen[state.activeId] = pocketCalendarToggle.open;
+    });
+  }
   focusCard.querySelectorAll("[data-tft-calendar-date]").forEach((button) => {
     button.addEventListener("click", () => {
+      if (state.activeId) state.pocketCalendarOpen[state.activeId] = true;
       selectJapanForPocketFilters(button.getAttribute("data-tft-calendar-date") || "");
     });
   });
@@ -2775,6 +2799,7 @@ function renderFocusCard() {
       const selectedMonth = button.getAttribute("data-tft-calendar-month") || "";
       if (!selectedMonth || !state.activeId) return;
       state.pocketCalendarMonths[state.activeId] = selectedMonth;
+      state.pocketCalendarOpen[state.activeId] = true;
       renderFocusCard();
     });
   });
@@ -6108,6 +6133,7 @@ countryFilter.addEventListener("change", () => {
   cityFilter.value = "";
   if (countryFilter.value !== "Japan") {
     pocketAvailabilityFilter.value = "";
+    pocketSessionFilter.value = "";
     pocketDateFilter.value = "";
     pocketPartyFilter.value = "";
   }
@@ -6136,6 +6162,7 @@ cityFilter.addEventListener("change", () => {
   menuFilter,
   reservationFilter,
   pocketAvailabilityFilter,
+  pocketSessionFilter,
   pocketDateFilter,
 ].forEach((element) => {
   element.addEventListener("change", filterRestaurants);
