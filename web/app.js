@@ -1414,13 +1414,16 @@ function pocketAvailabilityDetailsMarkup(record) {
         </div>
         ${checkedDateCount ? `<span class="badge green">${escapeHtml(`${checkedDateCount} checked`)}</span>` : ""}
       </div>
-      ${tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey)}
-      <div class="tft-calendar-months">${monthsHtml}</div>
       ${pocketSelectedDateSlotsHtml(record, selectedDate)}
-      <div class="tft-calendar-legend">
-        <span><i class="is-available"></i>Checked slots</span>
-        <span><i class="is-selected"></i>Selected date</span>
-      </div>
+      <details class="pocket-calendar-toggle">
+        <summary>View calendar</summary>
+        ${tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey)}
+        <div class="tft-calendar-months">${monthsHtml}</div>
+        <div class="tft-calendar-legend">
+          <span><i class="is-available"></i>Checked slots</span>
+          <span><i class="is-selected"></i>Selected date</span>
+        </div>
+      </details>
       <div class="focus-note">Planning cache only. Confirm and book on Pocket Concierge.</div>
       <div class="focus-note">${escapeHtml(meta)}</div>
     </div>
@@ -2721,8 +2724,8 @@ function renderFocusCard() {
       </div>` : ""}
     </div>` : ""}
     ${diningCreditEligibilityNote(record) ? `<div class="focus-note focus-note-warn">${escapeHtml(diningCreditEligibilityNote(record))}</div>` : ""}
-    ${sourceCacheLabel ? `<div class="focus-note">Data source: ${escapeHtml(sourceCacheLabel)}.</div>` : ""}
-    ${availabilityNote ? `<div class="focus-note">${escapeHtml(availabilityNote)}</div>` : ""}
+    ${sourceCacheLabel && !availabilityDetails ? `<div class="focus-note">Data source: ${escapeHtml(sourceCacheLabel)}.</div>` : ""}
+    ${availabilityNote && !availabilityDetails ? `<div class="focus-note">${escapeHtml(availabilityNote)}</div>` : ""}
     ${focusLocationNote(record) ? `<div class="focus-note">${escapeHtml(focusLocationNote(record))}</div>` : ""}
     ${globalDiningCreditTermsMarkup(record)}
     <div class="focus-actions">

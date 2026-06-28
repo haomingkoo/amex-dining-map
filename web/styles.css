@@ -1448,6 +1448,43 @@ input,
   opacity: 0.45;
 }
 
+.pocket-calendar-toggle {
+  margin-top: 12px;
+}
+
+.pocket-calendar-toggle summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid var(--surface-border-soft);
+  border-radius: var(--radius-xs);
+  background: var(--surface-overlay);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  list-style: none;
+}
+
+.pocket-calendar-toggle summary::-webkit-details-marker {
+  display: none;
+}
+
+.pocket-calendar-toggle summary::after {
+  content: "+";
+  color: var(--gold);
+}
+
+.pocket-calendar-toggle[open] summary {
+  margin-bottom: 12px;
+}
+
+.pocket-calendar-toggle[open] summary::after {
+  content: "-";
+}
+
 .tft-calendar-month h5 {
   margin: 0 0 8px;
   font-size: 13px;
@@ -1462,6 +1499,13 @@ input,
   font-size: 22px;
   font-weight: 500;
   color: var(--text);
+}
+
+.pocket-calendar-card h4 {
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 .tft-calendar-empty p {
@@ -1587,12 +1631,34 @@ button.tft-calendar-cell:hover {
   font-size: 13px;
 }
 
+.pocket-calendar-card .tft-date-detail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.pocket-calendar-card .tft-date-detail h5,
+.pocket-calendar-card .tft-date-detail p {
+  grid-column: 1 / -1;
+}
+
 .tft-date-session {
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);
   gap: 10px;
   align-items: start;
   padding: 6px 0;
+}
+
+.pocket-calendar-card .tft-date-session {
+  display: block;
+  min-width: 0;
+  padding: 0;
+}
+
+.pocket-calendar-card .tft-date-session .focus-label {
+  display: block;
+  margin-bottom: 5px;
 }
 
 .tft-time-chip-row {
