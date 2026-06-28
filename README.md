@@ -28,6 +28,9 @@ Live site: `https://amex-explorer.kooexperience.com/`
   `AMEXPlatSG` project endpoint. The UI stores returned slot dates, times, and
   max party size so filters are evaluated per slot. Final booking and voucher
   redemption still happen in the Amex Experiences App.
+- `availability-cache`: Pocket Concierge public availability calendar and
+  date-level slot summaries for Japan filters. The cache stores dates, times,
+  sessions, and party-size ranges only.
 - `enriched`: geocodes, Google Maps ratings, summaries, and third-party quality
   signals. These are helpful, but not the source of truth.
 - `manual`: screenshots and menu captures. These are fallback context only;
@@ -38,6 +41,8 @@ Live site: `https://amex-explorer.kooexperience.com/`
 - `data/japan-restaurants.json`: Pocket Concierge Japan dining records.
 - `data/japan-dining-source.json`: Japan cache time, source URL, counts, and
   stable record hash.
+- `data/pocket-availability.json`: cached Pocket Concierge reservation dates,
+  waitlist dates, and upcoming date-level party-size ranges for Japan filters.
 - `data/global-restaurants.json`: Amex Global/Local Dining Credit records.
 - `data/global-dining-source.json`: Amex directory cache time, source API,
   country counts, and verification counts.
@@ -97,7 +102,8 @@ python3 scripts/source_change_alert.py --program "Plat Stay" --meta data/plat-st
 ## GitHub Workflows
 
 - `deploy-pages.yml`: deploys the static site on pushes to `main`.
-- `refresh-data.yml`: daily Japan dining and Plat Stay refresh at `01:00 UTC`.
+- `refresh-data.yml`: daily Japan dining, Pocket availability, and Plat Stay
+  refresh at `21:00 UTC`.
 - `refresh-love-dining.yml`: daily Love Dining refresh at `01:45 UTC`.
 - `refresh-table-for-two.yml`: daily public Table for Two roster and baseline
   `AMEXPlatSG` availability refresh at `01:30 UTC`. The browser also refreshes
@@ -120,8 +126,9 @@ Run these before pushing data or UI changes:
 ```bash
 python3 -m json.tool data/love-dining-source.json >/tmp/love-source.valid.json
 python3 -m json.tool data/japan-dining-source.json >/tmp/japan-source.valid.json
+python3 -m json.tool data/pocket-availability.json >/tmp/pocket-availability.valid.json
 python3 -m json.tool data/table-for-two.json >/tmp/table-for-two.valid.json
-python3 -m py_compile scripts/source_change_alert.py scripts/scrape_love_dining.py scripts/scrape_table_for_two.py scripts/check_table_for_two_availability.py scripts/sync_japan_mvp.py
+python3 -m py_compile scripts/source_change_alert.py scripts/scrape_love_dining.py scripts/scrape_table_for_two.py scripts/check_table_for_two_availability.py scripts/scrape_pocket_availability.py scripts/sync_japan_mvp.py
 python3 scripts/audit_coordinates.py
 python3 scripts/audit_content_provenance.py
 node --check web/app.js

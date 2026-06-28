@@ -3177,7 +3177,7 @@ h1, h2, h3 {
     border-radius: 8px;
     border: 1px solid rgba(201, 165, 90, 0.2);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-    max-height: 60vh;
+    max-height: calc(100vh - 72px);
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
@@ -3201,13 +3201,11 @@ h1, h2, h3 {
   }
 
   .map-filter-shell .toolbar .filter-actions {
-    position: sticky;
-    bottom: 0;
-    z-index: 2;
+    position: static;
     margin-top: 2px;
-    padding-top: 10px;
-    background: rgba(7, 13, 22, 0.98);
-    box-shadow: 0 -10px 18px rgba(7, 13, 22, 0.92);
+    padding-top: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .map-filter-shell .toolbar .filter-actions .ghost-btn {

@@ -2,6 +2,7 @@ const DATA_URL = "../data/japan-restaurants.json";
 const JAPAN_META_URL = "../data/japan-dining-source.json";
 const GLOBAL_DATA_URL = "../data/global-restaurants.json";
 const GLOBAL_META_URL = "../data/global-dining-source.json";
+const POCKET_AVAILABILITY_URL = "../data/pocket-availability.json";
 const STAYS_DATA_URL = "../data/plat-stays.json";
 const STAYS_META_URL = "../data/plat-stay-source.json";
 const LOVE_DINING_DATA_URL = "../data/love-dining.json";
@@ -469,6 +470,7 @@ const state = {
   restaurants: [],
   japanSourceMeta: null,
   globalSourceMeta: null,
+  pocketAvailability: null,
   stays: [],
   staysSourceMeta: null,
   scopeRecords: [],
@@ -757,9 +759,11 @@ const dinnerFilterWrap = document.getElementById("dinner-filter-wrap");
 const kidsFilterWrap = document.getElementById("kids-filter-wrap");
 const menuFilterWrap = document.getElementById("menu-filter-wrap");
 const reservationFilterWrap = document.getElementById("reservation-filter-wrap");
+const pocketDateFilterWrap = document.getElementById("pocket-date-filter-wrap");
+const pocketPartyFilterWrap = document.getElementById("pocket-party-filter-wrap");
 const googleRatingFilterWrap = document.getElementById("google-rating-filter-wrap");
 const sortFilterWrap = document.getElementById("sort-filter-wrap");
-const JAPAN_ONLY_FILTER_WRAPS = [tabelogFilterWrap, lunchFilterWrap, dinnerFilterWrap, kidsFilterWrap, menuFilterWrap, reservationFilterWrap];
+const JAPAN_ONLY_FILTER_WRAPS = [tabelogFilterWrap, lunchFilterWrap, dinnerFilterWrap, kidsFilterWrap, menuFilterWrap, reservationFilterWrap, pocketDateFilterWrap, pocketPartyFilterWrap];
 const cuisineFilter = document.getElementById("cuisine-filter");
 const tabelogFilter = document.getElementById("tabelog-filter");
 const googleRatingFilter = document.getElementById("google-rating-filter");
@@ -769,6 +773,8 @@ const dinnerFilter = document.getElementById("dinner-filter");
 const kidsFilter = document.getElementById("kids-filter");
 const menuFilter = document.getElementById("menu-filter");
 const reservationFilter = document.getElementById("reservation-filter");
+const pocketDateFilter = document.getElementById("pocket-date-filter");
+const pocketPartyFilter = document.getElementById("pocket-party-filter");
 const resetFiltersButton = document.getElementById("reset-filters");
 const summaryStripText = document.getElementById("summary-strip-text");
 const mapSummary = document.getElementById("map-summary");
@@ -1194,6 +1200,99 @@ function diningCreditBadge(record) {
   }
   if (isGlobalDiningCreditRecord(record)) {
     return '<span class="badge green">Abroad Global Dining Credit</span>';
+  }
+  return "";
+}
+
+function diningDateLabel(dateValue) {
+  if (!dateValue) return "";
+  const [year, month, day] = dateValue.split("-").map(Number);
+  if (!year || !month || !day) return dateValue;
+  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString("en-SG", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function pocketAvailabilityRecord(record) {
+  return record?.pocket_availability || null;
+}
+
+function pocketDateSummaries(record) {
+  const dates = pocketAvailabilityRecord(record)?.dates;
+  return dates && typeof dates === "object" ? dates : {};
+}
+
+function pocketPartySizeValue() {
+  const value = Number(pocketPartyFilter.value || 0);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function pocketPartyRangeMatches(summary, partySize) {
+  if (!partySize) return true;
+  const ranges = Array.isArray(summary?.party_ranges) ? summary.party_ranges : [];
+  return ranges.some((range) => {
+    const min = Number(range?.[0] || 0);
+    const max = Number(range?.[1] || 0);
+    return min > 0 && max > 0 && min <= partySize && partySize <= max;
+  });
+}
+
+function pocketAvailabilityMatches(record, selectedDate, partySize) {
+  if (!selectedDate && !partySize) return true;
+  if (record.country !== "Japan") return false;
+  const availability = pocketAvailabilityRecord(record);
+  if (!availability) return false;
+  const dateSummaries = pocketDateSummaries(record);
+
+  if (selectedDate) {
+    if (partySize) {
+      return pocketPartyRangeMatches(dateSummaries[selectedDate], partySize);
+    }
+    return (availability.reservation_dates || []).includes(selectedDate);
+  }
+
+  return Object.values(dateSummaries).some((summary) => pocketPartyRangeMatches(summary, partySize));
+}
+
+function pocketAvailabilityBadge(record) {
+  if (record.country !== "Japan") return "";
+  const availability = pocketAvailabilityRecord(record);
+  if (!availability) return "";
+  if (Object.keys(pocketDateSummaries(record)).length) return '<span class="badge green">Pocket slots</span>';
+  if ((availability.reservation_dates || []).length) return '<span class="badge blue">Pocket dates</span>';
+  if ((availability.waitlist_dates || []).length) return '<span class="badge amber">Pocket waitlist</span>';
+  return "";
+}
+
+function pocketAvailabilityCacheLabel(records = state.scopeRecords) {
+  if (!records.some((record) => record.country === "Japan")) return "";
+  const meta = state.pocketAvailability;
+  if (!meta?.fetched_at) return "";
+  const endLabel = meta.window_end ? ` through ${diningDateLabel(meta.window_end)}` : "";
+  return `Pocket availability cached ${formatTimestamp(meta.fetched_at)}${endLabel}`;
+}
+
+function pocketAvailabilityNote(record) {
+  if (record.country !== "Japan") return "";
+  const availability = pocketAvailabilityRecord(record);
+  if (!availability) return "";
+  const selectedDate = pocketDateFilter.value;
+  const partySize = pocketPartySizeValue();
+  const summary = selectedDate ? pocketDateSummaries(record)[selectedDate] : null;
+  if (summary && pocketPartyRangeMatches(summary, partySize)) {
+    const times = (summary.times || []).slice(0, 4).join(", ");
+    const pax = summary.max_party_size ? `up to ${summary.max_party_size} pax` : "party size cached";
+    return `Pocket availability: ${diningDateLabel(selectedDate)}${times ? ` at ${times}` : ""}, ${pax}.`;
+  }
+  const dateCount = (availability.reservation_dates || []).length;
+  if (dateCount) {
+    return `Pocket availability: ${dateCount} reservation date${dateCount === 1 ? "" : "s"} cached.`;
+  }
+  if ((availability.waitlist_dates || []).length) {
+    return "Pocket availability: waitlist dates cached, no bookable dates in the current cache.";
   }
   return "";
 }
@@ -1630,18 +1729,24 @@ async function ensureDiningDataLoaded() {
   if (state.dataLoaded.dining) return;
   if (!dataLoadPromises.dining) {
     dataLoadPromises.dining = (async () => {
-      const [japanRecords, japanMeta, globalRecords, globalMeta] = await Promise.all([
+      const [japanRecords, japanMeta, globalRecords, globalMeta, pocketAvailability] = await Promise.all([
         fetchJson(DATA_URL),
         fetchJson(JAPAN_META_URL),
         fetchJson(GLOBAL_DATA_URL),
         fetchJson(GLOBAL_META_URL),
+        fetchJson(POCKET_AVAILABILITY_URL),
       ]);
+      const pocketAvailabilityRecords = pocketAvailability?.records || {};
+      (Array.isArray(japanRecords) ? japanRecords : []).forEach((record) => {
+        record.pocket_availability = pocketAvailabilityRecords[record.id] || null;
+      });
       state.restaurants = [
         ...(Array.isArray(japanRecords) ? japanRecords : []),
         ...(Array.isArray(globalRecords) ? globalRecords : []),
       ];
       state.japanSourceMeta = japanMeta || null;
       state.globalSourceMeta = globalMeta || null;
+      state.pocketAvailability = pocketAvailability || null;
       state.restaurants.forEach((record) => {
         record.search_text = (record.search_text || "").toLowerCase();
       });
@@ -1907,6 +2012,8 @@ function activeFilterCount() {
   if (kidsFilter.value) count += 1;
   if (menuFilter.value) count += 1;
   if (reservationFilter.value) count += 1;
+  if (pocketDateFilter.value) count += 1;
+  if (pocketPartyFilter.value) count += 1;
   return count;
 }
 
@@ -2132,6 +2239,8 @@ function resetFilterControls() {
   kidsFilter.value = "";
   menuFilter.value = "";
   reservationFilter.value = "";
+  pocketDateFilter.value = "";
+  pocketPartyFilter.value = "";
   cityFilter.value = route.fixedCity || "";
 }
 
@@ -2202,7 +2311,7 @@ function refreshFilterOptions() {
   fillSelect(
     reservationFilter,
     uniqueValues(scopeRecords.map((record) => record.reservation_type)),
-    "All reservation styles"
+    "All styles"
   );
 }
 
@@ -2233,6 +2342,8 @@ function filterRestaurants(options = {}) {
   const kids = kidsFilter.value;
   const menu = menuFilter.value;
   const reservation = reservationFilter.value;
+  const pocketDate = pocketDateFilter.value;
+  const pocketPartySize = pocketPartySizeValue();
 
   state.filtered = state.scopeRecords.filter((record) => {
     if (country && record.country !== country) return false;
@@ -2264,6 +2375,7 @@ function filterRestaurants(options = {}) {
     if (menu === "yes" && !record.english_menu) return false;
     if (menu === "no" && record.english_menu) return false;
     if (reservation && record.reservation_type !== reservation) return false;
+    if (!pocketAvailabilityMatches(record, pocketDate, pocketPartySize)) return false;
     if (search && !fuzzyMatchSearch(record.search_text || "", search)) return false;
     return true;
   });
@@ -2313,7 +2425,9 @@ function renderStats() {
 
   const mappedText = filteredMapped === state.filtered.length ? "" : `, ${filteredMapped} mapped`;
   const scopeMappedText = filteredMapped === state.scopeRecords.length ? "" : `, ${filteredMapped} mapped`;
-  const cacheSummary = diningRouteCacheSummary();
+  const cacheSummary = [diningRouteCacheSummary(), pocketAvailabilityCacheLabel()]
+    .filter(Boolean)
+    .join(" · ");
   const cacheText = cacheSummary ? ` · ${cacheSummary}.` : ".";
 
   summaryStripText.textContent =
@@ -2389,6 +2503,7 @@ function renderFocusCard() {
     kidPolicyKnown ? `<span class="badge">${escapeHtml(kidLabel(record.child_policy_norm))}</span>` : "",
     isJapan && record.english_menu ? '<span class="badge green">English menu</span>' : "",
     isJapan && record.reservation_type ? `<span class="badge purple">${escapeHtml(record.reservation_type)}</span>` : "",
+    pocketAvailabilityBadge(record),
   ]
     .filter(Boolean)
     .join("");
@@ -2408,6 +2523,7 @@ function renderFocusCard() {
   const tSearchUrl = tabelogSignal && tabelogSignal.url ? tabelogSignal.url : tabelogSearchUrl(record);
   const summary = diningSummaryPayload(record);
   const sourceCacheLabel = diningSourceCacheLabel(record);
+  const availabilityNote = pocketAvailabilityNote(record);
 
   focusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(diningKicker(record))}</div>
@@ -2445,6 +2561,7 @@ function renderFocusCard() {
     </div>` : ""}
     ${diningCreditEligibilityNote(record) ? `<div class="focus-note focus-note-warn">${escapeHtml(diningCreditEligibilityNote(record))}</div>` : ""}
     ${sourceCacheLabel ? `<div class="focus-note">Data source: ${escapeHtml(sourceCacheLabel)}.</div>` : ""}
+    ${availabilityNote ? `<div class="focus-note">${escapeHtml(availabilityNote)}</div>` : ""}
     ${focusLocationNote(record) ? `<div class="focus-note">${escapeHtml(focusLocationNote(record))}</div>` : ""}
     ${globalDiningCreditTermsMarkup(record)}
     <div class="focus-actions">
@@ -2611,6 +2728,7 @@ function renderMobileCards(resetPage = true) {
         ${lunchBand ? `<span class="badge blue">${escapeHtml(lunchBand)}</span>` : ""}
         ${kidPolicyKnown ? `<span class="badge">${escapeHtml(kidLabel(record.child_policy_norm))}</span>` : ""}
         ${isJapan && record.english_menu ? '<span class="badge green">English menu</span>' : ""}
+        ${pocketAvailabilityBadge(record)}
       </div>
       ${tagSection("Known for", record.known_for_tags, "gold")}
       ${tagSection("Signature dishes", record.signature_dish_tags, "blue")}
@@ -5773,6 +5891,7 @@ async function init() {
   const today = new Date().toISOString().split("T")[0];
   staysCheckinInput.min = today;
   staysCheckoutInput.min = today;
+  pocketDateFilter.min = today;
 
   setToolbarOpen(false);
   setTableOpen(false);
@@ -5813,9 +5932,12 @@ cityFilter.addEventListener("change", () => {
   kidsFilter,
   menuFilter,
   reservationFilter,
+  pocketDateFilter,
 ].forEach((element) => {
   element.addEventListener("change", filterRestaurants);
 });
+pocketPartyFilter.addEventListener("input", filterRestaurants);
+pocketPartyFilter.addEventListener("change", filterRestaurants);
 
 resetFiltersButton.addEventListener("click", () => {
   resetFilterControls();
