@@ -2001,12 +2001,43 @@ body.route-japan-top .mobile-results-panel {
   display: none;
 }
 
+.rank-filter-panel {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rank-filter-summary,
+.rank-more-detail summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.rank-filter-summary::-webkit-details-marker,
+.rank-more-detail summary::-webkit-details-marker {
+  display: none;
+}
+
+.rank-filter-summary {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.rank-filter-meta {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
 .rank-controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
+  padding-top: 10px;
 }
 
 .rank-controls .filter-wrap:first-child {
@@ -2028,7 +2059,7 @@ body.route-japan-top .mobile-results-panel {
 
 .rank-card {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   width: 100%;
@@ -2051,7 +2082,7 @@ body.route-japan-top .mobile-results-panel {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
+  width: 36px;
   height: 28px;
   border-radius: 999px;
   background: var(--control-chip-bg);
@@ -2118,11 +2149,31 @@ body.route-japan-top .mobile-results-panel {
   opacity: 0.45;
 }
 
+.rank-pager-mobile {
+  grid-template-columns: 1fr auto;
+}
+
 .rank-detail {
   padding: 12px;
   border: 1px solid var(--surface-border-soft);
   border-radius: var(--radius-md);
   background: var(--surface);
+}
+
+.rank-more-detail {
+  margin: 10px 0 0;
+  border-top: 1px solid var(--border);
+}
+
+.rank-more-detail summary {
+  padding-top: 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.rank-more-body {
+  padding-top: 8px;
 }
 
 .table-scroll {
@@ -3093,6 +3144,62 @@ a.google-badge:hover {
   margin: 6px 0 0;
 }
 
+.popup-meta,
+.popup-rating {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.popup-facts {
+  margin-top: 8px !important;
+  color: var(--popup-text) !important;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.popup-rank {
+  display: inline-block;
+  margin-right: 6px;
+  color: var(--gold);
+}
+
+.popup-action {
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--gold);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rank-map-pin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 26px;
+  padding: 0 9px;
+  border: 2px solid rgba(255, 255, 255, 0.86);
+  border-radius: 999px;
+  background: var(--gold);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.34), 0 0 0 4px rgba(201, 165, 90, 0.18);
+  color: #08111a;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rank-map-pin-icon.is-active-rank-pin .rank-map-pin {
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.38), 0 0 0 5px rgba(255, 255, 255, 0.22);
+  transform: scale(1.06);
+}
+
 .leaflet-control-zoom a {
   background: var(--surface-strong) !important;
   border-color: var(--border) !important;
@@ -3266,6 +3373,125 @@ h1, h2, h3 {
 
   .mobile-results-panel {
     display: none;
+  }
+
+  body.route-japan-top .focus-panel .panel-head {
+    padding: 10px 14px 4px;
+  }
+
+  body.route-japan-top .focus-body {
+    padding-top: 8px;
+  }
+
+  body.route-japan-top .rank-filter-panel {
+    padding-bottom: 0;
+  }
+
+  body.route-japan-top .rank-filter-summary {
+    min-height: 36px;
+    padding: 0 2px;
+  }
+
+  body.route-japan-top .rank-filter-panel:not([open]) {
+    border-bottom: 0;
+  }
+
+  .rank-filter-panel:not([open]) .rank-controls {
+    display: none;
+  }
+
+  body.route-japan-top .rank-controls {
+    padding: 8px 0 10px;
+  }
+
+  body.route-japan-top .rank-pager {
+    gap: 6px;
+    padding-top: 8px;
+  }
+
+  body.route-japan-top .rank-pager-mobile {
+    position: sticky;
+    top: 8px;
+    z-index: 3;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-strong);
+    box-shadow: var(--shadow);
+  }
+
+  body.route-japan-top .rank-pager .ghost-btn {
+    min-height: 30px;
+    padding: 5px 8px;
+  }
+
+  body.route-japan-top .rank-list {
+    gap: 6px;
+    padding-top: 8px;
+  }
+
+  body.route-japan-top .rank-card {
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 10px;
+    padding: 8px;
+    border-radius: var(--radius-sm);
+  }
+
+  body.route-japan-top .rank-number {
+    width: 40px;
+    height: 24px;
+    font-size: 10px;
+  }
+
+  body.route-japan-top .rank-copy strong {
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  body.route-japan-top .rank-copy span {
+    font-size: 10px;
+  }
+
+  body.route-japan-top .rank-copy em {
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  body.route-japan-top .rank-metric {
+    display: none;
+  }
+
+  .rank-metric {
+    display: none;
+  }
+
+  body.route-japan-top .rank-detail {
+    padding: 10px;
+    border-radius: var(--radius-sm);
+  }
+
+  body.route-japan-top .rank-detail .focus-summary {
+    margin: 8px 0;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  body.route-japan-top .rank-detail .price-grid {
+    margin: 8px 0;
+  }
+
+  body.route-japan-top .rank-more-detail {
+    margin-top: 8px;
+  }
+
+  body.route-japan-top .rank-more-detail:not([open]) {
+    padding-bottom: 0;
+  }
+
+  body.route-japan-top .focus-actions {
+    margin-top: 10px;
+    padding-top: 10px;
   }
 
   .tft-grid {

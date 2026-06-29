@@ -236,9 +236,9 @@ const ROUTES = {
     label: "Overseas Dining (Japan)",
     eyebrow: "Dining / Overseas Dining (Japan)",
     title: "Overseas Dining (Japan)",
-    description: "Map-first Japan dining guide ranked by Tabelog signals.",
-    note: "Ranked Japan restaurants.",
-    mapSummary: "Top-ranked Japan restaurants. Click a ranked venue to move the map.",
+    description: "Map-first Japan dining guide sorted by Tabelog signals.",
+    note: "Sorted Japan restaurants.",
+    mapSummary: "Japan restaurants sorted by selected Tabelog signal. Click a venue to move the map.",
     matcher: (record) => record.country === "Japan",
     defaultView: [35.676, 137.5],
     defaultZoom: 5,
@@ -495,6 +495,13 @@ const state = {
   tableOpen: false,
   tableSearchQuery: "",
   japanRankPrefecture: "",
+  japanRankCity: "",
+  japanRankDistrict: "",
+  japanRankCuisine: "",
+  japanRankLunchBand: "",
+  japanRankDinnerBand: "",
+  japanRankMenu: "",
+  japanRankReservation: "",
   japanRankMetric: "score",
   japanRankAvailability: "",
   japanRankPage: 1,
@@ -524,6 +531,7 @@ const state = {
   tableForTwoCalendarMonths: {},
   pocketCalendarMonths: {},
   pocketCalendarOpen: {},
+  japanRankFiltersOpen: false,
   tableForTwoLiveRefreshInFlight: false,
   tableForTwoLiveRefreshAt: null,
   tableForTwoLiveRefreshTimer: null,
@@ -545,6 +553,7 @@ const dataLoadPromises = {
   googleRatings: null,
 };
 let routeApplyToken = 0;
+let isMobileViewport = window.innerWidth <= MOBILE_BREAKPOINT;
 
 const hasLeaflet = typeof window !== "undefined" && typeof window.L !== "undefined";
 const hasMarkerCluster = hasLeaflet && typeof L.markerClusterGroup === "function";
@@ -620,6 +629,31 @@ function addMarkerLayer(mapInstance, clusterGroup, marker) {
   }
 }
 
+function diningMarkerClusterGroupForRoute() {
+  if (isJapanRankRoute()) {
+    markerClusterGroup?.clearLayers();
+    if (markerClusterGroup && map?.hasLayer(markerClusterGroup)) {
+      map.removeLayer(markerClusterGroup);
+    }
+    return null;
+  }
+  markerClusterGroup = ensureMarkerClusterGroup(map, markerClusterGroup);
+  return markerClusterGroup;
+}
+
+function openMarkerPopupAfterMove(mapInstance, marker) {
+  if (!marker) return;
+  if (!mapInstance) {
+    marker.openPopup?.();
+    return;
+  }
+  const timer = window.setTimeout(() => marker.openPopup?.(), 900);
+  mapInstance.once("moveend", () => {
+    window.clearTimeout(timer);
+    marker.openPopup?.();
+  });
+}
+
 function focusClusteredMarkerOnMap(mapInstance, clusterGroup, marker, fallbackLatLng) {
   const latLng = marker?.getLatLng?.() || fallbackLatLng;
   if (!mapInstance || !latLng) return;
@@ -630,13 +664,13 @@ function focusClusteredMarkerOnMap(mapInstance, clusterGroup, marker, fallbackLa
     clusterGroup.hasLayer(marker)
   ) {
     clusterGroup.zoomToShowLayer(marker, () => {
+      openMarkerPopupAfterMove(mapInstance, marker);
       smartZoomToMarker(mapInstance, latLng);
-      marker.closePopup?.();
     });
     return;
   }
+  openMarkerPopupAfterMove(mapInstance, marker);
   smartZoomToMarker(mapInstance, latLng);
-  marker?.closePopup?.();
 }
 
 function addThemedTileLayer(instance) {
@@ -787,10 +821,11 @@ const reservationFilterWrap = document.getElementById("reservation-filter-wrap")
 const pocketAvailabilityFilterWrap = document.getElementById("pocket-availability-filter-wrap");
 const pocketSessionFilterWrap = document.getElementById("pocket-session-filter-wrap");
 const pocketDateFilterWrap = document.getElementById("pocket-date-filter-wrap");
+const pocketDateEndFilterWrap = document.getElementById("pocket-date-end-filter-wrap");
 const pocketPartyFilterWrap = document.getElementById("pocket-party-filter-wrap");
 const googleRatingFilterWrap = document.getElementById("google-rating-filter-wrap");
 const sortFilterWrap = document.getElementById("sort-filter-wrap");
-const JAPAN_ONLY_FILTER_WRAPS = [prefectureFilterWrap, tabelogFilterWrap, tabelogTopFilterWrap, lunchFilterWrap, dinnerFilterWrap, kidsFilterWrap, menuFilterWrap, reservationFilterWrap, pocketAvailabilityFilterWrap, pocketSessionFilterWrap, pocketDateFilterWrap, pocketPartyFilterWrap];
+const JAPAN_ONLY_FILTER_WRAPS = [prefectureFilterWrap, tabelogFilterWrap, tabelogTopFilterWrap, lunchFilterWrap, dinnerFilterWrap, kidsFilterWrap, menuFilterWrap, reservationFilterWrap, pocketAvailabilityFilterWrap, pocketSessionFilterWrap, pocketDateFilterWrap, pocketDateEndFilterWrap, pocketPartyFilterWrap];
 const cuisineFilter = document.getElementById("cuisine-filter");
 const tabelogFilter = document.getElementById("tabelog-filter");
 const googleRatingFilter = document.getElementById("google-rating-filter");
@@ -804,6 +839,7 @@ const reservationFilter = document.getElementById("reservation-filter");
 const pocketAvailabilityFilter = document.getElementById("pocket-availability-filter");
 const pocketSessionFilter = document.getElementById("pocket-session-filter");
 const pocketDateFilter = document.getElementById("pocket-date-filter");
+const pocketDateEndFilter = document.getElementById("pocket-date-end-filter");
 const pocketPartyFilter = document.getElementById("pocket-party-filter");
 const resetFiltersButton = document.getElementById("reset-filters");
 const summaryStripText = document.getElementById("summary-strip-text");
@@ -1164,6 +1200,16 @@ function markerColor(record) {
   return REGION_COLORS[regionForRecord(record)] || REGION_COLORS.other;
 }
 
+function diningCompactFacts(record) {
+  const dinner = priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label);
+  const lunch = priceBandLabel(record.price_lunch_band_tier, record.price_lunch_band_label);
+  const primaryPrice = dinner ? `Dinner ${dinner}` : (lunch ? `Lunch ${lunch}` : "");
+  return [
+    primaryPrice,
+    pocketAvailabilityShortText(record),
+  ].filter(Boolean).join(" · ");
+}
+
 function priceMarkup(min, max, tier, label) {
   const range = yens(min, max);
   const band = priceBandLabel(tier, label);
@@ -1275,6 +1321,56 @@ function pocketHasCheckedSlots(record) {
   return Object.keys(pocketDateSummaries(record)).length > 0;
 }
 
+function normalizePocketDateRange(startDate, endDate) {
+  const start = startDate || "";
+  const end = endDate || "";
+  if (start && end && end < start) return { start: end, end: start };
+  if (start && !end) return { start, end: start };
+  return { start, end };
+}
+
+function pocketDateRangeValue() {
+  return normalizePocketDateRange(pocketDateFilter.value, pocketDateEndFilter.value);
+}
+
+function pocketDateRangeIsActive(dateRange) {
+  return Boolean(dateRange.start || dateRange.end);
+}
+
+function dateWithinPocketRange(dateValue, dateRange) {
+  if (!dateValue) return false;
+  if (dateRange.start && dateValue < dateRange.start) return false;
+  if (dateRange.end && dateValue > dateRange.end) return false;
+  return true;
+}
+
+function datesHavePocketRangeMatch(dates, dateRange) {
+  return (dates || []).some((dateValue) => dateWithinPocketRange(dateValue, dateRange));
+}
+
+function pocketDateRangeLabel(startDate = pocketDateFilter.value, endDate = pocketDateEndFilter.value) {
+  const dateRange = normalizePocketDateRange(startDate, endDate);
+  if (!pocketDateRangeIsActive(dateRange)) return "";
+  if (dateRange.start && dateRange.end && dateRange.start !== dateRange.end) {
+    return `${diningDateLabel(dateRange.start)} to ${diningDateLabel(dateRange.end)}`;
+  }
+  return diningDateLabel(dateRange.start || dateRange.end);
+}
+
+function setPocketDateRangeInput(field, value) {
+  if (field === "start") {
+    pocketDateFilter.value = value;
+    if (value && (!pocketDateEndFilter.value || pocketDateEndFilter.value < value)) {
+      pocketDateEndFilter.value = value;
+    }
+    return;
+  }
+  pocketDateEndFilter.value = value;
+  if (value && (!pocketDateFilter.value || pocketDateFilter.value > value)) {
+    pocketDateFilter.value = value;
+  }
+}
+
 function pocketPartyRangeMatches(summary, partySize) {
   if (!partySize) return true;
   const ranges = Array.isArray(summary?.party_ranges) ? summary.party_ranges : [];
@@ -1294,8 +1390,10 @@ function pocketSummaryMatches(summary, partySize, session) {
   return pocketPartyRangeMatches(summary, partySize) && pocketSessionMatches(summary, session);
 }
 
-function pocketAvailabilityMatches(record, mode, selectedDate, partySize, session) {
-  if (!mode && !selectedDate && !partySize && !session) return true;
+function pocketAvailabilityMatches(record, mode, startDate, endDate, partySize, session) {
+  const dateRange = normalizePocketDateRange(startDate, endDate);
+  const hasDateRange = pocketDateRangeIsActive(dateRange);
+  if (!mode && !hasDateRange && !partySize && !session) return true;
   if (record.country !== "Japan") return false;
   const availability = pocketAvailabilityRecord(record);
   if (!availability) return false;
@@ -1304,15 +1402,24 @@ function pocketAvailabilityMatches(record, mode, selectedDate, partySize, sessio
   if (mode === "slots" && !pocketHasCheckedSlots(record)) return false;
   if (mode === "waitlist") {
     if (session) return false;
-    if (selectedDate) return (availability.waitlist_dates || []).includes(selectedDate);
+    if (hasDateRange) return datesHavePocketRangeMatch(availability.waitlist_dates, dateRange);
     return (availability.waitlist_dates || []).length > 0;
   }
 
-  if (selectedDate) {
-    if (partySize || session) {
-      return pocketSummaryMatches(dateSummaries[selectedDate], partySize, session);
-    }
-    return (availability.reservation_dates || []).includes(selectedDate);
+  if (!hasDateRange && !partySize && !session) return true;
+
+  if (partySize || session) {
+    return Object.entries(dateSummaries).some(([dateValue, summary]) => {
+      return (!hasDateRange || dateWithinPocketRange(dateValue, dateRange))
+        && pocketSummaryMatches(summary, partySize, session);
+    });
+  }
+
+  if (hasDateRange) {
+    const dates = mode === "slots"
+      ? Object.keys(dateSummaries)
+      : (availability.reservation_dates || []);
+    return datesHavePocketRangeMatch(dates, dateRange);
   }
 
   return Object.values(dateSummaries).some((summary) => pocketSummaryMatches(summary, partySize, session));
@@ -1322,9 +1429,19 @@ function pocketAvailabilityBadge(record) {
   if (record.country !== "Japan") return "";
   const availability = pocketAvailabilityRecord(record);
   if (!availability) return "";
-  if (pocketHasCheckedSlots(record)) return '<span class="badge green">Checked times</span>';
-  if ((availability.reservation_dates || []).length) return '<span class="badge blue">Bookable dates</span>';
+  if (pocketHasCheckedSlots(record)) return '<span class="badge green">Times found</span>';
+  if ((availability.reservation_dates || []).length) return '<span class="badge blue">Reservable dates</span>';
   if ((availability.waitlist_dates || []).length) return '<span class="badge amber">Pocket waitlist</span>';
+  return "";
+}
+
+function pocketAvailabilityShortText(record) {
+  if (record.country !== "Japan") return "";
+  const availability = pocketAvailabilityRecord(record);
+  if (!availability) return "";
+  if (pocketHasCheckedSlots(record)) return "Times found";
+  if ((availability.reservation_dates || []).length) return "Reservable dates";
+  if ((availability.waitlist_dates || []).length) return "Waitlist";
   return "";
 }
 
@@ -1333,27 +1450,36 @@ function pocketAvailabilityCacheLabel(records = state.scopeRecords) {
   const meta = state.pocketAvailability;
   if (!meta?.fetched_at) return "";
   const endLabel = meta.window_end ? ` through ${diningDateLabel(meta.window_end)}` : "";
-  return `Pocket availability cached ${formatTimestamp(meta.fetched_at)}${endLabel}`;
+  return `Pocket availability updated ${formatTimestamp(meta.fetched_at)}${endLabel}`;
 }
 
 function pocketAvailabilityNote(record) {
   if (record.country !== "Japan") return "";
   const availability = pocketAvailabilityRecord(record);
   if (!availability) return "";
-  const selectedDate = pocketDateFilter.value;
+  const dateRange = pocketDateRangeValue();
+  const hasDateRange = pocketDateRangeIsActive(dateRange);
+  const selectedDate = dateRange.start && dateRange.start === dateRange.end ? dateRange.start : "";
   const partySize = pocketPartySizeValue();
+  const session = pocketSessionFilter.value;
   const summary = selectedDate ? pocketDateSummaries(record)[selectedDate] : null;
-  if (summary && pocketPartyRangeMatches(summary, partySize)) {
+  if (summary && pocketSummaryMatches(summary, partySize, session)) {
     const times = (summary.times || []).slice(0, 4).join(", ");
-    const pax = summary.max_party_size ? `up to ${summary.max_party_size} pax` : "party size cached";
+    const pax = summary.max_party_size ? `up to ${summary.max_party_size} pax` : "party size shown";
     return `Pocket availability: ${diningDateLabel(selectedDate)}${times ? ` at ${times}` : ""}, ${pax}.`;
+  }
+  if (hasDateRange) {
+    const dates = (availability.reservation_dates || []).filter((dateValue) => dateWithinPocketRange(dateValue, dateRange));
+    if (dates.length) {
+      return `Pocket availability: ${dates.length} reservable date${dates.length === 1 ? "" : "s"} from ${pocketDateRangeLabel()}.`;
+    }
   }
   const dateCount = (availability.reservation_dates || []).length;
   if (dateCount) {
-    return `Pocket availability: ${dateCount} bookable date${dateCount === 1 ? "" : "s"} listed.`;
+    return `Pocket availability: ${dateCount} reservable date${dateCount === 1 ? "" : "s"} listed.`;
   }
   if ((availability.waitlist_dates || []).length) {
-    return "Pocket availability: waitlist dates cached, no bookable dates in the current cache.";
+    return "Pocket availability: waitlist dates listed, no reservable dates right now.";
   }
   return "";
 }
@@ -1394,7 +1520,7 @@ function pocketSelectedDateSlotsHtml(record, selectedDate) {
     return `
       <div class="tft-date-detail">
         <h5>${escapeHtml(tableForTwoDateOptionLabel(selectedDate))}</h5>
-        <p>No checked Pocket times for this date in the current cache.</p>
+        <p>No Pocket times found for this date.</p>
       </div>
     `;
   }
@@ -1416,7 +1542,7 @@ function pocketSelectedDateSlotsHtml(record, selectedDate) {
       </div>
       ${sessions ? `<div class="tft-date-session"><span class="focus-label">Session</span><span>${escapeHtml(sessions)}</span></div>` : ""}
       ${seats ? `<div class="tft-date-session"><span class="focus-label">Seats</span><span>${escapeHtml(seats)}</span></div>` : ""}
-      ${summary.slot_count ? `<div class="tft-date-session"><span class="focus-label">Slots</span><span>${escapeHtml(`${summary.slot_count} checked`)}</span></div>` : ""}
+      ${summary.slot_count ? `<div class="tft-date-session"><span class="focus-label">Slots</span><span>${escapeHtml(`${summary.slot_count} time slot${summary.slot_count === 1 ? "" : "s"}`)}</span></div>` : ""}
       ${seating ? `<div class="tft-date-session"><span class="focus-label">Seating</span><span>${escapeHtml(seating)}</span></div>` : ""}
     </div>
   `;
@@ -1441,9 +1567,9 @@ function pocketAvailabilityFallbackRows(record) {
 function pocketAvailabilityEmptyNote(record) {
   if (record.country !== "Japan") return "";
   const availability = pocketAvailabilityRecord(record);
-  if (!availability) return "Pocket availability was not checked for this venue yet.";
-  if ((availability.waitlist_dates || []).length) return "Pocket checked: waitlist dates only, no bookable dates/times in the current cache.";
-  return "Pocket checked: no bookable dates/times in the current cache.";
+  if (!availability) return "Pocket availability was not found for this venue yet.";
+  if ((availability.waitlist_dates || []).length) return "Pocket: waitlist dates only, no reservable dates/times found.";
+  return "Pocket: no reservable dates/times found.";
 }
 
 function pocketAvailabilityDetailsMarkup(record) {
@@ -1452,8 +1578,14 @@ function pocketAvailabilityDetailsMarkup(record) {
   if (!slots.length) return pocketAvailabilityFallbackRows(record);
   const dates = uniqueValues(slots.map((slot) => slot.date).filter(Boolean)).sort();
   const slotsByDate = tableForTwoSlotsByDate(slots);
-  const matchingDates = dates.filter((date) => pocketSummaryMatches(pocketDateSummaries(record)[date], pocketPartySizeValue(), pocketSessionFilter.value));
-  const selectedDate = dates.includes(pocketDateFilter.value) ? pocketDateFilter.value : (matchingDates[0] || dates[0]);
+  const dateRange = pocketDateRangeValue();
+  const matchingDates = dates.filter((date) => {
+    return (!pocketDateRangeIsActive(dateRange) || dateWithinPocketRange(date, dateRange))
+      && pocketSummaryMatches(pocketDateSummaries(record)[date], pocketPartySizeValue(), pocketSessionFilter.value);
+  });
+  const selectedDate = dates.includes(pocketDateFilter.value) && (!pocketDateRangeIsActive(dateRange) || dateWithinPocketRange(pocketDateFilter.value, dateRange))
+    ? pocketDateFilter.value
+    : (matchingDates[0] || dates[0]);
   const monthKeys = uniqueValues(dates.map((dateValue) => dateValue.slice(0, 7))).sort();
   const selectedMonthKey = selectedDate ? selectedDate.slice(0, 7) : "";
   const preferredMonthKey = state.pocketCalendarMonths[record.id] || selectedMonthKey || monthKeys[0] || "";
@@ -1461,16 +1593,16 @@ function pocketAvailabilityDetailsMarkup(record) {
   const monthsHtml = activeMonthKey ? tableForTwoCalendarMonthHtml(activeMonthKey, slotsByDate, selectedDate) : "";
   const checkedDateCount = dates.length;
   const reservationDateCount = (pocketAvailabilityRecord(record)?.reservation_dates || []).length;
-  const meta = state.pocketAvailability?.fetched_at ? `Cached ${formatTimestamp(state.pocketAvailability.fetched_at)}` : "Cached availability";
+  const meta = state.pocketAvailability?.fetched_at ? `Updated ${formatTimestamp(state.pocketAvailability.fetched_at)}` : "Availability updated";
   const calendarOpen = Boolean(state.pocketCalendarOpen[record.id]);
   return `
     <div class="tft-calendar-card pocket-calendar-card">
       <div class="tft-calendar-head">
         <div>
           <div class="focus-kicker">Pocket availability</div>
-          <h4>${escapeHtml(`${reservationDateCount} bookable date${reservationDateCount === 1 ? "" : "s"} listed`)}</h4>
+          <h4>${escapeHtml(`${reservationDateCount} reservable date${reservationDateCount === 1 ? "" : "s"} listed`)}</h4>
         </div>
-        ${checkedDateCount ? `<span class="badge green">${escapeHtml(`${checkedDateCount} checked`)}</span>` : ""}
+        ${checkedDateCount ? `<span class="badge green">${escapeHtml(`${checkedDateCount} with times`)}</span>` : ""}
       </div>
       ${pocketSelectedDateSlotsHtml(record, selectedDate)}
       <details class="pocket-calendar-toggle"${calendarOpen ? " open" : ""}>
@@ -1478,7 +1610,7 @@ function pocketAvailabilityDetailsMarkup(record) {
         ${tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey)}
         <div class="tft-calendar-months">${monthsHtml}</div>
         <div class="tft-calendar-legend">
-          <span><i class="is-available"></i>Checked times</span>
+          <span><i class="is-available"></i>Times found</span>
           <span><i class="is-selected"></i>Selected date</span>
         </div>
       </details>
@@ -1505,7 +1637,7 @@ function selectJapanForPocketFilters(selectedDate = "") {
   }
   pocketAvailabilityFilter.value = "bookable";
   if (dateValue) {
-    pocketDateFilter.value = dateValue;
+    setPocketDateRangeInput("start", dateValue);
     if (state.activeId) state.pocketCalendarMonths[state.activeId] = dateValue.slice(0, 7);
   }
   refreshFilterOptions();
@@ -1795,34 +1927,60 @@ function diningSummaryPayload(record) {
   return null;
 }
 
-function createMarker(record) {
+function diningMarkerPopupHtml(record, rankNumber = 0) {
+  const location = [record.city, record.district].filter(Boolean).join(" / ") || record.country || "";
+  const cuisine = (record.cuisines || []).slice(0, 2).join(", ");
+  const facts = diningCompactFacts(record);
+  const score = record.country === "Japan" ? tabelogScore(record) : 0;
+  const rating = score ? `${score.toFixed(2).replace(/\.?0+$/, "")} Tabelog` : "";
+  return `
+    <article class="popup-card dining-popup-card">
+      <div class="popup-name">${rankNumber ? `<span class="popup-rank">#${escapeHtml(String(rankNumber))}</span> ` : ""}${escapeHtml(record.name)}</div>
+      ${location || cuisine ? `<div class="popup-meta">${escapeHtml([location, cuisine].filter(Boolean).join(" · "))}</div>` : ""}
+      ${facts ? `<div class="popup-facts">${escapeHtml(facts)}</div>` : ""}
+      ${rating ? `<div class="popup-rating">${escapeHtml(rating)}</div>` : ""}
+      <button type="button" class="popup-action" data-popup-more-info="${escapeHtml(record.id)}">More info</button>
+    </article>
+  `;
+}
+
+function createMarker(record, rankNumber = 0) {
   if (!hasLeaflet) return null;
   if (record.lat == null || record.lng == null) return null;
 
-  const dinnerBand = priceBandLabel(record.price_dinner_band_tier, record.price_dinner_band_label);
-  const lunchBand = priceBandLabel(record.price_lunch_band_tier, record.price_lunch_band_label);
-  const summary = diningSummaryPayload(record);
-
-  // Use a custom div icon instead of circleMarker which doesn't render reliably
   const markerColor_val = markerColor(record);
+  const isRankMarker = Boolean(rankNumber);
   const marker = L.marker([record.lat, record.lng], {
     icon: L.divIcon({
-      html: `<div style="width: 16px; height: 16px; border-radius: 50%; background: ${markerColor_val}; border: 2px solid #091018; opacity: 0.92; cursor: pointer;"></div>`,
-      iconSize: [16, 16],
-      className: 'custom-marker-icon'
+      html: isRankMarker
+        ? `<div class="rank-map-pin">#${escapeHtml(String(rankNumber))}</div>`
+        : `<div style="width: 16px; height: 16px; border-radius: 50%; background: ${markerColor_val}; border: 2px solid #091018; opacity: 0.92; cursor: pointer;"></div>`,
+      iconSize: isRankMarker ? [52, 28] : [16, 16],
+      iconAnchor: isRankMarker ? [26, 14] : [8, 8],
+      className: `custom-marker-icon${isRankMarker ? " rank-map-pin-icon" : ""}`
     })
   });
+  marker.benefitRecord = record;
+  marker.benefitRankNumber = rankNumber;
 
-  // Simple popup: name + cuisine + rating + Google Maps link
-  const gRating = googleRating(record);
-  const cuisine = (record.cuisines || []).join(", ") || "";
-  const ratingHtml = gRating && gRating.rating != null
-    ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
-    : "";
+  marker.bindPopup(diningMarkerPopupHtml(record, rankNumber), {
+    closeButton: false,
+    className: "dining-marker-popup",
+    maxWidth: 260,
+  });
+  marker.on("popupopen", () => {
+    marker.getPopup()
+      ?.getElement()
+      ?.querySelector("[data-popup-more-info]")
+      ?.addEventListener("click", () => setActiveRecord(record.id, { scrollDetails: true }));
+  });
   marker.on("click", () => {
     setActiveRecord(record.id);
     if (map && hasLeaflet) {
+      openMarkerPopupAfterMove(map, marker);
       smartZoomToMarker(map, marker.getLatLng());
+    } else {
+      marker.openPopup();
     }
   });
   return marker;
@@ -1856,6 +2014,21 @@ function fillBandSelect(select, bands, presentKeys, placeholder) {
   if (presentKeys.has(current)) {
     select.value = current;
   }
+}
+
+function selectOptionsHtml(values, selected, placeholder) {
+  const options = selected && !values.includes(selected) ? [selected, ...values] : values;
+  return [
+    `<option value="">${escapeHtml(placeholder)}</option>`,
+    ...options.map((value) => `<option value="${escapeHtml(value)}"${selected === value ? " selected" : ""}>${escapeHtml(value)}</option>`),
+  ].join("");
+}
+
+function bandOptionsHtml(bands, selected, placeholder) {
+  return [
+    `<option value="">${escapeHtml(placeholder)}</option>`,
+    ...bands.map((band) => `<option value="${escapeHtml(band.key)}"${selected === band.key ? " selected" : ""}>${escapeHtml(`${band.tier} | ${band.label}`)}</option>`),
+  ].join("");
 }
 
 function currentRoute() {
@@ -2236,7 +2409,7 @@ function activeFilterCount() {
   if (reservationFilter.value) count += 1;
   if (pocketAvailabilityFilter.value) count += 1;
   if (pocketSessionFilter.value) count += 1;
-  if (pocketDateFilter.value) count += 1;
+  if (pocketDateFilter.value || pocketDateEndFilter.value) count += 1;
   if (pocketPartyFilter.value) count += 1;
   return count;
 }
@@ -2458,8 +2631,23 @@ function clearStayMarkers() {
   clearMarkerLayerGroup(staysMap, stayMarkerClusterGroup, state.stayMarkers);
 }
 
+function resetJapanRankFilters() {
+  state.japanRankPrefecture = "";
+  state.japanRankCity = "";
+  state.japanRankDistrict = "";
+  state.japanRankCuisine = "";
+  state.japanRankLunchBand = "";
+  state.japanRankDinnerBand = "";
+  state.japanRankMenu = "";
+  state.japanRankReservation = "";
+  state.japanRankMetric = "score";
+  state.japanRankAvailability = "";
+  resetJapanRankPage();
+}
+
 function resetFilterControls() {
   const route = currentRoute();
+  resetJapanRankFilters();
   searchInput.value = "";
   countryFilter.value = "";
   prefectureFilter.value = "";
@@ -2477,6 +2665,7 @@ function resetFilterControls() {
   pocketAvailabilityFilter.value = "";
   pocketSessionFilter.value = "";
   pocketDateFilter.value = "";
+  pocketDateEndFilter.value = "";
   pocketPartyFilter.value = "";
   cityFilter.value = route.fixedCity || "";
 }
@@ -2573,14 +2762,37 @@ function japanRankValue(record) {
   return state.japanRankMetric === "score" ? tabelogScore(record) : tabelogReviewCount(record);
 }
 
+function isMobileRankView() {
+  return window.innerWidth <= MOBILE_BREAKPOINT;
+}
+
+function japanRankVisibleBounds() {
+  if (!state.japanRankTotal) return { start: 0, end: 0 };
+  const start = isMobileRankView() ? 1 : ((state.japanRankPage - 1) * state.japanRankPageSize) + 1;
+  const end = Math.min(state.japanRankPage * state.japanRankPageSize, state.japanRankTotal);
+  return { start, end };
+}
+
+function japanVisibleRankNumber(index) {
+  return (isMobileRankView() ? 0 : (state.japanRankPage - 1) * state.japanRankPageSize) + index + 1;
+}
+
 function filterJapanRankings() {
+  const pocketMode = state.japanRankAvailability;
+  const pocketDateStart = pocketDateFilter.value;
+  const pocketDateEnd = pocketDateEndFilter.value;
+  const pocketPartySize = pocketPartySizeValue();
+  const pocketSession = pocketSessionFilter.value;
   const ranked = state.scopeRecords
     .filter((record) => !state.japanRankPrefecture || record.prefecture === state.japanRankPrefecture)
-    .filter((record) => {
-      if (state.japanRankAvailability === "bookable") return (pocketAvailabilityRecord(record)?.reservation_dates || []).length > 0;
-      if (state.japanRankAvailability === "slots") return pocketHasCheckedSlots(record);
-      return true;
-    })
+    .filter((record) => !state.japanRankCity || record.city === state.japanRankCity)
+    .filter((record) => !state.japanRankDistrict || (record.district || record.region || record.area_title) === state.japanRankDistrict)
+    .filter((record) => !state.japanRankCuisine || (record.cuisines || []).includes(state.japanRankCuisine))
+    .filter((record) => !state.japanRankLunchBand || record.price_lunch_band_key === state.japanRankLunchBand)
+    .filter((record) => !state.japanRankDinnerBand || record.price_dinner_band_key === state.japanRankDinnerBand)
+    .filter((record) => !state.japanRankMenu || (state.japanRankMenu === "yes" ? record.english_menu : !record.english_menu))
+    .filter((record) => !state.japanRankReservation || record.reservation_type === state.japanRankReservation)
+    .filter((record) => pocketAvailabilityMatches(record, pocketMode, pocketDateStart, pocketDateEnd, pocketPartySize, pocketSession))
     .filter((record) => japanRankValue(record) > 0)
     .sort((a, b) => {
       const diff = japanRankValue(b) - japanRankValue(a);
@@ -2592,6 +2804,10 @@ function filterJapanRankings() {
   state.japanRankTotal = ranked.length;
   const maxPage = Math.max(1, Math.ceil(ranked.length / state.japanRankPageSize));
   state.japanRankPage = Math.min(Math.max(1, state.japanRankPage), maxPage);
+  if (isMobileRankView()) {
+    state.filtered = ranked.slice(0, state.japanRankPage * state.japanRankPageSize);
+    return;
+  }
   const start = (state.japanRankPage - 1) * state.japanRankPageSize;
   state.filtered = ranked.slice(start, start + state.japanRankPageSize);
 }
@@ -2599,6 +2815,23 @@ function filterJapanRankings() {
 function resetJapanRankPage() {
   state.japanRankPage = 1;
   state.activeId = null;
+}
+
+function japanRankActiveFilterCount() {
+  let count = 0;
+  if (state.japanRankPrefecture) count += 1;
+  if (state.japanRankCity) count += 1;
+  if (state.japanRankDistrict) count += 1;
+  if (state.japanRankCuisine) count += 1;
+  if (state.japanRankLunchBand) count += 1;
+  if (state.japanRankDinnerBand) count += 1;
+  if (state.japanRankMenu) count += 1;
+  if (state.japanRankReservation) count += 1;
+  if (state.japanRankAvailability) count += 1;
+  if (pocketSessionFilter.value) count += 1;
+  if (pocketPartyFilter.value) count += 1;
+  if (pocketDateFilter.value || pocketDateEndFilter.value) count += 1;
+  return count;
 }
 
 function filterRestaurants(options = {}) {
@@ -2631,7 +2864,8 @@ function filterRestaurants(options = {}) {
   const reservation = reservationFilter.value;
   const pocketMode = pocketAvailabilityFilter.value;
   const pocketSession = pocketSessionFilter.value;
-  const pocketDate = pocketDateFilter.value;
+  const pocketDateStart = pocketDateFilter.value;
+  const pocketDateEnd = pocketDateEndFilter.value;
   const pocketPartySize = pocketPartySizeValue();
 
   state.filtered = state.scopeRecords.filter((record) => {
@@ -2665,7 +2899,7 @@ function filterRestaurants(options = {}) {
     if (menu === "yes" && !record.english_menu) return false;
     if (menu === "no" && record.english_menu) return false;
     if (reservation && record.reservation_type !== reservation) return false;
-    if (!pocketAvailabilityMatches(record, pocketMode, pocketDate, pocketPartySize, pocketSession)) return false;
+    if (!pocketAvailabilityMatches(record, pocketMode, pocketDateStart, pocketDateEnd, pocketPartySize, pocketSession)) return false;
     if (search && !fuzzyMatchSearch(record.search_text || "", search)) return false;
     return true;
   });
@@ -2728,10 +2962,9 @@ function renderStats() {
   if (isJapanRankRoute(route)) {
     const metric = state.japanRankMetric === "score" ? "Tabelog score" : "Tabelog reviews";
     const place = state.japanRankPrefecture || "Japan";
-    const start = state.japanRankTotal ? (state.japanRankPage - 1) * state.japanRankPageSize + 1 : 0;
-    const end = Math.min(state.japanRankPage * state.japanRankPageSize, state.japanRankTotal);
-    summaryStripText.textContent = `${place} ranked by ${metric}: showing ${start}-${end} of ${state.japanRankTotal}${cacheText}`;
-    resultsText.textContent = state.activeId ? `Selected ranked venue · ${route.label}` : `Page ${state.japanRankPage} · click a venue to move the map`;
+    const { start, end } = japanRankVisibleBounds();
+    summaryStripText.textContent = `${place} sorted by ${metric}: showing ${start}-${end} of ${state.japanRankTotal}${cacheText}`;
+    resultsText.textContent = state.activeId ? `Selected ranked venue · ${route.label}` : `Showing ${start}-${end} · click a venue to move the map`;
   } else {
     summaryStripText.textContent =
       filterCount > 0
@@ -2751,13 +2984,15 @@ function renderStats() {
 
 function renderMarkers() {
   if (!hasLeaflet || !map) return;
-  markerClusterGroup = ensureMarkerClusterGroup(map, markerClusterGroup);
-  clearMarkerLayerGroup(map, markerClusterGroup, state.markers);
+  const clusterGroup = diningMarkerClusterGroupForRoute();
+  markerClusterGroup?.clearLayers();
+  state.markers.forEach((marker) => map.removeLayer(marker));
+  state.markers.clear();
 
-  state.filtered.forEach((record) => {
-    const marker = createMarker(record);
+  state.filtered.forEach((record, index) => {
+    const marker = createMarker(record, isJapanRankRoute() ? japanVisibleRankNumber(index) : 0);
     if (!marker) return;
-    addMarkerLayer(map, markerClusterGroup, marker);
+    addMarkerLayer(map, clusterGroup, marker);
     state.markers.set(record.id, marker);
   });
 }
@@ -2804,15 +3039,18 @@ function japanRankDetailMarkup(record) {
   const availabilityDetails = pocketAvailabilityDetailsMarkup(record);
   const googleMapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
   const tSearchUrl = signal?.url || tabelogSearchUrl(record);
+  const detailOpenAttr = window.innerWidth > MOBILE_BREAKPOINT ? " open" : "";
+  const secondaryDetails = `
+    ${record.source_localized_address ? `<div class="focus-address">${escapeHtml(formatAddress(record.source_localized_address, record.country))}</div>` : ""}
+    ${record.nearest_stations?.length ? `<div class="focus-transit">${escapeHtml(record.nearest_stations.join(" | "))}</div>` : ""}
+    <div class="focus-tags">${tags}</div>
+    ${tagSection("Known for", record.known_for_tags, "gold")}
+    ${tagSection("Signature dishes", record.signature_dish_tags, "blue")}
+  `;
 
   return `
     <div class="rank-detail">
       ${ratingBadges}
-      ${record.source_localized_address ? `<div class="focus-address">${escapeHtml(formatAddress(record.source_localized_address, record.country))}</div>` : ""}
-      ${record.nearest_stations?.length ? `<div class="focus-transit">${escapeHtml(record.nearest_stations.join(" | "))}</div>` : ""}
-      <div class="focus-tags">${tags}</div>
-      ${tagSection("Known for", record.known_for_tags, "gold")}
-      ${tagSection("Signature dishes", record.signature_dish_tags, "blue")}
       ${summary ? `<p class="focus-summary${summary.isAi ? " focus-summary-ai" : ""}">${escapeHtml(summary.text)}</p>` : ""}
       ${availabilityDetails || `<div class="focus-note">${escapeHtml(pocketAvailabilityEmptyNote(record))}</div>`}
       ${isJapan && (hasDinnerPrice || hasLunchPrice) ? `
@@ -2821,7 +3059,12 @@ function japanRankDetailMarkup(record) {
           ${hasLunchPrice ? `<div class="price-card"><span class="price-label">Lunch</span>${priceMarkup(record.price_lunch_min_jpy, record.price_lunch_max_jpy, record.price_lunch_band_tier, record.price_lunch_band_label)}</div>` : ""}
         </div>
       ` : ""}
+      <details class="rank-more-detail"${detailOpenAttr}>
+        <summary>Details</summary>
+        <div class="rank-more-body">${secondaryDetails}</div>
+      </details>
       <div class="focus-actions">
+        ${record.lat != null && record.lng != null ? '<button type="button" class="ghost-btn secondary" data-focus-map="true">Back to map</button>' : ""}
         ${googleMapsUrl ? `<a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Open in Google Maps</a>` : ""}
         ${tSearchUrl ? `<a class="inline-link" href="${escapeHtml(tSearchUrl)}" target="_blank" rel="noopener">${signal?.url ? "View on Tabelog" : "Search Tabelog"}</a>` : ""}
         ${record.website_url ? `<a class="inline-link subtle" href="${escapeHtml(record.website_url)}" target="_blank" rel="noopener">Restaurant website</a>` : ""}
@@ -2832,27 +3075,57 @@ function japanRankDetailMarkup(record) {
 
 function renderJapanRankPanel() {
   const prefectures = uniqueValues(state.scopeRecords.map((record) => record.prefecture));
-  const prefectureOptions = [
-    '<option value="">All prefectures</option>',
-    ...prefectures.map((prefecture) => `<option value="${escapeHtml(prefecture)}"${state.japanRankPrefecture === prefecture ? " selected" : ""}>${escapeHtml(prefecture)}</option>`),
-  ].join("");
+  const cityPool = state.japanRankPrefecture
+    ? state.scopeRecords.filter((record) => record.prefecture === state.japanRankPrefecture)
+    : state.scopeRecords;
+  const districtPool = cityPool.filter((record) => !state.japanRankCity || record.city === state.japanRankCity);
+  const optionPool = districtPool.filter((record) => {
+    if (state.japanRankDistrict && (record.district || record.region || record.area_title) !== state.japanRankDistrict) return false;
+    return true;
+  });
+  const prefectureOptions = selectOptionsHtml(prefectures, state.japanRankPrefecture, "All prefectures");
+  const cityOptions = selectOptionsHtml(uniqueValues(cityPool.map((record) => record.city)), state.japanRankCity, "All cities");
+  const districtOptions = selectOptionsHtml(uniqueValues(districtPool.map((record) => record.district || record.region || record.area_title)), state.japanRankDistrict, "All areas");
+  const cuisineOptions = selectOptionsHtml(uniqueValues(optionPool.flatMap((record) => record.cuisines || [])), state.japanRankCuisine, "All cuisines");
+  const lunchOptions = bandOptionsHtml(LUNCH_BANDS, state.japanRankLunchBand, "Any lunch");
+  const dinnerOptions = bandOptionsHtml(DINNER_BANDS, state.japanRankDinnerBand, "Any dinner");
+  const reservationOptions = selectOptionsHtml(uniqueValues(optionPool.map((record) => record.reservation_type)), state.japanRankReservation, "Any style");
   const pageCount = Math.max(1, Math.ceil(state.japanRankTotal / state.japanRankPageSize));
-  const pageStart = state.japanRankTotal ? (state.japanRankPage - 1) * state.japanRankPageSize + 1 : 0;
-  const pageEnd = Math.min(state.japanRankPage * state.japanRankPageSize, state.japanRankTotal);
+  const { start: pageStart, end: pageEnd } = japanRankVisibleBounds();
+  const dateRangeText = pocketDateRangeLabel();
+  const minDateAttr = pocketDateFilter.min ? ` min="${escapeHtml(pocketDateFilter.min)}"` : "";
+  const filterCount = japanRankActiveFilterCount();
+  const isMobile = isMobileRankView();
+  const filterOpen = !isMobile || state.japanRankFiltersOpen;
+  const pagerLabel = isMobile
+    ? `${pageStart}-${pageEnd} of ${state.japanRankTotal}`
+    : `${pageStart}-${pageEnd} of ${state.japanRankTotal}${dateRangeText ? ` · ${dateRangeText}` : ""}`;
+  const pagerHtml = isMobile
+    ? `<div class="rank-pager rank-pager-mobile">
+        <span>${escapeHtml(pagerLabel)}</span>
+        <button type="button" class="ghost-btn secondary" data-rank-page="next" ${state.japanRankPage >= pageCount ? "disabled" : ""}>Show 25 more</button>
+      </div>`
+    : `<div class="rank-pager">
+        <button type="button" class="ghost-btn secondary" data-rank-page="prev" ${state.japanRankPage <= 1 ? "disabled" : ""}>Previous 25</button>
+        <span>${escapeHtml(pagerLabel)}</span>
+        <button type="button" class="ghost-btn secondary" data-rank-page="next" ${state.japanRankPage >= pageCount ? "disabled" : ""}>Next 25</button>
+      </div>`;
   const rows = state.filtered.map((record, index) => {
     const isActive = record.id === state.activeId;
     const location = [record.prefecture, record.city, record.district].filter(Boolean).join(" / ");
     const cuisines = (record.cuisines || []).slice(0, 3).join(", ");
+    const facts = diningCompactFacts(record) || cuisines;
+    const rankNumber = japanVisibleRankNumber(index);
     return `
       <div class="rank-item">
         <button type="button" class="rank-card${isActive ? " active" : ""}" data-rank-id="${escapeHtml(record.id)}">
-          <span class="rank-number">${pageStart + index}</span>
+          <span class="rank-number">#${rankNumber}</span>
           <span class="rank-copy">
             <strong>${escapeHtml(record.name)}</strong>
             <span>${escapeHtml(location || "Japan")}</span>
-            ${cuisines ? `<em>${escapeHtml(cuisines)}</em>` : ""}
+            ${facts ? `<em>${escapeHtml(facts)}</em>` : ""}
           </span>
-          <span class="rank-metric">${escapeHtml(japanRankMetricLabel(record))}</span>
+          ${isMobile ? "" : `<span class="rank-metric">${escapeHtml(japanRankMetricLabel(record))}</span>`}
         </button>
         ${isActive ? japanRankDetailMarkup(record) : ""}
       </div>
@@ -2860,40 +3133,120 @@ function renderJapanRankPanel() {
   }).join("");
 
   focusCard.innerHTML = `
-    <div class="rank-controls">
-      <label class="filter-wrap">
-        <span class="label">Prefecture</span>
-        <select id="rank-prefecture-filter">${prefectureOptions}</select>
-      </label>
-      <label class="filter-wrap">
-        <span class="label">Rank by</span>
-        <select id="rank-metric-filter">
-          <option value="score"${state.japanRankMetric === "score" ? " selected" : ""}>Tabelog score</option>
-          <option value="reviews"${state.japanRankMetric === "reviews" ? " selected" : ""}>Tabelog reviews</option>
-        </select>
-      </label>
-      <label class="filter-wrap">
-        <span class="label">Availability</span>
-        <select id="rank-availability-filter">
-          <option value=""${state.japanRankAvailability === "" ? " selected" : ""}>All venues</option>
-          <option value="bookable"${state.japanRankAvailability === "bookable" ? " selected" : ""}>Bookable dates</option>
-          <option value="slots"${state.japanRankAvailability === "slots" ? " selected" : ""}>Checked times</option>
-        </select>
-      </label>
-    </div>
-    <div class="rank-pager">
-      <button type="button" class="ghost-btn secondary" data-rank-page="prev" ${state.japanRankPage <= 1 ? "disabled" : ""}>Previous 25</button>
-      <span>${escapeHtml(`${pageStart}-${pageEnd} of ${state.japanRankTotal}`)}</span>
-      <button type="button" class="ghost-btn secondary" data-rank-page="next" ${state.japanRankPage >= pageCount ? "disabled" : ""}>Next 25</button>
-    </div>
+    <details class="rank-filter-panel"${filterOpen ? " open" : ""}>
+      <summary class="rank-filter-summary">
+        <span>Filters</span>
+        <span class="rank-filter-meta">${escapeHtml(filterCount ? `${filterCount} filter${filterCount === 1 ? "" : "s"}` : "Off")}</span>
+      </summary>
+      <div class="rank-controls">
+        <label class="filter-wrap">
+          <span class="label">Prefecture</span>
+          <select id="rank-prefecture-filter">${prefectureOptions}</select>
+        </label>
+        <label class="filter-wrap">
+          <span class="label">City</span>
+          <select id="rank-city-filter">${cityOptions}</select>
+        </label>
+        <label class="filter-wrap">
+          <span class="label">Area</span>
+          <select id="rank-district-filter">${districtOptions}</select>
+        </label>
+        <label class="filter-wrap">
+          <span class="label">Cuisine</span>
+          <select id="rank-cuisine-filter">${cuisineOptions}</select>
+        </label>
+        <label class="filter-wrap">
+          <span class="label">Sort by</span>
+          <select id="rank-metric-filter">
+            <option value="score"${state.japanRankMetric === "score" ? " selected" : ""}>Tabelog score</option>
+            <option value="reviews"${state.japanRankMetric === "reviews" ? " selected" : ""}>Tabelog reviews</option>
+          </select>
+        </label>
+        <label class="filter-wrap">
+          <span class="label">Lunch budget</span>
+          <select id="rank-lunch-filter">${lunchOptions}</select>
+        </label>
+        <label class="filter-wrap">
+          <span class="label">Dinner budget</span>
+          <select id="rank-dinner-filter">${dinnerOptions}</select>
+        </label>
+        <label class="filter-wrap">
+          <span class="label">English menu</span>
+          <select id="rank-menu-filter">
+            <option value=""${state.japanRankMenu === "" ? " selected" : ""}>Any</option>
+            <option value="yes"${state.japanRankMenu === "yes" ? " selected" : ""}>Available</option>
+            <option value="no"${state.japanRankMenu === "no" ? " selected" : ""}>Not listed</option>
+          </select>
+        </label>
+        <label class="filter-wrap">
+          <span class="label">Booking style</span>
+          <select id="rank-reservation-filter">${reservationOptions}</select>
+        </label>
+        <label class="filter-wrap">
+          <span class="label">Pocket status</span>
+          <select id="rank-availability-filter">
+            <option value=""${state.japanRankAvailability === "" ? " selected" : ""}>All venues</option>
+            <option value="bookable"${state.japanRankAvailability === "bookable" ? " selected" : ""}>Reservable dates</option>
+            <option value="slots"${state.japanRankAvailability === "slots" ? " selected" : ""}>Times found</option>
+            <option value="waitlist"${state.japanRankAvailability === "waitlist" ? " selected" : ""}>Waitlist dates</option>
+          </select>
+        </label>
+        <label class="filter-wrap">
+          <span class="label">Meal</span>
+          <select id="rank-pocket-session-filter">
+            <option value=""${pocketSessionFilter.value === "" ? " selected" : ""}>Any</option>
+            <option value="lunch"${pocketSessionFilter.value === "lunch" ? " selected" : ""}>Lunch</option>
+            <option value="dinner"${pocketSessionFilter.value === "dinner" ? " selected" : ""}>Dinner</option>
+          </select>
+        </label>
+        <label class="filter-wrap">
+          <span class="label">Pocket from</span>
+          <input id="rank-pocket-date-filter" type="date" value="${escapeHtml(pocketDateFilter.value)}"${minDateAttr} />
+        </label>
+        <label class="filter-wrap">
+          <span class="label">Pocket to</span>
+          <input id="rank-pocket-date-end-filter" type="date" value="${escapeHtml(pocketDateEndFilter.value)}"${minDateAttr} />
+        </label>
+        <label class="filter-wrap">
+          <span class="label">Pax</span>
+          <input id="rank-pocket-party-filter" type="number" min="1" max="20" inputmode="numeric" placeholder="Any" value="${escapeHtml(pocketPartyFilter.value)}" />
+        </label>
+        <div class="filter-actions rank-filter-actions">
+          <button type="button" class="ghost-btn secondary" data-rank-clear-filters>Clear filters</button>
+        </div>
+      </div>
+    </details>
+    ${pagerHtml}
     <div class="rank-list">${rows || '<div class="empty-state">No ranked venues for this selection.</div>'}</div>
   `;
 
+  focusCard.querySelector(".rank-filter-panel")?.addEventListener("toggle", (event) => {
+    if (window.innerWidth <= MOBILE_BREAKPOINT) {
+      state.japanRankFiltersOpen = event.target.open;
+    }
+  });
   focusCard.querySelector("#rank-prefecture-filter")?.addEventListener("change", (event) => {
     state.japanRankPrefecture = event.target.value;
+    state.japanRankCity = "";
+    state.japanRankDistrict = "";
     resetJapanRankPage();
     filterRestaurants();
   });
+  const bindRankFilter = (selector, key, clears = []) => {
+    focusCard.querySelector(selector)?.addEventListener("change", (event) => {
+      state[key] = event.target.value;
+      clears.forEach((clearKey) => { state[clearKey] = ""; });
+      resetJapanRankPage();
+      filterRestaurants();
+    });
+  };
+  bindRankFilter("#rank-city-filter", "japanRankCity", ["japanRankDistrict"]);
+  bindRankFilter("#rank-district-filter", "japanRankDistrict");
+  bindRankFilter("#rank-cuisine-filter", "japanRankCuisine");
+  bindRankFilter("#rank-lunch-filter", "japanRankLunchBand");
+  bindRankFilter("#rank-dinner-filter", "japanRankDinnerBand");
+  bindRankFilter("#rank-menu-filter", "japanRankMenu");
+  bindRankFilter("#rank-reservation-filter", "japanRankReservation");
   focusCard.querySelector("#rank-metric-filter")?.addEventListener("change", (event) => {
     state.japanRankMetric = event.target.value === "score" ? "score" : "reviews";
     resetJapanRankPage();
@@ -2902,6 +3255,30 @@ function renderJapanRankPanel() {
   focusCard.querySelector("#rank-availability-filter")?.addEventListener("change", (event) => {
     state.japanRankAvailability = event.target.value;
     resetJapanRankPage();
+    filterRestaurants();
+  });
+  focusCard.querySelector("#rank-pocket-session-filter")?.addEventListener("change", (event) => {
+    pocketSessionFilter.value = event.target.value;
+    resetJapanRankPage();
+    filterRestaurants();
+  });
+  focusCard.querySelector("#rank-pocket-date-filter")?.addEventListener("change", (event) => {
+    setPocketDateRangeInput("start", event.target.value);
+    resetJapanRankPage();
+    filterRestaurants();
+  });
+  focusCard.querySelector("#rank-pocket-date-end-filter")?.addEventListener("change", (event) => {
+    setPocketDateRangeInput("end", event.target.value);
+    resetJapanRankPage();
+    filterRestaurants();
+  });
+  focusCard.querySelector("#rank-pocket-party-filter")?.addEventListener("input", (event) => {
+    pocketPartyFilter.value = event.target.value;
+    resetJapanRankPage();
+    filterRestaurants();
+  });
+  focusCard.querySelector("[data-rank-clear-filters]")?.addEventListener("click", () => {
+    resetFilterControls();
     filterRestaurants();
   });
   focusCard.querySelectorAll("[data-rank-page]").forEach((button) => {
@@ -2920,6 +3297,10 @@ function renderJapanRankPanel() {
     });
   });
   const pocketCalendarToggle = focusCard.querySelector(".rank-detail .pocket-calendar-toggle");
+  focusCard.querySelector(".rank-detail [data-focus-map='true']")?.addEventListener("click", () => {
+    focusActiveRecordOnMap();
+    maybeScrollDiningMapIntoView();
+  });
   if (pocketCalendarToggle && state.activeId) {
     pocketCalendarToggle.addEventListener("toggle", () => {
       state.pocketCalendarOpen[state.activeId] = pocketCalendarToggle.open;
@@ -2929,7 +3310,7 @@ function renderJapanRankPanel() {
     button.addEventListener("click", () => {
       const selectedDate = button.getAttribute("data-tft-calendar-date") || "";
       if (!selectedDate || !state.activeId) return;
-      pocketDateFilter.value = selectedDate;
+      setPocketDateRangeInput("start", selectedDate);
       state.pocketCalendarMonths[state.activeId] = selectedDate.slice(0, 7);
       state.pocketCalendarOpen[state.activeId] = true;
       filterRestaurants();
@@ -3081,7 +3462,7 @@ function renderFocusCard() {
       ${pocketFilterPrompt(record)}
       ${
         record.lat != null && record.lng != null
-          ? `<button type="button" class="ghost-btn secondary" data-focus-map="true">Center on map</button>`
+          ? `<button type="button" class="ghost-btn secondary" data-focus-map="true">Back to map</button>`
           : ""
       }
     </div>
@@ -3091,6 +3472,7 @@ function renderFocusCard() {
   if (centerButton) {
     centerButton.addEventListener("click", () => {
       focusActiveRecordOnMap();
+      maybeScrollDiningMapIntoView();
     });
   }
   const japanPocketButton = focusCard.querySelector("[data-select-japan-pocket]");
@@ -3337,6 +3719,15 @@ function maybeScrollDiningDetailsIntoView() {
   });
 }
 
+function maybeScrollDiningMapIntoView() {
+  const target = hasLeaflet && map ? map.getContainer() : mapElement;
+  if (!target) return;
+  window.requestAnimationFrame(() => {
+    const top = target.getBoundingClientRect().top + window.scrollY - 16;
+    window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+  });
+}
+
 function setActiveRecord(id, options = {}) {
   state.activeId = id;
   const route = currentRoute();
@@ -3413,7 +3804,12 @@ function updateDiningMarkerStyles() {
   if (!hasLeaflet || !map) return;
   state.markers.forEach((marker, id) => {
     const isActive = id === state.activeId;
-    const iconEl = marker.getElement()?.querySelector('.custom-marker-icon div');
+    const markerEl = marker.getElement();
+    if (marker.benefitRankNumber) {
+      markerEl?.classList.toggle("is-active-rank-pin", isActive);
+      return;
+    }
+    const iconEl = markerEl?.querySelector('.custom-marker-icon div');
     if (iconEl) {
       if (isActive) {
         applySelectedMarkerStyle(iconEl);
@@ -6399,6 +6795,7 @@ async function applyRoute(routeId) {
   if (applyToken !== routeApplyToken) return;
   state.scopeRecords = state.restaurants.filter((record) => route.matcher(record));
   state.activeId = null;
+  state.japanRankFiltersOpen = false;
   resetFilterControls();
   refreshFilterOptions();
   filterRestaurants();
@@ -6434,6 +6831,7 @@ async function init() {
   staysCheckinInput.min = today;
   staysCheckoutInput.min = today;
   pocketDateFilter.min = today;
+  pocketDateEndFilter.min = today;
 
   setToolbarOpen(false);
   setTableOpen(false);
@@ -6463,6 +6861,7 @@ countryFilter.addEventListener("change", () => {
     pocketAvailabilityFilter.value = "";
     pocketSessionFilter.value = "";
     pocketDateFilter.value = "";
+    pocketDateEndFilter.value = "";
     pocketPartyFilter.value = "";
   }
   refreshFilterOptions();
@@ -6498,9 +6897,16 @@ cityFilter.addEventListener("change", () => {
   reservationFilter,
   pocketAvailabilityFilter,
   pocketSessionFilter,
-  pocketDateFilter,
 ].forEach((element) => {
   element.addEventListener("change", filterRestaurants);
+});
+pocketDateFilter.addEventListener("change", (event) => {
+  setPocketDateRangeInput("start", event.target.value);
+  filterRestaurants();
+});
+pocketDateEndFilter.addEventListener("change", (event) => {
+  setPocketDateRangeInput("end", event.target.value);
+  filterRestaurants();
 });
 pocketPartyFilter.addEventListener("input", filterRestaurants);
 pocketPartyFilter.addEventListener("change", filterRestaurants);
@@ -6689,6 +7095,15 @@ window.addEventListener("keydown", (event) => {
 
 window.addEventListener("hashchange", handleHashRoute);
 window.addEventListener("resize", () => {
+  const nextIsMobileViewport = window.innerWidth <= MOBILE_BREAKPOINT;
+  if (nextIsMobileViewport !== isMobileViewport) {
+    isMobileViewport = nextIsMobileViewport;
+    if (isJapanRankRoute()) {
+      state.japanRankFiltersOpen = false;
+      renderFocusCard();
+    }
+  }
+
   if (!hasLeaflet) return;
   if (isStayRoute()) {
     staysMap.invalidateSize();

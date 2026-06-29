@@ -388,8 +388,8 @@
                   <span class="label">Pocket availability</span>
                   <select id="pocket-availability-filter">
                     <option value="">All</option>
-                    <option value="bookable">Has bookable dates</option>
-                    <option value="slots">Has checked slots</option>
+                    <option value="bookable">Reservable dates</option>
+                    <option value="slots">Times found</option>
                     <option value="waitlist">Waitlist dates</option>
                   </select>
                 </label>
@@ -404,8 +404,13 @@
                 </label>
 
                 <label class="filter-wrap" id="pocket-date-filter-wrap">
-                  <span class="label">Pocket date</span>
+                  <span class="label">Pocket from</span>
                   <input id="pocket-date-filter" type="date" />
+                </label>
+
+                <label class="filter-wrap" id="pocket-date-end-filter-wrap">
+                  <span class="label">Pocket to</span>
+                  <input id="pocket-date-end-filter" type="date" />
                 </label>
 
                 <label class="filter-wrap" id="pocket-party-filter-wrap">
