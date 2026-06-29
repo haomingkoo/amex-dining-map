@@ -152,3 +152,10 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - Mokubei / Kyoto
+
+## 2026-06-29 22:06 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Aoyama ELYSION HOUSE / Tokyo
