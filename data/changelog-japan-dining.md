@@ -159,3 +159,13 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Aoyama ELYSION HOUSE / Tokyo
+
+## 2026-07-01 22:17 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (4)**
+  - KOGETSU / Tokyo
+  - Sens & Saveurs / Tokyo
+  - Vierge / Tokyo
+  - sushi ISM / Nagoya
