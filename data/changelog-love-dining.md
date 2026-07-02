@@ -28,3 +28,10 @@ Source: `data/love-dining.json`
   - Connections Lounge / Singapore
 - **Removed (1)**
   - Connections / Singapore
+
+## 2026-07-02 22:48 UTC — Love Dining
+
+Source: `data/love-dining.json`
+
+- **Added (1)**
+  - Broth & Beyond / Singapore
