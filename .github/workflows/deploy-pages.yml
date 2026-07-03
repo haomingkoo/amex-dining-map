@@ -77,6 +77,9 @@ jobs:
         with:
           path: site
 
+      - name: Wait for Pages deployment slot
+        run: sleep 60
+
       - name: Deploy attempt 1
         id: deploy_1
         continue-on-error: true
