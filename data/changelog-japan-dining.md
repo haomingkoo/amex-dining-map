@@ -169,3 +169,10 @@ Source: `data/japan-restaurants.json`
   - Sens & Saveurs / Tokyo
   - Vierge / Tokyo
   - sushi ISM / Nagoya
+
+## 2026-07-03 21:58 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Higashiyama Yoshihisa / Kyoto
