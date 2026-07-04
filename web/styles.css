@@ -2023,15 +2023,40 @@ body.route-japan-top .mobile-results-panel {
 }
 
 .rank-filter-summary {
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid var(--surface-border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface-overlay);
   color: var(--text);
   font-size: 12px;
   font-weight: 750;
 }
 
 .rank-filter-meta {
+  margin-left: auto;
   color: var(--text-secondary);
   font-size: 11px;
   font-weight: 600;
+}
+
+.rank-filter-summary::after {
+  content: "+";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--control-chip-bg);
+  color: var(--gold);
+  font-size: 16px;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.rank-filter-panel[open] .rank-filter-summary::after {
+  content: "-";
 }
 
 .rank-controls {
@@ -3402,7 +3427,7 @@ h1, h2, h3 {
 
   body.route-japan-top .rank-filter-summary {
     min-height: 36px;
-    padding: 0 2px;
+    padding: 8px 10px;
   }
 
   body.route-japan-top .rank-filter-panel:not([open]) {

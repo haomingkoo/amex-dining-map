@@ -1963,12 +1963,6 @@ function createMarker(record, rankNumber = 0) {
     className: "dining-marker-popup",
     maxWidth: 260,
   });
-  marker.on("popupopen", () => {
-    marker.getPopup()
-      ?.getElement()
-      ?.querySelector("[data-popup-more-info]")
-      ?.addEventListener("click", () => setActiveRecord(record.id, { scrollDetails: true }));
-  });
   marker.on("click", () => {
     setActiveRecord(record.id);
     if (map && hasLeaflet) {
@@ -3707,9 +3701,16 @@ function renderMobileCards(resetPage = true) {
 
 function maybeScrollDiningDetailsIntoView() {
   const focusPanel = focusCard?.closest(".focus-panel");
-  if (!focusPanel) return;
+  const rankItem = isJapanRankRoute() && state.activeId
+    ? Array.from(focusCard?.querySelectorAll("[data-rank-id]") || [])
+      .find((button) => button.getAttribute("data-rank-id") === state.activeId)
+      ?.closest(".rank-item")
+    : null;
+  const target = rankItem || focusPanel;
+  if (!target) return;
   window.requestAnimationFrame(() => {
-    focusPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    const top = target.getBoundingClientRect().top + window.scrollY - 12;
+    window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
   });
 }
 
