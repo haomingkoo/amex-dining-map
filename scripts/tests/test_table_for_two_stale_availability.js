@@ -34,6 +34,7 @@ vm.runInNewContext(
 const now = Date.now();
 const freshCapture = new Date(now - 29 * 60 * 1000).toISOString();
 const staleCapture = new Date(now - 31 * 60 * 1000).toISOString();
+const futureCapture = new Date(now + 6 * 60 * 1000).toISOString();
 
 assert.strictEqual(
   context.tableForTwoRawAvailabilityKey({ availability: { status: "live_no_seats", captured_at: freshCapture } }),
@@ -41,6 +42,10 @@ assert.strictEqual(
 );
 assert.strictEqual(
   context.tableForTwoRawAvailabilityKey({ availability: { status: "live_no_seats", captured_at: staleCapture } }),
+  "unknown",
+);
+assert.strictEqual(
+  context.tableForTwoRawAvailabilityKey({ availability: { status: "live_no_seats", captured_at: futureCapture } }),
   "unknown",
 );
 assert.strictEqual(

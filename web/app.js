@@ -5308,7 +5308,7 @@ function filterTableForTwo() {
     return (a.app_name || a.name || "").localeCompare(b.app_name || b.name || "");
   });
 
-  if (state.tableForTwoActiveId && !state.tableForTwoFiltered.some((record) => record.id === state.tableForTwoActiveId)) {
+  if (state.tableForTwoActiveId && !venues.some((record) => record.id === state.tableForTwoActiveId)) {
     state.tableForTwoActiveId = null;
   }
   syncTableForTwoSelectionState();
@@ -5736,6 +5736,7 @@ function tableForTwoAvailabilityIsStale(record) {
   const capturedDate = new Date(capturedAt);
   if (Number.isNaN(capturedDate.getTime())) return false;
   const ageMs = Date.now() - capturedDate.getTime();
+  if (ageMs < -5 * 60 * 1000) return true;
   return ageMs > TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES * 60 * 1000;
 }
 
@@ -5882,10 +5883,11 @@ function tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey) {
 function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFilters || {}) {
   const slots = tableForTwoMatchingSlots(record, filters);
   if (!slots.length) {
+    const key = tableForTwoAvailabilityKey(record, filters);
     return `
       <div class="tft-calendar-empty">
         <div class="focus-kicker">Availability</div>
-        <h4>Not bookable</h4>
+        <h4>${escapeHtml(key === "unknown" ? "Availability pending" : "Not bookable")}</h4>
         <p>${escapeHtml(tableForTwoBestAvailabilityLine(record, filters))}</p>
       </div>
     `;
