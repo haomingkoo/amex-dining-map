@@ -84,6 +84,49 @@ def filename_stem(filename: str) -> str:
     return re.sub(r"[-_]?Menu(?:[-_](?:Platinum|Centurion))?\.pdf$", "", filename, flags=re.IGNORECASE)
 
 
+def direct_menu_candidate_filenames(stem: str, source_key: str) -> list[str]:
+    label = AEM_MENU_SOURCES[source_key]["label"]
+    return [
+        f"{stem}-Menu_{label}.pdf",
+        f"{stem}-Menu-{label}.pdf",
+        f"{stem}_Menu_{label}.pdf",
+        f"{stem}_Menu-{label}.pdf",
+        f"{stem}-Menu.pdf",
+        f"{stem}_Menu.pdf",
+    ]
+
+
+def fetch_direct_menu_entry(source_key: str, known_filenames: list[str]) -> tuple[dict | None, bytes | None]:
+    """Probe direct PDF URLs when the AEM listing omits a counterpart menu."""
+    source = AEM_MENU_SOURCES[source_key]
+    seen: set[str] = set()
+    stems = [filename_stem(filename) for filename in known_filenames]
+    for stem in stems:
+        for filename in direct_menu_candidate_filenames(stem, source_key):
+            if filename in seen:
+                continue
+            seen.add(filename)
+            url = f"{source['base_url']}/{filename}"
+            try:
+                pdf_bytes = http_get(url)
+            except urllib.error.HTTPError as exc:
+                if exc.code == 404:
+                    continue
+                raise
+            if not pdf_bytes.startswith(b"%PDF"):
+                continue
+            return {
+                "card_key": source_key,
+                "card_label": source["label"],
+                "filename": filename,
+                "url": url,
+                "aem_created": None,
+                "aem_uuid": None,
+                "discovered_via": "direct_url_probe",
+            }, pdf_bytes
+    return None, None
+
+
 def match_venue_to_filename(venue_name: str, candidates: list[str]) -> str | None:
     """Pick the menu filename that best matches the venue name.
 
@@ -220,11 +263,18 @@ def main() -> int:
     for venue in venues:
         previous_menus = venue.get("menu_pdfs") or {}
         source_infos = {}
+        listing_matches = {
+            source_key: match_venue_to_filename(venue["name"], list(listing.keys()))
+            for source_key, listing in listings.items()
+        }
+        known_filenames = [filename for filename in listing_matches.values() if filename]
         for source_key, listing in listings.items():
-            match = match_venue_to_filename(venue["name"], list(listing.keys()))
+            match = listing_matches[source_key]
             entry = listing.get(match) if match else None
             pdf_bytes: bytes | None = None
-            if entry and not args.no_download:
+            if entry is None and known_filenames and not args.no_download:
+                entry, pdf_bytes = fetch_direct_menu_entry(source_key, known_filenames)
+            if entry and pdf_bytes is None and not args.no_download:
                 try:
                     pdf_bytes = http_get(entry["url"])
                     if cache_dir is not None and not args.dry_run:

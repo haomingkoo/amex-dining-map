@@ -18,6 +18,8 @@ def main() -> None:
     assert menus.filename_stem("Feather-Blade_Menu.pdf") == "Feather-Blade"
     assert menus.filename_stem("Osteria-Mozza-Menu-Centurion.pdf") == "Osteria-Mozza"
     assert menus.match_venue_to_filename("HighHouse", ["HighHouse-Menu_Centurion.pdf"]) == "HighHouse-Menu_Centurion.pdf"
+    assert menus.direct_menu_candidate_filenames("Kaya", "platinum")[0] == "Kaya-Menu_Platinum.pdf"
+    assert "CapitolBistro-Menu.pdf" in menus.direct_menu_candidate_filenames("CapitolBistro", "centurion")
 
 
 if __name__ == "__main__":
