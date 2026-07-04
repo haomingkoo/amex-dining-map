@@ -1391,6 +1391,12 @@ function pocketSummaryMatches(summary, partySize, session) {
   return pocketPartyRangeMatches(summary, partySize) && pocketSessionMatches(summary, session);
 }
 
+function pocketReservationDateMatchesUnknownDetails(availability, dateSummaries, dateRange) {
+  return (availability.reservation_dates || []).some((dateValue) => {
+    return dateWithinPocketRange(dateValue, dateRange) && !dateSummaries[dateValue];
+  });
+}
+
 function pocketAvailabilityMatches(record, mode, startDate, endDate, partySize, session) {
   const dateRange = normalizePocketDateRange(startDate, endDate);
   const hasDateRange = pocketDateRangeIsActive(dateRange);
@@ -1409,10 +1415,15 @@ function pocketAvailabilityMatches(record, mode, startDate, endDate, partySize, 
   if (!hasDateRange && !partySize && !session) return true;
 
   if (partySize || session) {
-    return Object.entries(dateSummaries).some(([dateValue, summary]) => {
+    const exactMatch = Object.entries(dateSummaries).some(([dateValue, summary]) => {
       return (!hasDateRange || dateWithinPocketRange(dateValue, dateRange))
         && pocketSummaryMatches(summary, partySize, session);
     });
+    if (exactMatch) return true;
+    if (hasDateRange && partySize && !session) {
+      return pocketReservationDateMatchesUnknownDetails(availability, dateSummaries, dateRange);
+    }
+    return false;
   }
 
   if (hasDateRange) {
@@ -1513,10 +1524,11 @@ function pocketSelectedDateSlotsHtml(record, selectedDate) {
   const summary = selectedDate ? pocketDateSummaries(record)[selectedDate] : null;
   if (!selectedDate) return '<div class="tft-date-detail muted">Choose a date to see Pocket times and seats.</div>';
   if (!summary) {
+    const isReservationDate = (pocketAvailabilityRecord(record)?.reservation_dates || []).includes(selectedDate);
     return `
       <div class="tft-date-detail">
         <h5>${escapeHtml(tableForTwoDateOptionLabel(selectedDate))}</h5>
-        <p>No Pocket times found for this date.</p>
+        <p>${isReservationDate ? "Pocket lists this date as bookable, but exact times/seats are not cached." : "No Pocket times found for this date."}</p>
       </div>
     `;
   }
@@ -1574,13 +1586,17 @@ function pocketAvailabilityDetailsMarkup(record) {
   const dates = uniqueValues(slots.map((slot) => slot.date).filter(Boolean)).sort();
   const slotsByDate = tableForTwoSlotsByDate(slots);
   const dateRange = pocketDateRangeValue();
+  const reservationDates = (pocketAvailabilityRecord(record)?.reservation_dates || []).filter((date) => {
+    return !pocketDateRangeIsActive(dateRange) || dateWithinPocketRange(date, dateRange);
+  });
   const matchingDates = dates.filter((date) => {
     return (!pocketDateRangeIsActive(dateRange) || dateWithinPocketRange(date, dateRange))
       && pocketSummaryMatches(pocketDateSummaries(record)[date], pocketPartySizeValue(), pocketSessionFilter.value);
   });
-  const selectedDate = dates.includes(pocketDateFilter.value) && (!pocketDateRangeIsActive(dateRange) || dateWithinPocketRange(pocketDateFilter.value, dateRange))
+  const selectedDate = reservationDates.includes(pocketDateFilter.value)
+    || (dates.includes(pocketDateFilter.value) && (!pocketDateRangeIsActive(dateRange) || dateWithinPocketRange(pocketDateFilter.value, dateRange)))
     ? pocketDateFilter.value
-    : (matchingDates[0] || dates[0]);
+    : (matchingDates[0] || reservationDates[0] || dates[0]);
   const monthKeys = uniqueValues(dates.map((dateValue) => dateValue.slice(0, 7))).sort();
   const selectedMonthKey = selectedDate ? selectedDate.slice(0, 7) : "";
   const preferredMonthKey = state.pocketCalendarMonths[record.id] || selectedMonthKey || monthKeys[0] || "";

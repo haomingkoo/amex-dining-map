@@ -19,6 +19,7 @@ function extractFunction(name) {
 }
 
 const functionNames = [
+  "uniqueValues",
   "pocketAvailabilityRecord",
   "pocketDateSummaries",
   "pocketHasCheckedSlots",
@@ -30,6 +31,7 @@ const functionNames = [
   "pocketPartyRangeMatches",
   "pocketSessionMatches",
   "pocketSummaryMatches",
+  "pocketReservationDateMatchesUnknownDetails",
   "pocketAvailabilityMatches",
   "filterJapanRankings",
 ];
@@ -71,7 +73,7 @@ assert.strictEqual(context.pocketDateEndFilter.value, "2026-07-08");
 const record = {
   country: "Japan",
   pocket_availability: {
-    reservation_dates: ["2026-07-02", "2026-07-05"],
+    reservation_dates: ["2026-07-02", "2026-07-05", "2026-09-10"],
     waitlist_dates: ["2026-07-09"],
     dates: {
       "2026-07-05": {
@@ -84,10 +86,13 @@ const record = {
 
 assert.strictEqual(context.pocketAvailabilityMatches(record, "", "2026-07-01", "2026-07-04", 0, ""), true);
 assert.strictEqual(context.pocketAvailabilityMatches(record, "", "2026-07-03", "", 0, ""), false);
+assert.strictEqual(context.pocketPartyRangeMatches({ party_ranges: [[1, 2]] }, 2), true);
 assert.strictEqual(context.pocketAvailabilityMatches(record, "", "2026-07-05", "", 3, "dinner"), true);
 assert.strictEqual(context.pocketAvailabilityMatches(record, "", "2026-07-05", "", 5, "dinner"), false);
+assert.strictEqual(context.pocketAvailabilityMatches(record, "bookable", "2026-09-10", "2026-09-17", 2, ""), true);
+assert.strictEqual(context.pocketAvailabilityMatches(record, "bookable", "2026-09-10", "2026-09-17", 2, "dinner"), false);
 assert.strictEqual(context.pocketAvailabilityMatches(record, "slots", "2026-07-05", "", 0, ""), true);
-assert.strictEqual(context.pocketAvailabilityMatches(record, "slots", "2026-07-02", "", 0, ""), false);
+assert.strictEqual(context.pocketAvailabilityMatches(record, "slots", "2026-07-02", "", 0, ""), true);
 assert.strictEqual(context.pocketAvailabilityMatches(record, "waitlist", "2026-07-08", "2026-07-10", 0, ""), true);
 
 context.pocketDateFilter.value = "";
