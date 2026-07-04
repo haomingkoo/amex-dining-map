@@ -554,6 +554,7 @@ const dataLoadPromises = {
 };
 let routeApplyToken = 0;
 let isMobileViewport = window.innerWidth <= MOBILE_BREAKPOINT;
+let lastViewportWidth = window.innerWidth;
 
 const hasLeaflet = typeof window !== "undefined" && typeof window.L !== "undefined";
 const hasMarkerCluster = hasLeaflet && typeof L.markerClusterGroup === "function";
@@ -1398,8 +1399,7 @@ function pocketAvailabilityMatches(record, mode, startDate, endDate, partySize, 
   const availability = pocketAvailabilityRecord(record);
   if (!availability) return false;
   const dateSummaries = pocketDateSummaries(record);
-  if (mode === "bookable" && !(availability.reservation_dates || []).length) return false;
-  if (mode === "slots" && !pocketHasCheckedSlots(record)) return false;
+  if ((mode === "bookable" || mode === "slots") && !(availability.reservation_dates || []).length && !pocketHasCheckedSlots(record)) return false;
   if (mode === "waitlist") {
     if (session) return false;
     if (hasDateRange) return datesHavePocketRangeMatch(availability.waitlist_dates, dateRange);
@@ -1416,9 +1416,7 @@ function pocketAvailabilityMatches(record, mode, startDate, endDate, partySize, 
   }
 
   if (hasDateRange) {
-    const dates = mode === "slots"
-      ? Object.keys(dateSummaries)
-      : (availability.reservation_dates || []);
+    const dates = uniqueValues([...(availability.reservation_dates || []), ...Object.keys(dateSummaries)]);
     return datesHavePocketRangeMatch(dates, dateRange);
   }
 
@@ -1429,9 +1427,8 @@ function pocketAvailabilityBadge(record) {
   if (record.country !== "Japan") return "";
   const availability = pocketAvailabilityRecord(record);
   if (!availability) return "";
-  if (pocketHasCheckedSlots(record)) return '<span class="badge green">Times found</span>';
-  if ((availability.reservation_dates || []).length) return '<span class="badge blue">Reservable dates</span>';
-  if ((availability.waitlist_dates || []).length) return '<span class="badge amber">Pocket waitlist</span>';
+  if (pocketHasCheckedSlots(record) || (availability.reservation_dates || []).length) return '<span class="badge green">Bookable</span>';
+  if ((availability.waitlist_dates || []).length) return '<span class="badge amber">Waitlist</span>';
   return "";
 }
 
@@ -1439,8 +1436,7 @@ function pocketAvailabilityShortText(record) {
   if (record.country !== "Japan") return "";
   const availability = pocketAvailabilityRecord(record);
   if (!availability) return "";
-  if (pocketHasCheckedSlots(record)) return "Times found";
-  if ((availability.reservation_dates || []).length) return "Reservable dates";
+  if (pocketHasCheckedSlots(record) || (availability.reservation_dates || []).length) return "Bookable";
   if ((availability.waitlist_dates || []).length) return "Waitlist";
   return "";
 }
@@ -1542,7 +1538,6 @@ function pocketSelectedDateSlotsHtml(record, selectedDate) {
       </div>
       ${sessions ? `<div class="tft-date-session"><span class="focus-label">Session</span><span>${escapeHtml(sessions)}</span></div>` : ""}
       ${seats ? `<div class="tft-date-session"><span class="focus-label">Seats</span><span>${escapeHtml(seats)}</span></div>` : ""}
-      ${summary.slot_count ? `<div class="tft-date-session"><span class="focus-label">Slots</span><span>${escapeHtml(`${summary.slot_count} time slot${summary.slot_count === 1 ? "" : "s"}`)}</span></div>` : ""}
       ${seating ? `<div class="tft-date-session"><span class="focus-label">Seating</span><span>${escapeHtml(seating)}</span></div>` : ""}
     </div>
   `;
@@ -1559,7 +1554,7 @@ function pocketAvailabilityFallbackRows(record) {
         <span class="focus-label">Dates</span>
         <span>${escapeHtml(reservationDates.map(diningDateLabel).join(", "))}${availability.reservation_dates.length > reservationDates.length ? " +" : ""}</span>
       </div>
-      <div class="focus-note">Pocket lists these dates, but no exact times/seats were returned in the current slot check.</div>
+      <div class="focus-note">Pocket lists these dates, but no exact times/seats were returned in the current check.</div>
     </div>
   `;
 }
@@ -1600,9 +1595,9 @@ function pocketAvailabilityDetailsMarkup(record) {
       <div class="tft-calendar-head">
         <div>
           <div class="focus-kicker">Pocket availability</div>
-          <h4>${escapeHtml(`${reservationDateCount} reservable date${reservationDateCount === 1 ? "" : "s"} listed`)}</h4>
+          <h4>${escapeHtml(`${reservationDateCount || checkedDateCount} bookable date${(reservationDateCount || checkedDateCount) === 1 ? "" : "s"}`)}</h4>
         </div>
-        ${checkedDateCount ? `<span class="badge green">${escapeHtml(`${checkedDateCount} with times`)}</span>` : ""}
+        <span class="badge green">Bookable</span>
       </div>
       ${pocketSelectedDateSlotsHtml(record, selectedDate)}
       <details class="pocket-calendar-toggle"${calendarOpen ? " open" : ""}>
@@ -1610,7 +1605,7 @@ function pocketAvailabilityDetailsMarkup(record) {
         ${tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey)}
         <div class="tft-calendar-months">${monthsHtml}</div>
         <div class="tft-calendar-legend">
-          <span><i class="is-available"></i>Times found</span>
+          <span><i class="is-available"></i>Bookable</span>
           <span><i class="is-selected"></i>Selected date</span>
         </div>
       </details>
@@ -2265,7 +2260,7 @@ function renderRouteLoadingState(route = currentRoute()) {
   }
 
   if (isTableForTwoRoute(route)) {
-    tableForTwoSummaryStripText.textContent = "Loading Table for Two availability...";
+    tableForTwoSummaryStripText.textContent = "Loading Table for Two restaurants...";
     tableForTwoResultsText.textContent = "Loading venues...";
     tableForTwoFocusCard.innerHTML = '<div class="empty-state">Loading Table for Two venues...</div>';
     tableForTwoResultsList.innerHTML = '<div class="empty-state">Loading Table for Two venues...</div>';
@@ -3186,9 +3181,8 @@ function renderJapanRankPanel() {
           <span class="label">Pocket status</span>
           <select id="rank-availability-filter">
             <option value=""${state.japanRankAvailability === "" ? " selected" : ""}>All venues</option>
-            <option value="bookable"${state.japanRankAvailability === "bookable" ? " selected" : ""}>Reservable dates</option>
-            <option value="slots"${state.japanRankAvailability === "slots" ? " selected" : ""}>Times found</option>
-            <option value="waitlist"${state.japanRankAvailability === "waitlist" ? " selected" : ""}>Waitlist dates</option>
+            <option value="bookable"${state.japanRankAvailability === "bookable" || state.japanRankAvailability === "slots" ? " selected" : ""}>Bookable</option>
+            <option value="waitlist"${state.japanRankAvailability === "waitlist" ? " selected" : ""}>Waitlist</option>
           </select>
         </label>
         <label class="filter-wrap">
@@ -4610,7 +4604,7 @@ function tableForTwoAvailabilityFromRows(record, rows, checkedAt, sourceMode = "
       confidence: "diningcity_amex_platinum_project",
       visible_dates: visibleDateList,
       summary:
-        `${availableDates.length} dates with Table for Two slots returned by DiningCity ${TABLE_FOR_TWO_DININGCITY_PROJECT}${mealSummary ? ` (${mealSummary})` : ""}.`,
+        `${availableDates.length} bookable date${availableDates.length === 1 ? "" : "s"}${mealSummary ? ` (${mealSummary})` : ""}.`,
       meals,
       notes: [sourceNote],
     };
@@ -4628,7 +4622,7 @@ function tableForTwoAvailabilityFromRows(record, rows, checkedAt, sourceMode = "
     confidence: "diningcity_amex_platinum_project",
     visible_dates: visibleDateList,
     summary:
-      `No Table for Two slots were returned by DiningCity ${TABLE_FOR_TWO_DININGCITY_PROJECT} at this check.`,
+      "Not bookable in the current check.",
     meals: [],
     notes: [sourceNote],
   };
@@ -5292,10 +5286,10 @@ function filterTableForTwo() {
     ? `Availability checked ${formatTimestamp(latestAvailabilityCheckedAt)}`
     : "Availability check pending";
   const statusBits = [
-    autoAvailabilityOnly ? `${shown} venues with matching slots` : `${shown === total ? total : `${shown} of ${total}`} roster venues`,
+    autoAvailabilityOnly ? `${shown} bookable venues` : `${shown === total ? total : `${shown} of ${total}`} roster venues`,
     filterLabel,
-    !autoAvailabilityOnly && freshAvailableCount ? `${freshAvailableCount} with matching slots` : "",
-    !autoAvailabilityOnly && freshNoSeatCount ? `${freshNoSeatCount} without cached matches` : "",
+    !autoAvailabilityOnly && freshAvailableCount ? `${freshAvailableCount} bookable` : "",
+    !autoAvailabilityOnly && freshNoSeatCount ? `${freshNoSeatCount} not bookable` : "",
     staleCaptureCount ? "source older than 30 min" : "",
     pendingCount ? `${pendingCount} source checks pending` : "",
     availabilityCheckedText,
@@ -5304,12 +5298,12 @@ function filterTableForTwo() {
   tableForTwoSummaryStripText.textContent = `${statusBits.join(" · ")}.`;
   tableForTwoListSummary.textContent =
     autoAvailabilityOnly
-      ? "List shows matching cached slots; map keeps venues without a cached match in amber."
-      : "Start with all roster venues, then narrow by party size, date, session, status, or category.";
+      ? "Bookable restaurants for the current filters."
+      : "Restaurants first. Pick a venue to see dates and times.";
   if (tableForTwoMapSummary) {
     const mappedCount = venues.filter((record) => tableForTwoHasMapPin(record)).length;
     tableForTwoMapSummary.textContent =
-      `${mappedCount}/${total} roster venues mapped. Green pins match the current filters; amber pins have no cached match.`;
+      `${mappedCount}/${total} restaurants mapped. Green pins are bookable for the current filters.`;
   }
   if (tableForTwoNoMatchLegend) {
     tableForTwoNoMatchLegend.hidden = false;
@@ -5511,8 +5505,7 @@ function tableForTwoAvailabilityLabel(record, filters = state.tableForTwoCurrent
   const partySize = Number(filters.partySize || tableForTwoSelectedPartySize());
   const key = tableForTwoAvailabilityKey(record, filters);
   if (key === "available") return `${partySize} pax available`;
-  if (key === "no_seats" && (filters.date || filters.session || filters.time || filters.day)) return "No cached match";
-  if (key === "no_seats") return `No cached ${partySize}-pax slots`;
+  if (key === "no_seats") return "Not bookable";
   return "Source pending";
 }
 
@@ -5559,7 +5552,7 @@ function tableForTwoSlotGroupSummaries(slots) {
   return [...grouped.entries()].sort(([a], [b]) => tableForTwoCompareMealLabels(a, b)).map(([meal, mealSlots]) => {
     const times = uniqueValues(mealSlots.map((slot) => slot.time).filter(Boolean)).slice(0, TABLE_FOR_TWO_MAX_TIMES);
     const maxSeats = Math.max(...mealSlots.map((slot) => tableForTwoSlotMaxSeatValue(slot)));
-    const timeText = times.length ? times.join(", ") : `${mealSlots.length} slots`;
+    const timeText = times.length ? times.join(", ") : "Bookable";
     const moreText = uniqueValues(mealSlots.map((slot) => slot.time).filter(Boolean)).length > times.length ? " +" : "";
     const dateText = tableForTwoDateRangeSummary(mealSlots.map((slot) => slot.date).filter(Boolean), "");
     return `${meal}: ${timeText}${moreText}${dateText ? ` · ${dateText}` : ""} · up to ${maxSeats} pax`;
@@ -5625,7 +5618,7 @@ function tableForTwoDateSessionSummaries(slots) {
       const more = times.length > 4 ? ` +${times.length - 4}` : "";
       return {
         meal,
-        label: `${meal}: ${visibleTimes || `${mealSlots.length} slots`}${more}`,
+        label: `${meal}: ${visibleTimes || "Bookable"}${more}`,
         shortLabel: `${tableForTwoSessionShortLabel(meal)} ${times.length}`,
         maxSeats,
       };
@@ -5646,9 +5639,9 @@ function tableForTwoNoMatchLine(record, filters = state.tableForTwoCurrentFilter
   const partySize = Number(filters.partySize || tableForTwoSelectedPartySize());
   const dateText = filters.date ? ` on ${tableForTwoShortDate(filters.date)}` : "";
   const timeText = filters.time ? ` within ${TABLE_FOR_TWO_TIME_WINDOW_LABEL} of ${filters.time}` : "";
-  if (filters.time) return `No cached Table for Two ${partySize}-pax match${dateText}${timeText}. Normal DiningCity booking slots may still exist; check the Amex app.`;
-  if (filters.date || filters.session || filters.day) return `No cached Table for Two ${partySize}-pax match${dateText}. Normal DiningCity booking slots may still exist; check the Amex app.`;
-  return `No Table for Two ${partySize}-pax slots were returned by the cached public check. Normal DiningCity booking slots may still exist.`;
+  if (filters.time) return `Not bookable for ${partySize} pax${dateText}${timeText}. Check the Amex app before planning around it.`;
+  if (filters.date || filters.session || filters.day) return `Not bookable for ${partySize} pax${dateText}. Check the Amex app before planning around it.`;
+  return `Not bookable for ${partySize} pax in the current cached check.`;
 }
 
 function tableForTwoCompactAvailabilityLine(record, filters = state.tableForTwoCurrentFilters || {}) {
@@ -5674,7 +5667,7 @@ function tableForTwoBestAvailabilityLine(record, filters = state.tableForTwoCurr
   const key = tableForTwoAvailabilityKey(record, filters);
   const matchingSlots = tableForTwoMatchingSlots(record, filters);
   if (!matchingSlots.length) {
-    if (key === "unknown") return "No Table for Two source check has been captured yet.";
+    if (key === "unknown") return "Source check pending.";
     return tableForTwoNoMatchLine(record, filters);
   }
   return tableForTwoSlotGroupSummaries(matchingSlots).join(" | ");
@@ -5705,7 +5698,7 @@ function tableForTwoDateSummary(record, filters = state.tableForTwoCurrentFilter
   const availability = record.availability || {};
   const matchingDates = uniqueValues(tableForTwoMatchingSlots(record, filters).map((slot) => slot.date).filter(Boolean));
   if (matchingDates.length) return tableForTwoDateRangeSummary(matchingDates);
-  if (filters.date) return `No cached slots on ${tableForTwoDateOptionLabel(filters.date)}`;
+  if (filters.date) return `Not bookable on ${tableForTwoDateOptionLabel(filters.date)}`;
   if (filters.time || filters.session || filters.day) return "No matching dates";
   const visibleDates = uniqueValues(availability.visible_dates || []);
   if (visibleDates.length) return tableForTwoDateRangeSummary(visibleDates, "No matching dates");
@@ -5770,7 +5763,7 @@ function tableForTwoSelectedDateSlotsHtml(slots, filters = state.tableForTwoCurr
     return `
       <div class="tft-date-detail">
         <h5>${escapeHtml(tableForTwoDateOptionLabel(selectedDate))}</h5>
-        <p>${escapeHtml(filters.time ? `No available timing within ${TABLE_FOR_TWO_TIME_WINDOW_LABEL} of ${filters.time}.` : "No matching slots for this date.")}</p>
+        <p>${escapeHtml(filters.time ? `No bookable time within ${TABLE_FOR_TWO_TIME_WINDOW_LABEL} of ${filters.time}.` : "Not bookable for this date.")}</p>
       </div>
     `;
   }
@@ -5824,8 +5817,8 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
   if (!slots.length) {
     return `
       <div class="tft-calendar-empty">
-        <div class="focus-kicker">Matching slots</div>
-        <h4>No cached match</h4>
+        <div class="focus-kicker">Availability</div>
+        <h4>Not bookable</h4>
         <p>${escapeHtml(tableForTwoBestAvailabilityLine(record, filters))}</p>
       </div>
     `;
@@ -5855,7 +5848,7 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
           <div class="focus-kicker">Availability calendar</div>
           <h4>${escapeHtml(headingParts.join(" · "))}</h4>
         </div>
-        <span class="badge amber">${escapeHtml(`${slots.length} slot time${slots.length === 1 ? "" : "s"}`)}</span>
+        <span class="badge green">Bookable</span>
       </div>
       ${tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey)}
       <div class="tft-calendar-months">${monthsHtml}</div>
@@ -5934,7 +5927,7 @@ function renderTableForTwoCard() {
     tableForTwoFocusCard.innerHTML = `
       <div class="focus-kicker">Official roster</div>
       <h3 class="focus-title">Select a venue</h3>
-      <p class="focus-summary">Use party size, session, and date to find matching AMEXPlatSG slots. Booking and redemption still happen in the Amex Experiences App.</p>
+      <p class="focus-summary">Pick a restaurant to see bookable dates and times. Booking and redemption still happen in the Amex Experiences App.</p>
       <div class="price-grid tft-status-grid">
         <div class="price-card">
           <span class="price-label">Roster</span>
@@ -7066,6 +7059,12 @@ stayPresetButtons.forEach((button) => {
 document.addEventListener("click", (event) => {
   const target = event.target;
   if (!(target instanceof Node)) return;
+  const popupMoreInfo = target instanceof Element ? target.closest("[data-popup-more-info]") : null;
+  if (popupMoreInfo) {
+    event.preventDefault();
+    setActiveRecord(popupMoreInfo.getAttribute("data-popup-more-info") || "", { scrollDetails: true });
+    return;
+  }
 
   if (state.mobileToolbarOpen && mapFilterShell && !mapFilterShell.contains(target)) {
     setToolbarOpen(false);
@@ -7095,6 +7094,8 @@ window.addEventListener("keydown", (event) => {
 
 window.addEventListener("hashchange", handleHashRoute);
 window.addEventListener("resize", () => {
+  const widthChanged = window.innerWidth !== lastViewportWidth;
+  lastViewportWidth = window.innerWidth;
   const nextIsMobileViewport = window.innerWidth <= MOBILE_BREAKPOINT;
   if (nextIsMobileViewport !== isMobileViewport) {
     isMobileViewport = nextIsMobileViewport;
@@ -7104,6 +7105,7 @@ window.addEventListener("resize", () => {
     }
   }
 
+  if (!widthChanged && nextIsMobileViewport) return;
   if (!hasLeaflet) return;
   if (isStayRoute()) {
     staysMap.invalidateSize();

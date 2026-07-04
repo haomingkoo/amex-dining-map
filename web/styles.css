@@ -215,6 +215,7 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
+  overflow-x: hidden;
   background-color: var(--bg);
   background-image:
     radial-gradient(ellipse 55% 38% at 0% 0%, var(--bg-ambient-gold) 0%, transparent 58%),
@@ -3305,6 +3306,7 @@ h1, h2, h3 {
 /* Mobile breakpoint */
 @media (max-width: 820px) {
   .page-shell {
+    overflow-x: clip;
     padding: 14px 14px 48px;
   }
 
@@ -3330,7 +3332,10 @@ h1, h2, h3 {
   .explorer-grid {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
     position: relative;
+    width: 100%;
+    min-width: 0;
     height: auto;
     min-height: calc(100vh - 50px);
     margin-bottom: 0;
@@ -3338,7 +3343,10 @@ h1, h2, h3 {
 
   .map-panel {
     position: relative;
+    width: 100%;
+    max-width: 100%;
     flex: none;
+    min-width: 0;
     min-height: 0;
     order: 1;
     z-index: 5;
@@ -3348,6 +3356,9 @@ h1, h2, h3 {
     position: relative;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     order: 2;
     max-height: none;
     border-top: 1px solid var(--border);
@@ -3355,6 +3366,7 @@ h1, h2, h3 {
   }
 
   .focus-body {
+    min-width: 0;
     overflow: visible;
   }
 
@@ -3384,6 +3396,7 @@ h1, h2, h3 {
   }
 
   body.route-japan-top .rank-filter-panel {
+    min-width: 0;
     padding-bottom: 0;
   }
 
@@ -3405,6 +3418,7 @@ h1, h2, h3 {
   }
 
   body.route-japan-top .rank-pager {
+    min-width: 0;
     gap: 6px;
     padding-top: 8px;
   }
@@ -3426,8 +3440,15 @@ h1, h2, h3 {
   }
 
   body.route-japan-top .rank-list {
+    min-width: 0;
     gap: 6px;
     padding-top: 8px;
+  }
+
+  body.route-japan-top .rank-item,
+  body.route-japan-top .rank-card,
+  body.route-japan-top .rank-detail {
+    min-width: 0;
   }
 
   body.route-japan-top .rank-card {
@@ -3497,6 +3518,8 @@ h1, h2, h3 {
   .tft-grid {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
+    width: 100%;
     gap: 12px;
   }
 
@@ -3512,7 +3535,7 @@ h1, h2, h3 {
 
   #table-for-two-explorer .tft-grid > .focus-panel {
     display: none;
-    order: 2;
+    order: 1;
     scroll-margin-top: 10px;
     z-index: 1;
   }
@@ -3531,7 +3554,9 @@ h1, h2, h3 {
 
   .tft-list-panel {
     position: relative;
-    order: 1;
+    order: 2;
+    width: 100%;
+    max-width: 100%;
     z-index: 1;
   }
 
@@ -3822,6 +3847,7 @@ h1, h2, h3 {
   #stays-map,
   #love-map,
   #tft-map {
+    width: 100%;
     min-height: 300px;
     height: 100%;
     max-height: 100%;

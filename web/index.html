@@ -388,9 +388,8 @@
                   <span class="label">Pocket availability</span>
                   <select id="pocket-availability-filter">
                     <option value="">All</option>
-                    <option value="bookable">Reservable dates</option>
-                    <option value="slots">Times found</option>
-                    <option value="waitlist">Waitlist dates</option>
+                    <option value="bookable">Bookable</option>
+                    <option value="waitlist">Waitlist</option>
                   </select>
                 </label>
 
@@ -913,9 +912,8 @@
                     <span class="label">Availability</span>
                     <select id="tft-availability-filter">
                       <option value="" selected>All states</option>
-                      <option value="available">Matching slots</option>
-                      <option value="no_seats">No cached match</option>
-                      <option value="stale">Cache older than 30 min</option>
+                      <option value="available">Bookable</option>
+                      <option value="no_seats">Not bookable</option>
                     </select>
                   </label>
 
@@ -933,16 +931,16 @@
               </section>
               <div id="tft-map"></div>
               <div class="map-legend">
-                <span class="legend-item"><i class="legend-dot legend-tft-available"></i>Matches filters</span>
-                <span class="legend-item"><i class="legend-dot legend-tft-no-match"></i>No cached match</span>
+                <span class="legend-item"><i class="legend-dot legend-tft-available"></i>Bookable</span>
+                <span class="legend-item"><i class="legend-dot legend-tft-no-match"></i>Not bookable</span>
               </div>
             </section>
 
             <section class="tft-list-panel panel-surface">
               <div class="panel-head">
                 <div>
-                  <h2>Table for Two availability</h2>
-                  <p id="tft-list-summary">Official 2026 roster with cached AMEXPlatSG slot checks. Start with when you are free.</p>
+                  <h2>Table for Two restaurants</h2>
+                  <p id="tft-list-summary">Pick a restaurant to see dates and times.</p>
                 </div>
               </div>
 
