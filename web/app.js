@@ -5414,7 +5414,9 @@ function tableForTwoResidualSearch(search) {
 function tableForTwoRawAvailabilityKey(record) {
   const status = record.availability?.status || "unknown";
   if (status === "live_available" || status === "captured_available" || status === "available") return "available";
-  if (status === "live_no_seats" || status === "captured_no_seats" || status === "no_seats") return "no_seats";
+  if (status === "live_no_seats" || status === "captured_no_seats" || status === "no_seats") {
+    return tableForTwoAvailabilityIsStale(record) ? "unknown" : "no_seats";
+  }
   return "unknown";
 }
 
