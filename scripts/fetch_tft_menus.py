@@ -2,8 +2,8 @@
 """Map Amex Table for Two venues to their published set-menu PDFs.
 
 The Amex CDN exposes a JSON directory listing of all published menus at
-``dining.1.json``. Each asset is named like ``{slug}-Menu_Platinum.pdf`` or
-``{slug}-Menu.pdf`` or ``{slug}_Menu.pdf``. This script fetches that listing,
+``dining.1.json``. Each asset is named like ``{slug}-Menu_Platinum.pdf``,
+``{slug}-Menu_Centurion.pdf``, or ``{slug}_Menu.pdf``. This script fetches those listings,
 fuzzy-matches every PDF to a venue in ``data/table-for-two.json``, downloads
 each PDF to compute a content hash, and writes back per-venue menu metadata
 so the frontend can link straight to the official PDF.
@@ -26,17 +26,21 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-AEM_LISTING_URL = (
-    "https://www.americanexpress.com/content/dam/amex/en-sg/"
-    "benefits/the-platinum-card/dining.1.json"
-)
-AEM_BASE_URL = (
-    "https://www.americanexpress.com/content/dam/amex/en-sg/"
-    "benefits/the-platinum-card/dining"
-)
+AEM_MENU_SOURCES = {
+    "platinum": {
+        "label": "Platinum",
+        "listing_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining.1.json",
+        "base_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining",
+    },
+    "centurion": {
+        "label": "Centurion",
+        "listing_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle.1.json",
+        "base_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle",
+    },
+}
 USER_AGENT = "Mozilla/5.0 (compatible; AmexDiningMap/1.0)"
 HTTP_TIMEOUT = 15
-MENU_FILENAME_RE = re.compile(r".+-?_?Menu(_Platinum)?\.pdf$", re.IGNORECASE)
+MENU_FILENAME_RE = re.compile(r".+[-_]?Menu(?:[-_](?:Platinum|Centurion))?\.pdf$", re.IGNORECASE)
 
 
 def iso_now() -> str:
@@ -49,9 +53,10 @@ def http_get(url: str) -> bytes:
         return resp.read()
 
 
-def fetch_aem_menu_listing() -> dict[str, dict]:
+def fetch_aem_menu_listing(source_key: str) -> dict[str, dict]:
     """Return a dict of menu PDF filename -> AEM asset metadata."""
-    payload = json.loads(http_get(AEM_LISTING_URL))
+    source = AEM_MENU_SOURCES[source_key]
+    payload = json.loads(http_get(source["listing_url"]))
     menus = {}
     for name, node in payload.items():
         if not isinstance(node, dict):
@@ -61,8 +66,10 @@ def fetch_aem_menu_listing() -> dict[str, dict]:
         if not MENU_FILENAME_RE.match(name):
             continue
         menus[name] = {
+            "card_key": source_key,
+            "card_label": source["label"],
             "filename": name,
-            "url": f"{AEM_BASE_URL}/{name}",
+            "url": f"{source['base_url']}/{name}",
             "aem_created": node.get("jcr:created"),
             "aem_uuid": node.get("jcr:uuid"),
         }
@@ -74,12 +81,7 @@ def normalize_for_match(value: str) -> str:
 
 
 def filename_stem(filename: str) -> str:
-    stem = filename
-    for suffix in ("-Menu_Platinum.pdf", "-Menu.pdf", "_Menu_Platinum.pdf", "_Menu.pdf"):
-        if stem.endswith(suffix):
-            stem = stem[: -len(suffix)]
-            break
-    return stem
+    return re.sub(r"[-_]?Menu(?:[-_](?:Platinum|Centurion))?\.pdf$", "", filename, flags=re.IGNORECASE)
 
 
 def match_venue_to_filename(venue_name: str, candidates: list[str]) -> str | None:
@@ -123,21 +125,24 @@ def has_buffet_tag(venue: dict) -> bool:
     return any("buffet" in t.lower() for t in tags)
 
 
-def update_venue_menu(
+def venue_menu_info(
     venue: dict,
     listing_entry: dict | None,
     pdf_bytes: bytes | None,
     checked_at: str,
-) -> None:
-    """Mutate venue in place with menu PDF metadata."""
-    previous = venue.get("menu_pdf") or {}
+    previous: dict | None = None,
+) -> dict:
+    """Return menu PDF metadata for one venue/source pair."""
+    previous = previous or {}
 
     if listing_entry is None:
         status = "buffet_no_menu_expected" if has_buffet_tag(venue) else "no_pdf_found"
-        venue["menu_pdf"] = {
+        return {
             "status": status,
             "url": None,
             "filename": None,
+            "card": None,
+            "label": None,
             "checked_at": checked_at,
             "first_seen_at": previous.get("first_seen_at"),
             "last_seen_at": previous.get("last_seen_at"),
@@ -146,7 +151,6 @@ def update_venue_menu(
             "aem_created": None,
             "changed_at": previous.get("changed_at"),
         }
-        return
 
     sha256 = hashlib.sha256(pdf_bytes).hexdigest() if pdf_bytes is not None else previous.get("sha256")
     size = len(pdf_bytes) if pdf_bytes is not None else previous.get("bytes")
@@ -154,10 +158,12 @@ def update_venue_menu(
     changed_at = checked_at if (prev_sha and sha256 and prev_sha != sha256) else previous.get("changed_at")
     first_seen = previous.get("first_seen_at") or checked_at
 
-    venue["menu_pdf"] = {
+    return {
         "status": "published",
         "url": listing_entry["url"],
         "filename": listing_entry["filename"],
+        "card": listing_entry.get("card_key"),
+        "label": listing_entry.get("card_label"),
         "checked_at": checked_at,
         "first_seen_at": first_seen,
         "last_seen_at": checked_at,
@@ -201,61 +207,78 @@ def main() -> int:
         return 1
 
     checked_at = iso_now()
-    listing = fetch_aem_menu_listing()
-    print(f"AEM listing: {len(listing)} menu PDFs found", file=sys.stderr)
+    listings = {key: fetch_aem_menu_listing(key) for key in AEM_MENU_SOURCES}
+    for key, listing in listings.items():
+        print(f"AEM {AEM_MENU_SOURCES[key]['label']} listing: {len(listing)} menu PDFs found", file=sys.stderr)
 
-    available_filenames = list(listing.keys())
-    matched_count = 0
+    matched_menu_count = 0
+    matched_venue_count = 0
     buffet_count = 0
     review_count = 0
     matched_filenames: set[str] = set()
 
     for venue in venues:
-        match = match_venue_to_filename(venue["name"], available_filenames)
-        entry = listing.get(match) if match else None
+        previous_menus = venue.get("menu_pdfs") or {}
+        source_infos = {}
+        for source_key, listing in listings.items():
+            match = match_venue_to_filename(venue["name"], list(listing.keys()))
+            entry = listing.get(match) if match else None
+            pdf_bytes: bytes | None = None
+            if entry and not args.no_download:
+                try:
+                    pdf_bytes = http_get(entry["url"])
+                    if cache_dir is not None and not args.dry_run:
+                        maybe_save_pdf(pdf_bytes, entry["filename"], cache_dir)
+                except urllib.error.URLError as exc:
+                    print(f"  ! download failed for {venue['name']}: {exc}", file=sys.stderr)
 
-        pdf_bytes: bytes | None = None
-        if entry and not args.no_download:
-            try:
-                pdf_bytes = http_get(entry["url"])
-                if cache_dir is not None and not args.dry_run:
-                    maybe_save_pdf(pdf_bytes, entry["filename"], cache_dir)
-            except urllib.error.URLError as exc:
-                print(f"  ! download failed for {venue['name']}: {exc}", file=sys.stderr)
+            previous = previous_menus.get(source_key)
+            if previous is None and source_key == "platinum":
+                previous = venue.get("menu_pdf") or {}
+            info = venue_menu_info(venue, entry, pdf_bytes, checked_at, previous)
+            if info["status"] == "published":
+                source_infos[source_key] = info
+                matched_filenames.add(entry["filename"])
 
-        update_venue_menu(venue, entry, pdf_bytes, checked_at)
+        venue["menu_pdfs"] = source_infos
+        platinum_info = source_infos.get("platinum")
+        venue["menu_pdf"] = platinum_info or next(iter(source_infos.values()), venue_menu_info(venue, None, None, checked_at, venue.get("menu_pdf") or {}))
 
-        info = venue["menu_pdf"]
-        if info["status"] == "published":
-            matched_count += 1
-            matched_filenames.add(entry["filename"])
-            size_str = f"{info['bytes']:,}B" if info["bytes"] else "?"
-            print(f"  OK  {venue['name']:38s}  {info['filename']:40s}  {size_str}")
-        elif info["status"] == "buffet_no_menu_expected":
+        if source_infos:
+            matched_menu_count += len(source_infos)
+            matched_venue_count += 1
+            parts = []
+            for key, info in source_infos.items():
+                size_str = f"{info['bytes']:,}B" if info["bytes"] else "?"
+                parts.append(f"{AEM_MENU_SOURCES[key]['label']}: {info['filename']} ({size_str})")
+            print(f"  OK  {venue['name']:38s}  {' | '.join(parts)}")
+        elif venue["menu_pdf"]["status"] == "buffet_no_menu_expected":
             buffet_count += 1
             print(f"  BUF {venue['name']:38s}  (buffet — no menu PDF expected)")
         else:
             review_count += 1
             print(f"  ??  {venue['name']:38s}  NO PDF FOUND — review")
 
-    unmatched = sorted(set(available_filenames) - matched_filenames)
+    all_filenames = {name for listing in listings.values() for name in listing}
+    unmatched = sorted(all_filenames - matched_filenames)
     if unmatched:
         print(f"\nWARNING: {len(unmatched)} PDFs in AEM listing did not match any venue:", file=sys.stderr)
         for f in unmatched:
             print(f"  - {f}", file=sys.stderr)
 
     payload["menu_source"] = {
-        "aem_listing_url": AEM_LISTING_URL,
+        "aem_listing_urls": {key: source["listing_url"] for key, source in AEM_MENU_SOURCES.items()},
         "checked_at": checked_at,
-        "pdfs_in_listing": len(listing),
-        "venues_matched": matched_count,
+        "pdfs_in_listing": sum(len(listing) for listing in listings.values()),
+        "menus_matched": matched_menu_count,
+        "venues_matched": matched_venue_count,
         "venues_buffet": buffet_count,
         "venues_review": review_count,
         "unmatched_pdfs": unmatched,
     }
 
     print(
-        f"\nMatched {matched_count}/{len(venues)} "
+        f"\nMatched {matched_venue_count}/{len(venues)} venues, {matched_menu_count} menus "
         f"(buffet: {buffet_count}, review: {review_count})",
         file=sys.stderr,
     )

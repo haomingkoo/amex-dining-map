@@ -3359,13 +3359,18 @@ function renderJapanRankPanel() {
 }
 
 function renderFocusCard() {
+  const diningFocusPanel = focusCard.closest(".focus-panel");
   if (isJapanRankRoute()) {
+    if (window.innerWidth <= MOBILE_BREAKPOINT) {
+      if (diningFocusPanel) diningFocusPanel.style.display = 'flex';
+    } else if (diningFocusPanel) {
+      diningFocusPanel.style.display = '';
+    }
     renderJapanRankPanel();
     return;
   }
 
   const record = activeRecord();
-  const diningFocusPanel = focusCard.closest(".focus-panel");
   if (!record) {
     focusCard.innerHTML = state.filtered.length > 0
       ? `<div class="empty-state map-cta">
@@ -5749,6 +5754,21 @@ function tableForTwoDateSummary(record, filters = state.tableForTwoCurrentFilter
   return availability.date_label || "No availability calendar yet";
 }
 
+function tableForTwoPublishedMenus(record) {
+  const menuMap = record.menu_pdfs && typeof record.menu_pdfs === "object" ? record.menu_pdfs : {};
+  const menus = Object.values(menuMap).filter((menu) => menu?.status === "published" && menu.url);
+  if (menus.length) return menus;
+  const legacy = record.menu_pdf || {};
+  return legacy.status === "published" && legacy.url ? [legacy] : [];
+}
+
+function tableForTwoMenuMetaLabel(record) {
+  const menus = tableForTwoPublishedMenus(record);
+  if (menus.length > 1) return `${menus.length} menus · Amex app`;
+  if (menus.length === 1) return `${menus[0].label || "Set"} menu · Amex app`;
+  return "Amex app";
+}
+
 function tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedDate = "", availableDates = new Set()) {
   const [year, month] = monthKey.split("-").map(Number);
   const firstDay = new Date(Date.UTC(year, month - 1, 1));
@@ -5951,7 +5971,7 @@ function renderTableForTwoList() {
       <p class="mobile-card-desc">${escapeHtml(tableForTwoCompactAvailabilityLine(record, filters))}</p>
       <div class="mobile-card-meta">
         <span>${escapeHtml(tableForTwoDateSummary(record, filters))}</span>
-        <span>${record.menu_pdf?.status === "published" ? "Set menu · Amex app" : "Amex app"}</span>
+        <span>${escapeHtml(tableForTwoMenuMetaLabel(record))}</span>
       </div>
     `;
     card.addEventListener("click", () => {
@@ -6004,10 +6024,10 @@ function renderTableForTwoCard() {
   const gBadge = googleRatingBadge(record);
   const googleMapsUrl = bestGoogleMapsUrl(record) || googleMapsSearchUrl([displayName, "Singapore"]);
   const menuPdf = record.menu_pdf || {};
-  const menuPdfLink = menuPdf.status === "published" && menuPdf.url
-    ? `<a class="inline-link primary-action" href="${escapeHtml(menuPdf.url)}" target="_blank" rel="noopener">View set menu (PDF)</a>`
-    : "";
-  const menuPdfNote = menuPdf.status === "buffet_no_menu_expected"
+  const menuPdfLinks = tableForTwoPublishedMenus(record)
+    .map((menu, index) => `<a class="inline-link${index === 0 ? " primary-action" : ""}" href="${escapeHtml(menu.url)}" target="_blank" rel="noopener">${escapeHtml(`${menu.label || "Set"} menu (PDF)`)}</a>`)
+    .join("");
+  const menuPdfNote = !menuPdfLinks && menuPdf.status === "buffet_no_menu_expected"
     ? `<div class="focus-note">Buffet venue — no set menu PDF.</div>`
     : "";
 
@@ -6049,8 +6069,8 @@ function renderTableForTwoCard() {
     </div>
     ${menuPdfNote}
     <div class="focus-actions">
-      ${menuPdfLink}
-      <a class="inline-link${menuPdfLink ? "" : " primary-action"}" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
+      ${menuPdfLinks}
+      <a class="inline-link${menuPdfLinks ? "" : " primary-action"}" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
       ${record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.dining_city_public_url)}" target="_blank" rel="noopener">Public DiningCity page</a>` : ""}
       ${record.venue_source_url && !record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.venue_source_url)}" target="_blank" rel="noopener">Venue source</a>` : ""}
       ${profileSourceUrl ? `<a class="inline-link subtle" href="${escapeHtml(profileSourceUrl)}" target="_blank" rel="noopener">DiningCity profile source</a>` : ""}
