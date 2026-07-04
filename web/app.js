@@ -1313,6 +1313,14 @@ function pocketDateSummaries(record) {
   return dates && typeof dates === "object" ? dates : {};
 }
 
+function pocketAvailabilityCalendarDates(record) {
+  const availability = pocketAvailabilityRecord(record);
+  return uniqueValues([
+    ...((availability?.reservation_dates || [])),
+    ...Object.keys(pocketDateSummaries(record)),
+  ]).sort();
+}
+
 function pocketPartySizeValue() {
   const value = Number(pocketPartyFilter.value || 0);
   return Number.isFinite(value) && value > 0 ? value : 0;
@@ -1596,13 +1604,16 @@ function pocketAvailabilityEmptyNote(record) {
 }
 
 function pocketAvailabilityDetailsMarkup(record) {
-  if (record.country !== "Japan" || !pocketAvailabilityRecord(record)) return "";
+  const availability = pocketAvailabilityRecord(record);
+  if (record.country !== "Japan" || !availability) return "";
   const slots = pocketAvailabilitySlots(record);
-  if (!slots.length) return pocketAvailabilityFallbackRows(record);
   const dates = uniqueValues(slots.map((slot) => slot.date).filter(Boolean)).sort();
+  const calendarDates = pocketAvailabilityCalendarDates(record);
+  if (!slots.length && !calendarDates.length) return pocketAvailabilityFallbackRows(record);
+  const calendarAvailableDates = new Set(calendarDates);
   const slotsByDate = tableForTwoSlotsByDate(slots);
   const dateRange = pocketDateRangeValue();
-  const reservationDates = (pocketAvailabilityRecord(record)?.reservation_dates || []).filter((date) => {
+  const reservationDates = (availability.reservation_dates || []).filter((date) => {
     return !pocketDateRangeIsActive(dateRange) || dateWithinPocketRange(date, dateRange);
   });
   const matchingDates = dates.filter((date) => {
@@ -1613,13 +1624,13 @@ function pocketAvailabilityDetailsMarkup(record) {
     || (dates.includes(pocketDateFilter.value) && (!pocketDateRangeIsActive(dateRange) || dateWithinPocketRange(pocketDateFilter.value, dateRange)))
     ? pocketDateFilter.value
     : (matchingDates[0] || reservationDates[0] || dates[0]);
-  const monthKeys = uniqueValues(dates.map((dateValue) => dateValue.slice(0, 7))).sort();
+  const monthKeys = uniqueValues(calendarDates.map((dateValue) => dateValue.slice(0, 7))).sort();
   const selectedMonthKey = selectedDate ? selectedDate.slice(0, 7) : "";
   const preferredMonthKey = state.pocketCalendarMonths[record.id] || selectedMonthKey || monthKeys[0] || "";
   const activeMonthKey = monthKeys.includes(preferredMonthKey) ? preferredMonthKey : (selectedMonthKey || monthKeys[0] || "");
-  const monthsHtml = activeMonthKey ? tableForTwoCalendarMonthHtml(activeMonthKey, slotsByDate, selectedDate) : "";
+  const monthsHtml = activeMonthKey ? tableForTwoCalendarMonthHtml(activeMonthKey, slotsByDate, selectedDate, calendarAvailableDates) : "";
   const checkedDateCount = dates.length;
-  const reservationDateCount = (pocketAvailabilityRecord(record)?.reservation_dates || []).length;
+  const reservationDateCount = (availability.reservation_dates || []).length;
   const meta = state.pocketAvailability?.fetched_at ? `Updated ${formatTimestamp(state.pocketAvailability.fetched_at)}` : "Availability updated";
   const calendarOpen = Boolean(state.pocketCalendarOpen[record.id]);
   return `
@@ -5738,7 +5749,7 @@ function tableForTwoDateSummary(record, filters = state.tableForTwoCurrentFilter
   return availability.date_label || "No availability calendar yet";
 }
 
-function tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedDate = "") {
+function tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedDate = "", availableDates = new Set()) {
   const [year, month] = monthKey.split("-").map(Number);
   const firstDay = new Date(Date.UTC(year, month - 1, 1));
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
@@ -5750,8 +5761,9 @@ function tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedDate = "") 
   for (let day = 1; day <= daysInMonth; day += 1) {
     const dateValue = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     const slots = slotsByDate.get(dateValue) || [];
+    const isAvailable = slots.length > 0 || availableDates.has(dateValue);
     const summaries = tableForTwoDateSessionSummaries(slots);
-    const title = summaries.map((summary) => summary.label).join(" | ");
+    const title = summaries.map((summary) => summary.label).join(" | ") || (isAvailable ? "Bookable" : "");
     const sessionPills = summaries
       .slice(0, 2)
       .map((summary) => `<span class="tft-session-pill">${escapeHtml(summary.shortLabel)}</span>`)
@@ -5759,11 +5771,11 @@ function tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedDate = "") 
     const moreSessions = summaries.length > 2 ? '<span class="tft-session-pill">+</span>' : "";
     const classes = [
       "tft-calendar-cell",
-      slots.length ? "is-available" : "",
+      isAvailable ? "is-available" : "",
       selectedDate === dateValue ? "is-selected" : "",
     ].filter(Boolean).join(" ");
-    const tag = slots.length ? "button" : "div";
-    const buttonAttrs = slots.length ? ` type="button" data-tft-calendar-date="${escapeHtml(dateValue)}" aria-label="${escapeHtml(`${tableForTwoDateOptionLabel(dateValue)}: ${title}`)}"` : "";
+    const tag = isAvailable ? "button" : "div";
+    const buttonAttrs = isAvailable ? ` type="button" data-tft-calendar-date="${escapeHtml(dateValue)}" aria-label="${escapeHtml(`${tableForTwoDateOptionLabel(dateValue)}: ${title}`)}"` : "";
     cells.push(`
       <${tag} class="${classes}"${buttonAttrs}${title ? ` title="${escapeHtml(title)}"` : ""}>
         <span class="tft-day-number">${day}</span>

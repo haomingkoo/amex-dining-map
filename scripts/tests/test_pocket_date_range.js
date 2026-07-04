@@ -22,6 +22,7 @@ const functionNames = [
   "uniqueValues",
   "pocketAvailabilityRecord",
   "pocketDateSummaries",
+  "pocketAvailabilityCalendarDates",
   "pocketHasCheckedSlots",
   "normalizePocketDateRange",
   "pocketDateRangeIsActive",
@@ -87,6 +88,7 @@ const record = {
 
 assert.strictEqual(context.pocketAvailabilityMatches(record, "", "2026-07-01", "2026-07-04", 0, ""), true);
 assert.strictEqual(context.pocketAvailabilityMatches(record, "", "2026-07-03", "", 0, ""), false);
+assert.deepStrictEqual(plain(context.pocketAvailabilityCalendarDates(record)), ["2026-07-02", "2026-07-05", "2026-09-10"]);
 assert.strictEqual(context.pocketPartyRangeMatches({ party_ranges: [[1, 2]] }, 2), true);
 assert.strictEqual(context.pocketSeatingLabel({ seating: ["COUNTER", "PRIVATE_ROOM", "NONE"] }), "Counter, Private Room");
 assert.strictEqual(context.pocketAvailabilityMatches(record, "", "2026-07-05", "", 3, "dinner"), true);
