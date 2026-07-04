@@ -1793,6 +1793,13 @@ function diningGoogleMapsUrl(record) {
   return fallback || record.source_google_map_url;
 }
 
+function pocketConciergeUrl(record) {
+  if (!record) return "";
+  if (record.source_url && record.source_url.includes("pocket-concierge.jp")) return record.source_url;
+  const match = String(record.id || "").match(/^pocket-(\d+)$/);
+  return match ? `https://pocket-concierge.jp/en/restaurants/${match[1]}/` : "";
+}
+
 function diningLocationTags(record) {
   const entries = [];
   const seen = new Set();
@@ -3071,6 +3078,7 @@ function japanRankDetailMarkup(record) {
   const availabilityDetails = pocketAvailabilityDetailsMarkup(record);
   const googleMapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
   const tSearchUrl = signal?.url || tabelogSearchUrl(record);
+  const pocketUrl = pocketConciergeUrl(record);
   const detailOpenAttr = window.innerWidth > MOBILE_BREAKPOINT ? " open" : "";
   const secondaryDetails = `
     ${record.source_localized_address ? `<div class="focus-address">${escapeHtml(formatAddress(record.source_localized_address, record.country))}</div>` : ""}
@@ -3099,6 +3107,7 @@ function japanRankDetailMarkup(record) {
         ${record.lat != null && record.lng != null ? '<button type="button" class="ghost-btn secondary" data-focus-map="true">Back to map</button>' : ""}
         ${googleMapsUrl ? `<a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Open in Google Maps</a>` : ""}
         ${tSearchUrl ? `<a class="inline-link" href="${escapeHtml(tSearchUrl)}" target="_blank" rel="noopener">${signal?.url ? "View on Tabelog" : "Search Tabelog"}</a>` : ""}
+        ${pocketUrl ? `<a class="inline-link" href="${escapeHtml(pocketUrl)}" target="_blank" rel="noopener">Pocket Concierge</a>` : ""}
         ${record.website_url ? `<a class="inline-link subtle" href="${escapeHtml(record.website_url)}" target="_blank" rel="noopener">Restaurant website</a>` : ""}
       </div>
     </div>
@@ -3432,6 +3441,7 @@ function renderFocusCard() {
   const ratingBadges = tabelogBadge || gBadge ? `<div class="focus-ratings">${tabelogBadge}${gBadge}</div>` : "";
   const googleMapsUrl = bestGoogleMapsUrl(record) || diningGoogleMapsUrl(record);
   const tSearchUrl = tabelogSignal && tabelogSignal.url ? tabelogSignal.url : tabelogSearchUrl(record);
+  const sourceUrl = isJapan ? pocketConciergeUrl(record) : record.source_url;
   const summary = diningSummaryPayload(record);
   const sourceCacheLabel = diningSourceCacheLabel(record);
   const availabilityNote = pocketAvailabilityNote(record);
@@ -3491,8 +3501,11 @@ function renderFocusCard() {
       ${
         record.website_url
           ? `<a class="inline-link subtle" href="${escapeHtml(record.website_url)}" target="_blank" rel="noopener">Restaurant website</a>`
-          : record.source_url
-          ? `<a class="inline-link subtle" href="${escapeHtml(record.source_url)}" target="_blank" rel="noopener">${record.source === "Amex Platinum Dining" ? "Amex Dining page" : "Pocket Concierge"}</a>`
+          : ""
+      }
+      ${
+        sourceUrl
+          ? `<a class="inline-link subtle" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">${record.source === "Amex Platinum Dining" ? "Amex Dining page" : "Pocket Concierge"}</a>`
           : ""
       }
       ${pocketFilterPrompt(record)}
@@ -3639,6 +3652,7 @@ function renderMobileCards(resetPage = true) {
       : "";
     const regionDot = `<span class="card-region-dot" style="background:${markerColor(record)}" aria-hidden="true"></span>`;
     const cardSummary = diningSummaryPayload(record);
+    const pocketUrl = pocketConciergeUrl(record);
 
     card.innerHTML = `
       <div class="mobile-card-top">
@@ -3707,6 +3721,7 @@ function renderMobileCards(resetPage = true) {
             ? `<a class="inline-link" href="${escapeHtml(tabelogSearchUrl(record))}" target="_blank" rel="noopener">Search Tabelog</a>`
             : ""
         }
+        ${pocketUrl ? `<a class="inline-link" href="${escapeHtml(pocketUrl)}" target="_blank" rel="noopener">Pocket</a>` : ""}
       </div>
     `;
 

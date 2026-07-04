@@ -39,6 +39,9 @@ jobs:
       - name: Audit content provenance
         run: python3 scripts/audit_content_provenance.py
 
+      - name: Verify Love Dining map pins
+        run: python3 scripts/tests/test_love_dining_map_pins.py
+
       - name: Build Love Dining source alert
         id: love_alert
         run: |
