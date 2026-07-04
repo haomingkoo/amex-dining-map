@@ -42,7 +42,8 @@ Live site: `https://amex-explorer.kooexperience.com/`
 - `data/japan-dining-source.json`: Japan cache time, source URL, counts, and
   stable record hash.
 - `data/pocket-availability.json`: cached Pocket Concierge reservation dates,
-  waitlist dates, and upcoming date-level party-size ranges for Japan filters.
+  waitlist dates, and upcoming date-level time, party-size, and seating ranges
+  for Japan filters.
 - `data/global-restaurants.json`: Amex Global/Local Dining Credit records.
 - `data/global-dining-source.json`: Amex directory cache time, source API,
   country counts, and verification counts.

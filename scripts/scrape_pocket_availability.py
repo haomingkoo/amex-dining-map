@@ -23,7 +23,7 @@ OUTPUT_PATH = DATA_DIR / "pocket-availability.json"
 GRAPHQL_URL = "https://pocket-concierge.jp/graphql"
 SOURCE_URL = "https://pocket-concierge.jp/en/"
 USER_AGENT = "JapanDiningMapMVP/0.2 (+https://local.dev)"
-DEFAULT_DAYS = 30
+DEFAULT_DAYS = 90
 DEFAULT_WORKERS = 12
 
 CALENDAR_QUERY = """

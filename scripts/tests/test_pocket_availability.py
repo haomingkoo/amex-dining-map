@@ -41,6 +41,7 @@ def main() -> None:
     assert day["times"] == ["18:00", "19:00"]
     assert day["sessions"] == ["DINNER"]
     assert day["party_ranges"] == [[1, 2], [4, 6]]
+    assert day["seating"] == ["COUNTER", "TABLE"]
     assert day["min_party_size"] == 1
     assert day["max_party_size"] == 6
     assert day["slot_count"] == 2

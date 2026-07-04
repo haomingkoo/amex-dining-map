@@ -1447,6 +1447,17 @@ function pocketAvailabilityShortText(record) {
   if (record.country !== "Japan") return "";
   const availability = pocketAvailabilityRecord(record);
   if (!availability) return "";
+  const dateRange = pocketDateRangeValue();
+  const selectedDate = dateRange.start && dateRange.start === dateRange.end ? dateRange.start : "";
+  const summary = selectedDate ? pocketDateSummaries(record)[selectedDate] : null;
+  const partySize = pocketPartySizeValue();
+  if (summary && pocketSummaryMatches(summary, partySize, pocketSessionFilter.value)) {
+    const times = (summary.times || []).slice(0, 2).join(", ");
+    const seating = pocketSeatingLabel(summary);
+    const maxSeats = Number(summary.max_party_size || 0);
+    const pax = partySize ? `${partySize} pax` : (maxSeats ? `up to ${maxSeats} pax` : "");
+    return [times, seating, pax].filter(Boolean).join(" · ") || "Bookable";
+  }
   if (pocketHasCheckedSlots(record) || (availability.reservation_dates || []).length) return "Bookable";
   if ((availability.waitlist_dates || []).length) return "Waitlist";
   return "";
@@ -1473,7 +1484,8 @@ function pocketAvailabilityNote(record) {
   if (summary && pocketSummaryMatches(summary, partySize, session)) {
     const times = (summary.times || []).slice(0, 4).join(", ");
     const pax = summary.max_party_size ? `up to ${summary.max_party_size} pax` : "party size shown";
-    return `Pocket availability: ${diningDateLabel(selectedDate)}${times ? ` at ${times}` : ""}, ${pax}.`;
+    const seating = pocketSeatingLabel(summary);
+    return `Pocket availability: ${diningDateLabel(selectedDate)}${times ? ` at ${times}` : ""}, ${pax}${seating ? `, ${seating}` : ""}.`;
   }
   if (hasDateRange) {
     const dates = (availability.reservation_dates || []).filter((dateValue) => dateWithinPocketRange(dateValue, dateRange));
@@ -1520,6 +1532,13 @@ function pocketPartyRangeLabel(summary) {
     .join(", ");
 }
 
+function pocketSeatingLabel(summary) {
+  return (summary?.seating || [])
+    .filter((value) => value && value !== "NONE")
+    .map((value) => value.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase()))
+    .join(", ");
+}
+
 function pocketSelectedDateSlotsHtml(record, selectedDate) {
   const summary = selectedDate ? pocketDateSummaries(record)[selectedDate] : null;
   if (!selectedDate) return '<div class="tft-date-detail muted">Choose a date to see Pocket times and seats.</div>';
@@ -1537,10 +1556,7 @@ function pocketSelectedDateSlotsHtml(record, selectedDate) {
     .join("");
   const sessions = (summary.sessions || []).map(tableForTwoSessionLabel).join(" + ");
   const seats = pocketPartyRangeLabel(summary);
-  const seating = (summary.seating || [])
-    .filter((value) => value && value !== "NONE")
-    .map((value) => value.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase()))
-    .join(", ");
+  const seating = pocketSeatingLabel(summary);
   return `
     <div class="tft-date-detail">
       <h5>${escapeHtml(tableForTwoDateOptionLabel(selectedDate))}</h5>
