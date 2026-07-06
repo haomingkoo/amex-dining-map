@@ -176,3 +176,11 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Higashiyama Yoshihisa / Kyoto
+
+## 2026-07-06 22:16 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (2)**
+  - Nishiazabu Kenshiro / Tokyo
+  - Sushi Fujita / Tokyo
