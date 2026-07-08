@@ -184,3 +184,13 @@ Source: `data/japan-restaurants.json`
 - **Removed (2)**
   - Nishiazabu Kenshiro / Tokyo
   - Sushi Fujita / Tokyo
+
+## 2026-07-08 22:08 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (4)**
+  - Barin / Osaka
+  - HISASHI SUSHI / Tokyo
+  - IÑAKI / Osaka
+  - P72 / Osaka
