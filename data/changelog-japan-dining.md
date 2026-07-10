@@ -194,3 +194,10 @@ Source: `data/japan-restaurants.json`
   - HISASHI SUSHI / Tokyo
   - IÑAKI / Osaka
   - P72 / Osaka
+
+## 2026-07-10 21:58 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Sushi Sempachi / Fukuoka
