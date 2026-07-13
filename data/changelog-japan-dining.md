@@ -201,3 +201,10 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Sushi Sempachi / Fukuoka
+
+## 2026-07-13 21:55 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Chinese Specialty Restaurant Tsurumi / Tokyo
