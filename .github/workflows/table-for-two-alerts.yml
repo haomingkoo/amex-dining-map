@@ -2,7 +2,8 @@ name: Table for Two Alerts
 
 on:
   schedule:
-    - cron: "7,37 * * * *"
+    # Avoid the busiest minutes around the start and middle of the hour.
+    - cron: "17,47 * * * *"
   workflow_dispatch:
 
 permissions:

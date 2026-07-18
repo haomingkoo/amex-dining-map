@@ -92,6 +92,10 @@ const TABLE_FOR_TWO_DININGCITY_API_BASE = "https://api.diningcity.asia/public";
 const TABLE_FOR_TWO_DININGCITY_PROJECT = "AMEXPlatSG";
 const TABLE_FOR_TWO_DININGCITY_PROJECT_TITLE = "AMEX Platinum SG";
 const TABLE_FOR_TWO_LIVE_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+const TABLE_FOR_TWO_FETCH_TIMEOUT_MS = 12 * 1000;
+const TABLE_FOR_TWO_FETCH_RETRIES = 2;
+const TABLE_FOR_TWO_RETRY_BASE_DELAY_MS = 500;
+const TABLE_FOR_TWO_PER_DATE_BATCH_SIZE = 4;
 const TABLE_FOR_TWO_DEFAULT_PARTY_SIZE = 2;
 const TABLE_FOR_TWO_MAX_TIMES = 12;
 const TABLE_FOR_TWO_TIME_WINDOW_MINUTES = 60;
@@ -4580,6 +4584,24 @@ function tableForTwoPerDateFetchHeaders() {
   };
 }
 
+async function tableForTwoFetchWithRetry(url, headers) {
+  const retryableStatuses = new Set([429, 500, 502, 503, 504]);
+  for (let attempt = 0; attempt <= TABLE_FOR_TWO_FETCH_RETRIES; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), TABLE_FOR_TWO_FETCH_TIMEOUT_MS);
+    try {
+      const response = await fetch(url, { headers, signal: controller.signal });
+      if (!retryableStatuses.has(response.status) || attempt === TABLE_FOR_TWO_FETCH_RETRIES) return response;
+    } catch (error) {
+      if (attempt === TABLE_FOR_TWO_FETCH_RETRIES) throw error;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+    await new Promise((resolve) => window.setTimeout(resolve, TABLE_FOR_TWO_RETRY_BASE_DELAY_MS * (2 ** attempt)));
+  }
+  throw new Error("DiningCity request exhausted retries");
+}
+
 function tableForTwoSlotSeatValues(slot) {
   const rawValues = Array.isArray(slot?.seats?.available) ? slot.seats.available : [];
   return rawValues
@@ -4694,9 +4716,7 @@ function tableForTwoAvailabilityFromRows(record, rows, checkedAt, sourceMode = "
 
 async function fetchTableForTwoLiveAvailability(record, checkedAt) {
   if (!record?.dining_city_id) return null;
-  const response = await fetch(tableForTwoLiveSourceUrl(record), {
-    headers: tableForTwoFetchHeaders(),
-  });
+  const response = await tableForTwoFetchWithRetry(tableForTwoLiveSourceUrl(record), tableForTwoFetchHeaders());
   if (!response.ok) {
     throw new Error(`DiningCity ${response.status}`);
   }
@@ -4706,12 +4726,12 @@ async function fetchTableForTwoLiveAvailability(record, checkedAt) {
     return tableForTwoAvailabilityFromRows(record, rows, checkedAt, "bulk_project", tableForTwoLiveSourceUrl(record));
   }
 
-  const datesResponse = await fetch(
+  const datesResponse = await tableForTwoFetchWithRetry(
     `${TABLE_FOR_TWO_DININGCITY_API_BASE}/restaurants/${record.dining_city_id}/dining_dates?${new URLSearchParams({ project: TABLE_FOR_TWO_DININGCITY_PROJECT }).toString()}`,
-    { headers: tableForTwoPerDateFetchHeaders() },
+    tableForTwoPerDateFetchHeaders(),
   );
   if (!datesResponse.ok) {
-    return tableForTwoAvailabilityFromRows(record, [], checkedAt, "bulk_project", tableForTwoLiveSourceUrl(record));
+    throw new Error(`DiningCity ${datesResponse.status}`);
   }
   const datesPayload = await datesResponse.json();
   const dates = Array.isArray(datesPayload)
@@ -4724,15 +4744,23 @@ async function fetchTableForTwoLiveAvailability(record, checkedAt) {
     return tableForTwoAvailabilityFromRows(record, [], checkedAt, "bulk_project", tableForTwoLiveSourceUrl(record));
   }
 
-  const selectedResults = await Promise.allSettled(dates.map(async (selectedDate) => {
-    const selectedResponse = await fetch(tableForTwoSelectedDateSourceUrl(record, selectedDate), {
-      headers: tableForTwoPerDateFetchHeaders(),
-    });
-    if (!selectedResponse.ok) throw new Error(`DiningCity ${selectedResponse.status}`);
-    const selectedPayload = await selectedResponse.json();
-    return Array.isArray(selectedPayload?.data) ? selectedPayload.data : [];
-  }));
-  const selectedRows = selectedResults.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+  const selectedRows = [];
+  let selectedSuccessCount = 0;
+  for (let index = 0; index < dates.length; index += TABLE_FOR_TWO_PER_DATE_BATCH_SIZE) {
+    const batch = dates.slice(index, index + TABLE_FOR_TWO_PER_DATE_BATCH_SIZE);
+    const selectedResults = await Promise.allSettled(batch.map(async (selectedDate) => {
+      const selectedResponse = await tableForTwoFetchWithRetry(
+        tableForTwoSelectedDateSourceUrl(record, selectedDate),
+        tableForTwoPerDateFetchHeaders(),
+      );
+      if (!selectedResponse.ok) throw new Error(`DiningCity ${selectedResponse.status}`);
+      const selectedPayload = await selectedResponse.json();
+      return Array.isArray(selectedPayload?.data) ? selectedPayload.data : [];
+    }));
+    selectedSuccessCount += selectedResults.filter((result) => result.status === "fulfilled").length;
+    selectedRows.push(...selectedResults.flatMap((result) => result.status === "fulfilled" ? result.value : []));
+  }
+  if (!selectedSuccessCount) throw new Error("DiningCity per-date fallback failed");
   const sourceUrl = selectedRows[0]?.date
     ? tableForTwoSelectedDateSourceUrl(record, selectedRows[0].date)
     : tableForTwoSelectedDateSourceUrl(record, dates[0]);
@@ -4751,16 +4779,25 @@ async function refreshTableForTwoLiveAvailability({ force = false } = {}) {
   const checkedAt = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
   try {
     const results = await Promise.allSettled(
-      venues.map((record) => fetchTableForTwoLiveAvailability(record, checkedAt))
+      venues.map(async (record) => {
+        const availability = await fetchTableForTwoLiveAvailability(record, checkedAt);
+        if (availability) {
+          record.availability = availability;
+          record.slot_source_status = "diningcity_amex_platinum_project";
+          record.search_text = tableForTwoSearchText(record);
+          if (isTableForTwoRoute(resolveRouteFromHash())) {
+            refreshTableForTwoDateOptions();
+            filterTableForTwo();
+          }
+        }
+        return availability;
+      })
     );
     const errors = {};
     let checkedCount = 0;
     results.forEach((result, index) => {
       const record = venues[index];
       if (result.status === "fulfilled" && result.value) {
-        record.availability = result.value;
-        record.slot_source_status = "diningcity_amex_platinum_project";
-        record.search_text = tableForTwoSearchText(record);
         checkedCount += 1;
       } else if (result.status === "rejected") {
         errors[record.id] = result.reason?.message || String(result.reason);
@@ -5354,7 +5391,7 @@ function filterTableForTwo() {
     filterLabel,
     !autoAvailabilityOnly && freshAvailableCount ? `${freshAvailableCount} bookable` : "",
     !autoAvailabilityOnly && freshNoSeatCount ? `${freshNoSeatCount} not bookable` : "",
-    staleCaptureCount ? "source older than 30 min" : "",
+    staleCaptureCount ? `source older than ${TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES} min` : "",
     pendingCount ? `${pendingCount} source checks pending` : "",
     availabilityCheckedText,
     verifiedText,
@@ -5430,7 +5467,9 @@ function tableForTwoRawAvailabilityKey(record) {
   const status = record.availability?.status || "unknown";
   if (status === "live_available" || status === "captured_available" || status === "available") return "available";
   if (status === "live_no_seats" || status === "captured_no_seats" || status === "no_seats") {
-    return tableForTwoAvailabilityIsStale(record) ? "unknown" : "no_seats";
+    const capturedTime = new Date(record.availability?.captured_at || "").getTime();
+    if (Number.isFinite(capturedTime) && Date.now() - capturedTime < -5 * 60 * 1000) return "unknown";
+    return "no_seats";
   }
   return "unknown";
 }
@@ -5571,7 +5610,7 @@ function tableForTwoAvailabilityLabel(record, filters = state.tableForTwoCurrent
   const partySize = Number(filters.partySize || tableForTwoSelectedPartySize());
   const key = tableForTwoAvailabilityKey(record, filters);
   if (key === "available") return `${partySize} pax available`;
-  if (key === "no_seats") return "Not bookable";
+  if (key === "no_seats") return tableForTwoAvailabilityIsStale(record) ? "Last check: not bookable" : "Not bookable";
   return "Source pending";
 }
 

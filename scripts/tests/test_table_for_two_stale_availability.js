@@ -42,7 +42,7 @@ assert.strictEqual(
 );
 assert.strictEqual(
   context.tableForTwoRawAvailabilityKey({ availability: { status: "live_no_seats", captured_at: staleCapture } }),
-  "unknown",
+  "no_seats",
 );
 assert.strictEqual(
   context.tableForTwoRawAvailabilityKey({ availability: { status: "live_no_seats", captured_at: futureCapture } }),

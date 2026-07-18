@@ -44,6 +44,15 @@ jobs:
       - name: Audit content provenance
         run: python3 scripts/audit_content_provenance.py
 
+      - name: Test Table for Two reliability
+        run: |
+          python3 -m unittest \
+            scripts.tests.test_table_for_two_retry \
+            scripts.tests.test_table_for_two_data
+          for test_file in scripts/tests/test_table_for_two_*.js; do
+            node "$test_file"
+          done
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 

@@ -19,6 +19,8 @@ import json
 import os
 import re
 import sys
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -38,6 +40,8 @@ DININGCITY_PROJECT_TITLE = "AMEX Platinum SG"
 MIN_TABLE_FOR_TWO_SEATS = 2
 MAX_AVAILABILITY_TIMES = 12
 AVAILABILITY_WORKERS = 6
+DININGCITY_REQUEST_RETRIES = 2
+DININGCITY_REQUEST_TIMEOUT_SECONDS = 12
 
 
 VENUES = [
@@ -446,12 +450,21 @@ def fetch_json(path: str, params: dict | None = None, *, accept_version: bool = 
     }
     if accept_version:
         headers["accept-version"] = "application/json; version=2"
-    request = urllib.request.Request(
-        url,
-        headers=headers,
-    )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return json.loads(response.read().decode("utf-8"))
+    retry_statuses = {429, 500, 502, 503, 504}
+    for attempt in range(DININGCITY_REQUEST_RETRIES + 1):
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            with urllib.request.urlopen(request, timeout=DININGCITY_REQUEST_TIMEOUT_SECONDS) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            if exc.code not in retry_statuses or attempt == DININGCITY_REQUEST_RETRIES:
+                raise
+        except (TimeoutError, urllib.error.URLError):
+            if attempt == DININGCITY_REQUEST_RETRIES:
+                raise
+        time.sleep(2 ** attempt)
+
+    raise RuntimeError(f"DiningCity request failed without an error: {url}")
 
 
 def absolute_url(path_or_url: str) -> str:
@@ -659,8 +672,8 @@ def live_availability_for_venue(venue: dict, checked_at: str) -> tuple[dict | No
             rows = fetch_selected_date_rows(dining_city_id, fallback_dates)
             if rows:
                 source_mode = "selected_date_project"
-        except Exception:
-            rows = []
+        except Exception as exc:  # noqa: BLE001 - preserve the last good cache when fallback fails.
+            return None, f"fallback_{type(exc).__name__}: {exc}"
     meals, visible_dates, available_slot_count = build_meals(rows)
     source_url = diningcity_source_url(dining_city_id)
     source_note = (
@@ -847,6 +860,10 @@ def normalized_venues(
             record["dining_city_profile"] = live_profile
         elif isinstance(existing_record, dict) and isinstance(existing_record.get("dining_city_profile"), dict):
             record["dining_city_profile"] = existing_record["dining_city_profile"]
+        if isinstance(existing_record, dict):
+            for key in ("menu_pdfs", "menu_pdf"):
+                if key in existing_record:
+                    record[key] = existing_record[key]
         records.append(record)
     return records
 
