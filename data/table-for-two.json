@@ -27,15 +27,18 @@
     "Sep - Oct",
     "Nov - Dec"
   ],
-  "availability_last_checked_at": "2026-07-18T11:37:06Z",
+  "availability_last_checked_at": "2026-07-18T12:38:24Z",
   "availability_source": {
     "type": "diningcity_public_api",
     "api_base": "https://api.diningcity.asia/public",
     "project": "AMEXPlatSG",
     "project_title": "AMEX Platinum SG",
-    "checked_venues": 23,
-    "error_count": 0,
-    "errors": {}
+    "checked_venues": 21,
+    "error_count": 2,
+    "errors": {
+      "tft-tanoke": "IncompleteRead: IncompleteRead(7698 bytes read)",
+      "tft-sarai": "IncompleteRead: IncompleteRead(200210 bytes read)"
+    }
   },
   "venue_profile_source": {
     "type": "diningcity_public_detail_api",
@@ -94,8 +97,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-03",
@@ -5892,8 +5895,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-07-21",
@@ -5961,38 +5964,6 @@
               "20:45"
             ],
             "slots": [
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "18:45",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "19:00",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "19:15",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "19:30",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 0
-              },
               {
                 "date": "2026-07-21",
                 "weekday": "tuesday",
@@ -8018,7 +7989,7 @@
                 "raw_available_seats": 0
               }
             ],
-            "slot_count": 257
+            "slot_count": 253
           }
         ],
         "notes": [
@@ -8109,11 +8080,10 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
-          "2026-07-21",
           "2026-07-22",
           "2026-07-23",
           "2026-07-24",
@@ -8200,7 +8170,7 @@
           "2026-10-15",
           "2026-10-16"
         ],
-        "summary": "86 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 85 dates, Dinner 86 dates).",
+        "summary": "85 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 85 dates, Dinner 85 dates).",
         "meals": [
           {
             "meal": "Lunch",
@@ -12392,7 +12362,6 @@
             "seats": 2,
             "max_seats": 6,
             "dates": [
-              "2026-07-21",
               "2026-07-22",
               "2026-07-23",
               "2026-07-24",
@@ -12486,14 +12455,6 @@
               "20:00"
             ],
             "slots": [
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:00",
-                "meal": "Dinner",
-                "max_seats": 6,
-                "raw_available_seats": 6
-              },
               {
                 "date": "2026-07-22",
                 "weekday": "wednesday",
@@ -15215,7 +15176,7 @@
                 "raw_available_seats": 6
               }
             ],
-            "slot_count": 341
+            "slot_count": 340
           }
         ],
         "notes": [
@@ -15308,8 +15269,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-07-20",
@@ -15373,38 +15334,6 @@
               "19:45"
             ],
             "slots": [
-              {
-                "date": "2026-07-20",
-                "weekday": "monday",
-                "time": "18:45",
-                "meal": "Dinner",
-                "max_seats": 4,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-20",
-                "weekday": "monday",
-                "time": "19:00",
-                "meal": "Dinner",
-                "max_seats": 4,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-20",
-                "weekday": "monday",
-                "time": "19:15",
-                "meal": "Dinner",
-                "max_seats": 4,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-20",
-                "weekday": "monday",
-                "time": "19:30",
-                "meal": "Dinner",
-                "max_seats": 4,
-                "raw_available_seats": 0
-              },
               {
                 "date": "2026-07-20",
                 "weekday": "monday",
@@ -18054,7 +17983,7 @@
                 "raw_available_seats": 0
               }
             ],
-            "slot_count": 335
+            "slot_count": 331
           }
         ],
         "notes": [
@@ -18146,11 +18075,10 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
-          "2026-07-21",
           "2026-07-22",
           "2026-07-23",
           "2026-07-24",
@@ -18207,7 +18135,7 @@
           "2026-09-15",
           "2026-09-16"
         ],
-        "summary": "56 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 41 dates, Dinner 56 dates).",
+        "summary": "55 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 41 dates, Dinner 55 dates).",
         "meals": [
           {
             "meal": "Lunch",
@@ -19585,7 +19513,6 @@
             "seats": 2,
             "max_seats": 8,
             "dates": [
-              "2026-07-21",
               "2026-07-22",
               "2026-07-23",
               "2026-07-24",
@@ -19649,14 +19576,6 @@
               "20:00"
             ],
             "slots": [
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:00",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
               {
                 "date": "2026-07-22",
                 "weekday": "wednesday",
@@ -21410,7 +21329,7 @@
                 "raw_available_seats": 10
               }
             ],
-            "slot_count": 220
+            "slot_count": 219
           }
         ],
         "notes": [
@@ -21502,8 +21421,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-07-20",
@@ -24085,11 +24004,10 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
-          "2026-07-21",
           "2026-07-22",
           "2026-07-23",
           "2026-07-24",
@@ -24151,7 +24069,7 @@
           "2026-10-15",
           "2026-10-16"
         ],
-        "summary": "59 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Dinner 59 dates).",
+        "summary": "58 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Dinner 58 dates).",
         "meals": [
           {
             "meal": "Dinner",
@@ -24159,7 +24077,6 @@
             "seats": 2,
             "max_seats": 4,
             "dates": [
-              "2026-07-21",
               "2026-07-22",
               "2026-07-23",
               "2026-07-28",
@@ -24229,22 +24146,6 @@
               "20:30"
             ],
             "slots": [
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:00",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 2
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:30",
-                "meal": "Dinner",
-                "max_seats": 4,
-                "raw_available_seats": 4
-              },
               {
                 "date": "2026-07-22",
                 "weekday": "wednesday",
@@ -27126,7 +27027,7 @@
                 "raw_available_seats": 4
               }
             ],
-            "slot_count": 362
+            "slot_count": 360
           }
         ],
         "notes": [
@@ -27218,11 +27119,10 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
-          "2026-07-21",
           "2026-07-22",
           "2026-07-23",
           "2026-07-24",
@@ -27305,7 +27205,7 @@
           "2026-10-15",
           "2026-10-16"
         ],
-        "summary": "82 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 71 dates, Dinner 82 dates).",
+        "summary": "81 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 71 dates, Dinner 81 dates).",
         "meals": [
           {
             "meal": "Lunch",
@@ -31949,7 +31849,6 @@
             "seats": 2,
             "max_seats": 8,
             "dates": [
-              "2026-07-21",
               "2026-07-22",
               "2026-07-23",
               "2026-07-24",
@@ -32041,22 +31940,6 @@
               "20:30"
             ],
             "slots": [
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:00",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:30",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
               {
                 "date": "2026-07-22",
                 "weekday": "wednesday",
@@ -35938,7 +35821,7 @@
                 "raw_available_seats": 10
               }
             ],
-            "slot_count": 487
+            "slot_count": 485
           }
         ],
         "notes": [
@@ -36031,8 +35914,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-07-22",
@@ -51486,8 +51369,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-07-21",
@@ -53541,22 +53424,6 @@
               {
                 "date": "2026-07-21",
                 "weekday": "tuesday",
-                "time": "20:00",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:30",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
                 "time": "21:00",
                 "meal": "Dinner",
                 "max_seats": 8,
@@ -58683,7 +58550,7 @@
                 "raw_available_seats": 10
               }
             ],
-            "slot_count": 643
+            "slot_count": 641
           }
         ],
         "notes": [
@@ -58761,11 +58628,10 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
-          "2026-07-21",
           "2026-07-22",
           "2026-07-23",
           "2026-07-24",
@@ -58850,7 +58716,7 @@
           "2026-10-15",
           "2026-10-16"
         ],
-        "summary": "84 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 83 dates, Dinner 83 dates).",
+        "summary": "83 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 83 dates, Dinner 82 dates).",
         "meals": [
           {
             "meal": "Lunch",
@@ -61614,7 +61480,6 @@
             "seats": 2,
             "max_seats": 8,
             "dates": [
-              "2026-07-21",
               "2026-07-22",
               "2026-07-24",
               "2026-07-26",
@@ -61708,22 +61573,6 @@
             ],
             "slots": [
               {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:00",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:30",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
-              {
                 "date": "2026-07-22",
                 "weekday": "wednesday",
                 "time": "18:00",
@@ -65660,7 +65509,7 @@
                 "raw_available_seats": 10
               }
             ],
-            "slot_count": 494
+            "slot_count": 492
           }
         ],
         "notes": [
@@ -65746,44 +65595,18 @@
       "booking_channel": "Amex Experiences App",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
-        "status": "live_available",
+        "status": "live_no_seats",
         "source": "DiningCity public API project AMEXPlatSG",
         "source_url": "https://api.diningcity.asia/public/restaurants/205194014/available_2018?project=AMEXPlatSG",
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
-        "visible_dates": [
-          "2026-07-21"
-        ],
-        "summary": "1 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Dinner 1 dates).",
-        "meals": [
-          {
-            "meal": "Dinner",
-            "status": "available",
-            "seats": 2,
-            "max_seats": 2,
-            "dates": [
-              "2026-07-21"
-            ],
-            "times": [
-              "20:00"
-            ],
-            "slots": [
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:00",
-                "meal": "Dinner",
-                "max_seats": 2,
-                "raw_available_seats": 2
-              }
-            ],
-            "slot_count": 1
-          }
-        ],
+        "visible_dates": [],
+        "summary": "No Table for Two slots were returned by DiningCity AMEXPlatSG at this check.",
+        "meals": [],
         "notes": [
           "Availability is from DiningCity project AMEXPlatSG (AMEX Platinum SG). Book and redeem through the Amex Experiences App."
         ]
@@ -65873,8 +65696,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-07-26",
@@ -66915,8 +66738,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-07-21",
@@ -71148,9 +70971,25 @@
                 "meal": "Dinner",
                 "max_seats": 8,
                 "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-18",
+                "weekday": "friday",
+                "time": "20:00",
+                "meal": "Dinner",
+                "max_seats": 8,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-18",
+                "weekday": "friday",
+                "time": "20:30",
+                "meal": "Dinner",
+                "max_seats": 8,
+                "raw_available_seats": 0
               }
             ],
-            "slot_count": 192
+            "slot_count": 194
           },
           {
             "meal": "Afternoon Tea",
@@ -71329,8 +71168,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-07-20",
@@ -73926,8 +73765,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-07-20",
@@ -76994,38 +76833,6 @@
               {
                 "date": "2026-07-21",
                 "weekday": "tuesday",
-                "time": "18:45",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "19:00",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "19:15",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "19:30",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
                 "time": "19:45",
                 "meal": "Dinner",
                 "max_seats": 8,
@@ -81768,7 +81575,7 @@
                 "raw_available_seats": 0
               }
             ],
-            "slot_count": 597
+            "slot_count": 593
           },
           {
             "meal": "Afternoon Tea",
@@ -82250,11 +82057,10 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
-          "2026-07-21",
           "2026-07-22",
           "2026-07-23",
           "2026-07-26",
@@ -82334,7 +82140,7 @@
           "2026-10-14",
           "2026-10-15"
         ],
-        "summary": "79 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 65 dates, Dinner 49 dates).",
+        "summary": "78 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 65 dates, Dinner 48 dates).",
         "meals": [
           {
             "meal": "Lunch",
@@ -84080,7 +83886,6 @@
             "seats": 2,
             "max_seats": 8,
             "dates": [
-              "2026-07-21",
               "2026-07-22",
               "2026-07-26",
               "2026-07-27",
@@ -84137,14 +83942,6 @@
               "20:00"
             ],
             "slots": [
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:00",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
               {
                 "date": "2026-07-22",
                 "weekday": "wednesday",
@@ -85642,7 +85439,7 @@
                 "raw_available_seats": 10
               }
             ],
-            "slot_count": 188
+            "slot_count": 187
           }
         ],
         "notes": [
@@ -85705,8 +85502,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-07-21",
@@ -87449,22 +87246,6 @@
               {
                 "date": "2026-07-21",
                 "weekday": "tuesday",
-                "time": "20:00",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:30",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
                 "time": "21:00",
                 "meal": "Dinner",
                 "max_seats": 8,
@@ -90887,7 +90668,7 @@
                 "raw_available_seats": 10
               }
             ],
-            "slot_count": 430
+            "slot_count": 428
           }
         ],
         "notes": [
@@ -90951,11 +90732,10 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
-          "2026-07-21",
           "2026-07-22",
           "2026-07-23",
           "2026-07-24",
@@ -90967,7 +90747,7 @@
           "2026-07-30",
           "2026-07-31"
         ],
-        "summary": "11 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 10 dates, Dinner 11 dates).",
+        "summary": "10 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 10 dates, Dinner 10 dates).",
         "meals": [
           {
             "meal": "Lunch",
@@ -91322,7 +91102,6 @@
             "seats": 2,
             "max_seats": 8,
             "dates": [
-              "2026-07-21",
               "2026-07-22",
               "2026-07-23",
               "2026-07-24",
@@ -91343,22 +91122,6 @@
               "20:30"
             ],
             "slots": [
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:00",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:30",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
               {
                 "date": "2026-07-22",
                 "weekday": "wednesday",
@@ -91840,7 +91603,7 @@
                 "raw_available_seats": 10
               }
             ],
-            "slot_count": 62
+            "slot_count": 60
           }
         ],
         "notes": [
@@ -91918,8 +91681,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-07-21",
@@ -95794,38 +95557,6 @@
               {
                 "date": "2026-07-21",
                 "weekday": "tuesday",
-                "time": "18:45",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "19:00",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "19:15",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "19:30",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 0
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
                 "time": "19:45",
                 "meal": "Dinner",
                 "max_seats": 8,
@@ -101854,9 +101585,25 @@
                 "meal": "Dinner",
                 "max_seats": 8,
                 "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-18",
+                "weekday": "friday",
+                "time": "19:45",
+                "meal": "Dinner",
+                "max_seats": 8,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-18",
+                "weekday": "friday",
+                "time": "20:00",
+                "meal": "Dinner",
+                "max_seats": 8,
+                "raw_available_seats": 0
               }
             ],
-            "slot_count": 758
+            "slot_count": 756
           },
           {
             "meal": "Afternoon Tea",
@@ -107526,8 +107273,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-07-18T11:37:06Z",
-        "checked_at": "2026-07-18T11:37:06Z",
+        "captured_at": "2026-07-18T12:38:24Z",
+        "checked_at": "2026-07-18T12:38:24Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-07-21",
@@ -111754,22 +111501,6 @@
               "21:00"
             ],
             "slots": [
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:00",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
-              {
-                "date": "2026-07-21",
-                "weekday": "tuesday",
-                "time": "20:30",
-                "meal": "Dinner",
-                "max_seats": 8,
-                "raw_available_seats": 10
-              },
               {
                 "date": "2026-07-21",
                 "weekday": "tuesday",
@@ -117027,7 +116758,7 @@
                 "raw_available_seats": 10
               }
             ],
-            "slot_count": 659
+            "slot_count": 657
           }
         ],
         "notes": [
