@@ -87,3 +87,11 @@ Source: `data/global-restaurants.json`
   - Takashiya / Queensland
   - Tinc Set Montréal / Montreal
   - Verde Saint-Tropez / Ramatuelle
+
+## 2026-07-23 22:30 UTC — Global Dining
+
+Source: `data/global-restaurants.json`
+
+- **Removed (2)**
+  - Botanist / Vancouver
+  - The Ivy Market Grill / London
