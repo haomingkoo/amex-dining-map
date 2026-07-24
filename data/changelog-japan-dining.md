@@ -217,3 +217,12 @@ Source: `data/japan-restaurants.json`
   - ENNU Shiramine / Hakusan
 - **Removed (1)**
   - Tatsumiya / Uji
+
+## 2026-07-24 22:02 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Nishiazabu Kenshiro / Tokyo
+- **Removed (1)**
+  - AMOUR / Tokyo
