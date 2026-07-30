@@ -226,3 +226,10 @@ Source: `data/japan-restaurants.json`
   - Nishiazabu Kenshiro / Tokyo
 - **Removed (1)**
   - AMOUR / Tokyo
+
+## 2026-07-30 22:04 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Melveille Hakata / Fukuoka
