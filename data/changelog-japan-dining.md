@@ -233,3 +233,12 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Melveille Hakata / Fukuoka
+
+## 2026-07-31 22:07 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Tatsumiya / Uji
+- **Removed (1)**
+  - La Paix / Tokyo
