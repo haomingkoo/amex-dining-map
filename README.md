@@ -4,7 +4,7 @@ Map-first explorer for Singapore-issued American Express Platinum benefits. The
 site keeps official source data separate from enrichment so users can see when
 each dataset was cached, where it came from, and when a human review is needed.
 
-Live site: `https://amex-explorer.kooexperience.com/`
+[**Open the live Amex benefit explorer**](https://amex-explorer.kooexperience.com/)
 
 ## Programs
 
