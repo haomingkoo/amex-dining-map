@@ -242,3 +242,12 @@ Source: `data/japan-restaurants.json`
   - Tatsumiya / Uji
 - **Removed (1)**
   - La Paix / Tokyo
+
+## 2026-08-04 22:17 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (3)**
+  - Bettei Sushi Masashi / Tokyo
+  - Sushidokoro Shin / Osaka
+  - Vierge / Tokyo
