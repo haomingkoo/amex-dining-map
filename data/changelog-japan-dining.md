@@ -251,3 +251,10 @@ Source: `data/japan-restaurants.json`
   - Bettei Sushi Masashi / Tokyo
   - Sushidokoro Shin / Osaka
   - Vierge / Tokyo
+
+## 2026-08-05 22:18 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Sushi Takeuchi / Osaka
