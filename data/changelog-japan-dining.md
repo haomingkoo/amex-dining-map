@@ -258,3 +258,10 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Sushi Takeuchi / Osaka
+
+## 2026-08-07 01:09 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Yakitori Shinoda Azabu Juban / Tokyo
