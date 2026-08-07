@@ -265,3 +265,11 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Yakitori Shinoda Azabu Juban / Tokyo
+
+## 2026-08-07 21:41 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (2)**
+  - Chisou Maru  / Kumamoto
+  - Lawry's The Prime Rib, Akasaka / Tokyo
