@@ -273,3 +273,10 @@ Source: `data/japan-restaurants.json`
 - **Added (2)**
   - Chisou Maru  / Kumamoto
   - Lawry's The Prime Rib, Akasaka / Tokyo
+
+## 2026-08-10 21:44 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Akasaka Misuji / Tokyo
