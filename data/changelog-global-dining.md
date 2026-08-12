@@ -95,3 +95,47 @@ Source: `data/global-restaurants.json`
 - **Removed (2)**
   - Botanist / Vancouver
   - The Ivy Market Grill / London
+
+## 2026-08-12 22:09 UTC — Global Dining
+
+Source: `data/global-restaurants.json`
+
+- **Removed (38)**
+  - Alpino (Cambridge) / Cambridge
+  - Amano / Auckland
+  - Andiamo / Auckland
+  - Bar Primi / New York
+  - Botswana Butchery - Auckland / Auckland
+  - Brauhaus Ernst August / Hannover
+  - Burger & Lobster / Bangkok
+  - Cable Bay Vineyard / Oneroa, Waiheke
+  - Café Hanoi / Auckland
+  - Cibo / Auckland
+  - Das Lilienberg / Tainach
+  - Dockside / Wellington
+  - Ebisu / Auckland
+  - Esora / Singapore
+  - Franks Wine Bar / Brooklyn
+  - Gasthaus Altes Bad / Kreuth
+  - Gibbston Valley - Lodge Restaurant / Queenstown
+  - Gibbston Valley - Winery Restaurant / Queenstown
+  - Huami / Auckland
+  - Kalamata / Paris
+  - Kol / Auckland
+  - La Table de l'Alpaga / Megève
+  - Le Girelier / Saint-Tropez
+  - Logan Brown / Wellington
+  - Mamamia / Paris
+  - Noble Rot Wine Bar / Wellington
+  - Opéra / Saint-Tropez
+  - Pacifica / Napier
+  - Path Restaurant / Singapore
+  - Pravda / Wellington
+  - Restaurant Specht / Wien
+  - Riva / Düsseldorf
+  - SANJI'S Steak, Grill & Bar / München
+  - Saké Restaurant & Bar Manly / New South Wales
+  - Sidart / Auckland
+  - The Grove / Auckland
+  - The Oyster Inn / Oneroa, Waiheke
+  - The Sugar Club / Auckland
