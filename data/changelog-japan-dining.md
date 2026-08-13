@@ -280,3 +280,11 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Akasaka Misuji / Tokyo
+
+## 2026-08-13 21:45 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (2)**
+  - Namaiki / Tokyo
+  - hiroto / Hiroshima
