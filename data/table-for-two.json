@@ -27,19 +27,26 @@
     "Sep - Oct",
     "Nov - Dec"
   ],
-  "availability_last_checked_at": "2026-08-16T17:00:45Z",
+  "availability_last_checked_at": "2026-08-16T17:33:50Z",
   "availability_source": {
     "type": "diningcity_public_api",
     "api_base": "https://api.diningcity.asia/public",
     "project": "AMEXPlatSG",
     "project_title": "AMEX Platinum SG",
-    "checked_venues": 19,
-    "error_count": 4,
+    "checked_venues": 12,
+    "error_count": 11,
     "errors": {
       "tft-osteria-mozza": "missing_amex_platinum_project",
-      "tft-15-stamford-restaurant": "IncompleteRead: IncompleteRead(44562 bytes read)",
-      "tft-tanoke": "IncompleteRead: IncompleteRead(44562 bytes read)",
-      "tft-capitol-bistro-bar-patisserie": "missing_amex_platinum_project"
+      "tft-cultivate": "JSONDecodeError: Unterminated string starting at: line 1 column 44008 (char 44007)",
+      "tft-la-brasserie": "JSONDecodeError: Expecting ',' delimiter: line 1 column 44009 (char 44008)",
+      "tft-polo-bar-steakhouse": "JSONDecodeError: Unterminated string starting at: line 1 column 44008 (char 44007)",
+      "tft-kaya-at-the-standard": "JSONDecodeError: Expecting value: line 1 column 44009 (char 44008)",
+      "tft-vineyard": "JSONDecodeError: Expecting ',' delimiter: line 1 column 44009 (char 44008)",
+      "tft-the-feather-blade": "JSONDecodeError: Expecting value: line 1 column 44009 (char 44008)",
+      "tft-peppermint": "JSONDecodeError: Unterminated string starting at: line 1 column 44007 (char 44006)",
+      "tft-ginger": "JSONDecodeError: Unterminated string starting at: line 1 column 44004 (char 44003)",
+      "tft-capitol-bistro-bar-patisserie": "missing_amex_platinum_project",
+      "tft-the-plump-frenchman": "JSONDecodeError: Expecting ',' delimiter: line 1 column 44009 (char 44008)"
     }
   },
   "venue_profile_source": {
@@ -99,8 +106,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-16T16:42:13Z",
-        "checked_at": "2026-08-16T16:42:13Z",
+        "captured_at": "2026-08-16T17:33:50Z",
+        "checked_at": "2026-08-16T17:33:50Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-20",
@@ -6614,8 +6621,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-16T17:00:45Z",
-        "checked_at": "2026-08-16T17:00:45Z",
+        "captured_at": "2026-08-16T17:33:50Z",
+        "checked_at": "2026-08-16T17:33:50Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-20",
@@ -16021,8 +16028,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-16T17:00:45Z",
-        "checked_at": "2026-08-16T17:00:45Z",
+        "captured_at": "2026-08-16T17:33:50Z",
+        "checked_at": "2026-08-16T17:33:50Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-19",
@@ -33805,8 +33812,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-16T17:00:45Z",
-        "checked_at": "2026-08-16T17:00:45Z",
+        "captured_at": "2026-08-16T17:33:50Z",
+        "checked_at": "2026-08-16T17:33:50Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-20",
@@ -37622,8 +37629,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-16T17:00:45Z",
-        "checked_at": "2026-08-16T17:00:45Z",
+        "captured_at": "2026-08-16T17:33:50Z",
+        "checked_at": "2026-08-16T17:33:50Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-20",
@@ -46177,8 +46184,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-16T16:42:13Z",
-        "checked_at": "2026-08-16T16:42:13Z",
+        "captured_at": "2026-08-16T17:33:50Z",
+        "checked_at": "2026-08-16T17:33:50Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-20",
@@ -48265,7 +48272,7 @@
                 "time": "18:00",
                 "meal": "Dinner",
                 "max_seats": 8,
-                "raw_available_seats": 10
+                "raw_available_seats": 12
               },
               {
                 "date": "2026-08-22",
@@ -48289,7 +48296,7 @@
                 "time": "18:00",
                 "meal": "Dinner",
                 "max_seats": 8,
-                "raw_available_seats": 16
+                "raw_available_seats": 14
               },
               {
                 "date": "2026-08-23",
@@ -63951,8 +63958,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-16T17:00:45Z",
-        "checked_at": "2026-08-16T17:00:45Z",
+        "captured_at": "2026-08-16T17:33:50Z",
+        "checked_at": "2026-08-16T17:33:50Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-10-16"
@@ -64158,8 +64165,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-16T17:00:45Z",
-        "checked_at": "2026-08-16T17:00:45Z",
+        "captured_at": "2026-08-16T17:33:50Z",
+        "checked_at": "2026-08-16T17:33:50Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-23",
@@ -65226,8 +65233,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-16T17:00:45Z",
-        "checked_at": "2026-08-16T17:00:45Z",
+        "captured_at": "2026-08-16T17:33:50Z",
+        "checked_at": "2026-08-16T17:33:50Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-19",
@@ -69885,8 +69892,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-16T17:00:45Z",
-        "checked_at": "2026-08-16T17:00:45Z",
+        "captured_at": "2026-08-16T17:33:50Z",
+        "checked_at": "2026-08-16T17:33:50Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-18",
@@ -72391,8 +72398,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-16T17:00:45Z",
-        "checked_at": "2026-08-16T17:00:45Z",
+        "captured_at": "2026-08-16T17:33:50Z",
+        "checked_at": "2026-08-16T17:33:50Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-21",
@@ -88679,8 +88686,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-16T17:00:45Z",
-        "checked_at": "2026-08-16T17:00:45Z",
+        "captured_at": "2026-08-16T17:33:50Z",
+        "checked_at": "2026-08-16T17:33:50Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-20",
