@@ -288,3 +288,10 @@ Source: `data/japan-restaurants.json`
 - **Removed (2)**
   - Namaiki / Tokyo
   - hiroto / Hiroshima
+
+## 2026-08-17 21:26 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Kamoshiya Kusumoto / Osaka
