@@ -27,7 +27,7 @@
     "Sep - Oct",
     "Nov - Dec"
   ],
-  "availability_last_checked_at": "2026-08-18T16:04:26Z",
+  "availability_last_checked_at": "2026-08-18T16:48:01Z",
   "availability_source": {
     "type": "diningcity_public_api",
     "api_base": "https://api.diningcity.asia/public",
@@ -37,15 +37,15 @@
     "error_count": 12,
     "errors": {
       "tft-osteria-mozza": "missing_amex_platinum_project",
-      "tft-cultivate": "JSONDecodeError: Unterminated string starting at: line 1 column 88672 (char 88671)",
+      "tft-cultivate": "JSONDecodeError: Unterminated string starting at: line 1 column 44008 (char 44007)",
       "tft-15-stamford-restaurant": "JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 44009 (char 44008)",
-      "tft-rappu": "JSONDecodeError: Unterminated string starting at: line 1 column 44006 (char 44005)",
+      "tft-kaya-at-the-standard": "JSONDecodeError: Expecting value: line 1 column 44007 (char 44006)",
       "tft-sarai": "JSONDecodeError: Unterminated string starting at: line 1 column 44006 (char 44005)",
+      "tft-tanoke": "JSONDecodeError: Unterminated string starting at: line 1 column 44000 (char 43999)",
       "tft-the-feather-blade": "JSONDecodeError: Expecting ',' delimiter: line 1 column 44009 (char 44008)",
       "tft-vineyard": "JSONDecodeError: Unterminated string starting at: line 1 column 44001 (char 44000)",
-      "tft-kaya-at-the-standard": "JSONDecodeError: Expecting value: line 1 column 44007 (char 44006)",
       "tft-peppermint": "JSONDecodeError: Unterminated string starting at: line 1 column 43998 (char 43997)",
-      "tft-ginger": "JSONDecodeError: Unterminated string starting at: line 1 column 44000 (char 43999)",
+      "tft-ginger": "JSONDecodeError: Unterminated string starting at: line 1 column 43999 (char 43998)",
       "tft-capitol-bistro-bar-patisserie": "missing_amex_platinum_project",
       "tft-the-plump-frenchman": "JSONDecodeError: Unterminated string starting at: line 1 column 44008 (char 44007)"
     }
@@ -6555,8 +6555,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-18T16:04:26Z",
-        "checked_at": "2026-08-18T16:04:26Z",
+        "captured_at": "2026-08-18T16:48:01Z",
+        "checked_at": "2026-08-18T16:48:01Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-22",
@@ -6576,9 +6576,10 @@
           "2026-09-11",
           "2026-09-12",
           "2026-09-15",
-          "2026-09-16"
+          "2026-09-16",
+          "2026-09-17"
         ],
-        "summary": "18 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Dinner 18 dates).",
+        "summary": "19 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Dinner 19 dates).",
         "meals": [
           {
             "meal": "Dinner",
@@ -6603,7 +6604,8 @@
               "2026-09-11",
               "2026-09-12",
               "2026-09-15",
-              "2026-09-16"
+              "2026-09-16",
+              "2026-09-17"
             ],
             "times": [
               "18:00",
@@ -8491,9 +8493,113 @@
                 "meal": "Dinner",
                 "max_seats": 2,
                 "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-17",
+                "weekday": "thursday",
+                "time": "18:00",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-17",
+                "weekday": "thursday",
+                "time": "18:15",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-17",
+                "weekday": "thursday",
+                "time": "18:30",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-17",
+                "weekday": "thursday",
+                "time": "18:45",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-17",
+                "weekday": "thursday",
+                "time": "19:00",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-17",
+                "weekday": "thursday",
+                "time": "19:15",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-17",
+                "weekday": "thursday",
+                "time": "19:30",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-17",
+                "weekday": "thursday",
+                "time": "19:45",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-17",
+                "weekday": "thursday",
+                "time": "20:00",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-17",
+                "weekday": "thursday",
+                "time": "20:15",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-17",
+                "weekday": "thursday",
+                "time": "20:30",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-17",
+                "weekday": "thursday",
+                "time": "20:45",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-17",
+                "weekday": "thursday",
+                "time": "21:00",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
               }
             ],
-            "slot_count": 234
+            "slot_count": 247
           }
         ],
         "notes": [
@@ -15773,8 +15879,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-18T16:04:26Z",
-        "checked_at": "2026-08-18T16:04:26Z",
+        "captured_at": "2026-08-18T16:48:01Z",
+        "checked_at": "2026-08-18T16:48:01Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-22",
@@ -18761,8 +18867,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-18T16:04:26Z",
-        "checked_at": "2026-08-18T16:04:26Z",
+        "captured_at": "2026-08-18T16:48:01Z",
+        "checked_at": "2026-08-18T16:48:01Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-22",
@@ -21840,8 +21946,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-18T16:04:26Z",
-        "checked_at": "2026-08-18T16:04:26Z",
+        "captured_at": "2026-08-18T16:48:01Z",
+        "checked_at": "2026-08-18T16:48:01Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-25",
@@ -33204,8 +33310,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-18T14:52:48Z",
-        "checked_at": "2026-08-18T14:52:48Z",
+        "captured_at": "2026-08-18T16:48:01Z",
+        "checked_at": "2026-08-18T16:48:01Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-23",
@@ -33289,9 +33395,10 @@
           "2026-11-13",
           "2026-11-14",
           "2026-11-15",
-          "2026-11-16"
+          "2026-11-16",
+          "2026-11-17"
         ],
-        "summary": "82 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 69 dates, Dinner 77 dates).",
+        "summary": "83 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 70 dates, Dinner 78 dates).",
         "meals": [
           {
             "meal": "Lunch",
@@ -33367,7 +33474,8 @@
               "2026-11-12",
               "2026-11-13",
               "2026-11-14",
-              "2026-11-15"
+              "2026-11-15",
+              "2026-11-17"
             ],
             "times": [
               "11:45",
@@ -35583,9 +35691,41 @@
                 "meal": "Lunch",
                 "max_seats": 8,
                 "raw_available_seats": 10
+              },
+              {
+                "date": "2026-11-17",
+                "weekday": "tuesday",
+                "time": "11:45",
+                "meal": "Lunch",
+                "max_seats": 8,
+                "raw_available_seats": 10
+              },
+              {
+                "date": "2026-11-17",
+                "weekday": "tuesday",
+                "time": "12:15",
+                "meal": "Lunch",
+                "max_seats": 8,
+                "raw_available_seats": 10
+              },
+              {
+                "date": "2026-11-17",
+                "weekday": "tuesday",
+                "time": "12:45",
+                "meal": "Lunch",
+                "max_seats": 8,
+                "raw_available_seats": 10
+              },
+              {
+                "date": "2026-11-17",
+                "weekday": "tuesday",
+                "time": "13:15",
+                "meal": "Lunch",
+                "max_seats": 8,
+                "raw_available_seats": 10
               }
             ],
-            "slot_count": 276
+            "slot_count": 280
           },
           {
             "meal": "Dinner",
@@ -35669,7 +35809,8 @@
               "2026-11-13",
               "2026-11-14",
               "2026-11-15",
-              "2026-11-16"
+              "2026-11-16",
+              "2026-11-17"
             ],
             "times": [
               "18:00",
@@ -36907,9 +37048,25 @@
                 "meal": "Dinner",
                 "max_seats": 8,
                 "raw_available_seats": 10
+              },
+              {
+                "date": "2026-11-17",
+                "weekday": "tuesday",
+                "time": "18:00",
+                "meal": "Dinner",
+                "max_seats": 8,
+                "raw_available_seats": 10
+              },
+              {
+                "date": "2026-11-17",
+                "weekday": "tuesday",
+                "time": "19:15",
+                "meal": "Dinner",
+                "max_seats": 8,
+                "raw_available_seats": 10
               }
             ],
-            "slot_count": 154
+            "slot_count": 156
           }
         ],
         "notes": [
@@ -62898,8 +63055,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-18T16:04:26Z",
-        "checked_at": "2026-08-18T16:04:26Z",
+        "captured_at": "2026-08-18T16:48:01Z",
+        "checked_at": "2026-08-18T16:48:01Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [],
         "summary": "No Table for Two slots were returned by DiningCity AMEXPlatSG at this check.",
@@ -62993,8 +63150,8 @@
         "source_mode": "bulk_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-18T16:04:26Z",
-        "checked_at": "2026-08-18T16:04:26Z",
+        "captured_at": "2026-08-18T16:48:01Z",
+        "checked_at": "2026-08-18T16:48:01Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-09-05",
@@ -63701,8 +63858,8 @@
                 "weekday": "saturday",
                 "time": "13:00",
                 "meal": "Lunch",
-                "max_seats": 8,
-                "raw_available_seats": 8
+                "max_seats": 6,
+                "raw_available_seats": 6
               },
               {
                 "date": "2026-10-24",
@@ -64033,8 +64190,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-18T16:04:26Z",
-        "checked_at": "2026-08-18T16:04:26Z",
+        "captured_at": "2026-08-18T16:48:01Z",
+        "checked_at": "2026-08-18T16:48:01Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-21",
@@ -68569,8 +68726,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-18T16:04:26Z",
-        "checked_at": "2026-08-18T16:04:26Z",
+        "captured_at": "2026-08-18T16:48:01Z",
+        "checked_at": "2026-08-18T16:48:01Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-20",
@@ -68595,8 +68752,10 @@
           "2026-09-18",
           "2026-09-21",
           "2026-09-22",
+          "2026-09-23",
           "2026-09-24",
           "2026-09-25",
+          "2026-09-27",
           "2026-09-28",
           "2026-09-29",
           "2026-09-30",
@@ -68614,7 +68773,7 @@
           "2026-10-17",
           "2026-10-18"
         ],
-        "summary": "40 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 38 dates, Dinner 22 dates).",
+        "summary": "42 dates with Table for Two slots returned by DiningCity AMEXPlatSG (Lunch 39 dates, Dinner 24 dates).",
         "meals": [
           {
             "meal": "Lunch",
@@ -68643,6 +68802,7 @@
               "2026-09-18",
               "2026-09-21",
               "2026-09-22",
+              "2026-09-23",
               "2026-09-24",
               "2026-09-25",
               "2026-09-28",
@@ -69414,6 +69574,46 @@
                 "raw_available_seats": 0
               },
               {
+                "date": "2026-09-23",
+                "weekday": "wednesday",
+                "time": "12:30",
+                "meal": "Lunch",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-23",
+                "weekday": "wednesday",
+                "time": "12:45",
+                "meal": "Lunch",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-23",
+                "weekday": "wednesday",
+                "time": "13:00",
+                "meal": "Lunch",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-23",
+                "weekday": "wednesday",
+                "time": "13:15",
+                "meal": "Lunch",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-23",
+                "weekday": "wednesday",
+                "time": "13:30",
+                "meal": "Lunch",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
                 "date": "2026-09-24",
                 "weekday": "thursday",
                 "time": "12:30",
@@ -70078,7 +70278,7 @@
                 "raw_available_seats": 0
               }
             ],
-            "slot_count": 176
+            "slot_count": 181
           },
           {
             "meal": "Dinner",
@@ -70095,6 +70295,8 @@
               "2026-09-17",
               "2026-09-21",
               "2026-09-22",
+              "2026-09-23",
+              "2026-09-27",
               "2026-09-28",
               "2026-09-29",
               "2026-09-30",
@@ -70405,6 +70607,70 @@
                 "raw_available_seats": 0
               },
               {
+                "date": "2026-09-23",
+                "weekday": "wednesday",
+                "time": "18:00",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-23",
+                "weekday": "wednesday",
+                "time": "18:30",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-23",
+                "weekday": "wednesday",
+                "time": "19:00",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-23",
+                "weekday": "wednesday",
+                "time": "21:00",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-27",
+                "weekday": "sunday",
+                "time": "18:00",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-27",
+                "weekday": "sunday",
+                "time": "18:30",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-27",
+                "weekday": "sunday",
+                "time": "19:00",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
+                "date": "2026-09-27",
+                "weekday": "sunday",
+                "time": "21:00",
+                "meal": "Dinner",
+                "max_seats": 2,
+                "raw_available_seats": 0
+              },
+              {
                 "date": "2026-09-28",
                 "weekday": "monday",
                 "time": "18:00",
@@ -70821,7 +71087,7 @@
                 "raw_available_seats": 0
               }
             ],
-            "slot_count": 88
+            "slot_count": 96
           }
         ],
         "notes": [
@@ -70884,8 +71150,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-18T16:04:26Z",
-        "checked_at": "2026-08-18T16:04:26Z",
+        "captured_at": "2026-08-18T16:48:01Z",
+        "checked_at": "2026-08-18T16:48:01Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-24",
@@ -87128,8 +87394,8 @@
         "source_mode": "selected_date_project",
         "project": "AMEXPlatSG",
         "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-08-18T16:04:26Z",
-        "checked_at": "2026-08-18T16:04:26Z",
+        "captured_at": "2026-08-18T16:48:01Z",
+        "checked_at": "2026-08-18T16:48:01Z",
         "confidence": "diningcity_amex_platinum_project",
         "visible_dates": [
           "2026-08-22",
@@ -88600,7 +88866,7 @@
                 "weekday": "sunday",
                 "time": "12:00",
                 "meal": "Lunch",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88608,7 +88874,7 @@
                 "weekday": "sunday",
                 "time": "12:15",
                 "meal": "Lunch",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88616,7 +88882,7 @@
                 "weekday": "sunday",
                 "time": "12:30",
                 "meal": "Lunch",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88624,7 +88890,7 @@
                 "weekday": "sunday",
                 "time": "12:45",
                 "meal": "Lunch",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88632,7 +88898,7 @@
                 "weekday": "sunday",
                 "time": "13:00",
                 "meal": "Lunch",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88640,7 +88906,7 @@
                 "weekday": "sunday",
                 "time": "13:15",
                 "meal": "Lunch",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88648,7 +88914,7 @@
                 "weekday": "sunday",
                 "time": "13:30",
                 "meal": "Lunch",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88656,7 +88922,7 @@
                 "weekday": "sunday",
                 "time": "13:45",
                 "meal": "Lunch",
-                "max_seats": 5,
+                "max_seats": 6,
                 "raw_available_seats": 0
               },
               {
@@ -88728,7 +88994,7 @@
                 "weekday": "tuesday",
                 "time": "12:00",
                 "meal": "Lunch",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88736,7 +89002,7 @@
                 "weekday": "tuesday",
                 "time": "12:15",
                 "meal": "Lunch",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88744,7 +89010,7 @@
                 "weekday": "tuesday",
                 "time": "12:30",
                 "meal": "Lunch",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88752,7 +89018,7 @@
                 "weekday": "tuesday",
                 "time": "12:45",
                 "meal": "Lunch",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88760,7 +89026,7 @@
                 "weekday": "tuesday",
                 "time": "13:00",
                 "meal": "Lunch",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88768,7 +89034,7 @@
                 "weekday": "tuesday",
                 "time": "13:15",
                 "meal": "Lunch",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88776,7 +89042,7 @@
                 "weekday": "tuesday",
                 "time": "13:30",
                 "meal": "Lunch",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -88784,7 +89050,7 @@
                 "weekday": "tuesday",
                 "time": "13:45",
                 "meal": "Lunch",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92546,7 +92812,7 @@
                 "weekday": "saturday",
                 "time": "17:00",
                 "meal": "Dinner",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92554,7 +92820,7 @@
                 "weekday": "saturday",
                 "time": "17:15",
                 "meal": "Dinner",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92562,7 +92828,7 @@
                 "weekday": "saturday",
                 "time": "17:30",
                 "meal": "Dinner",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92570,7 +92836,7 @@
                 "weekday": "saturday",
                 "time": "17:45",
                 "meal": "Dinner",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92578,7 +92844,7 @@
                 "weekday": "saturday",
                 "time": "18:00",
                 "meal": "Dinner",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92586,7 +92852,7 @@
                 "weekday": "saturday",
                 "time": "18:15",
                 "meal": "Dinner",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92594,7 +92860,7 @@
                 "weekday": "saturday",
                 "time": "18:30",
                 "meal": "Dinner",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92602,7 +92868,7 @@
                 "weekday": "saturday",
                 "time": "18:45",
                 "meal": "Dinner",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92610,7 +92876,7 @@
                 "weekday": "saturday",
                 "time": "19:00",
                 "meal": "Dinner",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92618,7 +92884,7 @@
                 "weekday": "saturday",
                 "time": "19:15",
                 "meal": "Dinner",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92626,7 +92892,7 @@
                 "weekday": "saturday",
                 "time": "19:30",
                 "meal": "Dinner",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92634,7 +92900,7 @@
                 "weekday": "saturday",
                 "time": "19:45",
                 "meal": "Dinner",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92642,7 +92908,7 @@
                 "weekday": "saturday",
                 "time": "20:00",
                 "meal": "Dinner",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92650,7 +92916,7 @@
                 "weekday": "sunday",
                 "time": "17:00",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92658,7 +92924,7 @@
                 "weekday": "sunday",
                 "time": "17:15",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92666,7 +92932,7 @@
                 "weekday": "sunday",
                 "time": "17:30",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92674,7 +92940,7 @@
                 "weekday": "sunday",
                 "time": "17:45",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92682,7 +92948,7 @@
                 "weekday": "sunday",
                 "time": "18:00",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92690,7 +92956,7 @@
                 "weekday": "sunday",
                 "time": "18:15",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92698,7 +92964,7 @@
                 "weekday": "sunday",
                 "time": "18:30",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92706,7 +92972,7 @@
                 "weekday": "sunday",
                 "time": "18:45",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92714,7 +92980,7 @@
                 "weekday": "sunday",
                 "time": "19:00",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92722,7 +92988,7 @@
                 "weekday": "sunday",
                 "time": "19:15",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92730,7 +92996,7 @@
                 "weekday": "sunday",
                 "time": "19:30",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92738,7 +93004,7 @@
                 "weekday": "sunday",
                 "time": "19:45",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92746,7 +93012,7 @@
                 "weekday": "sunday",
                 "time": "20:00",
                 "meal": "Dinner",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92858,7 +93124,7 @@
                 "weekday": "tuesday",
                 "time": "17:00",
                 "meal": "Dinner",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92866,7 +93132,7 @@
                 "weekday": "tuesday",
                 "time": "17:15",
                 "meal": "Dinner",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92874,7 +93140,7 @@
                 "weekday": "tuesday",
                 "time": "17:30",
                 "meal": "Dinner",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92882,7 +93148,7 @@
                 "weekday": "tuesday",
                 "time": "17:45",
                 "meal": "Dinner",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92890,7 +93156,7 @@
                 "weekday": "tuesday",
                 "time": "18:00",
                 "meal": "Dinner",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92898,7 +93164,7 @@
                 "weekday": "tuesday",
                 "time": "18:15",
                 "meal": "Dinner",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92906,7 +93172,7 @@
                 "weekday": "tuesday",
                 "time": "18:30",
                 "meal": "Dinner",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92914,7 +93180,7 @@
                 "weekday": "tuesday",
                 "time": "18:45",
                 "meal": "Dinner",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92922,7 +93188,7 @@
                 "weekday": "tuesday",
                 "time": "19:00",
                 "meal": "Dinner",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92930,7 +93196,7 @@
                 "weekday": "tuesday",
                 "time": "19:15",
                 "meal": "Dinner",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92938,7 +93204,7 @@
                 "weekday": "tuesday",
                 "time": "19:30",
                 "meal": "Dinner",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92946,7 +93212,7 @@
                 "weekday": "tuesday",
                 "time": "19:45",
                 "meal": "Dinner",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -92954,7 +93220,7 @@
                 "weekday": "tuesday",
                 "time": "20:00",
                 "meal": "Dinner",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97636,7 +97902,7 @@
                 "weekday": "saturday",
                 "time": "16:30",
                 "meal": "Afternoon Tea",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97644,7 +97910,7 @@
                 "weekday": "saturday",
                 "time": "16:45",
                 "meal": "Afternoon Tea",
-                "max_seats": 7,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97652,7 +97918,7 @@
                 "weekday": "sunday",
                 "time": "14:00",
                 "meal": "Afternoon Tea",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97660,7 +97926,7 @@
                 "weekday": "sunday",
                 "time": "14:15",
                 "meal": "Afternoon Tea",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97668,7 +97934,7 @@
                 "weekday": "sunday",
                 "time": "14:30",
                 "meal": "Afternoon Tea",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97676,7 +97942,7 @@
                 "weekday": "sunday",
                 "time": "14:45",
                 "meal": "Afternoon Tea",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97684,7 +97950,7 @@
                 "weekday": "sunday",
                 "time": "15:00",
                 "meal": "Afternoon Tea",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97692,7 +97958,7 @@
                 "weekday": "sunday",
                 "time": "15:15",
                 "meal": "Afternoon Tea",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97700,7 +97966,7 @@
                 "weekday": "sunday",
                 "time": "15:30",
                 "meal": "Afternoon Tea",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97708,7 +97974,7 @@
                 "weekday": "sunday",
                 "time": "15:45",
                 "meal": "Afternoon Tea",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97716,7 +97982,7 @@
                 "weekday": "sunday",
                 "time": "16:00",
                 "meal": "Afternoon Tea",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97724,7 +97990,7 @@
                 "weekday": "sunday",
                 "time": "16:15",
                 "meal": "Afternoon Tea",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97732,7 +97998,7 @@
                 "weekday": "sunday",
                 "time": "16:30",
                 "meal": "Afternoon Tea",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97740,7 +98006,7 @@
                 "weekday": "sunday",
                 "time": "16:45",
                 "meal": "Afternoon Tea",
-                "max_seats": 5,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97844,7 +98110,7 @@
                 "weekday": "tuesday",
                 "time": "14:00",
                 "meal": "Afternoon Tea",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97852,7 +98118,7 @@
                 "weekday": "tuesday",
                 "time": "14:15",
                 "meal": "Afternoon Tea",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97860,7 +98126,7 @@
                 "weekday": "tuesday",
                 "time": "14:30",
                 "meal": "Afternoon Tea",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97868,7 +98134,7 @@
                 "weekday": "tuesday",
                 "time": "14:45",
                 "meal": "Afternoon Tea",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97876,7 +98142,7 @@
                 "weekday": "tuesday",
                 "time": "15:00",
                 "meal": "Afternoon Tea",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97884,7 +98150,7 @@
                 "weekday": "tuesday",
                 "time": "15:15",
                 "meal": "Afternoon Tea",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97892,7 +98158,7 @@
                 "weekday": "tuesday",
                 "time": "15:30",
                 "meal": "Afternoon Tea",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97900,7 +98166,7 @@
                 "weekday": "tuesday",
                 "time": "15:45",
                 "meal": "Afternoon Tea",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97908,7 +98174,7 @@
                 "weekday": "tuesday",
                 "time": "16:00",
                 "meal": "Afternoon Tea",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97916,7 +98182,7 @@
                 "weekday": "tuesday",
                 "time": "16:15",
                 "meal": "Afternoon Tea",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97924,7 +98190,7 @@
                 "weekday": "tuesday",
                 "time": "16:30",
                 "meal": "Afternoon Tea",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
@@ -97932,7 +98198,7 @@
                 "weekday": "tuesday",
                 "time": "16:45",
                 "meal": "Afternoon Tea",
-                "max_seats": 2,
+                "max_seats": 8,
                 "raw_available_seats": 0
               },
               {
