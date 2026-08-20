@@ -295,3 +295,10 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Kamoshiya Kusumoto / Osaka
+
+## 2026-08-20 21:27 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Alter Ego / Tokyo
