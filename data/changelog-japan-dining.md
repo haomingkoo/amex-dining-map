@@ -302,3 +302,12 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - Alter Ego / Tokyo
+
+## 2026-08-27 00:32 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (3)**
+  - Chuugokuhanten Mita / Tokyo
+  - Roppongi Adesso / Tokyo
+  - TOSAGE / Tokyo
