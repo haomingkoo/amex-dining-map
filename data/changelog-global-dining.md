@@ -139,3 +139,14 @@ Source: `data/global-restaurants.json`
   - The Grove / Auckland
   - The Oyster Inn / Oneroa, Waiheke
   - The Sugar Club / Auckland
+
+## 2026-08-27 00:56 UTC — Global Dining
+
+Source: `data/global-restaurants.json`
+
+- **Added (3)**
+  - Gasthaus Sollner Hof / München
+  - Restaurant Lounge 81 / Bad Gleichenberg
+  - SANJI'S Steak, Grill & Bar / München
+- **Removed (1)**
+  - Gäststätte Sollner Hof / München
