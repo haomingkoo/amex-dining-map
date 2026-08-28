@@ -17,13 +17,12 @@ const INTRO_STORAGE_KEY = "amex-benefits-intro-v3";
 const THEME_STORAGE_KEY = "theme-preference";
 const MOBILE_BREAKPOINT = 820;
 const THEME_TILE_URLS = {
-  dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-  light: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+  dark: "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
+  light: "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
 };
 const TILE_OPTS = {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-  subdomains: "abcd",
-  maxZoom: 20,
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+  maxZoom: 19,
 };
 const GLOBAL_DINING_OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/diningbenefit/";
 const SINGAPORE_LOCAL_DINING_NOTICE =
