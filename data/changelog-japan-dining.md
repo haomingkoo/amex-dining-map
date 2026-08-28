@@ -311,3 +311,12 @@ Source: `data/japan-restaurants.json`
   - Chuugokuhanten Mita / Tokyo
   - Roppongi Adesso / Tokyo
   - TOSAGE / Tokyo
+
+## 2026-08-28 05:09 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (3)**
+  -  UNE IMMERSION  / Tokyo
+  - Chuugokuhanten Kurawan  / Tokyo
+  - cépages - de la nuit / Tokyo
