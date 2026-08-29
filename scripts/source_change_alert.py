@@ -60,6 +60,50 @@ META_FIELD_LABELS = {
     "terms_hashes.global_dining_credit_pdf": "Global Dining Credit T&C PDF hash",
 }
 
+PROGRAM_UPDATE_CONFIG = {
+    "Global Dining": {"id": "global-dining", "route": "#/dining/world"},
+    "Japan Dining": {"id": "japan-dining", "route": "#/dining/japan/top"},
+    "Plat Stay": {"id": "plat-stay", "route": "#/stays"},
+    "Love Dining": {"id": "love-dining", "route": "#/love-dining"},
+    "Table for Two": {"id": "table-for-two", "route": "#/table-for-two"},
+}
+
+PUBLIC_RECORD_FIELDS = {
+    "name": "Name",
+    "hotel": "Hotel",
+    "type": "Type",
+    "category": "Category",
+    "country": "Country",
+    "region": "Region",
+    "city": "City",
+    "district": "District",
+    "app_area": "Area",
+    "address": "Address",
+    "source_localized_address": "Address",
+    "cuisines": "Cuisine",
+    "cuisine": "Cuisine",
+    "cuisine_category": "Cuisine category",
+    "eligible_room_type": "Eligible room",
+    "breakfast_included": "Breakfast included",
+    "blackout_raw": "Blackout dates",
+    "reservation_raw": "Reservations",
+    "booking_channel": "Booking channel",
+    "notes": "Notes",
+    "opening_hours": "Opening hours",
+    "menu_pdf.filename": "Menu file",
+    "menu_pdf.sha256": "Menu version",
+    "menu_pdfs.platinum.filename": "Platinum menu file",
+    "menu_pdfs.platinum.sha256": "Platinum menu version",
+    "menu_pdfs.centurion.filename": "Centurion menu file",
+    "menu_pdfs.centurion.sha256": "Centurion menu version",
+}
+
+PUBLIC_META_FIELDS = {
+    key: label
+    for key, label in META_FIELD_LABELS.items()
+    if key != "manual_review_required"
+}
+
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -111,6 +155,195 @@ def record_label(record: dict[str, Any]) -> str:
         record.get("city") or record.get("app_area") or record.get("country"),
     ]
     return " / ".join(str(part) for part in parts if part)
+
+
+def display_value(path: str, value: Any) -> Any:
+    if value is None or value == "":
+        return None
+    if isinstance(value, str) and (
+        path.endswith("sha256")
+        or (len(value) == 64 and all(character in "0123456789abcdefABCDEF" for character in value))
+    ):
+        return value[:12]
+    return value
+
+
+def public_record_fields(record: dict[str, Any]) -> dict[str, Any]:
+    fields: dict[str, Any] = {}
+    for path, label in PUBLIC_RECORD_FIELDS.items():
+        value = display_value(path, nested_get(record, path))
+        if value is not None and label not in fields:
+            fields[label] = value
+    return fields
+
+
+def public_field_changes(old_record: dict[str, Any], new_record: dict[str, Any]) -> list[dict[str, Any]]:
+    changes: list[dict[str, Any]] = []
+    seen_labels: set[str] = set()
+    for path, label in PUBLIC_RECORD_FIELDS.items():
+        old_value = display_value(path, nested_get(old_record, path))
+        new_value = display_value(path, nested_get(new_record, path))
+        if old_value == new_value or label in seen_labels:
+            continue
+        seen_labels.add(label)
+        changes.append({"field": label, "before": old_value, "after": new_value})
+    return changes
+
+
+def record_source_url(record: dict[str, Any] | None, meta: dict[str, Any]) -> str | None:
+    record = record or {}
+    for path in (
+        "menu_pdf.url",
+        "source_url",
+        "source_document_url",
+        "terms_url",
+        "website_url",
+    ):
+        value = nested_get(record, path)
+        if value:
+            return str(value)
+    for key in ("official_url", "canonical_url", "resolved_url"):
+        if meta.get(key):
+            return str(meta[key])
+    official_pages = meta.get("official_pages")
+    if isinstance(official_pages, dict) and official_pages:
+        return str(next(iter(official_pages.values())))
+    return None
+
+
+def update_event_id(payload: dict[str, Any]) -> str:
+    stable = {key: value for key, value in payload.items() if key != "detected_at"}
+    raw = json.dumps(stable, ensure_ascii=False, sort_keys=True)
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:20]
+
+
+def build_record_update_events(
+    program: str,
+    old_payload: Any,
+    new_payload: Any,
+    meta: dict[str, Any],
+    detected_at: str,
+) -> list[dict[str, Any]]:
+    config = PROGRAM_UPDATE_CONFIG.get(program, {"id": program.lower().replace(" ", "-"), "route": "#/alerts"})
+    status = "review_required" if meta.get("manual_review_required") else "published"
+    old_by_key = {record_key(record): record for record in records_from_payload(old_payload)}
+    new_by_key = {record_key(record): record for record in records_from_payload(new_payload)}
+    events: list[dict[str, Any]] = []
+
+    for key in sorted(set(new_by_key) - set(old_by_key)):
+        record = new_by_key[key]
+        event = {
+            "program": program,
+            "program_id": config["id"],
+            "route": config["route"],
+            "kind": "added",
+            "subject": record_label(record),
+            "detected_at": detected_at,
+            "status": status,
+            "before": {"state": "not_listed", "fields": {}},
+            "after": {"state": "listed", "fields": public_record_fields(record)},
+            "changes": [{"field": "Listing", "before": "Not listed", "after": "Listed"}],
+            "source_url": record_source_url(record, meta),
+        }
+        event["id"] = update_event_id(event)
+        events.append(event)
+
+    for key in sorted(set(old_by_key) - set(new_by_key)):
+        record = old_by_key[key]
+        event = {
+            "program": program,
+            "program_id": config["id"],
+            "route": config["route"],
+            "kind": "removed",
+            "subject": record_label(record),
+            "detected_at": detected_at,
+            "status": status,
+            "before": {"state": "listed", "fields": public_record_fields(record)},
+            "after": {"state": "not_listed", "fields": {}},
+            "changes": [{"field": "Listing", "before": "Listed", "after": "Not listed"}],
+            "source_url": record_source_url(record, meta),
+        }
+        event["id"] = update_event_id(event)
+        events.append(event)
+
+    for key in sorted(set(old_by_key) & set(new_by_key)):
+        old_record = old_by_key[key]
+        new_record = new_by_key[key]
+        if stable_record_hash(old_record) == stable_record_hash(new_record):
+            continue
+        changes = public_field_changes(old_record, new_record)
+        if not changes:
+            continue
+        menu_change = any("menu" in change["field"].lower() for change in changes)
+        event = {
+            "program": program,
+            "program_id": config["id"],
+            "route": config["route"],
+            "kind": "menu_updated" if menu_change else "details_updated",
+            "subject": record_label(new_record),
+            "detected_at": detected_at,
+            "status": status,
+            "before": {"state": "listed", "fields": public_record_fields(old_record)},
+            "after": {"state": "listed", "fields": public_record_fields(new_record)},
+            "changes": changes,
+            "source_url": record_source_url(new_record, meta),
+        }
+        event["id"] = update_event_id(event)
+        events.append(event)
+
+    return events
+
+
+def build_meta_update_event(
+    program: str,
+    old_meta: dict[str, Any],
+    new_meta: dict[str, Any],
+    detected_at: str,
+) -> dict[str, Any] | None:
+    changes = []
+    for path, label in PUBLIC_META_FIELDS.items():
+        old_value = display_value(path, nested_get(old_meta, path))
+        new_value = display_value(path, nested_get(new_meta, path))
+        if old_value != new_value:
+            changes.append({"field": label, "before": old_value, "after": new_value})
+    if not changes:
+        return None
+    config = PROGRAM_UPDATE_CONFIG.get(program, {"id": program.lower().replace(" ", "-"), "route": "#/alerts"})
+    event = {
+        "program": program,
+        "program_id": config["id"],
+        "route": config["route"],
+        "kind": "source_updated",
+        "subject": f"{program} source",
+        "detected_at": detected_at,
+        "status": "review_required" if new_meta.get("manual_review_required") else "published",
+        "before": {"state": "available", "fields": {item["field"]: item["before"] for item in changes}},
+        "after": {"state": "available", "fields": {item["field"]: item["after"] for item in changes}},
+        "changes": changes,
+        "source_url": record_source_url(None, new_meta),
+    }
+    event["id"] = update_event_id(event)
+    return event
+
+
+def append_updates(path: Path, events: list[dict[str, Any]], updated_at: str) -> None:
+    if not events:
+        return
+    payload = load_json(path) if path.exists() else {"schema_version": 1, "updates": []}
+    existing = payload.get("updates") if isinstance(payload, dict) else []
+    existing = existing if isinstance(existing, list) else []
+    known_ids = {event.get("id") for event in existing if isinstance(event, dict)}
+    additions = [event for event in events if event["id"] not in known_ids]
+    if not additions:
+        return
+    payload["schema_version"] = 1
+    payload["updated_at"] = updated_at
+    payload["updates"] = sorted(
+        [*additions, *existing],
+        key=lambda event: (event.get("detected_at") or "", event.get("id") or ""),
+        reverse=True,
+    )[:500]
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def _strip_nested(value: Any) -> Any:
@@ -214,6 +447,10 @@ def main() -> int:
         "--changelog",
         help="Append a dated entry to this changelog file when records changed.",
     )
+    parser.add_argument(
+        "--updates",
+        help="Append structured before-and-after records to this update ledger.",
+    )
     args = parser.parse_args()
 
     current_meta = load_json(args.meta)
@@ -239,13 +476,33 @@ def main() -> int:
             if reason not in reasons:
                 reasons.append(str(reason))
 
+    detected_at = now_iso()
     record_diffs: list[tuple[str, dict[str, list[str]]]] = []
+    update_events: list[dict[str, Any]] = []
     for data_path in args.data:
         previous_data = git_show_json(data_path)
         current_data = load_json(data_path)
         diff = compare_records(previous_data, current_data)
         if diff["added"] or diff["removed"] or diff["changed"]:
             record_diffs.append((data_path, diff))
+        if previous_data is not None:
+            update_events.extend(
+                build_record_update_events(
+                    args.program,
+                    previous_data,
+                    current_data,
+                    current_meta,
+                    detected_at,
+                )
+            )
+
+    if previous_meta is not None:
+        meta_event = build_meta_update_event(args.program, previous_meta, current_meta, detected_at)
+        if meta_event:
+            update_events.append(meta_event)
+
+    if args.updates:
+        append_updates(Path(args.updates), update_events, detected_at)
 
     alert_required = bool(reasons or record_diffs)
     append_output("alert_required", "true" if alert_required else "false")
@@ -256,7 +513,7 @@ def main() -> int:
     lines = [
         f"# {args.program} source changed" if alert_required else f"# {args.program} source unchanged",
         "",
-        f"- Checked at: `{now_iso()}`",
+        f"- Checked at: `{detected_at}`",
         f"- Metadata file: `{args.meta}`",
     ]
     if current_meta.get("last_checked_at") or current_meta.get("fetched_at"):

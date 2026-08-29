@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-08-30
+
+### Added
+
+- Mobile-first site-wide Updates strip with explicit before-and-after evidence,
+  official source links, unread state, keyboard support, and reduced-motion support.
+- Durable `data/updates.json` change ledger populated by source refresh workflows.
+- Review gating for Love Dining and Table for Two public changes.
+- Scheduled Table for Two menu PDF version tracking.
+- Per-venue Table for Two release lead-time patterns based on first-seen cached
+  availability, with observation counts and confidence labels.
+
+### Changed
+
+- Table for Two alert documentation now reflects the active Railway, FastAPI,
+  SQLite, double-opt-in, and Resend architecture.
+- Current dataset and coordinate counts are documented from the latest snapshot.
+- Love Dining refresh now publishes the current 83-venue source after resolving
+  four newly listed venue coordinates.
+
 ## 2026-04-25
 
 ### Added

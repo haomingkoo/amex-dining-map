@@ -55,6 +55,9 @@ each dataset was cached, where it came from, and when a human review is needed.
   counts, reviewed hashes, and manual-review flag.
 - `data/table-for-two.json`: Table for Two official roster, T&C/FAQ links,
   roster source metadata, and cached `AMEXPlatSG` availability.
+- `data/table-for-two-release-history.json`: first-seen venue/date/session
+  observations and evidence-bounded release lead-time patterns.
+- `data/updates.json`: published and review-gated before-and-after changes.
 
 ## Routes
 
@@ -105,20 +108,21 @@ python3 scripts/source_change_alert.py --program "Plat Stay" --meta data/plat-st
 - `deploy-pages.yml`: deploys the static site on pushes to `main`.
 - `refresh-data.yml`: daily Japan dining, Pocket availability, and Plat Stay
   refresh at `21:00 UTC`.
-- `refresh-love-dining.yml`: daily Love Dining refresh at `01:45 UTC`.
+- `refresh-love-dining.yml`: daily Love Dining refresh at `21:45 UTC`.
 - `refresh-table-for-two.yml`: daily public Table for Two roster and baseline
-  `AMEXPlatSG` availability refresh at `01:30 UTC`. The browser also refreshes
-  Table for Two availability while the page is open.
+  `AMEXPlatSG` availability refresh at `22:00 UTC`, including official menu PDF
+  version checks. The browser also refreshes availability while the page is open.
 - `table-for-two-alerts.yml`: twice-hourly Table for Two availability refresh
-  and SMTP alert sender. It uses `--availability-only` so email alerts are not
-  blocked by official Amex source-review changes. It reads signup rows from a
-  configured CSV endpoint, sends only newly matched slots, and stores salted
-  sent-key hashes.
-- `refresh-global-dining.yml`: monthly Amex Global/Local Dining refresh on the
-  first day of the month at `01:00 UTC`.
+  and Resend email sender. It exports confirmed subscriptions from the Railway
+  reminder service, sends newly matched slots, stores salted sent-key hashes,
+  and records first-seen release observations.
+- `refresh-global-dining.yml`: daily Amex Global/Local Dining refresh at
+  `21:30 UTC`.
 - Source-change workflows open/update GitHub Issues labelled `data-alert` when
   counts, official hashes, source image hashes, T&C hashes, or official records
-  change.
+  change. They also append structured before-and-after records to
+  `data/updates.json`; review-gated records are hidden from the public UI until
+  approved.
 
 ## Validation
 
@@ -129,6 +133,8 @@ python3 -m json.tool data/love-dining-source.json >/tmp/love-source.valid.json
 python3 -m json.tool data/japan-dining-source.json >/tmp/japan-source.valid.json
 python3 -m json.tool data/pocket-availability.json >/tmp/pocket-availability.valid.json
 python3 -m json.tool data/table-for-two.json >/tmp/table-for-two.valid.json
+python3 -m json.tool data/table-for-two-release-history.json >/tmp/tft-release-history.valid.json
+python3 -m json.tool data/updates.json >/tmp/updates.valid.json
 python3 -m py_compile scripts/source_change_alert.py scripts/scrape_love_dining.py scripts/scrape_table_for_two.py scripts/check_table_for_two_availability.py scripts/scrape_pocket_availability.py scripts/sync_japan_mvp.py
 python3 scripts/audit_coordinates.py
 python3 scripts/audit_content_provenance.py
@@ -138,10 +144,10 @@ git diff --check
 
 Current coordinate audit notes:
 
-- Global Dining: 1,819 mapped records, 112 records without coordinates.
-- Japan Dining: 844 mapped records, no missing coordinates.
+- Global Dining: 1,816 mapped records, 110 records without coordinates.
+- Japan Dining: 839 mapped records, no missing coordinates.
 - Plat Stay: 76 mapped records, no missing coordinates.
-- Love Dining: 70 mapped records, 8 bundled/unmapped records.
+- Love Dining: 77 mapped records, 6 intentionally bundled/unmapped records.
 - Table for Two: 23 mapped records, no missing coordinates.
 - The bounds audit catches impossible country-level pins; it does not prove
   every pin is within 20m of a restaurant entrance.
@@ -156,78 +162,67 @@ Current coordinate audit notes:
   for Two availability.
 - Treat cached Table for Two availability as planning data. Users still need to
   complete booking and voucher redemption in the Amex Experiences App.
-- A real Table for Two waitlist/alert feature needs a backend or scheduled
-  notifier to store user preferences and send notifications after the browser
-  closes. The included GitHub Actions notifier can poll a Google Form/Sheet
-  CSV endpoint and send through SMTP, but the signup storage still lives outside
-  GitHub Pages.
+- Table for Two alert subscriptions use the Railway reminder service and require
+  email confirmation. GitHub Pages never stores subscriber email addresses.
 - Prefer official Amex/Pocket Concierge sources for facts; enrichments should be
   labelled and easy to override.
 
 ## Table for Two Email Alerts
 
-The static site cannot store visitor emails by itself. For a Google-based setup,
-create a Google Form that collects email, party size, dates, sessions, and
-venues, link it to a Sheet, then expose the responses to the alert workflow via
-a CSV endpoint. Use an Apps Script endpoint with a secret token for private
-responses; a published CSV link is simpler but exposes emails to anyone who has
-the URL.
+The Table for Two page contains a native signup form. It sends the selected
+venues, party size, sessions, and date range to the FastAPI service in
+`reminders/`. The service stores pending and confirmed subscriptions in SQLite,
+sends double-opt-in messages through Resend, and supports one-click unsubscribe.
 
-When `TABLE_FOR_TWO_ALERT_SIGNUP_URL` is set and the Table for Two data refresh
-runs, the site shows a `Booking alerts` panel above the Table for Two venue
-results. The scheduled alert workflow then polls the CSV endpoint and emails
-matching newly-seen slots. A copy-paste Google Apps Script setup is in
-[`docs/table-for-two-alerts-google-apps-script.md`](docs/table-for-two-alerts-google-apps-script.md).
-
-Recommended Sheet/Form fields:
+The twice-hourly workflow exports confirmed subscribers and matches them against
+the latest `AMEXPlatSG` availability cache. Required workflow secrets are:
 
 ```text
-enabled,email,name,party size,dates,sessions,venues,unsubscribe url
-```
-
-`dates`, `sessions`, and `venues` may be comma-separated. Use `enabled=false`
-when a user unsubscribes.
-
-Set these repository secrets before enabling the scheduled workflow:
-
-```text
-TABLE_FOR_TWO_ALERTS_CSV_URL=https://script.google.com/.../exec?token=...
-TABLE_FOR_TWO_ALERT_SIGNUP_URL=https://forms.gle/... or https://script.google.com/.../exec
-ALERT_UNSUBSCRIBE_BASE_URL=https://script.google.com/.../exec?action=unsubscribe
+REMINDERS_API_BASE=https://<service-host>
+ALERT_EXPORT_TOKEN=<random long token>
 ALERT_HASH_SALT=<random long string>
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=no-reply@kooexperience.com
-SMTP_PASS=<Google app password or SMTP relay password>
-SMTP_FROM=Table for Two Alerts <no-reply@kooexperience.com>
-SMTP_REPLY_TO=no-reply@kooexperience.com
+RESEND_API_KEY=<resend API key>
+RESEND_FROM=<verified sender>
 ```
 
-For Google Workspace, make sure `no-reply@kooexperience.com` is a real mailbox
-or a verified send-as alias for the mailbox used by `SMTP_USER`. The simplest
-GitHub Actions setup is Gmail SMTP with 2-step verification and an app password;
-Workspace SMTP relay can also work, but GitHub-hosted runner IPs are not stable.
-The domain should have Google SPF, DKIM, and DMARC records so alert mail is not
-treated as spoofed.
+See [`reminders/README.md`](reminders/README.md) for service endpoints and local
+development. The older Google Apps Script setup remains under `docs/` as a
+historical migration reference and is not the active architecture.
+
+## Public Updates
+
+`data/updates.json` is the durable public change ledger. Each entry includes the
+program, detection time, official source, and explicit before-and-after values.
+The site-wide Updates strip shows only entries with `status: published`.
+
+Love Dining and Table for Two source changes are written as
+`status: review_required`. After checking the official source, publish or reject
+one with:
+
+```bash
+python3 scripts/review_update.py <update-id> --status published --note "Checked against official source"
+```
+
+## Observed Table for Two Release Patterns
+
+The twice-hourly availability job records when each venue, date, and meal first
+appears. The site derives typical lead times only after at least three repeat
+observations. Detection time is shown only when at least 60% of observations
+fall in the same half-hour window.
+
+These are cache observations, not official release policies. Rebuild the local
+historical baseline from recent Git snapshots with:
+
+```bash
+python3 scripts/track_table_for_two_releases.py --from-git --history-limit 300
+```
 
 Security notes:
 
-- Do not expose the Google Sheet as a public CSV. Use Apps Script and a secret
-  token in `TABLE_FOR_TWO_ALERTS_CSV_URL`.
-- Keep `ALERT_HASH_SALT`, SMTP passwords, Apps Script tokens, and form admin URLs
-  in GitHub Actions secrets only.
+- Keep subscriber exports, Resend credentials, tokens, and service admin URLs in
+  deployment secrets only.
 - The repository stores only salted hashes of sent alert keys in
   `data/table-for-two-alert-sent.json`; it should not store user emails.
-- The alert workflow sends one confirmation email per unmatched signup
-  preference scope so the user receives an unsubscribe link even before a slot
-  matches. It also sends one positive match email per signup preference scope.
-  After a match email is sent, it records a salted matched key so that signup
-  does not keep sending new slot-time emails. If an alert's exact dates or date
-  range pass without any matching slot email having been sent, it sends one
-  expiry email and records a salted expiry key so that closure email is not
-  repeated.
-- Unsubscribe links are added to email bodies and `List-Unsubscribe` headers. The
-  Apps Script unsubscribe endpoint should verify the `email` and `token` query
-  parameters, then mark matching rows as `enabled=false`.
-- Only set `ALERT_ONE_CLICK_UNSUBSCRIBE=true` if the Apps Script endpoint also
-  supports one-click unsubscribe POST requests.
+- Subscriber emails are stored only in the Railway SQLite service.
+- Public update records must never contain subscriber data, tokens, scraper
+  credentials, or private booking information.

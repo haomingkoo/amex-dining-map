@@ -905,8 +905,6 @@ def build_payload(existing_payload: dict | None = None) -> dict:
         "official_url": OFFICIAL_URL,
         "terms_url": TERMS_URL,
         "faq_url": FAQ_URL,
-        "alert_signup_url": os.environ.get("TABLE_FOR_TWO_ALERT_SIGNUP_URL", "").strip()
-        or (existing_payload or {}).get("alert_signup_url", ""),
         "participating_merchants_image_url": participating_url,
         "voucher_cycles_image_url": cycles_url,
         "source_images": {
@@ -1002,8 +1000,6 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
 
     payload = {
         **existing_payload,
-        "alert_signup_url": os.environ.get("TABLE_FOR_TWO_ALERT_SIGNUP_URL", "").strip()
-        or existing_payload.get("alert_signup_url", ""),
         "availability_last_checked_at": checked_at if live_availability_by_id else existing_payload.get("availability_last_checked_at"),
         "availability_source": {
             "type": "diningcity_public_api",

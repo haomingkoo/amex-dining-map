@@ -1,5 +1,8 @@
 # Table for Two Alert Signup Setup
 
+> Historical migration reference. The production site now uses the native
+> FastAPI and SQLite reminder service documented in `reminders/README.md`.
+
 GitHub Pages cannot store visitor emails. Use a Google Form for signup, a
 linked Google Sheet for storage, and this Apps Script as the private CSV and
 unsubscribe endpoint for GitHub Actions.

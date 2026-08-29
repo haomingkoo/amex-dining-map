@@ -8,12 +8,15 @@ const STAYS_META_URL = "../data/plat-stay-source.json";
 const LOVE_DINING_DATA_URL = "../data/love-dining.json";
 const LOVE_DINING_META_URL = "../data/love-dining-source.json";
 const TABLE_FOR_TWO_DATA_URL = "../data/table-for-two.json";
+const TABLE_FOR_TWO_RELEASE_HISTORY_URL = "../data/table-for-two-release-history.json";
+const UPDATES_DATA_URL = "../data/updates.json";
 const GOOGLE_RATINGS_URL = "../data/google-maps-ratings.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
 const LOVE_FIT_OPTIONS = { padding: [48, 48], maxZoom: 15 };
 const TABLE_FOR_TWO_FIT_OPTIONS = { padding: [48, 48], maxZoom: 14 };
 const INTRO_STORAGE_KEY = "amex-benefits-intro-v3";
+const UPDATES_READ_STORAGE_KEY = "amex-benefits-updates-read-v1";
 const THEME_STORAGE_KEY = "theme-preference";
 const MOBILE_BREAKPOINT = 820;
 const THEME_TILE_URLS = {
@@ -525,6 +528,7 @@ const state = {
   loveToolbarOpen: false,
   tableForTwoToolbarOpen: false,
   tableForTwo: null,
+  tableForTwoReleaseHistory: null,
   tableForTwoFiltered: [],
   tableForTwoMarkers: new Map(),
   tableForTwoActiveId: null,
@@ -540,6 +544,8 @@ const state = {
   tableForTwoLiveRefreshTimer: null,
   googleRatings: {},
   googleRatingsLoaded: false,
+  updates: [],
+  updatesReadAt: null,
   dataLoaded: {
     dining: false,
     stays: false,
@@ -788,6 +794,13 @@ const themeToggleButton = document.getElementById("theme-toggle");
 const themeToggleIcon = document.getElementById("theme-toggle-icon");
 const themeToggleLabel = document.getElementById("theme-toggle-label");
 const replayGuideButton = document.getElementById("replay-guide");
+const updatesShell = document.getElementById("updates-shell");
+const updatesTrigger = document.getElementById("updates-trigger");
+const updatesPanel = document.getElementById("updates-panel");
+const updatesHeadline = document.getElementById("updates-headline");
+const updatesCount = document.getElementById("updates-count");
+const updatesList = document.getElementById("updates-list");
+const updatesMarkReadButton = document.getElementById("updates-mark-read");
 const programTitle = document.getElementById("program-title");
 const programDescription = document.getElementById("program-description");
 const journeyNav = document.getElementById("journey-nav");
@@ -2250,7 +2263,12 @@ async function ensureTableForTwoDataLoaded() {
   if (state.dataLoaded.tableForTwo) return;
   if (!dataLoadPromises.tableForTwo) {
     dataLoadPromises.tableForTwo = (async () => {
-      state.tableForTwo = await fetchJson(TABLE_FOR_TWO_DATA_URL);
+      const [tableForTwo, releaseHistory] = await Promise.all([
+        fetchJson(TABLE_FOR_TWO_DATA_URL),
+        fetchJson(TABLE_FOR_TWO_RELEASE_HISTORY_URL),
+      ]);
+      state.tableForTwo = tableForTwo;
+      state.tableForTwoReleaseHistory = releaseHistory;
       tableForTwoVenues().forEach((record) => {
         record.search_text = tableForTwoSearchText(record);
       });
@@ -2343,6 +2361,126 @@ function formatTimestamp(value) {
     timeStyle: "short",
     timeZone: "Asia/Singapore",
   });
+}
+
+function updateKindLabel(kind) {
+  return {
+    added: "Added",
+    removed: "Removed",
+    menu_updated: "Menu",
+    details_updated: "Changed",
+    source_updated: "Source",
+  }[kind] || "Changed";
+}
+
+function updateValueLabel(value) {
+  if (value === null || value === undefined || value === "") return "Not provided";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (Array.isArray(value)) return value.join(", ");
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
+function readUpdatesTimestamp() {
+  try {
+    return window.localStorage.getItem(UPDATES_READ_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function unreadUpdates() {
+  const readAt = state.updatesReadAt ? new Date(state.updatesReadAt).getTime() : 0;
+  return state.updates.filter((update) => {
+    const detectedAt = new Date(update.detected_at).getTime();
+    return Number.isFinite(detectedAt) && detectedAt > readAt;
+  });
+}
+
+function renderUpdateRow(update) {
+  const details = document.createElement("details");
+  details.className = "update-row";
+  details.dataset.kind = update.kind || "changed";
+  const changes = Array.isArray(update.changes) ? update.changes : [];
+  const comparisons = changes
+    .map(
+      (change) => `
+        <div class="update-change">
+          <span class="update-field">${escapeHtml(change.field || "Change")}</span>
+          <div class="update-values">
+            <span class="update-value"><strong>Before</strong> ${escapeHtml(updateValueLabel(change.before))}</span>
+            <span class="update-value"><strong>After</strong> ${escapeHtml(updateValueLabel(change.after))}</span>
+          </div>
+        </div>`
+    )
+    .join("");
+  const sourceLink = update.source_url
+    ? `<a class="update-source-link" href="${escapeHtml(update.source_url)}" target="_blank" rel="noopener">Official source ↗</a>`
+    : "";
+  details.innerHTML = `
+    <summary>
+      <span class="update-kind">${escapeHtml(updateKindLabel(update.kind))}</span>
+      <span class="update-summary-copy">
+        <span class="update-subject">${escapeHtml(update.subject || update.program || "Source update")}</span>
+        <span class="update-meta">${escapeHtml(update.program || "Benefit")} · ${escapeHtml(formatTimestamp(update.detected_at))}</span>
+      </span>
+      <span class="update-expand" aria-hidden="true">+</span>
+    </summary>
+    <div class="update-detail">
+      <div class="update-comparison">${comparisons || '<div class="update-change"><span class="update-field">Change</span><div class="update-values"><span class="update-value">No public field comparison is available.</span></div></div>'}</div>
+      <div class="update-links">
+        <a class="update-route-link" href="${escapeHtml(update.route || "#/dining/world")}">Open section</a>
+        ${sourceLink}
+      </div>
+    </div>`;
+  details.querySelector(".update-route-link")?.addEventListener("click", () => setUpdatesOpen(false));
+  return details;
+}
+
+function renderUpdates() {
+  if (!updatesShell || !updatesList || !updatesHeadline || !updatesCount) return;
+  const published = state.updates
+    .filter((update) => update && update.status === "published")
+    .sort((a, b) => String(b.detected_at || "").localeCompare(String(a.detected_at || "")));
+  state.updates = published;
+  if (!published.length) {
+    updatesShell.hidden = true;
+    return;
+  }
+
+  const unread = unreadUpdates();
+  const latest = published[0];
+  updatesShell.hidden = false;
+  updatesHeadline.textContent = `Latest: ${updateKindLabel(latest.kind).toLowerCase()} · ${latest.subject}`;
+  updatesCount.textContent = String(unread.length);
+  updatesCount.setAttribute("aria-label", `${unread.length} unread update${unread.length === 1 ? "" : "s"}`);
+  updatesCount.classList.toggle("is-read", unread.length === 0);
+  updatesList.innerHTML = "";
+  published.slice(0, 30).forEach((update) => updatesList.appendChild(renderUpdateRow(update)));
+}
+
+async function loadUpdates() {
+  const payload = await fetchJson(UPDATES_DATA_URL);
+  state.updates = Array.isArray(payload?.updates) ? payload.updates : [];
+  state.updatesReadAt = readUpdatesTimestamp();
+  renderUpdates();
+}
+
+function setUpdatesOpen(open) {
+  if (!updatesTrigger || !updatesPanel) return;
+  updatesTrigger.setAttribute("aria-expanded", String(open));
+  updatesPanel.hidden = !open;
+}
+
+function markUpdatesRead() {
+  const latest = state.updates[0]?.detected_at || new Date().toISOString();
+  state.updatesReadAt = latest;
+  try {
+    window.localStorage.setItem(UPDATES_READ_STORAGE_KEY, latest);
+  } catch {
+    // The visual state still updates for this page view when storage is unavailable.
+  }
+  renderUpdates();
 }
 
 function diningSourceKind(record) {
@@ -5987,6 +6125,44 @@ function tableForTwoProfile(record) {
   return record?.amex_app_profile || record?.dining_city_profile || {};
 }
 
+function tableForTwoReleasePatterns(record) {
+  const patterns = state.tableForTwoReleaseHistory?.patterns;
+  if (!Array.isArray(patterns) || !record?.id) return [];
+  return patterns.filter((pattern) => pattern.venue_id === record.id);
+}
+
+function tableForTwoReleasePatternHtml(record) {
+  const patterns = tableForTwoReleasePatterns(record);
+  if (!patterns.length) {
+    return `
+      <div class="tft-release-pattern">
+        <div class="focus-kicker">Observed release pattern</div>
+        <p>Not enough repeat observations yet. Availability alerts still work normally.</p>
+      </div>`;
+  }
+  const rows = patterns.map((pattern) => {
+    const median = Number(pattern.median_lead_days);
+    const medianLabel = Number.isInteger(median) ? String(median) : median.toFixed(1);
+    const range = pattern.lead_days_min === pattern.lead_days_max
+      ? `${medianLabel} days ahead`
+      : `typically ${medianLabel} days ahead; observed range ${pattern.lead_days_min}–${pattern.lead_days_max}`;
+    const time = pattern.typical_first_seen_sgt
+      ? ` Most often first detected near ${pattern.typical_first_seen_sgt} SGT.`
+      : "";
+    return `
+      <div class="tft-release-row">
+        <span class="badge blue">${escapeHtml(pattern.meal)}</span>
+        <span><strong>${escapeHtml(range)}</strong>${escapeHtml(time)} ${escapeHtml(`${pattern.observation_count} observations, ${pattern.confidence} confidence.`)}</span>
+      </div>`;
+  }).join("");
+  return `
+    <div class="tft-release-pattern">
+      <div class="focus-kicker">Observed release pattern</div>
+      ${rows}
+      <p>First detected by periodic cache checks. This is an observed pattern, not an official Amex or restaurant release policy.</p>
+    </div>`;
+}
+
 function tableForTwoProfileDescription(record) {
   const description = tableForTwoProfile(record).description || "";
   return description.split(/\n+/).map((part) => part.trim()).filter(Boolean)[0] || description;
@@ -6102,6 +6278,7 @@ function renderTableForTwoCard() {
     ${record.address ? `<div class="focus-address">${escapeHtml(record.address)}</div>` : ""}
     ${profileDescription ? `<p class="focus-summary tft-profile-desc">${escapeHtml(profileDescription)}</p>` : ""}
     ${tableForTwoSlotMatchesHtml(record, filters)}
+    ${tableForTwoReleasePatternHtml(record)}
     <div class="price-grid tft-status-grid">
       <div class="price-card">
         <span class="price-label">Booking</span>
@@ -6940,6 +7117,7 @@ function navigateToRouteHash(routeHash) {
 
 async function init() {
   initTheme();
+  await loadUpdates();
 
   // Set min date on stays date inputs to today
   const today = new Date().toISOString().split("T")[0];
@@ -7124,6 +7302,12 @@ replayGuideButton?.addEventListener("click", () => {
   showIntroGate(true);
 });
 
+updatesTrigger?.addEventListener("click", () => {
+  setUpdatesOpen(updatesTrigger.getAttribute("aria-expanded") !== "true");
+});
+
+updatesMarkReadButton?.addEventListener("click", markUpdatesRead);
+
 programLinks.forEach((link) => {
   link.addEventListener("click", (event) => {
     event.preventDefault();
@@ -7209,6 +7393,7 @@ window.addEventListener("hashchange", () => {
 
 window.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
+  if (updatesTrigger?.getAttribute("aria-expanded") === "true") setUpdatesOpen(false);
   if (state.mobileToolbarOpen) setToolbarOpen(false);
   if (state.stayToolbarOpen) setStayToolbarOpen(false);
   if (state.loveToolbarOpen) setLoveToolbarOpen(false);

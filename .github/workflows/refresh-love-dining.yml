@@ -34,7 +34,7 @@ jobs:
           playwright install --with-deps chromium
 
       - name: Refresh official Love Dining snapshot
-        run: python3 scripts/scrape_love_dining.py --no-geocode
+        run: python3 scripts/scrape_love_dining.py
 
       - name: Audit content provenance
         run: python3 scripts/audit_content_provenance.py
@@ -50,13 +50,14 @@ jobs:
             --meta data/love-dining-source.json \
             --data data/love-dining.json \
             --output /tmp/love-dining-alert.md \
-            --changelog data/changelog-love-dining.md
+            --changelog data/changelog-love-dining.md \
+            --updates data/updates.json
 
       - name: Commit refreshed Love Dining data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/love-dining.json data/love-dining-source.json
+          git add data/love-dining.json data/love-dining-source.json data/updates.json
           if [ -f data/changelog-love-dining.md ]; then
             git add data/changelog-love-dining.md
           fi

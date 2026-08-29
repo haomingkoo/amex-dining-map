@@ -46,9 +46,10 @@ jobs:
           fi
 
       - name: Refresh Table for Two availability
-        env:
-          TABLE_FOR_TWO_ALERT_SIGNUP_URL: ${{ secrets.TABLE_FOR_TWO_ALERT_SIGNUP_URL }}
         run: python3 scripts/scrape_table_for_two.py --availability-only
+
+      - name: Track first-seen release patterns
+        run: python3 scripts/track_table_for_two_releases.py
 
       - name: Send matching alert emails
         if: steps.config.outputs.enabled == 'true'
@@ -67,9 +68,11 @@ jobs:
           COMMIT_MESSAGE: "chore: refresh table for two availability"
           MUST_STAGE: |
             data/table-for-two.json
+            data/table-for-two-release-history.json
             data/table-for-two-alert-sent.json
           KEEP_LOCAL_ON_CONFLICT: |
             data/table-for-two.json
+            data/table-for-two-release-history.json
             data/table-for-two-alert-sent.json
         run: |
           git config user.name "github-actions[bot]"

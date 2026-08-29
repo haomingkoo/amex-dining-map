@@ -669,7 +669,6 @@ def main() -> int:
     parser.add_argument("--subscriptions", default="data/table-for-two-alerts.json")
     parser.add_argument("--sent-log", default=DEFAULT_SENT_LOG_PATH)
     parser.add_argument("--site-url", default=os.environ.get("ALERT_SITE_URL", DEFAULT_SITE_URL))
-    parser.add_argument("--signup-url", default=os.environ.get("TABLE_FOR_TWO_ALERT_SIGNUP_URL", ""))
     parser.add_argument("--today", default="", help="Override today's date as YYYY-MM-DD for expiry testing")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--max-emails", type=int, default=50)
@@ -740,7 +739,7 @@ def main() -> int:
                 build_expired_email(
                     subscription,
                     sender=resend_config["sender"] or "dinnertime@kooexperience.com",
-                    signup_url=args.signup_url or args.site_url,
+                    signup_url=args.site_url,
                     venue_labels=venue_labels,
                     reply_to=resend_config["reply_to"],
                     unsubscribe_url=unsubscribe_url,

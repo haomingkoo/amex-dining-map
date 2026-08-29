@@ -35,3 +35,13 @@ Source: `data/love-dining.json`
 
 - **Added (1)**
   - Broth & Beyond / Singapore
+
+## 2026-08-29 23:16 UTC — Love Dining
+
+Source: `data/love-dining.json`
+
+- **Added (4)**
+  - LUCE / Singapore
+  - Man Fu Yuan / Singapore
+  - Tajimaya Yakiniku / Singapore
+  - The Lobby Lounge / Singapore

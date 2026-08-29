@@ -167,6 +167,38 @@
         </div>
       </header>
 
+      <section class="updates-shell panel-surface" id="updates-shell" aria-label="Recent benefit updates" hidden>
+        <button
+          class="updates-trigger"
+          id="updates-trigger"
+          type="button"
+          aria-expanded="false"
+          aria-controls="updates-panel"
+        >
+          <span class="updates-mark" aria-hidden="true"></span>
+          <span class="updates-trigger-copy">
+            <span class="updates-label">Updates</span>
+            <span class="updates-headline" id="updates-headline">Checking recent changes...</span>
+          </span>
+          <span class="updates-count" id="updates-count" aria-label="0 unread updates">0</span>
+          <span class="updates-chevron" aria-hidden="true">⌄</span>
+        </button>
+
+        <div class="updates-panel" id="updates-panel" hidden>
+          <div class="updates-panel-head">
+            <div>
+              <h2>What changed</h2>
+              <p>Before and after, checked against the published source.</p>
+            </div>
+            <button class="updates-mark-read" id="updates-mark-read" type="button">Mark all read</button>
+          </div>
+          <div class="updates-list" id="updates-list" aria-live="polite"></div>
+          <p class="updates-footnote">
+            A missing listing means it was not present in the latest checked source. It does not explain why it changed.
+          </p>
+        </div>
+      </section>
+
       <!-- Primary section navigation (Hotels / Dining / Love Dining / 10X) -->
       <section class="app-nav panel-surface">
         <!-- Journey nav is kept for JS active-state tracking, visually hidden -->
