@@ -320,3 +320,10 @@ Source: `data/japan-restaurants.json`
   -  UNE IMMERSION  / Tokyo
   - Chuugokuhanten Kurawan  / Tokyo
   - cépages - de la nuit / Tokyo
+
+## 2026-08-29 03:09 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - LES SOUVENIRS / Osaka
