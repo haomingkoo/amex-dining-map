@@ -5629,6 +5629,9 @@ function filterTableForTwo() {
     availabilityCheckedText,
     verifiedText,
     payload.manual_review_required ? "roster review required" : "",
+    payload.menu_source?.review_required
+      ? `${payload.menu_source.review_queue_count || 0} menu review item${payload.menu_source.review_queue_count === 1 ? "" : "s"}`
+      : "",
   ].filter(Boolean);
   tableForTwoSummaryStripText.textContent = `${statusBits.join(" · ")}.`;
   tableForTwoListSummary.textContent =
@@ -6376,9 +6379,9 @@ function renderTableForTwoCard() {
     .filter(Boolean)
     .sort()
     .at(-1) || payload.menu_source?.checked_at;
-  const menuSourceNote = `<div class="focus-note">Official menu index checked ${escapeHtml(menuCheckedAt ? formatTimestamp(menuCheckedAt) : "time unavailable")}.${payload.manual_review_required ? " Wider source review is required." : ""}</div>`;
-  const sourceReviewWarning = payload.manual_review_required
-    ? '<div class="focus-note focus-note-warn">Official roster or source files changed. Manual review is required before treating the venue and menu set as final.</div>'
+  const menuSourceNote = `<div class="focus-note">Official menu index checked ${escapeHtml(menuCheckedAt ? formatTimestamp(menuCheckedAt) : "time unavailable")}.${payload.menu_source?.review_required ? ` ${payload.menu_source.review_queue_count || 0} menu review item${payload.menu_source.review_queue_count === 1 ? " is" : "s are"} pending.` : payload.manual_review_required ? " Wider source review is required." : ""}</div>`;
+  const sourceReviewWarning = payload.manual_review_required || payload.menu_source?.review_required
+    ? `<div class="focus-note focus-note-warn">${payload.manual_review_required ? "Official roster or source files changed." : "A menu candidate or expected menu absence needs review."} Manual review is required before treating the venue and menu set as final.</div>`
     : "";
 
   tableForTwoFocusCard.innerHTML = `

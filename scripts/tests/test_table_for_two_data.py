@@ -28,7 +28,7 @@ class TableForTwoDataTests(unittest.TestCase):
                 self.assertIsInstance(venue.get("menu_pdfs"), dict)
                 self.assertIn(
                     (venue.get("menu_pdf") or {}).get("status"),
-                    {"published", "buffet_no_menu_expected", "no_pdf_found"},
+                    {"published", "buffet_no_menu_expected", "no_pdf_found", "review_required"},
                 )
 
         published = [venue for venue in venues if (venue.get("menu_pdf") or {}).get("status") == "published"]

@@ -33,7 +33,7 @@ jobs:
 
       - name: Verify reviewed official document pages
         run: |
-          python3 -m pip install --disable-pip-version-check pypdf==6.7.1
+          python3 -m pip install --disable-pip-version-check pypdf==6.15.0
           python3 scripts/verify_tft_official_documents.py
 
       - name: Refresh official menu versions

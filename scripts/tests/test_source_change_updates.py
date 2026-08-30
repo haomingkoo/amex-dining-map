@@ -123,17 +123,62 @@ class SourceChangeUpdatesTest(unittest.TestCase):
         self.assertEqual([item["occurrence"] for item in repeated], [2, 1])
 
     def test_menu_hash_change_is_a_menu_update(self):
-        old = [{"id": "venue-1", "name": "Place", "menu_pdf": {"filename": "menu.pdf", "sha256": "a" * 64}}]
-        new = [{"id": "venue-1", "name": "Place", "menu_pdf": {"filename": "menu.pdf", "sha256": "b" * 64}}]
+        old = [{"id": "venue-1", "name": "Place", "menu_pdf": {"status": "published", "filename": "menu.pdf", "sha256": "a" * 64}}]
+        new = [{"id": "venue-1", "name": "Place", "menu_pdf": {"status": "review_required", "filename": "menu.pdf", "sha256": "b" * 64}}]
 
         events = MODULE.build_record_update_events(
-            "Table for Two", old, new, {"manual_review_required": True}, "2026-08-30T00:00:00Z"
+            "Table for Two", old, new, {"manual_review_required": False}, "2026-08-30T00:00:00Z"
         )
 
         self.assertEqual(events[0]["kind"], "menu_updated")
+        self.assertEqual(events[0]["status"], "review_required")
         self.assertEqual(events[0]["changes"][0]["field"], "Menu version")
         self.assertEqual(events[0]["changes"][0]["before"], "aaaaaaaaaaaa")
         self.assertEqual(events[0]["changes"][0]["after"], "bbbbbbbbbbbb")
+
+    def test_menu_review_queue_change_creates_review_event(self):
+        old = {"menu_source": {"review_required": False, "review_queue_count": 0}}
+        new = {"menu_source": {"review_required": True, "review_queue_count": 2}}
+
+        event = MODULE.build_meta_update_event(
+            "Table for Two", old, new, "2026-08-30T00:00:00Z"
+        )
+
+        self.assertIsNotNone(event)
+        self.assertEqual(event["status"], "review_required")
+        self.assertEqual(
+            [change["field"] for change in event["changes"]],
+            ["Menu review flag", "Menu review queue count"],
+        )
+
+    def test_same_count_menu_review_replacement_creates_review_event(self):
+        old = {
+            "menu_source": {
+                "review_required": True,
+                "review_queue_count": 1,
+                "review_queue_sha256": "a" * 64,
+            }
+        }
+        new = {
+            "menu_source": {
+                "review_required": True,
+                "review_queue_count": 1,
+                "review_queue_sha256": "b" * 64,
+            }
+        }
+
+        event = MODULE.build_meta_update_event(
+            "Table for Two", old, new, "2026-08-30T00:00:00Z"
+        )
+
+        self.assertIsNotNone(event)
+        self.assertEqual(event["status"], "review_required")
+        self.assertEqual(
+            [change["field"] for change in event["changes"]],
+            ["Menu review queue fingerprint"],
+        )
+        self.assertEqual(event["changes"][0]["before"], "aaaaaaaaaaaa")
+        self.assertEqual(event["changes"][0]["after"], "bbbbbbbbbbbb")
 
     def test_append_updates_deduplicates_stable_events(self):
         event = {

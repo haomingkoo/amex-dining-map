@@ -249,7 +249,13 @@ def build_catalog(
         "official_url": source["official_url"],
         "roster_checked_at": source.get("last_verified_at"),
         "menu_source": {
-            "checked_at": (source.get("menu_source") or {}).get("checked_at")
+            "checked_at": (source.get("menu_source") or {}).get("checked_at"),
+            "review_required": bool(
+                (source.get("menu_source") or {}).get("review_required")
+            ),
+            "review_queue_count": len(
+                (source.get("menu_source") or {}).get("review_queue") or []
+            ),
         },
         "release_source": {
             "source": "data/table-for-two-release-history.json",

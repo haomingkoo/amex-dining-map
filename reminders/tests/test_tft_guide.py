@@ -10,7 +10,7 @@ from app import tft_guide
 
 
 ROOT = Path(__file__).resolve().parents[2]
-NOW = datetime(2026, 8, 30, 5, 5, tzinfo=timezone.utc)
+NOW = datetime(2026, 8, 30, 7, 0, tzinfo=timezone.utc)
 
 
 def _catalog() -> dict:
@@ -42,7 +42,8 @@ def test_vue_platinum_natural_query_is_exact_and_cited():
     assert "VUE — Platinum menu" in answer
     assert "VUE-Menu_Platinum.pdf" in answer
     assert "VUE-Menu_Centurion.pdf" not in answer
-    assert "checked: 29 Aug 2026, 23:52 UTC" in answer
+    vue = next(item for item in _catalog()["venues"] if item["id"] == "tft-vue")
+    assert f"checked: {tft_guide._date(vue['menus']['platinum']['checked_at'])}" in answer
     assert "#/table-for-two?venue=tft-vue" in answer
 
 
@@ -51,6 +52,15 @@ def test_vue_centurion_is_not_conflated_with_platinum():
     assert "VUE — Centurion menu" in answer
     assert "VUE-Menu_Centurion.pdf" in answer
     assert "VUE-Menu_Platinum.pdf" not in answer
+
+
+def test_retained_menu_discloses_pending_menu_review_queue():
+    answer = tft_guide.handle_message(
+        "/menu Osteria Mozza platinum", _catalog(), NOW
+    )
+
+    assert "Official Amex PDF" in answer
+    assert "items awaiting manual review" in answer
 
 
 def test_menu_without_card_shows_both_variants_without_conflating_them():
@@ -92,7 +102,7 @@ def test_absent_requested_variant_shows_source_freshness_and_nonexistence_caveat
     assert "does not prove no such menu exists" in answer
     assert "Menu index checked:" in answer
     assert "older than 36 hours" in answer
-    assert "awaiting manual review" not in answer
+    assert "2 items awaiting manual review" in answer
 
 
 def test_missing_and_buffet_states_show_stale_and_specific_review_context():
@@ -108,7 +118,7 @@ def test_missing_and_buffet_states_show_stale_and_specific_review_context():
     for answer in (missing, buffet):
         assert "Menu index checked:" in answer
         assert "older than 36 hours" in answer
-        assert "awaiting manual review" not in answer
+        assert "2 items awaiting manual review" in answer
     assert "Manual review is pending" in missing
     assert "Manual review is pending" not in buffet
 
@@ -156,7 +166,7 @@ def test_bad_menu_url_fails_safe_without_linking_it():
     assert "could not be verified safely" in answer
     assert "127.0.0.1" not in answer
     assert "Menu index checked:" in answer
-    assert "awaiting manual review" not in answer
+    assert "2 items awaiting manual review" in answer
 
 
 def test_venues_lists_current_reviewed_roster_without_stale_caveat():

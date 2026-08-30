@@ -33,5 +33,7 @@ assert.match(
   /currentRoute\?\.programId === requestedRoute\?\.programId[\s\S]*window\.location\.hash/,
   "intro gate does not preserve a matching deep-link route and its parameters",
 );
+assert.match(source, /payload\.menu_source\?\.review_required/);
+assert.match(source, /menu review item/);
 
 console.log("Table for Two deep-link verification passed");

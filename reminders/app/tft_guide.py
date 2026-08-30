@@ -141,11 +141,16 @@ def _menu_source_context(menu: dict, catalog: dict, now: datetime) -> str:
             freshness = ""
     except (TypeError, ValueError):
         freshness = " Freshness is unknown; verify the official source."
-    review = (
-        " The wider program source snapshot is awaiting manual review."
-        if catalog.get("manual_review_required")
-        else ""
-    )
+    menu_source = catalog.get("menu_source") or {}
+    review_count = menu_source.get("review_queue_count") or 0
+    review = ""
+    if menu_source.get("review_required"):
+        review = (
+            f" The menu index has {review_count} item"
+            f"{'s' if review_count != 1 else ''} awaiting manual review."
+        )
+    elif catalog.get("manual_review_required"):
+        review = " The wider program source snapshot is awaiting manual review."
     return f"Menu index checked: {checked_label}.{freshness}{review}"
 
 
@@ -324,11 +329,9 @@ def _menu_answer(venue: dict, card: str | None, catalog: dict, now: datetime) ->
                 )
             else:
                 lines.append(f"{label}: stored metadata could not be verified safely")
-        review_note = (
-            "\nThe wider program source snapshot is awaiting manual review."
-            if catalog.get("manual_review_required")
-            else ""
-        )
+        review_note = "\n" + _menu_source_context(
+            catalog.get("menu_source") or {}, catalog, now
+        ) if (catalog.get("menu_source") or {}).get("review_required") else ""
         return (
             f"{venue['name']} — official menu variants\n\n"
             + "\n\n".join(lines)
@@ -385,8 +388,13 @@ def _menu_answer(venue: dict, card: str | None, catalog: dict, now: datetime) ->
             f"{_official_source_line(catalog)}\n{_explorer_line(venue)}"
         )
     stale_note = " The index check is older than 36 hours; verify it is still current." if stale else ""
+    menu_source = catalog.get("menu_source") or {}
+    review_count = menu_source.get("review_queue_count") or 0
     review_note = (
-        " The wider program source snapshot is awaiting manual review."
+        f" The menu index has {review_count} item"
+        f"{'s' if review_count != 1 else ''} awaiting manual review."
+        if menu_source.get("review_required")
+        else " The wider program source snapshot is awaiting manual review."
         if catalog.get("manual_review_required")
         else ""
     )

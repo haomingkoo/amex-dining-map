@@ -53,6 +53,9 @@ META_FIELD_LABELS = {
     "sha256": "Source SHA-256",
     "records_sha256": "Official records SHA-256",
     "manual_review_required": "Manual review flag",
+    "menu_source.review_required": "Menu review flag",
+    "menu_source.review_queue_count": "Menu review queue count",
+    "menu_source.review_queue_sha256": "Menu review queue fingerprint",
     "source_images.participating_merchants_sha256": "Participating merchants image hash",
     "source_images.voucher_cycles_sha256": "Voucher cycles image hash",
     "source_documents.terms_sha256": "Table for Two T&C PDF hash",
@@ -280,6 +283,14 @@ def assign_event_identity(event: dict[str, Any], entity_key: str) -> None:
     event["id"] = _occurrence_id(event["stream_id"], event["transition_id"], 1)
 
 
+def _menu_review_required(record: dict[str, Any]) -> bool:
+    return (record.get("menu_pdf") or {}).get("status") == "review_required" or any(
+        menu.get("status") == "review_required"
+        for menu in (record.get("menu_pdfs") or {}).values()
+        if isinstance(menu, dict)
+    )
+
+
 def build_record_update_events(
     program: str,
     old_payload: Any,
@@ -323,7 +334,7 @@ def build_record_update_events(
             "kind": "added",
             "subject": record_label(record),
             "detected_at": detected_at,
-            "status": status,
+            "status": "review_required" if _menu_review_required(record) else status,
             "before": {"state": "not_listed", "fields": {}},
             "after": {"state": "listed", "fields": public_record_fields(record)},
             "changes": [{"field": "Listing", "before": "Not listed", "after": "Listed"}],
@@ -371,6 +382,7 @@ def build_record_update_events(
         if not changes:
             continue
         menu_change = any("menu" in change["field"].lower() for change in changes)
+        menu_review_required = menu_change and _menu_review_required(new_record)
         event = {
             "program": program,
             "program_id": config["id"],
@@ -384,7 +396,7 @@ def build_record_update_events(
             ),
             "subject": record_label(new_record),
             "detected_at": detected_at,
-            "status": status,
+            "status": "review_required" if menu_review_required else status,
             "before": {"state": "listed", "fields": public_record_fields(old_record)},
             "after": {"state": "listed", "fields": public_record_fields(new_record)},
             "changes": changes,
@@ -418,7 +430,12 @@ def build_meta_update_event(
         "kind": "source_updated",
         "subject": f"{program} source",
         "detected_at": detected_at,
-        "status": "review_required" if new_meta.get("manual_review_required") else "published",
+        "status": (
+            "review_required"
+            if new_meta.get("manual_review_required")
+            or (new_meta.get("menu_source") or {}).get("review_required")
+            else "published"
+        ),
         "before": {"state": "available", "fields": {item["field"]: item["before"] for item in changes}},
         "after": {"state": "available", "fields": {item["field"]: item["after"] for item in changes}},
         "changes": changes,
