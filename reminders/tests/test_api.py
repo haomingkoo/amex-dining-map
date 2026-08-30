@@ -114,9 +114,12 @@ def test_email_failure_log_redacts_provider_error_body(client, caplog, monkeypat
         ),
     )
 
-    with pytest.raises(RuntimeError):
-        client.post("/api/subscribe", json=_body())
+    response = client.post("/api/subscribe", json=_body())
 
+    assert response.status_code == 502
+    assert response.json() == {
+        "detail": "Confirmation email could not be sent. Please try again later."
+    }
     app_messages = "\n".join(
         record.getMessage()
         for record in caplog.records
@@ -124,7 +127,9 @@ def test_email_failure_log_redacts_provider_error_body(client, caplog, monkeypat
     )
     assert "guest@example.com" not in app_messages
     assert "secret-token" not in app_messages
-    assert '"error_type":"RuntimeError"' in app_messages
+    assert "guest@example.com" not in response.text
+    assert "secret-token" not in response.text
+    assert '"error_code":"unexpected_failure"' in app_messages
 
 
 def test_honeypot_is_silent_noop(client):

@@ -62,16 +62,19 @@ def test_confirmation_email_escapes_name_and_links():
     assert 'token=a&amp;next=&quot;bad&quot;' in html
 
 
-def test_send_email_raises_on_non_2xx(monkeypatch):
+def test_send_email_discards_provider_body_on_non_2xx(monkeypatch):
     def fake_urlopen(req, timeout=30):
-        return _FakeResp(500, b'{"error":"boom"}')
+        return _FakeResp(500, b'guest@example.com secret-manage-token')
 
     monkeypatch.setattr(emailer.urllib.request, "urlopen", fake_urlopen)
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(emailer.EmailDeliveryError) as raised:
         emailer.send_email(
             "x@example.com", "s", "<p>h</p>", api_key="k", sender="f@example.com"
         )
+    assert str(raised.value) == "email delivery failed (provider_status_500)"
+    assert "guest@example.com" not in str(raised.value)
+    assert "secret-manage-token" not in str(raised.value)
 
 
 def test_confirm_email_html_contains_links():

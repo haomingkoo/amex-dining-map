@@ -17,7 +17,7 @@ from pydantic import ValidationError
 from app import db
 from app.availability import open_tables_exist
 from app.config import Settings, load_settings
-from app.emailer import confirm_email_html, send_email
+from app.emailer import EmailDeliveryError, confirm_email_html, send_email
 from app.observability import log_event
 from app.schemas import VENUES_PATH, SubscribeRequest
 
@@ -142,18 +142,24 @@ def subscribe(
             list_unsubscribe_url=unsub_url,
         )
     except Exception as exc:
+        error_code = (
+            exc.code if isinstance(exc, EmailDeliveryError) else "unexpected_failure"
+        )
         logger.error(
             json.dumps(
                 {
                     "event": "confirmation_email_failed",
                     "recipient_id": recipient_id,
-                    "error_type": type(exc).__name__,
+                    "error_code": error_code,
                 },
                 separators=(",", ":"),
                 sort_keys=True,
             )
         )
-        raise
+        raise HTTPException(
+            status_code=502,
+            detail="Confirmation email could not be sent. Please try again later.",
+        ) from None
     log_event(logger, "subscription_pending", recipient_id=recipient_id)
     return success
 

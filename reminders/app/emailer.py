@@ -10,6 +10,14 @@ from html import escape
 RESEND_ENDPOINT = "https://api.resend.com/emails"
 
 
+class EmailDeliveryError(RuntimeError):
+    """A provider failure whose message is safe to expose to server logs."""
+
+    def __init__(self, code: str):
+        self.code = code
+        super().__init__(f"email delivery failed ({code})")
+
+
 def send_email(
     to: str,
     subject: str,
@@ -20,7 +28,7 @@ def send_email(
     list_unsubscribe_url: str | None = None,
     timeout: int = 30,
 ) -> None:
-    """Send one HTML email through Resend. Raises RuntimeError on failure."""
+    """Send one HTML email through Resend. Provider responses are never retained."""
     payload: dict = {"from": sender, "to": [to], "subject": subject, "html": html}
     if list_unsubscribe_url:
         payload["headers"] = {
@@ -40,14 +48,14 @@ def send_email(
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             status = int(getattr(resp, "status", 200))
-            body = resp.read().decode("utf-8", errors="replace")
+            resp.read()
         if status >= 300:
-            raise RuntimeError(f"Resend API failed status={status} body={body[:500]}")
+            raise EmailDeliveryError(f"provider_status_{status}")
     except urllib.error.HTTPError as exc:
-        err_body = exc.read().decode("utf-8", errors="replace")
-        raise RuntimeError(f"Resend API HTTP {exc.code}: {err_body[:500]}") from exc
-    except urllib.error.URLError as exc:
-        raise RuntimeError(f"Resend connect failed: {exc.reason}") from exc
+        exc.read()
+        raise EmailDeliveryError(f"provider_http_{exc.code}") from None
+    except urllib.error.URLError:
+        raise EmailDeliveryError("provider_unreachable") from None
 
 
 def _shell(

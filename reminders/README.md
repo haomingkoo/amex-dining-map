@@ -290,6 +290,10 @@ path, status, and latency. Subscription events record only a short keyed recipie
 fingerprint and the state transition; emails, names, tokens, query strings,
 Telegram message text, and credentials are never logged. Use the `X-Request-ID`
 response header to correlate a browser failure with Railway logs.
+Confirmation-provider failures return a generic `502` and emit
+`confirmation_email_failed` with only a bounded `error_code` such as
+`provider_http_429`, `provider_unreachable`, or `unexpected_failure`. Provider
+response bodies are discarded because they may echo recipient or management data.
 
 Guide and owner delivery attempts also emit privacy-safe outcome events with
 state, bounded error code, command class where applicable, attempt, and latency.
