@@ -2812,7 +2812,12 @@ function hideIntroGate({ persist = true } = {}) {
 function jumpIntoExplorer(routeHash) {
   hideIntroGate();
   if (routeHash) {
-    navigateToRouteHash(routeHash);
+    const currentRoute = ROUTES[resolveRouteFromHash(window.location.hash)];
+    const requestedRoute = ROUTES[resolveRouteFromHash(routeHash)];
+    const destination = currentRoute?.programId === requestedRoute?.programId
+      ? window.location.hash
+      : routeHash;
+    navigateToRouteHash(destination);
   }
   window.setTimeout(() => {
     const routeId = resolveRouteFromHash();

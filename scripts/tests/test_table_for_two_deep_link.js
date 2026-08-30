@@ -28,5 +28,10 @@ assert.match(
   /setActiveTableForTwoRecord\(linkedVenueId, \{ scrollDetails: true \}\)/,
   "valid deep link does not select and reveal the venue",
 );
+assert.match(
+  source,
+  /currentRoute\?\.programId === requestedRoute\?\.programId[\s\S]*window\.location\.hash/,
+  "intro gate does not preserve a matching deep-link route and its parameters",
+);
 
 console.log("Table for Two deep-link verification passed");
