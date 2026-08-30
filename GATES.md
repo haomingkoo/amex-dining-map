@@ -80,4 +80,14 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G13: mobile users and the owner can see source-specific freshness, retained-snapshot, failure, and review-required state without mistaking optional enrichment age for official fact age
   CHECK: node scripts/verify-source-health.mjs
   EXPECT: source health verification passed
-  EVIDENCE: 2026-08-30 verifier passed. Production at 390x844 rendered all nine sources with primary/enrichment separation, exact dates, coverage, runtime staleness, review state, and no horizontal overflow. All source writers now use the serialized `source-ledger-refresh` queue with `queue: max`, preventing GitHub concurrency from replacing older pending availability runs.
+  EVIDENCE: 2026-08-30 verifier passed. Production at 390x844 rendered all nine sources with primary/enrichment separation, exact dates, coverage, runtime staleness, review state, and no horizontal overflow. The high-frequency availability workflow is isolated from slower daily writers; documentation explicitly treats GitHub scheduling and concurrency as best-effort rather than a durable queue.
+
+- [x] G14: the closed dining table does not build thousands of hidden rows, and opening or closing it creates and releases its DOM on demand
+  CHECK: node scripts/tests/test_lazy_dining_table.js
+  EXPECT: Lazy dining table verification passed
+  EVIDENCE: exit=0; shell=/bin/sh; cwd=/Users/koohaoming/dev/amex-dining-map; path=db7d51c629d2/23 entries; EXPECT=matched; output-sha256=3d3d559a3175baf59e68b4da1861f36dfe86a79dcd88b186947c6eb1357a4e63; output-bytes=38
+
+- [x] G15: TFT availability is scheduled with timing margin inside the honest 30-minute cutoff and cannot be displaced by unrelated source workflows
+  CHECK: node scripts/verify-source-health.mjs
+  EXPECT: source health verification passed
+  EVIDENCE: exit=0; shell=/bin/sh; cwd=/Users/koohaoming/dev/amex-dining-map; path=db7d51c629d2/23 entries; EXPECT=matched; output-sha256=a06a11418b6df597acc876cf0a4eb5d6f9f9236d364916a8d6523f1a7c380eab; output-bytes=34

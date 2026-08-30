@@ -18,7 +18,6 @@ on:
 concurrency:
   group: source-ledger-refresh
   cancel-in-progress: false
-  queue: max
 
 jobs:
   scrape:

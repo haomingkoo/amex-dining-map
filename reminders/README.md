@@ -364,11 +364,14 @@ Railway does not classify normal `INFO` startup lines as errors. Application
 events are structured fields: filter by `event`, `status`, `path`, or
 `request_id` rather than searching message bodies.
 
-Source-writing GitHub workflows share `source-ledger-refresh` with
-`queue: max`. This keeps one writer at a time without the default concurrency
-behavior replacing an older pending availability refresh. If TFT availability
-is stale, inspect the queued and completed `Table for Two Alerts` runs before
-debugging DiningCity or the reminder matcher.
+Daily source-writing GitHub workflows share `source-ledger-refresh`. The
+high-frequency availability workflow has a dedicated concurrency group so
+unrelated daily jobs cannot replace its pending refresh. GitHub concurrency
+does not provide a durable FIFO; `commit_and_push.sh` reconciles pushes after
+concurrent writers update `main`. This prevents normal commit collisions but
+does not make scheduled triggers reliable. If TFT availability is stale,
+inspect the queued and completed `Table for Two Alerts` runs before debugging
+DiningCity or the reminder matcher.
 
 Start with the narrowest public signal before opening provider logs:
 

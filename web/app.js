@@ -2888,6 +2888,11 @@ function setTableOpen(isOpen) {
   if (icon) {
     icon.textContent = isOpen ? "-" : "+";
   }
+  if (isOpen) {
+    renderTable();
+  } else {
+    resultsTableBody.replaceChildren();
+  }
 }
 
 function renderTableToggle() {
@@ -4007,6 +4012,10 @@ function renderFocusCard() {
 }
 
 function renderTable() {
+  if (!state.tableOpen) {
+    resultsTableBody.replaceChildren();
+    return;
+  }
   if (!state.filtered.length) {
     resultsTableBody.innerHTML =
       '<tr><td colspan="8" class="empty-table">No matches. Adjust filters to expand results.</td></tr>';

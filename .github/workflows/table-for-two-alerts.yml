@@ -2,17 +2,16 @@ name: Table for Two Alerts
 
 on:
   schedule:
-    # Avoid the busiest minutes around the start and middle of the hour.
-    - cron: "17,47 * * * *"
+    # Refresh well inside the 30-minute public freshness window.
+    - cron: "2,17,32,47 * * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: source-ledger-refresh
+  group: table-for-two-availability-refresh
   cancel-in-progress: false
-  queue: max
 
 jobs:
   send:

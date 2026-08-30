@@ -51,20 +51,30 @@ for (const path of [
   ".github/workflows/refresh-love-dining.yml",
   ".github/workflows/refresh-ratings.yml",
   ".github/workflows/refresh-table-for-two.yml",
-  ".github/workflows/table-for-two-alerts.yml",
 ]) {
   const workflow = read(path);
   requireText(workflow.includes("group: source-ledger-refresh"), `${path} must serialize source ledger writes`);
-  requireText(workflow.includes("queue: max"), `${path} must retain pending source refreshes`);
   requireText(workflow.includes("Finalize source health"), `${path} must finalize source health`);
   requireText(workflow.includes("if: always()"), `${path} must record failure state on failed refreshes`);
   requireText(workflow.includes("data/source-health.json"), `${path} must commit source health`);
   requireText(workflow.includes("dispatch_owner_updates.py"), `${path} must dispatch health transitions`);
 }
 
+const availability = read(".github/workflows/table-for-two-alerts.yml");
+requireText(
+  availability.includes('cron: "2,17,32,47 * * * *"'),
+  "availability refresh must run well inside its 30-minute freshness window",
+);
+requireText(
+  availability.includes("group: table-for-two-availability-refresh"),
+  "high-frequency availability refresh must not contend with daily source writers",
+);
+requireText(availability.includes("Finalize source health"), "availability refresh must finalize source health");
+requireText(availability.includes("data/source-health.json"), "availability refresh must commit source health");
+requireText(availability.includes("dispatch_owner_updates.py"), "availability refresh must dispatch health transitions");
+
 const monitor = read(".github/workflows/monitor-source-health.yml");
 requireText(monitor.includes("22,52 * * * *"), "health monitor must age sources independently of refresh success");
-requireText(monitor.includes("queue: max"), "health monitor must retain its pending source-ledger run");
 requireText(read(".github/workflows/deploy-pages.yml").includes("source-health.json"), "Pages must deploy source health");
 
 console.log("source health verification passed");

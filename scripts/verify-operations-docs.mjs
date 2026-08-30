@@ -84,7 +84,7 @@ for (const phrase of [
   "never dump rows",
   "FROM owner_alert_deliveries",
   "Do not manually resend `unknown` rows",
-  "source-ledger-refresh` with `queue: max",
+  "high-frequency availability workflow has a dedicated concurrency group",
   "inspect the queued and completed `Table for Two Alerts` runs",
 ]) assert.ok(docs.includes(phrase), `missing operations contract: ${phrase}`);
 for (const phrase of [
