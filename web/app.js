@@ -108,6 +108,11 @@ const TABLE_FOR_TWO_DEFAULT_PARTY_SIZE = 2;
 const TABLE_FOR_TWO_MAX_TIMES = 12;
 const TABLE_FOR_TWO_TIME_WINDOW_MINUTES = 60;
 const TABLE_FOR_TWO_TIME_WINDOW_LABEL = "1 hour";
+const REVALIDATE_DATA_URLS = new Set([
+  TABLE_FOR_TWO_DATA_URL,
+  UPDATES_DATA_URL,
+  SOURCE_HEALTH_DATA_URL,
+]);
 const GOOGLE_RATING_ID_ALIASES = {
   "tft-15-stamford-restaurant": "love-the-capitol-kempinski-hotel-singapore-15-stamford-restaurant",
   "tft-capitol-bistro-bar-patisserie": "love-the-capitol-kempinski-hotel-singapore-capitol-bistro-bar-patisserie",
@@ -2205,7 +2210,8 @@ function dataKeyForRoute(route = currentRoute()) {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url).catch(() => null);
+  const options = REVALIDATE_DATA_URLS.has(url) ? { cache: "no-cache" } : undefined;
+  const response = await fetch(url, options).catch(() => null);
   if (!response || !response.ok) return null;
   return response.json().catch(() => null);
 }

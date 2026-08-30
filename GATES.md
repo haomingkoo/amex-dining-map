@@ -111,3 +111,8 @@ Tracker: parent #34; vertical slices #35 through #42.
   CHECK: node scripts/tests/test_frontend_work_budget.js
   EXPECT: Frontend work-budget verification passed
   EVIDENCE: exit=0; shell=/bin/sh; cwd=/Users/koohaoming/dev/amex-dining-map; path=db7d51c629d2/23 entries; EXPECT=matched; output-sha256=3f43302433a517b3bc0e200090e03d38ef69bda948ae7b1d456e57f44cbc17b5; output-bytes=41
+
+- [x] G20: freshness-critical TFT and health payloads revalidate without disabling caches for large stable route datasets
+  CHECK: node scripts/tests/test_frontend_work_budget.js
+  EXPECT: Frontend work-budget verification passed
+  EVIDENCE: exit=0; shell=/bin/sh; cwd=/Users/koohaoming/dev/amex-dining-map; path=db7d51c629d2/23 entries; EXPECT=matched; output-sha256=3f43302433a517b3bc0e200090e03d38ef69bda948ae7b1d456e57f44cbc17b5; output-bytes=41

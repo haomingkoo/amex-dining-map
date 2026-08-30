@@ -45,4 +45,15 @@ assert.match(
   "mobile marker construction must yield to the first useful render",
 );
 
+assert.match(
+  app,
+  /REVALIDATE_DATA_URLS = new Set\(\[[\s\S]*TABLE_FOR_TWO_DATA_URL[\s\S]*UPDATES_DATA_URL[\s\S]*SOURCE_HEALTH_DATA_URL/,
+  "freshness-critical payloads must opt into conditional revalidation",
+);
+assert.match(
+  app,
+  /REVALIDATE_DATA_URLS\.has\(url\) \? \{ cache: "no-cache" \} : undefined/,
+  "critical revalidation must preserve normal caching for large stable datasets",
+);
+
 console.log("Frontend work-budget verification passed");
