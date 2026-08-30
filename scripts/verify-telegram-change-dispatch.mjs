@@ -29,6 +29,19 @@ const dispatch = fs.readFileSync("scripts/dispatch_owner_updates.py", "utf8");
 assert.match(dispatch, /status.*published/);
 assert.doesNotMatch(dispatch, /TELEGRAM_BOT_TOKEN/);
 assert.match(dispatch, /record_owner_delivery_states/);
+const tftWorkflow = fs.readFileSync(".github/workflows/refresh-table-for-two.yml", "utf8");
+assert.ok(
+  tftWorkflow.indexOf("scripts/verify_tft_official_documents.py")
+    < tftWorkflow.indexOf("scripts/build_tft_guide_catalog.py"),
+  "TFT document evidence must be verified before the retained guide is rebuilt",
+);
+const documentRunbook = fs.readFileSync("docs/tft-document-review-runbook.md", "utf8");
+for (const phrase of [
+  "pending_events",
+  "apply_tft_document_review.py",
+  "predecessor-to-successor",
+  "durable owner event",
+]) assert.ok(documentRunbook.includes(phrase), `document runbook omits ${phrase}`);
 
 execFileSync("uv", [
   "run", "--python", "3.12",
@@ -42,6 +55,7 @@ execFileSync("uv", [
   "scripts/tests/test_tft_roster_reviews.py",
   "scripts/tests/test_source_health.py",
   "scripts/tests/test_tft_official_documents.py",
+  "scripts/tests/test_tft_document_review_application.py",
   "scripts/tests/test_apply_love_dining_document_review.py",
   "scripts/tests/test_apply_love_dining_review.py",
   "scripts/tests/test_tft_release_patterns.py",

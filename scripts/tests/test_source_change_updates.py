@@ -136,6 +136,56 @@ class SourceChangeUpdatesTest(unittest.TestCase):
         self.assertEqual(events[0]["changes"][0]["before"], "aaaaaaaaaaaa")
         self.assertEqual(events[0]["changes"][0]["after"], "bbbbbbbbbbbb")
 
+    def test_faq_review_does_not_withhold_simultaneous_venue_detail_update(self):
+        old_meta = {
+            "manual_review_required": False,
+            "roster_source": {"review_required": False},
+            "source_documents": {"faq_sha256": "a" * 64},
+            "document_reviews": {
+                "tft-faq": {"status": "approved", "review_required": False}
+            },
+        }
+        new_meta = {
+            "manual_review_required": True,
+            "roster_source": {"review_required": False},
+            "source_documents": {"faq_sha256": "b" * 64},
+            "document_reviews": {
+                "tft-faq": {"status": "review_required", "review_required": True}
+            },
+        }
+        old = [{"id": "venue-1", "name": "Place", "address": "Old address"}]
+        new = [{"id": "venue-1", "name": "Place", "address": "New address"}]
+
+        record_event = MODULE.build_record_update_events(
+            "Table for Two", old, new, new_meta, "2026-08-30T00:00:00Z"
+        )[0]
+        meta_event = MODULE.build_meta_update_event(
+            "Table for Two", old_meta, new_meta, "2026-08-30T00:00:00Z"
+        )
+
+        self.assertEqual(record_event["kind"], "details_updated")
+        self.assertEqual(record_event["status"], "published")
+        self.assertIsNotNone(meta_event)
+        self.assertEqual(meta_event["status"], "review_required")
+        self.assertIn(
+            "Table for Two FAQ PDF hash",
+            [change["field"] for change in meta_event["changes"]],
+        )
+
+    def test_tft_roster_review_withholds_venue_detail_update(self):
+        meta = {
+            "manual_review_required": True,
+            "roster_source": {"review_required": True},
+        }
+        old = [{"id": "venue-1", "name": "Place", "address": "Old address"}]
+        new = [{"id": "venue-1", "name": "Place", "address": "New address"}]
+
+        event = MODULE.build_record_update_events(
+            "Table for Two", old, new, meta, "2026-08-30T00:00:00Z"
+        )[0]
+
+        self.assertEqual(event["status"], "review_required")
+
     def test_menu_review_queue_change_is_not_a_public_meta_event(self):
         old = {"menu_source": {"review_required": False, "review_queue_count": 0}}
         new = {"menu_source": {"review_required": True, "review_queue_count": 2}}

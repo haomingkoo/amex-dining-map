@@ -1,6 +1,9 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "document_id": "tft-faq",
+  "program": "Table for Two",
+  "program_id": "table-for-two",
+  "route": "#/table-for-two",
   "kind": "faq",
   "title": "Table for Two - Frequently Asked Questions",
   "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TableforTwo_FAQ.pdf",
@@ -12,55 +15,85 @@
   ],
   "extractor": "pypdf 6.15.0 extract_text normalized-whitespace-v1",
   "lexical_index_version": "reviewed-topics-v1",
+  "captured_at": "2026-07-01T23:08:50Z",
   "review_status": "current_baseline",
   "reviewed_at": "2026-08-30T04:52:00Z",
   "review_note": "Both rendered pages reviewed against extracted text. Approved as the current baseline; the prior 432c2d version was not retained, so no retroactive clause-level before/after claim is made.",
+  "lineage": {
+    "previous_observed_sha256": "432c2d23d7f9f931b78a798972dc634ce4fa6a1b3cb3fea996c175bf2baeb4af",
+    "previous_content_available": false,
+    "comparison_status": "unavailable_prior_content"
+  },
   "clauses": [
     {
       "id": "voucher-dates",
+      "title": "Voucher issue dates and cycles",
       "page": 1,
+      "page_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+      "evidence_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
       "topics": ["voucher", "receive", "cycle", "date", "when", "redemption period"],
       "summary": "The Experiences App provides one voucher for each two-month cycle beginning 1 January, March, May, July, September, and November. Each voucher must be used within its own cycle."
     },
     {
       "id": "unavailable-dates",
+      "title": "Why a date is unavailable",
       "page": 1,
+      "page_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+      "evidence_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
       "topics": ["unavailable", "date unavailable", "dates unavailable", "sold out", "not released", "open reservations", "availability"],
       "summary": "A date can be unavailable because all seats were booked or because the restaurant has not opened reservations for that date. The FAQ recommends trying another restaurant or checking again later; this is not a current seat claim."
     },
     {
       "id": "guest-selector",
+      "title": "Guest selector and even-numbered capacity",
       "page": 1,
+      "page_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+      "evidence_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
       "topics": ["guest selector", "party size", "number of guests", "odd seat", "one seat", "even numbers"],
       "summary": "If a party-size option is missing, the remaining capacity may be too small. The FAQ says slots are released in even numbers, while odd-sized bookings can leave an odd number of seats. Try another time or date for a larger party."
     },
     {
       "id": "otp-locked",
+      "title": "OTP attempts and locked access",
       "page": 1,
+      "page_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+      "evidence_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
       "topics": ["otp", "locked", "account is locked", "sms", "whatsapp", "voice call", "login code"],
       "summary": "OTP attempts proceed by SMS, then WhatsApp, then automated voice call, with two minutes between attempts. If access remains blocked, the FAQ directs users to DiningCity support or the number on the back of the Card. Never send credentials or an OTP to this bot."
     },
     {
       "id": "reservation-confirmed",
+      "title": "Reservation confirmation",
       "page": 1,
+      "page_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+      "evidence_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
       "topics": ["confirmed", "confirmation", "reservation is confirmed", "reservation code", "sms booking", "manage reservation"],
       "summary": "DiningCity sends an SMS with the confirmation and reservation code after a completed booking. The link in that message manages the reservation; missing messages should be raised with DiningCity support."
     },
     {
       "id": "voucher-used",
+      "title": "Voucher already marked used",
       "page": 2,
+      "page_text_sha256": "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e",
+      "evidence_text_sha256": "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e",
       "topics": ["voucher used", "voucher is used", "voucher redeemed", "already used", "reinstated", "supplementary"],
       "summary": "A voucher marked used may have been redeemed by another Basic or Supplementary member on the shared Card Account. The FAQ suggests reinstalling and signing in again, then calling the number on the back of the Card if the issue continues. An unused voucher can be reinstated after verification."
     },
     {
       "id": "myca-login",
+      "title": "MYCA authentication",
       "page": 2,
+      "page_text_sha256": "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e",
+      "evidence_text_sha256": "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e",
       "topics": ["myca", "log in again", "login again", "authentication", "existing user"],
       "summary": "The FAQ says all users, including existing app users, must complete MYCA authentication again. Do not send credentials to this bot."
     },
     {
       "id": "face-id",
+      "title": "Biometric login after 90 days",
       "page": 2,
+      "page_text_sha256": "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e",
+      "evidence_text_sha256": "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e",
       "topics": ["face id", "biometric", "90 days"],
       "summary": "After 90 days, the app requires MYCA credentials again before biometric login can continue. Do not send credentials to this bot."
     }

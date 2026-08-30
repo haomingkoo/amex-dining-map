@@ -25,7 +25,7 @@ def test_personal_eligibility_returns_document_scope_not_a_decision():
     assert "Singapore-issued Platinum Card" in answer
     assert "does not determine whether a particular person" in answer
     assert "Official T&C - p. 1 - version 7ba815581e6c" in answer
-    assert "captured 29 Aug 2026, 23:50 UTC" in answer
+    assert "captured 07 May 2026, 12:23 UTC" in answer
     assert "you are eligible" not in answer.casefold()
 
 
@@ -115,7 +115,7 @@ def test_empty_and_unknown_commands_return_bounded_source_handoff():
     assert "Official FAQ:" in unknown
 
 
-def test_changed_unreviewed_faq_fails_closed_while_terms_stay_available():
+def test_changed_unreviewed_faq_retains_reviewed_answer_with_warning():
     module_path = ROOT / "scripts" / "build_tft_guide_catalog.py"
     spec = importlib.util.spec_from_file_location("build_tft_guide_catalog_docs", module_path)
     module = importlib.util.module_from_spec(spec)
@@ -128,8 +128,11 @@ def test_changed_unreviewed_faq_fails_closed_while_terms_stay_available():
     pending = tft_guide.handle_message("/faq unavailable dates", derived, NOW)
     terms = tft_guide.handle_message("/terms eligibility", derived, NOW)
 
-    assert "has not passed page-level review" in pending
-    assert "not opened reservations" not in pending
+    assert "Update pending review" in pending
+    assert "aaaaaaaaaaaa" in pending
+    assert "last reviewed version" in pending
+    assert "not opened reservations" in pending
+    assert "version cbd8a1604459" in pending
     assert "Singapore-issued Platinum Card" in terms
 
 

@@ -30,6 +30,18 @@ def _spec():
     )
 
 
+def _faq_spec():
+    return reviews.DocumentSpec(
+        "tft-faq",
+        "Table for Two",
+        "table-for-two",
+        "#/table-for-two",
+        "faq",
+        "Table for Two Frequently Asked Questions",
+        SOURCE_URL,
+    )
+
+
 def _manifest(pdf_bytes=b"%PDF test"):
     return {
         "schema_version": 2,
@@ -179,6 +191,17 @@ def test_version_review_is_bound_to_pdf_url_pages_and_clause(monkeypatch):
     assert reviewed["clauses"][0]["page_text_sha256"] == PAGE_A
 
 
+def test_first_observed_baseline_can_truthfully_disclose_unknown_predecessor(monkeypatch):
+    pdf_bytes = b"%PDF test"
+    baseline = _manifest(pdf_bytes)
+    baseline["lineage"]["previous_observed_sha256"] = None
+    monkeypatch.setattr(reviews, "pdf_page_hashes", lambda _payload: [PAGE_A])
+
+    reviewed = reviews.verify_version(_spec(), pdf_bytes, baseline)
+
+    assert reviewed["lineage"]["previous_observed_sha256"] is None
+
+
 @pytest.mark.parametrize(
     "mutate",
     [
@@ -217,6 +240,76 @@ def test_reviewed_modified_clause_emits_exact_owner_event(monkeypatch):
         "love-dining",
         "document:love-dining-restaurant-terms:clause:eligibility",
     )
+
+
+@pytest.mark.parametrize(
+    ("classification", "expected_kind"),
+    [
+        ("added", "faq_clause_added"),
+        ("removed", "faq_clause_removed"),
+        ("substantive_modified", "faq_clause_modified"),
+    ],
+)
+def test_faq_transition_uses_faq_event_kind(
+    monkeypatch, classification, expected_kind
+):
+    before, after = _versions()
+    for version in (before, after):
+        version.update(
+            {
+                "document_id": "tft-faq",
+                "program": "Table for Two",
+                "program_id": "table-for-two",
+                "route": "#/table-for-two",
+                "kind": "faq",
+                "title": "Table for Two Frequently Asked Questions",
+            }
+        )
+    unchanged_clause = {
+        "id": "contact",
+        "title": "Contact",
+        "page": 1,
+        "page_text_sha256": PAGE_A,
+        "evidence_text_sha256": PAGE_A,
+        "topics": ["contact"],
+        "summary": "Contact the program for help.",
+    }
+    before["clauses"].append(copy.deepcopy(unchanged_clause))
+    after_clause = copy.deepcopy(unchanged_clause)
+    after_clause["page_text_sha256"] = PAGE_B
+    after_clause["evidence_text_sha256"] = PAGE_B
+    after["clauses"].append(after_clause)
+    transition = _transition(before, after, classification)
+    transition.update(
+        {
+            "document_id": "tft-faq",
+            "program": "Table for Two",
+            "program_id": "table-for-two",
+            "route": "#/table-for-two",
+        }
+    )
+    transition["changes"].append(
+        {
+            "clause_id": "contact",
+            "classification": "layout_only",
+            "before": reviews._clause_projection(unchanged_clause),
+            "after": reviews._clause_projection(after_clause),
+            "publish": False,
+        }
+    )
+    if classification == "added":
+        before["clauses"] = [unchanged_clause]
+        transition["changes"][0]["before"] = None
+    elif classification == "removed":
+        after["clauses"] = [after_clause]
+        transition["changes"][0]["after"] = None
+    _mock_page_hashes(monkeypatch)
+
+    events = reviews.verify_transition(
+        _faq_spec(), BEFORE_PDF, before, AFTER_PDF, after, transition
+    )
+
+    assert events[0]["kind"] == expected_kind
 
 
 def test_layout_only_transition_is_durable_but_not_public(monkeypatch):

@@ -240,13 +240,23 @@ publishes exact reviewed per-venue additions/removals. Re-run with `--check`
 before committing; an interrupted ledger append is recovered from bounded
 pending events on the next run.
 
-Love Dining and Table for Two source changes are written as
+Table for Two T&C and FAQ successors follow the same retained-snapshot rule,
+but their review is bound to exact PDF bytes and page-level clause evidence.
+Use the [TFT official-document review runbook](docs/tft-document-review-runbook.md)
+to diagnose `review_required` or `pending_events`, apply one reviewed
+predecessor-to-successor transition, and verify its owner event before commit.
+
+Generic Love Dining and Table for Two source changes are written as
 `status: review_required`. After checking the official source, publish or reject
 one with:
 
 ```bash
 python3 scripts/review_update.py <update-id> --status published --note "Checked against official source"
 ```
+
+Do not use this generic command for TFT menus, the participating roster, or
+official T&C/FAQ documents; each has its own evidence-bound runbook and apply
+command above.
 
 ## Observed Table for Two Release Patterns
 

@@ -28,7 +28,7 @@ def test_generated_catalog_matches_current_tft_source():
     assert module.build_catalog(source) == _catalog()
     assert _catalog()["schema_version"] == 4
     assert [(item["id"], item["review_status"]) for item in _catalog()["documents"]] == [
-        ("tft-terms", "approved"),
+        ("tft-terms", "current_baseline"),
         ("tft-faq", "current_baseline"),
     ]
     assert len(_catalog()["venues"]) == 23

@@ -253,8 +253,10 @@ def build_source_health(data_dir: Path, now: datetime) -> dict[str, Any]:
             timestamps=[tft.get("last_verified_at")],
             now=now,
             stale_after_hours=PRIMARY_STALE_HOURS,
-            review_required=bool(tft.get("manual_review_required")),
-            review_count=len(tft.get("major_change_reasons") or []),
+            review_required=bool((tft.get("roster_source") or {}).get("review_required")),
+            review_count=(
+                1 if (tft.get("roster_source") or {}).get("review_item") else 0
+            ),
             record_count=len(tft.get("venues") or []),
             source_url=tft.get("official_url"),
         ),

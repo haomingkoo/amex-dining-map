@@ -7,7 +7,7 @@ const root = process.cwd();
 const catalog = JSON.parse(fs.readFileSync("reminders/app/tft_guide_catalog.json", "utf8"));
 assert.equal(catalog.schema_version, 4);
 assert.equal(catalog.documents.length, 2);
-assert.equal(catalog.documents.find((doc) => doc.id === "tft-terms").review_status, "approved");
+assert.equal(catalog.documents.find((doc) => doc.id === "tft-terms").review_status, "current_baseline");
 assert.equal(catalog.documents.find((doc) => doc.id === "tft-faq").review_status, "current_baseline");
 assert.equal(catalog.documents.find((doc) => doc.id === "tft-faq").extractor, "pypdf 6.15.0 extract_text normalized-whitespace-v1");
 assert.equal(catalog.venues.length, 23);

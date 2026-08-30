@@ -156,18 +156,20 @@ a PDF and does not use an LLM, embeddings, or a vector database. The TFT refresh
 projects only hash-bound review records from
 `data/reviews/official-documents/`; each fixed summary is tied to one official
 Amex URL, raw PDF hash, reviewed page, page-text hash, capture time, and version.
-A new source hash has no matching review record, so its clauses disappear from
-the Railway catalogue and the bot links the official document without
-summarizing it. Extracted full-page text is not committed or returned to users.
+A new source hash is archived by hash but cannot replace the approved review.
+The Railway catalogue retains the last reviewed clauses and the bot warns that
+a newer observed version awaits review. Extracted full-page text is not
+committed or returned to users.
 Eligibility answers describe the official document's card scope but never say
 that a particular user qualifies. Ambiguous, merchant-specific, or legal
 interpretation requests fail closed.
 
-The TFT T&C hash is the previously approved version. The current two-page FAQ
-was visually and textually reviewed as a present-tense baseline; its prior PDF
-bytes were not retained, so the historical FAQ change remains in the manual
-review queue and no retroactive clause-level before/after claim is made. This is
-independent of the unchanged 23-venue roster.
+The current T&C and two-page FAQ are page-reviewed baselines. Their exact bytes
+are retained by hash. Earlier FAQ bytes were not available when the baseline
+was established, so no retroactive clause-level before-and-after claim is made.
+Future successors require complete predecessor-to-successor clause accounting
+through the TFT official-document review runbook. This is independent of the
+unchanged 23-venue roster.
 
 Slot lookup reads only the fixed
 `https://amex-explorer.kooexperience.com/data/table-for-two-slots.json`

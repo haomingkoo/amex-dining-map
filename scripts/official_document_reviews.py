@@ -116,7 +116,7 @@ def _validated_clauses(manifest: dict, page_hashes: list[str]) -> list[dict]:
             or not 1 <= len(topics) <= 20
             or any(not isinstance(topic, str) or not 1 <= len(topic) <= 80 for topic in topics)
             or not isinstance(summary, str)
-            or not 1 <= len(summary) <= 240
+            or not 1 <= len(summary) <= 500
             or any(ord(character) < 32 and character not in "\n\t" for character in summary)
             or clause.get("page_text_sha256") != page_hashes[page - 1]
             or clause.get("evidence_text_sha256") != page_hashes[page - 1]
@@ -155,9 +155,11 @@ def verify_version(spec: DocumentSpec, pdf_bytes: bytes, manifest: dict) -> dict
         raise ValueError("review note is required")
     lineage = manifest.get("lineage")
     if manifest["review_status"] == "current_baseline":
+        previous_observed = lineage.get("previous_observed_sha256") if isinstance(lineage, dict) else None
         if (
             not isinstance(lineage, dict)
-            or HASH.fullmatch(str(lineage.get("previous_observed_sha256"))) is None
+            or previous_observed is not None
+            and HASH.fullmatch(str(previous_observed)) is None
             or lineage.get("previous_content_available") is not False
             or lineage.get("comparison_status") != "unavailable_prior_content"
         ):
@@ -289,11 +291,12 @@ def verify_transition(
         accounted_new.add(clause_id)
 
     events = []
+    clause_kind = "faq" if spec.kind == "faq" else "terms"
     kinds = {
-        "added": "terms_clause_added",
-        "removed": "terms_clause_removed",
-        "substantive_modified": "terms_clause_modified",
-        "layout_only": "terms_clause_modified",
+        "added": f"{clause_kind}_clause_added",
+        "removed": f"{clause_kind}_clause_removed",
+        "substantive_modified": f"{clause_kind}_clause_modified",
+        "layout_only": f"{clause_kind}_clause_modified",
     }
     for change in changes:
         clause_id = change.get("clause_id") if isinstance(change, dict) else None

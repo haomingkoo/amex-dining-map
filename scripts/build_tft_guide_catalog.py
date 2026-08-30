@@ -11,8 +11,9 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from scripts import tft_menu_reviews
+    from scripts import tft_document_reviews, tft_menu_reviews
 except ModuleNotFoundError:
+    import tft_document_reviews
     import tft_menu_reviews
 
 
@@ -135,16 +136,25 @@ def _release_projection(history: dict, venue_ids: set[str]) -> dict[str, list[di
 def _document_projection(source: dict, review_root: Path) -> list[dict]:
     projected = []
     source_documents = source.get("source_documents") or {}
-    captured_at = source.get("last_verified_at")
+    review_states = source.get("document_reviews") or {}
     for document_id, (kind, url_key, hash_key, title) in DOCUMENT_SPECS.items():
         source_url = source.get(url_key)
-        raw_sha256 = source_documents.get(hash_key)
+        state = review_states.get(document_id) or {}
+        observed_sha256 = source_documents.get(hash_key)
+        raw_sha256 = state.get("approved_sha256")
+        review_required = bool(state.get("review_required")) or (
+            isinstance(observed_sha256, str)
+            and isinstance(raw_sha256, str)
+            and observed_sha256 != raw_sha256
+        )
         base = {
             "id": document_id,
             "kind": kind,
             "source_url": source_url,
             "raw_sha256": raw_sha256,
-            "captured_at": captured_at,
+            "observed_sha256": observed_sha256,
+            "captured_at": state.get("approved_captured_at"),
+            "review_required": review_required,
             "review_status": "review_required",
             "clauses": [],
         }
@@ -157,8 +167,11 @@ def _document_projection(source: dict, review_root: Path) -> list[dict]:
             continue
         decision = json.loads(decision_path.read_text())
         if (
-            decision.get("schema_version") != 1
+            decision.get("schema_version") != 2
             or decision.get("document_id") != document_id
+            or decision.get("program") != "Table for Two"
+            or decision.get("program_id") != "table-for-two"
+            or decision.get("route") != "#/table-for-two"
             or decision.get("kind") != kind
             or decision.get("source_url") != source_url
             or decision.get("raw_sha256") != raw_sha256
@@ -166,6 +179,8 @@ def _document_projection(source: dict, review_root: Path) -> list[dict]:
             or decision.get("extractor") != "pypdf 6.15.0 extract_text normalized-whitespace-v1"
             or decision.get("lexical_index_version") != "reviewed-topics-v1"
             or decision.get("title") != title
+            or state.get("approved_manifest_sha256")
+            != tft_document_reviews.manifest_sha256(decision)
             or not isinstance(decision.get("page_count"), int)
             or not 1 <= decision["page_count"] <= 100
             or len(decision.get("page_text_sha256") or []) != decision["page_count"]
@@ -189,6 +204,10 @@ def _document_projection(source: dict, review_root: Path) -> list[dict]:
                 or clause_id in seen_ids
                 or not isinstance(page, int)
                 or not 1 <= page <= decision["page_count"]
+                or clause.get("page_text_sha256")
+                != decision["page_text_sha256"][page - 1]
+                or clause.get("evidence_text_sha256")
+                != decision["page_text_sha256"][page - 1]
                 or not isinstance(topics, list)
                 or not 1 <= len(topics) <= 20
                 or any(not isinstance(topic, str) or not 1 <= len(topic) <= 80 for topic in topics)

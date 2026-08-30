@@ -27,8 +27,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 try:
-    from scripts import tft_roster_reviews
+    from scripts import tft_document_reviews, tft_roster_reviews
 except ModuleNotFoundError:
+    import tft_document_reviews
     import tft_roster_reviews
 
 
@@ -874,7 +875,10 @@ def normalized_venues(
     return records
 
 
-def build_payload(existing_payload: dict | None = None) -> dict:
+def build_payload(
+    existing_payload: dict | None = None,
+    document_pdf_root: Path = tft_document_reviews.PDF_ROOT,
+) -> dict:
     existing_by_id = {
         record.get("id"): record
         for record in (existing_payload or {}).get("venues", [])
@@ -885,17 +889,29 @@ def build_payload(existing_payload: dict | None = None) -> dict:
     cycles_url = extract_image_url(html, "Voucher Cycles 2026")
     participating_hash = hashlib.sha256(fetch_bytes(participating_url)).hexdigest()
     cycles_hash = hashlib.sha256(fetch_bytes(cycles_url)).hexdigest()
-    terms_hash = hashlib.sha256(fetch_bytes(TERMS_URL)).hexdigest()
-    faq_hash = hashlib.sha256(fetch_bytes(FAQ_URL)).hexdigest()
+    terms_bytes = fetch_bytes(TERMS_URL)
+    faq_bytes = fetch_bytes(FAQ_URL)
+    terms_hash, _ = tft_document_reviews.retain_observed_pdf(
+        "tft-terms", terms_bytes, document_pdf_root
+    )
+    faq_hash, _ = tft_document_reviews.retain_observed_pdf(
+        "tft-faq", faq_bytes, document_pdf_root
+    )
     checked_at = iso_now()
     roster, roster_source = tft_roster_reviews.review_state(
         participating_hash, participating_url, checked_at, existing_payload
     )
+    observed_documents = {
+        "terms_sha256": terms_hash,
+        "faq_sha256": faq_hash,
+    }
+    document_reviews = tft_document_reviews.refresh_states(
+        observed_documents, existing_payload, checked_at
+    )
     manual_review_required = (
         roster_source["review_required"]
         or cycles_hash != KNOWN_CYCLES_SHA256
-        or terms_hash != KNOWN_TERMS_SHA256
-        or faq_hash != KNOWN_FAQ_SHA256
+        or any(state["review_required"] for state in document_reviews.values())
     )
     live_availability_by_id, availability_errors = fetch_live_availability(roster, checked_at)
     live_profiles_by_id, profile_errors = fetch_diningcity_profiles(roster, checked_at)
@@ -920,10 +936,8 @@ def build_payload(existing_payload: dict | None = None) -> dict:
             "participating_merchants_sha256": participating_hash,
             "voucher_cycles_sha256": cycles_hash,
         },
-        "source_documents": {
-            "terms_sha256": terms_hash,
-            "faq_sha256": faq_hash,
-        },
+        "source_documents": observed_documents,
+        "document_reviews": document_reviews,
         "manual_review_required": manual_review_required,
         "roster_source": roster_source,
         "voucher_cycles_2026": [
@@ -1040,6 +1054,12 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="data/table-for-two.json")
     parser.add_argument(
+        "--document-pdf-root",
+        type=Path,
+        default=tft_document_reviews.PDF_ROOT,
+        help="Content-addressed archive for exact observed official PDF bytes.",
+    )
+    parser.add_argument(
         "--availability-only",
         action="store_true",
         help=(
@@ -1069,7 +1089,7 @@ def main() -> int:
             raise RuntimeError(f"{output_path} does not exist; availability-only refresh needs an existing roster.")
         payload = refresh_availability_payload(existing_payload)
     else:
-        payload = build_payload(existing_payload)
+        payload = build_payload(existing_payload, args.document_pdf_root)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 

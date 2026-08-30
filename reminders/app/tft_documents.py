@@ -205,6 +205,17 @@ def _review_pending(document: dict) -> str:
     return message[:MAX_REPLY_LENGTH]
 
 
+def _review_notice(document: dict) -> str:
+    if not document.get("review_required"):
+        return ""
+    observed = document.get("observed_sha256")
+    version = f" ({observed[:12]})" if isinstance(observed, str) else ""
+    return (
+        f"Update pending review: a newer official {str(document.get('kind') or 'document').upper()}"
+        f"{version} was observed. The answer below remains bound to the last reviewed version.\n\n"
+    )
+
+
 def _score(query: str, clause: dict) -> float:
     score = 0.0
     for topic in clause.get("topics") or []:
@@ -276,7 +287,7 @@ def answer(message: str, catalog: dict, now: datetime) -> str | None:
         f"captured {captured.strftime('%d %b %Y, %H:%M UTC')}"
     )
     answer_text = (
-        f"{document['title']}\n\n{clause['summary']}\n\n"
+        f"{_review_notice(document)}{document['title']}\n\n{clause['summary']}\n\n"
         f"{citation}\n{document['source_url']}\n\n"
         "This is a source summary, not a personal eligibility decision, legal interpretation, reservation, or availability guarantee."
     )

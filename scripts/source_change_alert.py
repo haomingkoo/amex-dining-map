@@ -64,6 +64,14 @@ META_FIELD_LABELS = {
     "source_images.voucher_cycles_sha256": "Voucher cycles image hash",
     "source_documents.terms_sha256": "Table for Two T&C PDF hash",
     "source_documents.faq_sha256": "Table for Two FAQ PDF hash",
+    "document_reviews.tft-terms.status": "T&C review status",
+    "document_reviews.tft-terms.observed_sha256": "Observed T&C PDF hash",
+    "document_reviews.tft-terms.approved_sha256": "Approved T&C PDF hash",
+    "document_reviews.tft-terms.review_item.kind": "T&C review item",
+    "document_reviews.tft-faq.status": "FAQ review status",
+    "document_reviews.tft-faq.observed_sha256": "Observed FAQ PDF hash",
+    "document_reviews.tft-faq.approved_sha256": "Approved FAQ PDF hash",
+    "document_reviews.tft-faq.review_item.kind": "FAQ review item",
     "terms_hashes.restaurants": "Restaurant T&C PDF hash",
     "terms_hashes.hotels": "Hotel T&C PDF hash",
     "terms_hashes.global_dining_credit": "Global Dining Credit T&C text hash",
@@ -301,6 +309,12 @@ def _menu_review_required(record: dict[str, Any]) -> bool:
     )
 
 
+def _record_review_required(program: str, meta: dict[str, Any]) -> bool:
+    if program == "Table for Two":
+        return bool((meta.get("roster_source") or {}).get("review_required"))
+    return bool(meta.get("manual_review_required"))
+
+
 def build_record_update_events(
     program: str,
     old_payload: Any,
@@ -309,7 +323,7 @@ def build_record_update_events(
     detected_at: str,
 ) -> list[dict[str, Any]]:
     config = PROGRAM_UPDATE_CONFIG.get(program, {"id": program.lower().replace(" ", "-"), "route": "#/alerts"})
-    status = "review_required" if meta.get("manual_review_required") else "published"
+    status = "review_required" if _record_review_required(program, meta) else "published"
     old_by_key = {record_key(record): record for record in records_from_payload(old_payload)}
     new_by_key = {record_key(record): record for record in records_from_payload(new_payload)}
     events: list[dict[str, Any]] = []
@@ -445,6 +459,10 @@ def build_meta_update_event(
             if new_meta.get("manual_review_required")
             or (new_meta.get("menu_source") or {}).get("review_required")
             or (new_meta.get("roster_source") or {}).get("review_required")
+            or any(
+                isinstance(review, dict) and review.get("review_required")
+                for review in (new_meta.get("document_reviews") or {}).values()
+            )
             else "published"
         ),
         "before": {"state": "available", "fields": {item["field"]: item["before"] for item in changes}},

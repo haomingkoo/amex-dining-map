@@ -14,6 +14,7 @@ const routes = read("reminders/app/routes.py");
 const dispatch = read("scripts/dispatch_owner_updates.py");
 const pages = read(".github/workflows/deploy-pages.yml");
 const projectVerifier = read("scripts/verify-project.mjs");
+const documentRunbook = compact(read("docs/tft-document-review-runbook.md"));
 
 for (const heading of [
   "## Deployment (Railway)",
@@ -109,5 +110,11 @@ for (const event of [
   "telegram_reminder_delivery",
 ]) assert.ok(`${routes}\n${ownerRoutes}\n${telegramRoutes}`.includes(event), `runtime event missing: ${event}`);
 assert.match(projectVerifier, /verify-operations-docs\.mjs/);
+for (const phrase of [
+  "archives the exact bytes",
+  "canonical hash-addressed manifest and transition paths",
+  "rebuilds the bundled Telegram catalogue",
+  "pending event is reconciled",
+]) assert.ok(documentRunbook.includes(phrase), `document review runbook omits: ${phrase}`);
 
 console.log("operations documentation verification passed");
