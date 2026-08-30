@@ -19,7 +19,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [ ] G2: the deployed mobile Table for Two journey exposes venue details, current menu and official-source links, T&Cs context, release-pattern qualifications, and working reminder signup without browser-visible failures
   CHECK: node scripts/verify-tft-browser-evidence.mjs
   EXPECT: TFT browser evidence verification passed
-  EVIDENCE: pending
+  EVIDENCE: 2026-08-30 production at 390x844 preserved the first-visit VUE deep link, selected VUE, showed current AMEXPlatSG slots plus menu/release timestamps and review caveats, submitted the email reminder UI with API 200, and had no app exception or horizontal overflow. Two handled DiningCity 404 probes remain for stale missing-project venues; the executable evidence verifier is still pending, so this gate stays open.
 
 - [x] G3: owner updates are formatted as concise before-and-after alerts and can only be delivered to the configured private Telegram channel
   CHECK: node scripts/verify-telegram-owner-alerts.mjs
@@ -54,7 +54,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
-  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 130 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
+  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 132 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
 
 - [ ] G9: a real before-and-after test alert is delivered to the private owner channel and no unintended chat receives it
   EVIDENCE: pending
