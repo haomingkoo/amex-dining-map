@@ -559,6 +559,7 @@ const state = {
   googleRatingsLoaded: false,
   tableForTwoGoogleRatingsLoaded: false,
   updates: [],
+  updatesLoaded: false,
   updatesReadAt: null,
   sourceHealth: [],
   dataLoaded: {
@@ -810,6 +811,9 @@ const updatesHeadline = document.getElementById("updates-headline");
 const updatesCount = document.getElementById("updates-count");
 const updatesHistory = document.getElementById("updates-history");
 const updatesList = document.getElementById("updates-list");
+const updatesSecondary = document.getElementById("updates-secondary");
+const updatesSecondaryCount = document.getElementById("updates-secondary-count");
+const updatesSecondaryList = document.getElementById("updates-secondary-list");
 const updatesMarkReadButton = document.getElementById("updates-mark-read");
 const sourceHealth = document.getElementById("source-health");
 const sourceHealthSummary = document.getElementById("source-health-summary");
@@ -2552,15 +2556,109 @@ function tabelogCheckedRange(records) {
   return first === last ? `Tabelog checked ${first}` : `Tabelog checked ${first}–${last}`;
 }
 
-function updateKindLabel(kind) {
+const PUBLIC_UPDATE_KINDS = new Set([
+  "added",
+  "removed",
+  "menu_added",
+  "menu_updated",
+  "menu_removed",
+  "details_updated",
+  "correction",
+  "terms_clause_added",
+  "terms_clause_removed",
+  "terms_clause_modified",
+  "faq_clause_added",
+  "faq_clause_removed",
+  "faq_clause_modified",
+]);
+
+function isPublicDecisionUpdate(update) {
+  return Boolean(update)
+    && update.status === "published"
+    && PUBLIC_UPDATE_KINDS.has(String(update.kind || ""));
+}
+
+function isPrimaryPublicUpdate(update) {
+  const kind = String(update?.kind || "");
+  return kind === "added"
+    || kind === "removed"
+    || kind.startsWith("menu_")
+    || kind.startsWith("terms_")
+    || kind.startsWith("faq_");
+}
+
+function updateKindLabel(kind, update = null) {
+  const listingNoun = update?.program_id === "plat-stay" || update?.program === "Plat Stay"
+    ? "Property"
+    : "Restaurant";
   return {
-    added: "Added",
-    removed: "Removed",
-    menu_updated: "Menu",
+    added: `${listingNoun} added`,
+    removed: `${listingNoun} removed`,
+    menu_added: "Menu added",
+    menu_updated: "Menu changed",
+    menu_removed: "Menu removed",
     details_updated: "Changed",
-    correction: "Correction",
-    source_updated: "Source",
+    correction: "Details corrected",
+    terms_clause_added: "Terms added",
+    terms_clause_removed: "Terms removed",
+    terms_clause_modified: "Terms changed",
+    faq_clause_added: "FAQ added",
+    faq_clause_removed: "FAQ removed",
+    faq_clause_modified: "FAQ changed",
   }[kind] || "Changed";
+}
+
+function updateKindBadgeLabel(kind, update = null) {
+  if (kind === "added") return "Added";
+  if (kind === "removed") return "Removed";
+  return updateKindLabel(kind, update);
+}
+
+function isTechnicalUpdateField(field) {
+  return /(sha-?256|fingerprint|version|source state|freshness|stale records|coverage|review (flag|queue)|image hash|pdf hash|menu file)/i
+    .test(String(field || ""));
+}
+
+function publicUpdateChanges(update) {
+  const changes = (Array.isArray(update?.changes) ? update.changes : [])
+    .filter((change) => change && !isTechnicalUpdateField(change.field));
+  if (changes.length) return changes;
+  if (String(update?.kind || "").startsWith("menu_")) {
+    return [{
+      field: "Official menu",
+      before: "Previous reviewed menu",
+      after: "Updated reviewed menu",
+    }];
+  }
+  return [];
+}
+
+function publicUpdateSummary(updates) {
+  const counts = {
+    restaurantsAdded: 0,
+    restaurantsRemoved: 0,
+    propertiesAdded: 0,
+    propertiesRemoved: 0,
+    menus: 0,
+    terms: 0,
+  };
+  updates.forEach((update) => {
+    const kind = String(update?.kind || "");
+    const isProperty = update?.program_id === "plat-stay" || update?.program === "Plat Stay";
+    if (kind === "added") counts[isProperty ? "propertiesAdded" : "restaurantsAdded"] += 1;
+    else if (kind === "removed") counts[isProperty ? "propertiesRemoved" : "restaurantsRemoved"] += 1;
+    else if (kind.startsWith("menu_")) counts.menus += 1;
+    else if (kind.startsWith("terms_") || kind.startsWith("faq_")) counts.terms += 1;
+  });
+  const parts = [
+    counts.restaurantsAdded ? `${counts.restaurantsAdded} restaurant${counts.restaurantsAdded === 1 ? "" : "s"} added` : "",
+    counts.restaurantsRemoved ? `${counts.restaurantsRemoved} restaurant${counts.restaurantsRemoved === 1 ? "" : "s"} removed` : "",
+    counts.propertiesAdded ? `${counts.propertiesAdded} propert${counts.propertiesAdded === 1 ? "y" : "ies"} added` : "",
+    counts.propertiesRemoved ? `${counts.propertiesRemoved} propert${counts.propertiesRemoved === 1 ? "y" : "ies"} removed` : "",
+    counts.menus ? `${counts.menus} menu${counts.menus === 1 ? "" : "s"} changed` : "",
+    counts.terms ? `${counts.terms} benefit term${counts.terms === 1 ? "" : "s"} changed` : "",
+  ].filter(Boolean);
+  return parts.join(" · ");
 }
 
 function updateValueLabel(value) {
@@ -2583,18 +2681,18 @@ function sourceHealthDisplayState(source, now = Date.now()) {
   const failedAttempt = outcome && !["ok", "success", "succeeded", "current", "completed"].includes(outcome);
 
   if (source?.review_required || source?.review_state === "required" || status === "review_required" || status === "review") {
-    return { key: "review", label: "Review needed" };
+    return { key: "review", label: "Being verified" };
   }
   if (failedAttempt || ["failed", "failure", "partial_failure", "error"].includes(status)) {
-    return { key: "failed", label: "Refresh failed" };
+    return { key: "failed", label: "Check unavailable" };
   }
   if (staleAtRuntime || ["stale", "mixed_age"].includes(status)) {
-    return { key: "stale", label: status === "mixed_age" ? "Mixed age" : "Stale" };
+    return { key: "stale", label: "May be outdated" };
   }
   if (["missing", "unavailable", "unknown"].includes(status) || !Number.isFinite(lastSuccess)) {
-    return { key: "unavailable", label: "Unavailable" };
+    return { key: "unavailable", label: "Not available" };
   }
-  return { key: "current", label: "Current" };
+  return { key: "current", label: "Up to date" };
 }
 
 function sourceHealthCoverageLabel(coverage) {
@@ -2604,17 +2702,17 @@ function sourceHealthCoverageLabel(coverage) {
   const covered = Number(coverage.covered);
   const parts = [];
   if (Number.isFinite(current) && Number.isFinite(total)) {
-    parts.push(`${current.toLocaleString("en-SG")} of ${total.toLocaleString("en-SG")} current`);
+    parts.push(`${current.toLocaleString("en-SG")} of ${total.toLocaleString("en-SG")} checked recently`);
   } else if (Number.isFinite(covered) && Number.isFinite(total)) {
-    parts.push(`${covered.toLocaleString("en-SG")} of ${total.toLocaleString("en-SG")} covered`);
+    parts.push(`${covered.toLocaleString("en-SG")} of ${total.toLocaleString("en-SG")} available`);
   } else if (Number.isFinite(total)) {
     parts.push(`${total.toLocaleString("en-SG")} records checked`);
   }
   [
-    ["stale", "stale"],
-    ["missing", "missing"],
+    ["stale", "older checks"],
+    ["missing", "not found"],
     ["unavailable", "unavailable"],
-    ["failed", "failed"],
+    ["failed", "checks unavailable"],
   ].forEach(([key, label]) => {
     const count = Number(coverage[key]);
     if (Number.isFinite(count) && count > 0) parts.push(`${count.toLocaleString("en-SG")} ${label}`);
@@ -2642,15 +2740,24 @@ function sourceHealthCoverage(source) {
 function sourceHealthTimestampLabel(source) {
   const success = source?.last_success_at || source?.checked_at;
   const attempt = source?.last_attempt_at;
-  if (success) return `Last successful check ${formatTimestamp(success)}`;
-  if (attempt) return `Last attempted ${formatTimestamp(attempt)}`;
-  return "No successful check recorded";
+  if (success) return `Last checked successfully ${formatTimestamp(success)}`;
+  if (attempt) return `Last check attempted ${formatTimestamp(attempt)}`;
+  return "No successful check is available";
 }
 
 function sourceHealthUpstreamLabel(source) {
-  if (source?.upstream_date) return `Upstream dated ${formatSourceDate(source.upstream_date)}`;
-  if (source?.upstream_year) return `Upstream year ${source.upstream_year}`;
+  if (source?.upstream_date) return `Published source dated ${formatSourceDate(source.upstream_date)}`;
+  if (source?.upstream_year) return `Published source year ${source.upstream_year}`;
   return "";
+}
+
+function sourceHealthPublicSummary(sources) {
+  const attention = sources.filter((source) => sourceHealthDisplayState(source).key !== "current");
+  if (!attention.length) return "Checked information is up to date.";
+  if (attention.some((source) => (source.tier || source.kind || "primary") === "primary")) {
+    return "Some venue or benefit information is being verified.";
+  }
+  return "Some availability or rating information may be older than usual.";
 }
 
 function safeSourceHealthRoute(value) {
@@ -2674,16 +2781,16 @@ function renderSourceHealthRow(source) {
   row.dataset.state = displayState.key;
   const reviewCount = Number(source?.review_count);
   const flags = [];
-  if (source?.retained_snapshot || source?.snapshot_state === "retained") flags.push("Last verified snapshot retained");
+  if (source?.retained_snapshot || source?.snapshot_state === "retained") flags.push("Showing the last verified information");
   if (source?.review_required || source?.review_state === "required") {
     flags.push(Number.isFinite(reviewCount) && reviewCount > 0
-      ? `${reviewCount.toLocaleString("en-SG")} item${reviewCount === 1 ? "" : "s"} awaiting review`
-      : "Manual review required");
+      ? `${reviewCount.toLocaleString("en-SG")} possible change${reviewCount === 1 ? " is" : "s are"} being checked`
+      : "A possible change is being checked");
   }
-  const detail = String(source?.detail || "").trim();
+  const detail = String(source?.public_detail || "").trim();
   const outcome = String(source?.last_attempt_outcome || "").toLowerCase();
   if (outcome && !["ok", "success", "succeeded", "current", "completed"].includes(outcome)) {
-    flags.push("Latest refresh attempt failed");
+    flags.push("The latest check was unavailable");
   }
   if (detail) flags.push(detail);
   const route = safeSourceHealthRoute(source?.route);
@@ -2717,15 +2824,11 @@ function renderSourceHealth() {
     return;
   }
 
-  const states = sources.map((source) => sourceHealthDisplayState(source));
-  const attentionCount = states.filter(({ key }) => key !== "current").length;
-  sourceHealthSummary.textContent = attentionCount
-    ? `${attentionCount} of ${sources.length} sources need attention.`
-    : `${sources.length} sources are current.`;
+  sourceHealthSummary.textContent = sourceHealthPublicSummary(sources);
 
   [
-    ["primary", "Primary sources", "Defines venue, menu, and benefit data."],
-    ["enrichment", "Enrichment sources", "Adds availability, ratings, and context without replacing official data."],
+    ["primary", "Official programme information", "Defines venues, menus and benefit terms."],
+    ["enrichment", "Availability and ratings", "Adds booking and review context without replacing official information."],
   ].forEach(([tier, label, description]) => {
     const tierSources = sources.filter((source) => (source.tier || source.kind || "primary") === tier);
     if (!tierSources.length) return;
@@ -2753,19 +2856,23 @@ function renderUpdatesShell() {
   updatesShell.hidden = !hasUpdates && !hasHealth;
   if (!hasUpdates && !hasHealth) return;
 
-  const unread = unreadUpdates();
-  const healthAttention = healthSources.filter((source) => sourceHealthDisplayState(source).key !== "current").length;
-  if (healthAttention) {
-    updatesHeadline.textContent = `${healthAttention} source${healthAttention === 1 ? "" : "s"} need attention`;
-  } else if (hasUpdates) {
-    const latest = state.updates[0];
-    updatesHeadline.textContent = `Latest: ${updateKindLabel(latest.kind).toLowerCase()} · ${latest.subject}`;
+  const primaryUpdates = state.updates.filter(isPrimaryPublicUpdate);
+  const unread = unreadUpdates().filter(isPrimaryPublicUpdate);
+  if (!state.updatesLoaded) {
+    updatesHeadline.textContent = "Checking confirmed changes...";
+  } else if (unread.length) {
+    updatesHeadline.textContent = publicUpdateSummary(unread);
+  } else if (primaryUpdates.length) {
+    const latest = primaryUpdates[0];
+    updatesHeadline.textContent = `Latest: ${updateKindLabel(latest.kind, latest).toLowerCase()} · ${latest.subject}`;
   } else {
-    updatesHeadline.textContent = `${healthSources.length} sources checked`;
+    updatesHeadline.textContent = "No confirmed restaurant or menu changes yet";
   }
   updatesCount.textContent = String(unread.length);
   updatesCount.setAttribute("aria-label", `${unread.length} unread update${unread.length === 1 ? "" : "s"}`);
+  updatesCount.hidden = unread.length === 0;
   updatesCount.classList.toggle("is-read", unread.length === 0);
+  if (updatesMarkReadButton) updatesMarkReadButton.hidden = unread.length === 0;
   if (updatesHistory) updatesHistory.hidden = !hasUpdates;
 }
 
@@ -2789,12 +2896,12 @@ function renderUpdateRow(update) {
   const details = document.createElement("details");
   details.className = "update-row";
   details.dataset.kind = update.kind || "changed";
-  const changes = Array.isArray(update.changes) ? update.changes : [];
+  const changes = publicUpdateChanges(update);
   const comparisons = changes
     .map(
       (change) => `
         <div class="update-change">
-          <span class="update-field">${escapeHtml(change.field || "Change")}</span>
+          <span class="update-field">${escapeHtml(change.field === "Listing" ? "Checked listing" : change.field || "Change")}</span>
           <div class="update-values">
             <span class="update-value"><strong>Before</strong> ${escapeHtml(updateValueLabel(change.before))}</span>
             <span class="update-value"><strong>After</strong> ${escapeHtml(updateValueLabel(change.after))}</span>
@@ -2807,17 +2914,17 @@ function renderUpdateRow(update) {
     : "";
   details.innerHTML = `
     <summary>
-      <span class="update-kind">${escapeHtml(updateKindLabel(update.kind))}</span>
+      <span class="update-kind">${escapeHtml(updateKindBadgeLabel(update.kind, update))}</span>
       <span class="update-summary-copy">
         <span class="update-subject">${escapeHtml(update.subject || update.program || "Source update")}</span>
-        <span class="update-meta">${escapeHtml(update.program || "Benefit")} · ${escapeHtml(formatTimestamp(update.detected_at))}</span>
+        <span class="update-meta">${escapeHtml(update.program || "Benefit")} · Checked ${escapeHtml(formatTimestamp(update.reviewed_at || update.detected_at))}</span>
       </span>
       <span class="update-expand" aria-hidden="true">+</span>
     </summary>
     <div class="update-detail">
       <div class="update-comparison">${comparisons || '<div class="update-change"><span class="update-field">Change</span><div class="update-values"><span class="update-value">No public field comparison is available.</span></div></div>'}</div>
       <div class="update-links">
-        <a class="update-route-link" href="${escapeHtml(update.route || "#/dining/world")}">Open section</a>
+        <a class="update-route-link" href="${escapeHtml(update.route || "#/dining/world")}">View in explorer</a>
         ${sourceLink}
       </div>
     </div>`;
@@ -2828,19 +2935,32 @@ function renderUpdateRow(update) {
 function renderUpdates() {
   if (!updatesShell || !updatesList || !updatesHeadline || !updatesCount) return;
   const published = state.updates
-    .filter((update) => update && update.status === "published")
+    .filter(isPublicDecisionUpdate)
     .sort((a, b) => String(b.reviewed_at || b.detected_at || "").localeCompare(String(a.reviewed_at || a.detected_at || "")));
   state.updates = published;
+  const primary = published.filter(isPrimaryPublicUpdate);
+  const secondary = published.filter((update) => !isPrimaryPublicUpdate(update));
   updatesList.innerHTML = "";
-  published.slice(0, 30).forEach((update) => updatesList.appendChild(renderUpdateRow(update)));
+  primary.slice(0, 30).forEach((update) => updatesList.appendChild(renderUpdateRow(update)));
+  if (updatesSecondary && updatesSecondaryList && updatesSecondaryCount) {
+    updatesSecondary.hidden = secondary.length === 0;
+    updatesSecondary.open = false;
+    updatesSecondaryCount.textContent = String(secondary.length);
+    updatesSecondaryList.innerHTML = "";
+    secondary.slice(0, 30).forEach((update) => updatesSecondaryList.appendChild(renderUpdateRow(update)));
+  }
   renderUpdatesShell();
 }
 
 async function loadUpdates() {
-  const payload = await fetchJson(UPDATES_DATA_URL);
-  state.updates = Array.isArray(payload?.updates) ? payload.updates : [];
-  state.updatesReadAt = readUpdatesTimestamp();
-  renderUpdates();
+  try {
+    const payload = await fetchJson(UPDATES_DATA_URL);
+    state.updates = Array.isArray(payload?.updates) ? payload.updates : [];
+    state.updatesReadAt = readUpdatesTimestamp();
+  } finally {
+    state.updatesLoaded = true;
+    renderUpdates();
+  }
 }
 
 async function loadSourceHealth() {
@@ -2890,7 +3010,7 @@ function diningSourceName(kind) {
 function diningSourceCacheLabelForKind(kind) {
   const meta = diningSourceMeta(kind);
   if (!meta?.fetched_at) return "";
-  const review = meta.manual_review_required ? " · source review required" : "";
+  const review = meta.manual_review_required ? " · some details are being verified" : "";
   return `${diningSourceName(kind)} cached ${formatTimestamp(meta.fetched_at)}${review}`;
 }
 
@@ -2920,7 +3040,7 @@ function buildAlertsCards() {
       `${change.field || "Change"}: ${updateValueLabel(change.before)} → ${updateValueLabel(change.after)}`
     );
     return {
-      kicker: `${updateKindLabel(update.kind)} · ${formatTimestamp(update.detected_at)}`,
+      kicker: `${updateKindLabel(update.kind, update)} · ${formatTimestamp(update.detected_at)}`,
       title: update.subject || update.program || "Benefit change",
       body: changes.join("; ") || "Reviewed source change published without a field comparison.",
       links: [
@@ -5982,13 +6102,13 @@ function filterTableForTwo() {
     filterLabel,
     !autoAvailabilityOnly && freshAvailableCount ? `${freshAvailableCount} bookable` : "",
     !autoAvailabilityOnly && freshNoSeatCount ? `${freshNoSeatCount} not bookable` : "",
-    staleCaptureCount ? `${staleCaptureCount} stale source check${staleCaptureCount === 1 ? "" : "s"}` : "",
-    pendingCount ? `${pendingCount} source checks pending` : "",
+    staleCaptureCount ? `${staleCaptureCount} availability check${staleCaptureCount === 1 ? "" : "s"} may be outdated` : "",
+    pendingCount ? `${pendingCount} availability check${pendingCount === 1 ? " is" : "s are"} unavailable` : "",
     availabilityCheckedText,
     verifiedText,
-    payload.manual_review_required ? "roster review required" : "",
+    payload.manual_review_required ? "Some venue details are being verified" : "",
     payload.menu_source?.review_required
-      ? `${payload.menu_source.review_queue_count || 0} menu review item${payload.menu_source.review_queue_count === 1 ? "" : "s"}`
+      ? "Some menu details are being verified"
       : "",
   ].filter(Boolean);
   tableForTwoSummaryStripText.textContent = `${statusBits.join(" · ")}.`;
@@ -6403,7 +6523,7 @@ function tableForTwoDateListSummary(dates, prefix = "Dates") {
 
 function tableForTwoDateSummary(record, filters = state.tableForTwoCurrentFilters || {}) {
   const availability = record.availability || {};
-  if (tableForTwoAvailabilityKey(record, filters) === "stale") return "Stale availability snapshot";
+  if (tableForTwoAvailabilityKey(record, filters) === "stale") return "Availability may be outdated";
   const matchingDates = uniqueValues(tableForTwoMatchingSlots(record, filters).map((slot) => slot.date).filter(Boolean));
   if (matchingDates.length) return tableForTwoDateRangeSummary(matchingDates);
   if (filters.date) return `Not bookable on ${tableForTwoDateOptionLabel(filters.date)}`;
@@ -6543,7 +6663,7 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
     return `
       <div class="tft-calendar-empty">
         <div class="focus-kicker">Availability</div>
-        <h4>${escapeHtml(key === "unknown" ? "Availability pending" : key === "stale" ? "Stale availability snapshot" : "Not bookable")}</h4>
+        <h4>${escapeHtml(key === "unknown" ? "Availability not checked yet" : key === "stale" ? "Availability may be outdated" : "Not bookable")}</h4>
         <p>${escapeHtml(tableForTwoBestAvailabilityLine(record, filters))}</p>
       </div>
     `;
@@ -6650,10 +6770,10 @@ function tableForTwoVenueMenuReviewItems(payload, record) {
 
 function tableForTwoVenueMenuReviewWarning(items) {
   if (items.some((item) => item?.kind === "missing_venue_menu")) {
-    return "No indexed official menu PDF was found for this venue. The missing-menu result is awaiting owner review.";
+    return "We could not verify an official menu for this venue. Check the official source before booking.";
   }
   if (items.length) {
-    return "An alternate menu candidate is under review. Published menu links remain active until owner review is complete.";
+    return "A possible menu change is being verified. The last reviewed menu remains available.";
   }
   return "";
 }
@@ -6719,7 +6839,7 @@ function renderTableForTwoCard() {
   const record = activeTableForTwoRecord();
   if (!record) {
     const reviewNote = payload.manual_review_required
-      ? '<div class="focus-note focus-note-warn">Official roster changed. Manual review is required before trusting the venue list.</div>'
+      ? '<div class="focus-note focus-note-warn">Some venue details may have changed and are being verified. Confirm with the official source before booking.</div>'
       : "";
     const latestAvailabilityCheckedAt = tableForTwoLatestAvailabilityCheckedAt();
     tableForTwoFocusCard.innerHTML = `
@@ -6773,9 +6893,9 @@ function renderTableForTwoCard() {
   const venueMenuReviewWarning = tableForTwoVenueMenuReviewWarning(venueMenuReviewItems);
   const telegramAskUrl = tableForTwoTelegramDeepLink("venue", record);
   const telegramReminderUrl = tableForTwoTelegramDeepLink("remind", record);
-  const menuSourceNote = `<div class="focus-note">Official menu index checked ${escapeHtml(menuCheckedAt ? formatTimestamp(menuCheckedAt) : "time unavailable")}.${payload.menu_source?.review_required ? ` ${payload.menu_source.review_queue_count || 0} menu review item${payload.menu_source.review_queue_count === 1 ? " is" : "s are"} pending.` : payload.manual_review_required ? " Wider source review is required." : ""}</div>`;
+  const menuSourceNote = `<div class="focus-note">Official menu index checked ${escapeHtml(menuCheckedAt ? formatTimestamp(menuCheckedAt) : "time unavailable")}.${payload.menu_source?.review_required ? " Some possible menu changes are being verified." : payload.manual_review_required ? " Some venue details are being verified." : ""}</div>`;
   const sourceReviewWarning = payload.manual_review_required
-    ? '<div class="focus-note focus-note-warn">Official roster or source files changed. Manual review is required before treating the venue list as final.</div>'
+    ? '<div class="focus-note focus-note-warn">Some venue details may have changed and are being verified. Confirm with the official source before booking.</div>'
     : venueMenuReviewWarning
       ? `<div class="focus-note focus-note-warn">${escapeHtml(venueMenuReviewWarning)}</div>`
       : "";
@@ -7353,7 +7473,7 @@ function filterLoveDining() {
   const n = state.loveDiningFiltered.length;
   const total = state.loveDining.length;
   const cachedLabel = loveDiningCachedLabel();
-  const reviewSuffix = state.loveDiningSourceMeta?.manual_review_required ? " · source review required" : "";
+  const reviewSuffix = state.loveDiningSourceMeta?.manual_review_required ? " · some details are being verified" : "";
   const reviewedBaseline = loveDiningReviewSummary();
   loveSummaryStripText.textContent = n === total
     ? `${total} venues · ${reviewedBaseline} · cached ${cachedLabel}${reviewSuffix}`
@@ -7439,7 +7559,7 @@ function renderLoveDiningCard() {
   const googleMapsLabel = loveDiningShouldHideMapPin(record) ? "Search in Google Maps" : "Open in Google Maps";
   const cachedLabel = loveDiningCachedLabel();
   const sourceReviewWarning = state.loveDiningSourceMeta?.manual_review_required
-    ? `<div class="focus-note focus-note-warn">Official Love Dining source changed since the last reviewed baseline: ${escapeHtml((state.loveDiningSourceMeta.major_change_reasons || ["manual review required"]).join("; "))}</div>`
+    ? '<div class="focus-note focus-note-warn">Some Love Dining details may have changed and are being verified. Confirm with the official source before booking.</div>'
     : "";
 
   loveFocusCard.innerHTML = `

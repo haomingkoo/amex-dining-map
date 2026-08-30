@@ -278,7 +278,22 @@ def test_venues_warns_when_bundled_roster_is_stale():
 
 
 def test_vue_dinner_release_pattern_is_observed_bounded_and_cited():
-    answer = tft_guide.handle_message("/release VUE dinner", _catalog(), NOW)
+    catalog = copy.deepcopy(_catalog())
+    vue = next(venue for venue in catalog["venues"] if venue["id"] == "tft-vue")
+    vue["release_patterns"] = [
+        {
+            "meal": "Dinner",
+            "observation_count": 8,
+            "median_lead_days": 60.0,
+            "lead_days_min": 18,
+            "lead_days_max": 60,
+            "typical_first_seen_sgt": "00:30",
+            "typical_time_observation_share": 0.62,
+            "confidence": "medium",
+            "latest_observation_at": "2026-08-29T18:52:06Z",
+        }
+    ]
+    answer = tft_guide.handle_message("/release VUE dinner", catalog, NOW)
 
     assert answer.startswith("VUE — observed first-detection pattern")
     assert "median first-detected lead 60 days (range 18–60)" in answer
@@ -287,7 +302,7 @@ def test_vue_dinner_release_pattern_is_observed_bounded_and_cited():
     assert "Latest included detection: 30 Aug 2026, 02:52 SGT" in answer
     assert "not an Amex or restaurant release policy" in answer
     assert "does not show current seat availability" in answer
-    assert _catalog()["official_url"] in answer
+    assert catalog["official_url"] in answer
     assert "#/table-for-two?venue=tft-vue" in answer
     assert "currently available" not in answer
     assert "sold out" not in answer
@@ -395,6 +410,13 @@ def test_release_projection_joins_by_stable_venue_id_not_display_name():
     history = json.loads(
         (ROOT / "data" / "table-for-two-release-history.json").read_text()
     )
+    expected_latest_observation = max(
+        item["first_seen_at"]
+        for item in history["observations"]
+        if item["venue_id"] == "tft-vue"
+        and item["meal"] == "Dinner"
+        and not item.get("baseline")
+    )
     for item in history["patterns"]:
         if item["venue_id"] == "tft-vue":
             item["venue_name"] = "Untrusted renamed display value"
@@ -407,7 +429,7 @@ def test_release_projection_joins_by_stable_venue_id_not_display_name():
             "venue_name": "Untrusted newer baseline",
             "meal": "Dinner",
             "slot_date": "2026-12-31",
-            "first_seen_at": "2026-08-30T02:00:00Z",
+            "first_seen_at": "2099-08-30T02:00:00Z",
             "lead_days": 123,
             "baseline": True,
         }
@@ -424,4 +446,4 @@ def test_release_projection_joins_by_stable_venue_id_not_display_name():
     dinner = next(
         pattern for pattern in vue["release_patterns"] if pattern["meal"] == "Dinner"
     )
-    assert dinner["latest_observation_at"] == "2026-08-29T18:52:06Z"
+    assert dinner["latest_observation_at"] == expected_latest_observation

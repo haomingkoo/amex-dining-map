@@ -199,7 +199,7 @@
         >
           <span class="updates-mark" aria-hidden="true"></span>
           <span class="updates-trigger-copy">
-            <span class="updates-label">Updates</span>
+            <span class="updates-label">What's new</span>
             <span class="updates-headline" id="updates-headline">Checking recent changes...</span>
           </span>
           <span class="updates-count" id="updates-count" aria-label="0 unread updates">0</span>
@@ -207,32 +207,39 @@
         </button>
 
         <div class="updates-panel" id="updates-panel" hidden>
-          <section class="source-health" id="source-health" aria-labelledby="source-health-title" hidden>
-            <div class="source-health-head">
-              <div>
-                <h2 id="source-health-title">Source health</h2>
-                <p id="source-health-summary">Checking source freshness...</p>
-              </div>
-              <span class="source-health-legend">Source status</span>
-            </div>
-            <div class="source-health-groups" id="source-health-groups"></div>
-            <p class="source-health-note">
-              Primary sources define the explorer. Enrichment sources add context and never replace the official source.
-            </p>
-          </section>
           <section class="updates-history" id="updates-history" aria-labelledby="updates-history-title">
             <div class="updates-panel-head">
               <div>
-                <h2 id="updates-history-title">What changed</h2>
-                <p>Before and after, checked against the published source.</p>
+                <h2 id="updates-history-title">Confirmed changes</h2>
+                <p>Restaurant, menu and benefit changes checked against a published source.</p>
               </div>
               <button class="updates-mark-read" id="updates-mark-read" type="button">Mark all read</button>
             </div>
             <div class="updates-list" id="updates-list" aria-live="polite"></div>
+            <details class="updates-secondary" id="updates-secondary" hidden>
+              <summary>
+                <span>Other confirmed corrections</span>
+                <span id="updates-secondary-count">0</span>
+              </summary>
+              <div class="updates-list" id="updates-secondary-list"></div>
+            </details>
             <p class="updates-footnote">
-              A missing listing means it was not present in the latest checked source. It does not explain why it changed.
+              “Removed” means the venue was no longer present in the latest checked listing. It does not explain why.
             </p>
           </section>
+          <details class="source-health" id="source-health" hidden>
+            <summary class="source-health-summary-row">
+              <span class="source-health-summary-copy">
+                <strong>Data freshness</strong>
+                <span id="source-health-summary">Checking when information was last verified...</span>
+              </span>
+              <span class="source-health-summary-action" aria-hidden="true">Details</span>
+            </summary>
+            <div class="source-health-groups" id="source-health-groups"></div>
+            <p class="source-health-note">
+              Official programme sources define venue and benefit information. Availability and ratings add context only.
+            </p>
+          </details>
         </div>
       </section>
 

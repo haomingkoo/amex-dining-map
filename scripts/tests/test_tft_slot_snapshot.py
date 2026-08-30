@@ -39,7 +39,7 @@ def test_vue_projection_preserves_current_source_facts():
     assert vue["project"] == "AMEXPlatSG"
     assert vue["status"] == source_availability["status"]
     assert vue["checked_at"] == source_availability["checked_at"]
-    assert vue["meals"] == [
+    expected_meals = [
         {
             "meal": meal["meal"],
             "status": meal["status"],
@@ -54,6 +54,7 @@ def test_vue_projection_preserves_current_source_facts():
         }
         for meal in source_availability["meals"]
     ]
+    assert vue["meals"] == sorted(expected_meals, key=lambda meal: meal["meal"])
 
 
 def test_wrong_top_level_project_fails_closed():

@@ -55,7 +55,7 @@ assert.match(
   "intro gate does not preserve a matching deep-link route and its parameters",
 );
 assert.match(source, /payload\.menu_source\?\.review_required/);
-assert.match(source, /menu review item/);
+assert.match(source, /Some possible menu changes are being verified/);
 assert.match(source, /applyTableForTwoFiltersFromHash\(\);[\s\S]*refreshTableForTwoDateOptions\(\);/);
 
 const reviewStart = source.indexOf("function tableForTwoVenueMenuReviewItems(");
@@ -79,7 +79,7 @@ assert.equal(reviewContext.reviewItems(reviewPayload, { id: "tft-vue" }).length,
 assert.equal(reviewContext.reviewItems(reviewPayload, { id: "tft-one-ninety" }).length, 1);
 assert.equal(reviewContext.reviewItems(reviewPayload, { id: "tft-osteria-mozza" }).length, 1);
 assert.equal(reviewContext.reviewItems(reviewPayload, { id: "tft-b" }).length, 1);
-assert.match(source, /An alternate menu candidate is under review/);
-assert.match(source, /No indexed official menu PDF was found for this venue/);
+assert.match(source, /A possible menu change is being verified/);
+assert.match(source, /We could not verify an official menu for this venue/);
 
 console.log("Table for Two deep-link verification passed");
