@@ -6,7 +6,8 @@ import hmac
 import logging
 import time
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from pydantic import ValidationError
 
 from app import db, owner_alert_store, telegram
 from app.config import Settings, load_settings
@@ -31,12 +32,16 @@ def _authenticate(authorization: str | None, settings: Settings) -> None:
 
 
 @router.post("/api/owner-alerts/events")
-def ingest_owner_events(
-    payload: OwnerAlertRequest,
+async def ingest_owner_events(
+    request: Request,
     authorization: str | None = Header(default=None),
     settings: Settings = Depends(get_settings),
 ) -> dict:
     _authenticate(authorization, settings)
+    try:
+        payload = OwnerAlertRequest.model_validate(await request.json())
+    except (ValueError, TypeError, ValidationError):
+        raise HTTPException(status_code=422, detail="Invalid owner alert payload.")
     event = payload.event
     if event.status != "published":
         return {"ok": True, "id": event.id, "state": "withheld"}

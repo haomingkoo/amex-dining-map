@@ -356,6 +356,17 @@ newer matches cannot be stranded behind an unbounded nonmatching queue.
 
 ## Operational logs
 
+Uvicorn startup and application lifecycle records are emitted to stdout, so
+Railway does not classify normal `INFO` startup lines as errors. Application
+events are structured fields: filter by `event`, `status`, `path`, or
+`request_id` rather than searching message bodies.
+
+Source-writing GitHub workflows share `source-ledger-refresh` with
+`queue: max`. This keeps one writer at a time without the default concurrency
+behavior replacing an older pending availability refresh. If TFT availability
+is stale, inspect the queued and completed `Table for Two Alerts` runs before
+debugging DiningCity or the reminder matcher.
+
 Start with the narrowest public signal before opening provider logs:
 
 | Symptom | First check | Correlation evidence |

@@ -14,7 +14,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G1: the security audit covers the static site, reminder API, automation workflows, dependencies, live headers, secrets, abuse paths, and Telegram threat model with no unresolved critical finding
   CHECK: node scripts/verify-security-audit.mjs
   EXPECT: security audit verification passed
-  EVIDENCE: 2026-08-30 verifier passed; Pages run 33283464189 succeeded; Railway health, CORS, headers, and disabled OpenAPI were production-probed; Dependabot reported no open alerts.
+  EVIDENCE: 2026-08-30 verifier passed; Railway health, CORS, headers, disabled OpenAPI, body limits, and privacy-safe request logs were production-probed; owner-ingress authentication now precedes payload validation, so unauthenticated malformed bodies cannot enumerate the private schema. Dependabot reported no open alerts.
 
 - [x] G2: the deployed mobile Table for Two journey exposes venue details, current menu and official-source links, T&Cs context, release-pattern qualifications, and working reminder signup without browser-visible failures
   CHECK: node scripts/verify-tft-browser-evidence.mjs
@@ -59,7 +59,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
-  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12; the direct suite reports 431 Python tests and 23 subtests, plus all JavaScript regression files, source-health workflow/schema checks, and frontend syntax validation.
+  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12; the direct suite reports 434 Python tests and 23 subtests, plus all JavaScript regression files, source-health workflow/schema checks, and frontend syntax validation.
 
 - [ ] G9: a real before-and-after test alert is delivered once to the private owner channel, Telegram confirms the configured destination ID, and no unintended chat receives it
   EVIDENCE: pending
@@ -70,7 +70,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G11: the deployed site, reminder service, owner channel, and self-help bot are documented with setup, rotation, monitoring, rollback, privacy, freshness, and known-limit procedures
   CHECK: node scripts/verify-operations-docs.mjs
   EXPECT: operations documentation verification passed
-  EVIDENCE: 2026-08-30 executable operations verifier passes config/example parity, disabled defaults, non-secret health state, Railway and Pages acceptance, feature activation order, safe rollback order, workflow credential seams, 36-hour catalogue and 30-minute slot thresholds, aggregate-safe diagnostics, and honest correlation limits. Real bot/channel acceptance remains G9/G10.
+  EVIDENCE: 2026-08-30 executable operations verifier passes config/example parity, disabled defaults, non-secret health state, Railway and Pages acceptance, feature activation order, safe rollback order, workflow credential seams, stdout-classified startup logs, structured request correlation, queued source-ledger scheduling, 36-hour catalogue and 30-minute slot thresholds, and aggregate-safe diagnostics. Real bot/channel acceptance remains G9/G10.
 
 - [x] G12: primary venue, hotel, menu, T&C, release, stale, recovery, and review-state transitions have review-safe before-and-after owner events, including additions and removals
   CHECK: node scripts/verify-telegram-change-dispatch.mjs
@@ -80,4 +80,4 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G13: mobile users and the owner can see source-specific freshness, retained-snapshot, failure, and review-required state without mistaking optional enrichment age for official fact age
   CHECK: node scripts/verify-source-health.mjs
   EXPECT: source health verification passed
-  EVIDENCE: 2026-08-30 verifier passed; Pages run 33302192683 deployed 7c281a8. Production at 390x844 rendered all nine sources with primary/enrichment separation, exact dates, coverage, runtime staleness, review state, and no horizontal overflow. The deployed snapshot truthfully reports TFT availability stale at 21/23, Google mixed-age at 2,933/2,947, and Tabelog stale at 781/839.
+  EVIDENCE: 2026-08-30 verifier passed. Production at 390x844 rendered all nine sources with primary/enrichment separation, exact dates, coverage, runtime staleness, review state, and no horizontal overflow. All source writers now use the serialized `source-ledger-refresh` queue with `queue: max`, preventing GitHub concurrency from replacing older pending availability runs.

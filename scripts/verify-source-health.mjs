@@ -55,6 +55,7 @@ for (const path of [
 ]) {
   const workflow = read(path);
   requireText(workflow.includes("group: source-ledger-refresh"), `${path} must serialize source ledger writes`);
+  requireText(workflow.includes("queue: max"), `${path} must retain pending source refreshes`);
   requireText(workflow.includes("Finalize source health"), `${path} must finalize source health`);
   requireText(workflow.includes("if: always()"), `${path} must record failure state on failed refreshes`);
   requireText(workflow.includes("data/source-health.json"), `${path} must commit source health`);
@@ -63,6 +64,7 @@ for (const path of [
 
 const monitor = read(".github/workflows/monitor-source-health.yml");
 requireText(monitor.includes("22,52 * * * *"), "health monitor must age sources independently of refresh success");
+requireText(monitor.includes("queue: max"), "health monitor must retain its pending source-ledger run");
 requireText(read(".github/workflows/deploy-pages.yml").includes("source-health.json"), "Pages must deploy source health");
 
 console.log("source health verification passed");

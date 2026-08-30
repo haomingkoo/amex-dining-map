@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import logging
@@ -159,6 +160,44 @@ def test_invalid_auth_has_no_delivery_side_effect(owner_client, monkeypatch):
         ) is None
     finally:
         conn.close()
+
+
+def test_authentication_precedes_payload_validation(owner_client):
+    client, _settings_value = owner_client
+
+    unauthorized = client.post(
+        "/api/owner-alerts/events",
+        content=b"not-json",
+        headers={"Authorization": "Bearer wrong", "Content-Type": "application/json"},
+    )
+    authorized = client.post(
+        "/api/owner-alerts/events",
+        content=b"not-json",
+        headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"},
+    )
+
+    assert unauthorized.status_code == 401
+    assert unauthorized.json() == {"detail": "Unauthorized"}
+    assert authorized.status_code == 422
+    assert authorized.json() == {"detail": "Invalid owner alert payload."}
+
+
+def test_disabled_owner_ingress_precedes_payload_validation(tmp_path: Path):
+    settings = _settings(tmp_path / "disabled.db")
+    settings = replace(settings, owner_alerts_enabled=False)
+    app.dependency_overrides[get_settings] = lambda: settings
+    try:
+        with TestClient(app) as client:
+            response = client.post(
+                "/api/owner-alerts/events",
+                content=b"not-json",
+                headers={"Content-Type": "application/json"},
+            )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Owner alerts are not enabled."}
 
 
 def test_same_id_with_changed_payload_fails_closed(owner_client, monkeypatch):

@@ -5,6 +5,6 @@ builder = "nixpacks"
 nixPkgs = ["python312"]
 
 [deploy]
-startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT --no-access-log"
+startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT --no-access-log --log-config uvicorn-log-config.json"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3

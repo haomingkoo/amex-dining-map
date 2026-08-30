@@ -15,6 +15,8 @@ const dispatch = read("scripts/dispatch_owner_updates.py");
 const pages = read(".github/workflows/deploy-pages.yml");
 const projectVerifier = read("scripts/verify-project.mjs");
 const documentRunbook = compact(read("docs/tft-document-review-runbook.md"));
+const railway = read("reminders/railway.toml");
+const uvicornLogs = JSON.parse(read("reminders/uvicorn-log-config.json"));
 
 for (const heading of [
   "## Deployment (Railway)",
@@ -81,6 +83,8 @@ for (const phrase of [
   "never dump rows",
   "FROM owner_alert_deliveries",
   "Do not manually resend `unknown` rows",
+  "source-ledger-refresh` with `queue: max",
+  "inspect the queued and completed `Table for Two Alerts` runs",
 ]) assert.ok(docs.includes(phrase), `missing operations contract: ${phrase}`);
 assert.ok(docs.indexOf("TELEGRAM_REMINDERS_EXPECTED_ENABLED=false") < docs.indexOf("TELEGRAM_REMINDERS_ENABLED=false"));
 assert.ok(docs.indexOf("TELEGRAM_REMINDERS_ENABLED=false") < docs.indexOf("TELEGRAM_GUIDE_ENABLED=false"));
@@ -110,6 +114,12 @@ for (const event of [
   "telegram_reminder_delivery",
 ]) assert.ok(`${routes}\n${ownerRoutes}\n${telegramRoutes}`.includes(event), `runtime event missing: ${event}`);
 assert.match(projectVerifier, /verify-operations-docs\.mjs/);
+assert.match(railway, /--log-config uvicorn-log-config\.json/);
+assert.equal(uvicornLogs.handlers.default.stream, "ext://sys.stdout");
+for (const name of ["uvicorn", "uvicorn.error", "uvicorn.access"]) {
+  assert.deepEqual(uvicornLogs.loggers[name].handlers, ["default"]);
+  assert.equal(uvicornLogs.loggers[name].propagate, false);
+}
 for (const phrase of [
   "archives the exact bytes",
   "canonical hash-addressed manifest and transition paths",
