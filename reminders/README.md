@@ -74,3 +74,30 @@ Generate the ingestion token with `python3 -c 'import secrets; print(secrets.tok
 Immediately before enabling, set `OWNER_ALERT_NOT_BEFORE` to the current UTC
 instant; do not copy an old fixed date, because that could release recent
 historical ledger events on the first run.
+
+## Public Telegram guide
+
+The guide bot is a separate, disabled-by-default Telegram identity. Its v1
+surface is private chats only: `/start`, `/help`, `/venues`, and exact venue/menu
+lookup. It uses a generated source catalogue with official Amex menu links and
+never invokes an LLM, follows a user URL, joins groups, or reads owner-channel
+configuration. The catalogue is bundled with the Railway revision; the TFT
+refresh rebuilds it, but a normal reviewed Railway deployment is required to
+serve that newer revision. Answers always expose the source check time and warn
+when the bundled roster or menu index is stale.
+
+Spam controls are intentionally quiet: Telegram's webhook secret is checked
+before JSON parsing, update IDs are durably deduplicated, identities are stored
+only as keyed hashes, and per-user/global minute and daily quotas are
+consumed atomically. Groups, bots, unsupported updates, and rate-limited bursts
+return success without sending a reply, preventing warning-message
+amplification. Replay metadata expires after seven days and quota metadata
+after 24 hours; message text and usernames are not stored.
+
+Before enabling, create a separate BotFather bot and generate two independent
+43+ character values for `TELEGRAM_GUIDE_WEBHOOK_SECRET` and
+`TELEGRAM_IDENTITY_HASH_SALT`. Keep Railway on one persistent SQLite-backed
+replica. Register `/api/telegram/guide/webhook` with Telegram using the secret
+token, `allowed_updates=["message"]`, and `drop_pending_updates=true` only for
+the first activation. Real private-chat, replay, group-ignore, and rate-limit
+acceptance remains mandatory before calling the bot live.

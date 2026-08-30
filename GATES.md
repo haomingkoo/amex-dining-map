@@ -34,7 +34,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [ ] G5: the Telegram self-help bot answers TFT program, venue, menu, T&C, and release-pattern questions and can find currently observed slots from curated current sources with citations and freshness dates
   CHECK: node scripts/verify-telegram-guide.mjs
   EXPECT: Telegram guide verification passed
-  EVIDENCE: pending
+  EVIDENCE: venue/menu tracer implemented and passing locally; T&C, release-pattern, and observed-slot slices remain pending, so this gate stays open.
 
 - [ ] G6: unsupported, stale, ambiguous, adversarial, and prompt-injection questions fail safely without inventing eligibility, availability, booking rules, or menu facts
   CHECK: node scripts/verify-telegram-safety.mjs

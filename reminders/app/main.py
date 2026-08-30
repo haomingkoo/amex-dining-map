@@ -5,9 +5,10 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app import db, owner_alert_store
+from app import db, owner_alert_store, telegram_bot_store
 from app.config import load_settings
 from app.owner_alert_routes import router as owner_alert_router
+from app.telegram_bot_routes import router as telegram_bot_router
 from app.routes import router
 from app.security import RequestBodyLimitMiddleware, SecurityHeadersMiddleware
 
@@ -30,8 +31,10 @@ app.add_middleware(SecurityHeadersMiddleware)
 
 db.init_db(settings.db_path)
 owner_alert_store.init_db(settings.db_path)
+telegram_bot_store.init_db(settings.db_path)
 app.include_router(router)
 app.include_router(owner_alert_router)
+app.include_router(telegram_bot_router)
 
 
 @app.get("/healthz")

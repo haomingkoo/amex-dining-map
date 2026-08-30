@@ -69,3 +69,33 @@ def test_owner_alert_config_rejects_public_example_ingest_token(monkeypatch):
 
     with pytest.raises(RuntimeError, match=r"43\+ random URL-safe characters"):
         load_settings()
+
+
+def test_telegram_guide_config_rejects_placeholder_secret(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_GUIDE_ENABLED", "true")
+    monkeypatch.setenv(
+        "TELEGRAM_GUIDE_BOT_TOKEN",
+        "987654321:separatepublicbotabcdefghijklmnopqrstuvwxyz",
+    )
+    monkeypatch.setenv(
+        "TELEGRAM_GUIDE_WEBHOOK_SECRET",
+        "REPLACE_ME_WITH_URLSAFE_RANDOM_43_PLUS_CHARS",
+    )
+    monkeypatch.setenv("TELEGRAM_IDENTITY_HASH_SALT", "s" * 43)
+
+    with pytest.raises(RuntimeError, match="Telegram guide configuration is incomplete"):
+        load_settings()
+
+
+def test_telegram_guide_config_rejects_reused_secrets(monkeypatch):
+    shared = "s" * 43
+    monkeypatch.setenv("TELEGRAM_GUIDE_ENABLED", "true")
+    monkeypatch.setenv(
+        "TELEGRAM_GUIDE_BOT_TOKEN",
+        "987654321:separatepublicbotabcdefghijklmnopqrstuvwxyz",
+    )
+    monkeypatch.setenv("TELEGRAM_GUIDE_WEBHOOK_SECRET", shared)
+    monkeypatch.setenv("TELEGRAM_IDENTITY_HASH_SALT", shared)
+
+    with pytest.raises(RuntimeError, match="independent Telegram"):
+        load_settings()

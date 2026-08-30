@@ -2697,6 +2697,12 @@ function normalizeRouteHash(hashValue = window.location.hash) {
     .toLowerCase();
 }
 
+function tableForTwoVenueIdFromHash(hashValue = window.location.hash) {
+  const query = String(hashValue || "").split("?", 2)[1] || "";
+  const venueId = new URLSearchParams(query).get("venue") || "";
+  return /^tft-[a-z0-9-]{1,120}$/.test(venueId) ? venueId : null;
+}
+
 function resolveRouteFromHash(hashValue = window.location.hash) {
   const hash = normalizeRouteHash(hashValue);
   const aliases = {
@@ -7102,6 +7108,10 @@ async function applyRoute(routeId) {
     refreshTableForTwoDateOptions();
     renderTableForTwoAlertSignup();
     filterTableForTwo();
+    const linkedVenueId = tableForTwoVenueIdFromHash();
+    if (linkedVenueId && tableForTwoVenues().some((record) => record.id === linkedVenueId)) {
+      setActiveTableForTwoRecord(linkedVenueId, { scrollDetails: true });
+    }
     ensureTableForTwoLiveRefresh();
     if (hasLeaflet && tableForTwoMap) {
       setTimeout(() => {

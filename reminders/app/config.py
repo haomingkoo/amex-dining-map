@@ -30,6 +30,14 @@ class Settings:
     telegram_owner_chat_id: int = 0
     explorer_base_url: str = "https://amex-explorer.kooexperience.com"
     owner_alert_not_before: datetime | None = None
+    telegram_guide_enabled: bool = False
+    telegram_guide_bot_token: str = ""
+    telegram_guide_webhook_secret: str = ""
+    telegram_identity_hash_salt: str = ""
+    telegram_user_limit_per_minute: int = 8
+    telegram_global_limit_per_minute: int = 120
+    telegram_user_limit_per_day: int = 200
+    telegram_global_limit_per_day: int = 5_000
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -95,6 +103,24 @@ def load_settings() -> Settings:
             "EXPLORER_BASE_URL", "https://amex-explorer.kooexperience.com"
         ).rstrip("/"),
         owner_alert_not_before=_env_datetime("OWNER_ALERT_NOT_BEFORE"),
+        telegram_guide_enabled=_env_bool("TELEGRAM_GUIDE_ENABLED"),
+        telegram_guide_bot_token=os.getenv("TELEGRAM_GUIDE_BOT_TOKEN", "").strip(),
+        telegram_guide_webhook_secret=os.getenv(
+            "TELEGRAM_GUIDE_WEBHOOK_SECRET", ""
+        ).strip(),
+        telegram_identity_hash_salt=os.getenv(
+            "TELEGRAM_IDENTITY_HASH_SALT", ""
+        ).strip(),
+        telegram_user_limit_per_minute=_env_int(
+            "TELEGRAM_USER_LIMIT_PER_MINUTE", 8
+        ),
+        telegram_global_limit_per_minute=_env_int(
+            "TELEGRAM_GLOBAL_LIMIT_PER_MINUTE", 120
+        ),
+        telegram_user_limit_per_day=_env_int("TELEGRAM_USER_LIMIT_PER_DAY", 200),
+        telegram_global_limit_per_day=_env_int(
+            "TELEGRAM_GLOBAL_LIMIT_PER_DAY", 5_000
+        ),
     )
     if settings.public_base_url.startswith("https://"):
         missing = []
@@ -144,5 +170,40 @@ def load_settings() -> Settings:
         if missing:
             raise RuntimeError(
                 "Owner alert configuration is incomplete: " + ", ".join(missing)
+            )
+    if settings.telegram_guide_enabled:
+        missing = []
+        guide_token = settings.telegram_guide_bot_token.split(":", 1)
+        if (
+            len(guide_token) != 2
+            or not guide_token[0].isdigit()
+            or len(guide_token[1]) < 20
+            or settings.telegram_guide_bot_token == settings.telegram_bot_token
+        ):
+            missing.append("TELEGRAM_GUIDE_BOT_TOKEN (separate public bot)")
+        for name, value in (
+            ("TELEGRAM_GUIDE_WEBHOOK_SECRET", settings.telegram_guide_webhook_secret),
+            ("TELEGRAM_IDENTITY_HASH_SALT", settings.telegram_identity_hash_salt),
+        ):
+            if (
+                re.fullmatch(r"[A-Za-z0-9_-]{43,256}", value) is None
+                or value.startswith(("YOUR_", "REPLACE_", "CHANGE_ME"))
+            ):
+                missing.append(f"{name} (43+ random URL-safe characters)")
+        if (
+            settings.telegram_guide_webhook_secret
+            == settings.telegram_identity_hash_salt
+        ):
+            missing.append("independent Telegram webhook and identity secrets")
+        if min(
+            settings.telegram_user_limit_per_minute,
+            settings.telegram_global_limit_per_minute,
+            settings.telegram_user_limit_per_day,
+            settings.telegram_global_limit_per_day,
+        ) < 1:
+            missing.append("positive Telegram guide rate limits")
+        if missing:
+            raise RuntimeError(
+                "Telegram guide configuration is incomplete: " + ", ".join(missing)
             )
     return settings
