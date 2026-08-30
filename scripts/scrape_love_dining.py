@@ -21,9 +21,10 @@ import time
 import urllib.request
 import urllib.parse
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
-from playwright.sync_api import Page, sync_playwright
+if TYPE_CHECKING:
+    from playwright.sync_api import Page
 
 RESTAURANTS_URL = "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html"
 HOTELS_URL = "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html"
@@ -174,8 +175,23 @@ def preserve_existing_enrichment(records: list[dict]) -> list[dict]:
 
     existing = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
     existing_by_id = {record["id"]: record for record in existing}
+    existing_by_location: dict[tuple[str, str], list[dict]] = {}
+    for record in existing:
+        location_key = (
+            normalize_inline_text(record.get("name")).casefold(),
+            normalize_inline_text(record.get("address")).casefold(),
+        )
+        if all(location_key):
+            existing_by_location.setdefault(location_key, []).append(record)
     for record in records:
         old = existing_by_id.get(record["id"])
+        if old is None:
+            location_key = (
+                normalize_inline_text(record.get("name")).casefold(),
+                normalize_inline_text(record.get("address")).casefold(),
+            )
+            candidates = existing_by_location.get(location_key, [])
+            old = candidates[0] if len(candidates) == 1 else None
         if not old:
             continue
         for field in PRESERVED_ENRICHMENT_FIELDS:
@@ -195,7 +211,14 @@ def official_record_projection(record: dict) -> dict:
     }
 
 
-def build_meta(records: list[dict], checked_at: str, *, mark_reviewed: bool = False) -> dict:
+def build_meta(
+    records: list[dict],
+    checked_at: str,
+    *,
+    mark_reviewed: bool = False,
+    mark_records_reviewed: bool = False,
+    mark_terms_reviewed: bool = False,
+) -> dict:
     restaurants = [record for record in records if record.get("type") == "restaurant"]
     hotels = [record for record in records if record.get("type") == "hotel"]
     official_records = [official_record_projection(record) for record in records]
@@ -211,10 +234,11 @@ def build_meta(records: list[dict], checked_at: str, *, mark_reviewed: bool = Fa
     terms_reviewed_at = previous_meta.get("terms_reviewed_at") or checked_at
     records_reviewed_at = previous_meta.get("records_reviewed_at") or checked_at
 
-    if mark_reviewed:
+    if mark_reviewed or mark_terms_reviewed:
         reviewed_terms_hashes = terms_hashes
-        reviewed_records_sha256 = records_sha256
         terms_reviewed_at = checked_at
+    if mark_reviewed or mark_records_reviewed:
+        reviewed_records_sha256 = records_sha256
         records_reviewed_at = checked_at
 
     major_change_reasons: list[str] = []
@@ -424,28 +448,6 @@ def parse_hotels(text: str) -> list[dict]:
     lines = [l.strip() for l in text.splitlines()]
     non_empty = [l for l in lines if l]
 
-    # Hotel blocks: Hotel Name line followed by address, then description, then outlets
-    # Detect hotel names by known list
-    KNOWN_HOTELS = {
-        "Fairmont Singapore",
-        "Swissôtel The Stamford",
-        "Pullman Singapore Hill Street",
-        "Sofitel Singapore City Centre",
-        "Pan Pacific Orchard, Singapore",
-        "The Fullerton Hotel Singapore",
-        "The Capitol Kempinski Hotel Singapore",
-        "JW Marriott Singapore South Beach",
-        "Singapore Marriott Tang Plaza Hotel",
-        "The St. Regis Singapore",
-        "W Singapore - Sentosa Cove",
-        "Copthorne King\u2019s Hotel Singapore",  # smart apostrophe as on page
-        "Grand Copthorne Waterfront Singapore",
-        "M Hotel Singapore",
-        "Orchard Hotel Singapore",
-        "Paradox Singapore Merchant Court",
-        "Resorts World Sentosa",
-    }
-
     current_hotel = ""
     current_hotel_address = ""
 
@@ -453,21 +455,20 @@ def parse_hotels(text: str) -> list[dict]:
     while i < len(non_empty):
         line = non_empty[i]
 
-        # Detect hotel name
-        if line in KNOWN_HOTELS:
+        # Hotel headings are followed immediately by the property's Singapore
+        # postal address. This preserves the source label when Amex renames or
+        # adds a hotel instead of leaking outlets into the previous hotel block.
+        next_line = non_empty[i + 1] if i + 1 < len(non_empty) else ""
+        if re.search(r"\bSingapore\s+\d{6}\b", normalize_inline_text(next_line)):
             current_hotel = line
-            i += 1
-            # Next line is usually hotel address
-            if i < len(non_empty):
-                addr = non_empty[i]
-                # Simple check: contains "Singapore" and looks like address
-                if "Singapore" in addr or "Road" in addr or "Street" in addr:
-                    current_hotel_address = addr
-                    i += 1
+            current_hotel_address = next_line
+            i += 2
             continue
 
         # Detect outlet name — next line is "Details"
-        if current_hotel and i + 1 < len(non_empty) and non_empty[i + 1] == "Details":
+        if i + 1 < len(non_empty) and non_empty[i + 1] == "Details":
+            if not current_hotel:
+                raise ValueError(f"hotel outlet appears before a hotel heading: {line}")
             outlet_name = line
             i += 2  # skip outlet name + "Details"
 
@@ -687,10 +688,22 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--diff", action="store_true", help="Show additions/removals vs existing file")
     p.add_argument("--no-geocode", action="store_true", help="Skip geocoding pass")
     p.add_argument("--mark-reviewed", action="store_true", help="Mark current official records and T&C PDFs as reviewed")
+    p.add_argument(
+        "--mark-records-reviewed",
+        action="store_true",
+        help="Mark only the current official listing records as reviewed",
+    )
+    p.add_argument(
+        "--mark-terms-reviewed",
+        action="store_true",
+        help="Mark only the current restaurant and hotel T&C PDFs as reviewed",
+    )
     return p.parse_args()
 
 
 def main() -> None:
+    from playwright.sync_api import sync_playwright
+
     args = parse_args()
 
     print("Launching browser...")
@@ -740,7 +753,20 @@ def main() -> None:
     print(f"\nGeocoded: {geocoded}/{len(all_records)}")
 
     OUTPUT_PATH.write_text(json.dumps(all_records, indent=2, ensure_ascii=False) + "\n")
-    META_PATH.write_text(json.dumps(build_meta(all_records, checked_at, mark_reviewed=args.mark_reviewed), indent=2, ensure_ascii=False) + "\n")
+    META_PATH.write_text(
+        json.dumps(
+            build_meta(
+                all_records,
+                checked_at,
+                mark_reviewed=args.mark_reviewed,
+                mark_records_reviewed=args.mark_records_reviewed,
+                mark_terms_reviewed=args.mark_terms_reviewed,
+            ),
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n"
+    )
     print(f"Written → {OUTPUT_PATH}")
     print(f"Written → {META_PATH}")
 

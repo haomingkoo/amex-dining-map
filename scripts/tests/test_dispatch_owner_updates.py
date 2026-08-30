@@ -37,6 +37,11 @@ def test_published_events_replays_recent_and_excludes_review_queue(tmp_path: Pat
                         "detected_at": "2026-08-29T00:00:00Z",
                     },
                     {
+                        "id": "retracted",
+                        "status": "retracted",
+                        "detected_at": "2026-08-29T00:00:00Z",
+                    },
+                    {
                         "id": "old",
                         "status": "published",
                         "detected_at": "2026-04-01T00:00:00Z",

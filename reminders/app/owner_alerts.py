@@ -49,13 +49,17 @@ class OwnerAlertEvent(BaseModel):
     occurrence: Annotated[int | None, Field(ge=1)] = None
     owner_delivery_state: Annotated[str | None, Field(max_length=40)] = None
     owner_delivery_recorded_at: datetime | None = None
+    retracted_at: datetime | None = None
+    retraction_note: Annotated[str | None, Field(max_length=500)] = None
+    corrected_by: Annotated[str | None, Field(pattern=r"^[A-Za-z0-9._:-]{8,128}$")] = None
+    corrects: Annotated[list[str], Field(max_length=20)] = Field(default_factory=list)
     program: Annotated[str, Field(min_length=1, max_length=80)]
     program_id: Annotated[str, Field(pattern=r"^[a-z0-9-]{1,80}$")]
     route: Annotated[str, Field(pattern=r"^#/[a-z0-9/_-]{1,160}$")]
     kind: Annotated[str, Field(pattern=r"^[a-z][a-z0-9_]{0,63}$")]
     subject: SafeText
     detected_at: datetime
-    status: Literal["published", "review_required", "rejected"]
+    status: Literal["published", "review_required", "rejected", "retracted"]
     before: OwnerAlertSnapshot
     after: OwnerAlertSnapshot
     changes: Annotated[list[OwnerAlertChange], Field(min_length=1, max_length=20)]
@@ -63,7 +67,9 @@ class OwnerAlertEvent(BaseModel):
     reviewed_at: datetime | None = None
     review_note: Annotated[str | None, Field(max_length=500)] = None
 
-    @field_validator("detected_at", "reviewed_at", "owner_delivery_recorded_at")
+    @field_validator(
+        "detected_at", "reviewed_at", "owner_delivery_recorded_at", "retracted_at"
+    )
     @classmethod
     def timestamps_are_aware_utc(cls, value: datetime | None) -> datetime | None:
         if value is None:

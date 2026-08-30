@@ -115,7 +115,7 @@ const GOOGLE_RATING_ID_ALIASES = {
 const LOVE_DINING_FIXED_20_IDS = new Set([
   "love-pan-pacific-orchard-singapore-florette",
   "love-swissotel-the-stamford-skai-bar",
-  "love-paradox-singapore-merchant-court-crossroads-bar",
+  "love-paradox-singapore-crossroads-bar",
 ]);
 
 function normalizeTheme(theme) {
@@ -2454,6 +2454,7 @@ function updateKindLabel(kind) {
     removed: "Removed",
     menu_updated: "Menu",
     details_updated: "Changed",
+    correction: "Correction",
     source_updated: "Source",
   }[kind] || "Changed";
 }
@@ -2477,8 +2478,8 @@ function readUpdatesTimestamp() {
 function unreadUpdates() {
   const readAt = state.updatesReadAt ? new Date(state.updatesReadAt).getTime() : 0;
   return state.updates.filter((update) => {
-    const detectedAt = new Date(update.detected_at).getTime();
-    return Number.isFinite(detectedAt) && detectedAt > readAt;
+    const effectiveAt = new Date(update.reviewed_at || update.detected_at).getTime();
+    return Number.isFinite(effectiveAt) && effectiveAt > readAt;
   });
 }
 
@@ -2526,7 +2527,7 @@ function renderUpdates() {
   if (!updatesShell || !updatesList || !updatesHeadline || !updatesCount) return;
   const published = state.updates
     .filter((update) => update && update.status === "published")
-    .sort((a, b) => String(b.detected_at || "").localeCompare(String(a.detected_at || "")));
+    .sort((a, b) => String(b.reviewed_at || b.detected_at || "").localeCompare(String(a.reviewed_at || a.detected_at || "")));
   state.updates = published;
   if (!published.length) {
     updatesShell.hidden = true;
@@ -2558,7 +2559,7 @@ function setUpdatesOpen(open) {
 }
 
 function markUpdatesRead() {
-  const latest = state.updates[0]?.detected_at || new Date().toISOString();
+  const latest = state.updates[0]?.reviewed_at || state.updates[0]?.detected_at || new Date().toISOString();
   state.updatesReadAt = latest;
   try {
     window.localStorage.setItem(UPDATES_READ_STORAGE_KEY, latest);
@@ -6533,19 +6534,24 @@ function clearLoveDiningMarkers() {
 function createLoveDiningMarker(record) {
   if (!hasLeaflet || !loveMap) return null;
   if (!loveDiningHasMapPin(record)) return null;
-  const color = record.type === "hotel" ? "#9b6bd6" : "#e06b8b";
+  const isUnavailable = loveDiningUnavailable(record);
+  const color = isUnavailable ? "#6b7280" : record.type === "hotel" ? "#9b6bd6" : "#e06b8b";
+  const markerLabel = isUnavailable ? "×" : "";
+  const markerTitle = isUnavailable ? "Unavailable venue" : record.name;
 
   // Use a custom div icon instead of circleMarker which doesn't render reliably
   const marker = L.marker(latLngForRecord(record), {
     icon: L.divIcon({
-      html: `<div style="width: 16px; height: 16px; border-radius: 50%; background: ${color}; border: 2px solid #091018; opacity: 0.9; cursor: pointer;"></div>`,
+      html: `<div title="${escapeHtml(markerTitle)}" style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:${color};border:2px solid #091018;color:#fff;font-weight:800;line-height:1;opacity:0.9;cursor:pointer;">${markerLabel}</div>`,
       iconSize: [16, 16],
       className: 'custom-marker-icon'
     })
   });
 
   // Simple popup: name + cuisine + rating + Google Maps link
-  const gRating = googleRating(record);
+  const gRating = loveDiningEligibilityState(record).key === "ineligible"
+    ? null
+    : googleRating(record);
   const cuisine = record.cuisine || "";
   const ratingHtml = gRating && gRating.rating != null
     ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""} · ${escapeHtml(formatSourceDate(gRating.scraped_at))}</div>`
@@ -6569,7 +6575,11 @@ function updateLoveDiningMarkerStyles() {
         applySelectedMarkerStyle(iconEl);
       } else {
         const record = state.loveDining.find(r => r.id === id);
-        const originalColor = record ? (record.type === "hotel" ? "#9b6bd6" : "#e06b8b") : "#9b6bd6";
+        const originalColor = record
+          ? loveDiningUnavailable(record)
+            ? "#6b7280"
+            : record.type === "hotel" ? "#9b6bd6" : "#e06b8b"
+          : "#9b6bd6";
         applyUnselectedMarkerStyle(iconEl, originalColor);
       }
     }
@@ -6745,10 +6755,13 @@ function loveDiningBenefitProfile(record) {
   const order = loveDiningOrderProfile(record);
   const eligibility = loveDiningEligibilityState(record);
   const isUnavailable = eligibility.key === "ineligible";
+  const isPermanentlyClosed = /permanently closed/i.test(
+    `${record.closing_note || ""} ${record.notes || ""}`,
+  );
   const isFutureChange = eligibility.key === "future_change";
   const sourceReviewRequired = Boolean(state.loveDiningSourceMeta?.manual_review_required);
   const isFixed20 = LOVE_DINING_FIXED_20_IDS.has(record.id);
-  const maxSavingsPct = isFixed20 ? 20 : 50;
+  const maxSavingsPct = isUnavailable ? 0 : isFixed20 ? 20 : 50;
   const isHotel = record.type === "hotel";
   const savingsKey = isUnavailable ? "unavailable" : isFixed20 ? "twenty" : "fifty";
   const futureLastEligible = eligibility.effectiveFrom
@@ -6756,7 +6769,7 @@ function loveDiningBenefitProfile(record) {
     : null;
   if (futureLastEligible) futureLastEligible.setUTCDate(futureLastEligible.getUTCDate() - 1);
   const savingsLabel = isUnavailable
-    ? "Eligibility warning"
+    ? `${isPermanentlyClosed ? "Permanently closed · " : ""}Not eligible${eligibility.effectiveFrom ? ` since ${formatSourceDate(eligibility.effectiveFrom)}` : ""}`
     : isFutureChange
       ? `Eligible until ${formatSourceDate(futureLastEligible?.toISOString())}`
     : isFixed20
@@ -6780,7 +6793,9 @@ function loveDiningBenefitProfile(record) {
       : isHotel
         ? "Total food bill at most hotel outlets, or qualifying food items for named exception outlets; lunch and dinner unless otherwise stated."
         : "Dine-in à la carte food items during lunch and dinner, unless the outlet states otherwise.";
-  const ladder = isHotel
+  const ladder = isUnavailable
+    ? "No current Love Dining benefit. Follow the dated official listing rather than historical booking details."
+    : isHotel
     ? "1 adult 15%; 2 adults 50%; 3 adults 35% or 33% depending on hotel group; 4 adults 25%; 5–10 adults 20%."
     : "1 diner 15%; 2 diners 50%; 3 diners 35%; 4 diners 25%; 5–20 diners 20%.";
   const appliesKey = isUnavailable || isFutureChange || isFixed20
@@ -6831,6 +6846,17 @@ function loveDiningCachedLabel() {
   return cachedAt ? formatTimestamp(cachedAt) : "Cache time not recorded";
 }
 
+function loveDiningReviewSummary() {
+  const meta = state.loveDiningSourceMeta || {};
+  const roster = meta.records_reviewed_at
+    ? `venue list reviewed ${formatSourceDate(meta.records_reviewed_at)}`
+    : "venue list review not recorded";
+  const terms = meta.terms_reviewed_at
+    ? `benefit terms reviewed ${formatSourceDate(meta.terms_reviewed_at)}`
+    : "benefit terms review not recorded";
+  return `${roster} · ${terms}`;
+}
+
 function loveDiningBookingKeys(record) {
   const combined = normalizeInlineText(`${record.notes || ""} ${record.opening_hours || ""}`).toLowerCase();
   const keys = new Set();
@@ -6846,6 +6872,7 @@ function loveDiningBookingKeys(record) {
 }
 
 function loveDiningBookingLabel(record) {
+  if (loveDiningEligibilityState(record).key === "ineligible") return "Not eligible";
   const keys = loveDiningBookingKeys(record);
   if (keys.has("48h")) return "48h booking";
   if (keys.has("24h")) return "24h booking";
@@ -6926,9 +6953,7 @@ function filterLoveDining() {
   const total = state.loveDining.length;
   const cachedLabel = loveDiningCachedLabel();
   const reviewSuffix = state.loveDiningSourceMeta?.manual_review_required ? " · source review required" : "";
-  const reviewedBaseline = state.loveDiningSourceMeta?.manual_review_required
-    ? `benefit details last reviewed ${formatSourceDate(state.loveDiningSourceMeta.records_reviewed_at || state.loveDiningSourceMeta.terms_reviewed_at)}`
-    : "50% for 2 eligible diners";
+  const reviewedBaseline = loveDiningReviewSummary();
   loveSummaryStripText.textContent = n === total
     ? `${total} venues · ${reviewedBaseline} · cached ${cachedLabel}${reviewSuffix}`
     : `${n} of ${total} venues · cached ${cachedLabel}${reviewSuffix}`;
@@ -6980,9 +7005,10 @@ function renderLoveDiningCard() {
 
   const hotelLine = record.hotel ? `<div class="focus-kicker">${escapeHtml(record.hotel)}</div>` : "";
   const benefit = loveDiningBenefitProfile(record);
+  const isUnavailable = benefit.savingsKey === "unavailable";
   const typeBadge = `<span class="badge ${record.type === "hotel" ? "love-hotel" : "love-rest"}">${record.type === "hotel" ? "Hotel outlet" : "Restaurant"}</span>`;
   const cuisineBadge = record.cuisine ? `<span class="badge">${escapeHtml(record.cuisine)}</span>` : "";
-  const bookingBadge = `<span class="badge blue">${escapeHtml(loveDiningBookingLabel(record))}</span>`;
+  const bookingBadge = `<span class="badge ${isUnavailable ? "amber" : "blue"}">${escapeHtml(loveDiningBookingLabel(record))}</span>`;
   const appliesBadge = `<span class="badge green">${escapeHtml(benefit.appliesLabel)}</span>`;
   const multiLocationBadge = loveDiningHasMultipleLocations(record)
     ? '<span class="badge amber">Multiple locations</span>'
@@ -6994,16 +7020,21 @@ function renderLoveDiningCard() {
   const locationNote = loveDiningLocationNote(record)
     ? `<div class="focus-note">${escapeHtml(loveDiningLocationNote(record))}</div>`
     : "";
+  const eligibilityNote = isUnavailable
+    ? `<div class="focus-note focus-note-warn">${escapeHtml(benefit.savingsDetail)} Historical hours, phone, ratings, and booking instructions are hidden.</div>`
+    : "";
 
-  const scrapedRating = googleRating(record);
-  const googleMapsUrl = loveDiningShouldHideMapPin(record)
+  const scrapedRating = isUnavailable ? null : googleRating(record);
+  const googleMapsUrl = isUnavailable
+    ? null
+    : loveDiningShouldHideMapPin(record)
     ? googleMapsSearchUrl([record.name, "Singapore"])
     : (scrapedRating && scrapedRating.maps_url)
       ? scrapedRating.maps_url
       : record.address
         ? googleMapsSearchUrl([record.name, record.address, "Singapore"])
         : null;
-  const gBadge = loveDiningShouldHideMapPin(record) ? "" : googleRatingBadge(record);
+  const gBadge = isUnavailable || loveDiningShouldHideMapPin(record) ? "" : googleRatingBadge(record);
   const googleMapsLabel = loveDiningShouldHideMapPin(record) ? "Search in Google Maps" : "Open in Google Maps";
   const cachedLabel = loveDiningCachedLabel();
   const sourceReviewWarning = state.loveDiningSourceMeta?.manual_review_required
@@ -7020,6 +7051,7 @@ function renderLoveDiningCard() {
       <div class="venue-tags" style="margin-top:6px">${typeBadge}${cuisineBadge}${appliesBadge}${bookingBadge}${multiLocationBadge}</div>
     </div>
     ${closingNote}
+    ${eligibilityNote}
     ${sourceReviewWarning}
     ${halal}
     ${locationNote}
@@ -7046,7 +7078,7 @@ function renderLoveDiningCard() {
       </div>
     </div>
     <div class="focus-note">${escapeHtml(benefit.cardRequirement)} ${escapeHtml(benefit.exclusions)}</div>
-    ${record.notes ? `<div class="focus-section">
+    ${record.notes && !isUnavailable ? `<div class="focus-section">
       <div class="focus-kicker">Outlet-specific notes</div>
       <div class="focus-note">${escapeHtml(record.notes)}</div>
     </div>` : ""}
@@ -7056,14 +7088,14 @@ function renderLoveDiningCard() {
       <div class="focus-row"><span class="focus-label">Location</span><span>${escapeHtml(loveDiningLocationFilterLabel(record))}</span></div>
       ${record.cuisine ? `<div class="focus-row"><span class="focus-label">Cuisine</span><span>${escapeHtml(record.cuisine)}</span></div>` : ""}
       ${record.address ? `<div class="focus-row"><span class="focus-label">Address</span><span>${escapeHtml(record.address)}</span></div>` : ""}
-      ${record.phone ? `<div class="focus-row"><span class="focus-label">Phone</span><span>${escapeHtml(record.phone)}</span></div>` : ""}
-      ${record.opening_hours ? `<div class="focus-row"><span class="focus-label">Hours</span><span>${escapeHtml(record.opening_hours)}</span></div>` : ""}
+      ${record.phone && !isUnavailable ? `<div class="focus-row"><span class="focus-label">Phone</span><span>${escapeHtml(record.phone)}</span></div>` : ""}
+      ${record.opening_hours && !isUnavailable ? `<div class="focus-row"><span class="focus-label">Hours</span><span>${escapeHtml(record.opening_hours)}</span></div>` : ""}
     </div>
     <div class="focus-actions">
       ${googleMapsUrl ? `<a class="inline-link primary-action" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">${googleMapsLabel}</a>` : ""}
       <a class="inline-link subtle" href="${escapeHtml(benefit.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(benefit.sourceLabel)}</a>
       <a class="inline-link subtle" href="${escapeHtml(benefit.termsUrl)}" target="_blank" rel="noopener">${escapeHtml(benefit.termsLabel)}</a>
-      ${loveDiningHasMapPin(record) ? `<button type="button" class="ghost-btn secondary" data-love-focus-map="true">Center on map</button>` : ""}
+      ${loveDiningHasMapPin(record) && !isUnavailable ? `<button type="button" class="ghost-btn secondary" data-love-focus-map="true">Center on map</button>` : ""}
     </div>
   `;
 
@@ -7085,8 +7117,9 @@ function renderLoveDiningMobileList() {
   state.loveDiningFiltered.forEach((record) => {
     const card = document.createElement("article");
     card.className = `mobile-card${record.id === state.loveDiningActiveId ? " active" : ""}`;
-    const g = loveDiningShouldHideMapPin(record) ? null : googleRating(record);
     const benefit = loveDiningBenefitProfile(record);
+    const isUnavailable = benefit.savingsKey === "unavailable";
+    const g = isUnavailable || loveDiningShouldHideMapPin(record) ? null : googleRating(record);
     const ratingStr = g && g.rating != null
       ? `<span class="card-google-rating">★ ${g.rating}${g.review_count ? ` (${Number(g.review_count).toLocaleString()})` : ""} · ${escapeHtml(formatSourceDate(g.scraped_at))}</span>`
       : "";
@@ -7100,20 +7133,20 @@ function renderLoveDiningMobileList() {
       </div>
       <div class="mobile-card-meta">
         ${record.address ? `<span>${escapeHtml(record.address)}</span>` : ""}
-        ${record.phone ? `<span>${escapeHtml(record.phone)}</span>` : ""}
+        ${record.phone && !isUnavailable ? `<span>${escapeHtml(record.phone)}</span>` : ""}
       </div>
       <div class="venue-tags">
         <span class="badge ${benefit.savingsKey === "unavailable" ? "amber" : "green"}">${escapeHtml(benefit.savingsLabel)}</span>
         <span class="badge blue">${escapeHtml(benefit.orderLabel)}</span>
         <span class="badge green">${escapeHtml(benefit.appliesLabel)}</span>
-        <span class="badge blue">${escapeHtml(loveDiningBookingLabel(record))}</span>
+        <span class="badge ${isUnavailable ? "amber" : "blue"}">${escapeHtml(loveDiningBookingLabel(record))}</span>
         ${loveDiningHasMultipleLocations(record) ? '<span class="badge amber">Bundled locations</span>' : ""}
         <span class="badge">Cached ${escapeHtml(loveDiningCachedLabel())}</span>
       </div>
     `;
     card.addEventListener("click", () => {
       setActiveLoveDiningRecord(record.id);
-      if (loveDiningHasMapPin(record)) focusLoveDiningOnMap(record);
+      if (loveDiningHasMapPin(record) && !isUnavailable) focusLoveDiningOnMap(record);
     });
     loveMobileResultsList.appendChild(card);
   });

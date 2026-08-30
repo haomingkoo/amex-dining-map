@@ -45,3 +45,17 @@ Source: `data/love-dining.json`
   - Man Fu Yuan / Singapore
   - Tajimaya Yakiniku / Singapore
   - The Lobby Lounge / Singapore
+
+## 2026-08-30 05:35 UTC — Love Dining correction
+
+Source: `data/reviews/love-dining/2026-08-30-hotel-attribution-correction.json`
+
+- **Corrected hotel attribution (6)**
+  - LUCE: The Capitol Kempinski Hotel Singapore → Frasers House, a Luxury Collection Hotel, Singapore
+  - Man Fu Yuan: The Capitol Kempinski Hotel Singapore → Frasers House, a Luxury Collection Hotel, Singapore
+  - The Lobby Lounge: The Capitol Kempinski Hotel Singapore → Frasers House, a Luxury Collection Hotel, Singapore
+  - Blue Potato: Orchard Hotel Singapore → Paradox Singapore
+  - Ellenborough Market Café: Orchard Hotel Singapore → Paradox Singapore
+  - Crossroads Bar: Orchard Hotel Singapore → Paradox Singapore
+
+The earlier 2026-06-02 add/remove entry is retained as historical parser output, not an official venue churn claim. Three incorrect 2026-08-29 published additions were retracted in `data/updates.json` and linked to their reviewed correction events.

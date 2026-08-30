@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import importlib.util
+import copy
 import json
 import tempfile
 import unittest
@@ -41,6 +42,85 @@ class SourceChangeUpdatesTest(unittest.TestCase):
 
         self.assertEqual(events[0]["status"], "review_required")
         self.assertEqual(events[0]["changes"], [{"field": "Address", "before": "Old address", "after": "New address"}])
+
+    def test_rekeyed_outlet_is_one_before_after_correction(self):
+        old = [{
+            "id": "love-old-hotel-luce",
+            "name": "LUCE",
+            "hotel": "Wrong Hotel",
+            "address": "80 Middle Road, Singapore 188966",
+            "city": "Singapore",
+            "country": "Singapore",
+        }]
+        new = [{
+            "id": "love-frasers-house-luce",
+            "name": "LUCE",
+            "hotel": "Frasers House",
+            "address": "80 Middle Road, Singapore 188966",
+            "city": "Singapore",
+            "country": "Singapore",
+        }]
+
+        events = MODULE.build_record_update_events(
+            "Love Dining",
+            old,
+            new,
+            {"manual_review_required": True},
+            "2026-08-30T00:00:00Z",
+        )
+
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["kind"], "correction")
+        self.assertEqual(events[0]["status"], "review_required")
+        self.assertEqual(
+            events[0]["changes"],
+            [{"field": "Hotel", "before": "Wrong Hotel", "after": "Frasers House"}],
+        )
+        diff = MODULE.compare_records(old, new)
+        self.assertEqual(diff, {"added": [], "removed": [], "changed": ["LUCE / Singapore"]})
+
+        later = copy.deepcopy(new[0])
+        later["notes"] = "Changed"
+        ordinary = MODULE.build_record_update_events(
+            "Love Dining",
+            new,
+            [later],
+            {"manual_review_required": True},
+            "2026-08-31T00:00:00Z",
+        )[0]
+        self.assertEqual(events[0]["stream_id"], ordinary["stream_id"])
+
+        restored = MODULE.build_record_update_events(
+            "Love Dining",
+            [later],
+            new,
+            {"manual_review_required": True},
+            "2026-09-01T00:00:00Z",
+        )[0]
+        recurring = MODULE.build_record_update_events(
+            "Love Dining",
+            new,
+            [later],
+            {"manual_review_required": True},
+            "2026-09-02T00:00:00Z",
+        )[0]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "updates.json"
+            for item in (events[0], ordinary, restored, recurring):
+                MODULE.append_updates(path, [item], item["detected_at"])
+            payload = json.loads(path.read_text())
+        stream_events = [
+            item
+            for item in payload["updates"]
+            if item["stream_id"] == events[0]["stream_id"]
+        ]
+        self.assertEqual(len(stream_events), 4)
+        repeated = [
+            item
+            for item in stream_events
+            if item["transition_id"] == ordinary["transition_id"]
+        ]
+        self.assertEqual([item["occurrence"] for item in repeated], [2, 1])
 
     def test_menu_hash_change_is_a_menu_update(self):
         old = [{"id": "venue-1", "name": "Place", "menu_pdf": {"filename": "menu.pdf", "sha256": "a" * 64}}]
@@ -287,6 +367,41 @@ class SourceChangeUpdatesTest(unittest.TestCase):
         event["reviewed_at"] = "2026-08-30T01:00:00Z"
         event["review_note"] = "Reviewed"
         self.assertEqual(MODULE.update_event_id(event), before)
+
+    def test_retraction_metadata_does_not_change_transition_identity(self):
+        event = MODULE.build_meta_update_event(
+            "Table for Two",
+            {"source_documents": {"faq_sha256": "a" * 64}},
+            {"source_documents": {"faq_sha256": "b" * 64}},
+            "2026-08-30T00:00:00Z",
+        )
+        self.assertIsNotNone(event)
+        before = MODULE.update_event_id(event)
+        event["status"] = "retracted"
+        event["retracted_at"] = "2026-08-30T01:00:00Z"
+        event["retraction_note"] = "Superseded by a reviewed correction"
+        event["corrected_by"] = "correction-12345678"
+        self.assertEqual(MODULE.update_event_id(event), before)
+
+    def test_retracted_history_is_protected_from_retention(self):
+        events = [
+            {
+                "id": f"sent-{index}",
+                "status": "published",
+                "owner_delivery_state": "sent",
+                "detected_at": f"2026-08-{(index % 28) + 1:02d}T00:00:00Z",
+            }
+            for index in range(MODULE.MAX_RETAINED_RESOLVED_UPDATES + 5)
+        ]
+        retracted = {
+            "id": "retracted-protected",
+            "status": "retracted",
+            "detected_at": "2026-01-01T00:00:00Z",
+        }
+
+        retained = MODULE.retain_updates([*events, retracted])
+
+        self.assertIn("retracted-protected", {event["id"] for event in retained})
 
     def test_concurrent_ledger_appends_do_not_lose_events(self):
         with tempfile.TemporaryDirectory() as temp_dir:
