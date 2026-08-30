@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "document_id": "tft-terms",
+  "kind": "terms",
+  "title": "Table for Two - Platinum Edition Terms and Conditions",
+  "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf",
+  "raw_sha256": "7ba815581e6c0cb0c50775e6db642f81b040a65ff5568a70f6aeb4ed4cc0a7ec",
+  "page_count": 3,
+  "page_text_sha256": [
+    "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+    "d0a2104700134f87df586fb2f496ba066534a9606da41c30513739c5d40e3d5f",
+    "8f5cba4caf5ce077412319d31cb80a4f0b066d06cde9cbc9ba72f42840163186"
+  ],
+  "extractor": "pypdf 6.7.1 extract_text normalized-whitespace-v1",
+  "lexical_index_version": "reviewed-topics-v1",
+  "review_status": "approved",
+  "reviewed_at": "2026-08-30T04:52:00Z",
+  "review_note": "All three rendered pages reviewed against extracted text. Current baseline only; summaries are paraphrases and do not determine personal eligibility.",
+  "clauses": [
+    {
+      "id": "eligibility",
+      "page": 1,
+      "topics": ["eligibility", "eligible", "qualify", "card", "card required", "card is required", "centurion card", "supplementary", "basic"],
+      "summary": "The program covers Basic and Supplementary members of the Singapore-issued Platinum Card. This document scope does not determine whether a particular person or card qualifies."
+    },
+    {
+      "id": "benefit-cycle",
+      "page": 1,
+      "topics": ["benefit", "offer", "cycle", "voucher", "carry forward", "six", "complimentary"],
+      "summary": "One complimentary dining offer is made available every two months, up to six times in 2026. An unused offer does not carry into a later cycle."
+    },
+    {
+      "id": "shared-account",
+      "page": 1,
+      "topics": ["shared", "account", "supplementary voucher", "one per card", "redeemed", "used"],
+      "summary": "Basic and Supplementary members can see the offer, but it is usable once per Card Account in each redemption cycle."
+    },
+    {
+      "id": "guests",
+      "page": 1,
+      "topics": ["guest", "guests", "diner", "diners", "party", "additional", "children", "child"],
+      "summary": "The offer is for two people and at least one diner must be an eligible Card Member. Additional diners must be declared in the booking portal, remain subject to merchant availability, and incur additional cost paid with the eligible card. The program terms do not state how children are counted."
+    },
+    {
+      "id": "solo-takeaway",
+      "page": 1,
+      "topics": ["solo", "alone", "takeaway", "take away", "dine in"],
+      "summary": "A solo diner still receives food intended for two, and offer food is dine-in only rather than available for takeaway."
+    },
+    {
+      "id": "booking-confirmation",
+      "page": 1,
+      "topics": ["booking", "book", "book directly", "reservation", "confirmed", "confirmation", "sms", "guarantee", "availability"],
+      "summary": "A valid booking must be made through the Experiences App. Capacity is first-come, first-served; confirmation requires a successful merchant-site reservation and merchant SMS. American Express does not guarantee a booking or availability."
+    },
+    {
+      "id": "menu-and-costs",
+      "page": 1,
+      "topics": ["menu", "price", "cost", "additional diner", "voucher redeemed"],
+      "summary": "Displayed menu prices cover additional diners beyond the standard two and extra costs must be paid with the eligible card. If the cycle voucher was already redeemed, the document says the diner may instead pay the merchant directly using the eligible card and choose the curated or regular menu. Actual dishes must be checked in the current menu."
+    },
+    {
+      "id": "merchant-changes-blackouts",
+      "page": 1,
+      "topics": ["blackout", "merchant", "restaurant change", "participating", "public holiday"],
+      "summary": "Participating merchants can change by cycle without notice, merchant blackout dates may apply, and the document lists public holidays and their eves as program-wide blackout dates."
+    },
+    {
+      "id": "cancellation",
+      "page": 2,
+      "topics": ["cancel", "cancellation", "no show", "no-show", "fee", "refund"],
+      "summary": "Each merchant sets its own cancellation policy. Card Members must review it before booking, and American Express says it is not liable for fees caused by a policy violation. The program document does not provide a venue-specific fee or deadline."
+    },
+    {
+      "id": "offer-combination",
+      "page": 2,
+      "topics": ["combine", "promotion", "discount", "cash", "exchange", "stack"],
+      "summary": "The offer cannot be exchanged for cash or in-kind and cannot be combined with other offers, promotions, privileges, or discounts unless stated otherwise."
+    }
+  ]
+}

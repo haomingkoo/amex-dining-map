@@ -120,7 +120,8 @@ The guide bot is a separate, disabled-by-default Telegram identity. Its current
 surface is private chats only: `/start`, `/help`, `/venues`, exact venue/menu
 lookup, `/release <venue> [lunch|dinner]` observed release-pattern answers, and
 strict `/slots venue | party | meal | date/range/weekend | preferred time`
-queries.
+queries. `/terms <topic>` and `/faq <topic>` return page-aware reviewed official
+document summaries.
 It uses a generated source catalogue with official Amex menu links and
 never invokes an LLM, follows a user URL, joins groups, or reads owner-channel
 configuration. The catalogue is bundled with the Railway revision; the TFT
@@ -130,6 +131,24 @@ when the bundled roster or menu index is stale. Release answers expose exact
 observation counts, median and range, tracker confidence, latest detection, and
 history freshness. They explicitly describe scheduled AMEXPlatSG cache
 detection—not an official release policy or current availability.
+
+The document reader is deterministic. Runtime code never downloads or executes
+a PDF and does not use an LLM, embeddings, or a vector database. The TFT refresh
+projects only hash-bound review records from
+`data/reviews/official-documents/`; each fixed summary is tied to one official
+Amex URL, raw PDF hash, reviewed page, page-text hash, capture time, and version.
+A new source hash has no matching review record, so its clauses disappear from
+the Railway catalogue and the bot links the official document without
+summarizing it. Extracted full-page text is not committed or returned to users.
+Eligibility answers describe the official document's card scope but never say
+that a particular user qualifies. Ambiguous, merchant-specific, or legal
+interpretation requests fail closed.
+
+The TFT T&C hash is the previously approved version. The current two-page FAQ
+was visually and textually reviewed as a present-tense baseline; its prior PDF
+bytes were not retained, so the historical FAQ change remains in the manual
+review queue and no retroactive clause-level before/after claim is made. This is
+independent of the unchanged 23-venue roster.
 
 Slot lookup reads only the fixed
 `https://amex-explorer.kooexperience.com/data/table-for-two-slots.json`
@@ -147,9 +166,8 @@ The guide also contains a disabled-by-default, one-shot reminder lifecycle:
 one exact venue, party size, lunch or dinner, and an absolute SGT date, range,
 or up to ten specific dates. A confirmed reminder sends at most one notification
 after the first fresh cached AMEXPlatSG match, then closes. It is separate from
-email subscribers. Substantive T&C answers remain #40. Real slot freshness still
-depends on the half-hour workflow and Pages deployment completing inside the
-30-minute window.
+email subscribers. Real slot freshness still depends on the half-hour workflow
+and Pages deployment completing inside the 30-minute window.
 
 Spam controls are intentionally quiet: Telegram's webhook secret is checked
 before JSON parsing, update IDs are durably deduplicated, and guide-only

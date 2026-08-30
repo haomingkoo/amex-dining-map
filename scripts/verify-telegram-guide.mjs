@@ -5,7 +5,11 @@ import fs from "node:fs";
 
 const root = process.cwd();
 const catalog = JSON.parse(fs.readFileSync("reminders/app/tft_guide_catalog.json", "utf8"));
-assert.equal(catalog.schema_version, 3);
+assert.equal(catalog.schema_version, 4);
+assert.equal(catalog.documents.length, 2);
+assert.equal(catalog.documents.find((doc) => doc.id === "tft-terms").review_status, "approved");
+assert.equal(catalog.documents.find((doc) => doc.id === "tft-faq").review_status, "current_baseline");
+assert.equal(catalog.documents.find((doc) => doc.id === "tft-faq").extractor, "pypdf 6.7.1 extract_text normalized-whitespace-v1");
 assert.equal(catalog.venues.length, 23);
 const vue = catalog.venues.find((venue) => venue.id === "tft-vue");
 assert.ok(vue);
@@ -35,7 +39,7 @@ execFileSync("uv", [
   "run", "--python", "3.12",
   "--with-requirements", "reminders/requirements.txt",
   "--with-requirements", "reminders/requirements-dev.txt",
-  "pytest", "reminders/tests/test_tft_guide.py", "-q",
+  "pytest", "reminders/tests/test_tft_guide.py", "reminders/tests/test_tft_documents.py", "-q",
 ], { cwd: root, stdio: "pipe", env: { ...process.env, PYTHONPATH: root } });
 
 console.log("Telegram guide verification passed");

@@ -164,6 +164,7 @@ async def telegram_guide_webhook(
         first_word
         if first_word in {
             "/start", "/help", "/venues", "/menu", "/release", "/slots",
+            "/terms", "/faq",
             "/remind", "/reminders", "/cancel", "/delete_me",
         }
         else "query"

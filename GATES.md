@@ -31,15 +31,15 @@ Tracker: parent #34; vertical slices #35 through #42.
   EXPECT: Telegram change dispatch verification passed
   EVIDENCE: 2026-08-30 verifier passes for reviewed-update dispatch. Stream-scoped occurrence IDs deduplicate direct retries but preserve A→B→A→B recurrences, including after retention and legacy migration. Atomic locked ledger writes, protected review/undelivered retention, persisted terminal delivery states, and no terminal replay pass regressions. Clause-level T&C, unmatched-menu, and per-event quarantine coverage remain tracked by #51, so this gate stays open.
 
-- [ ] G5: the Telegram self-help bot answers TFT program, venue, menu, T&C, and release-pattern questions and can find currently observed slots from curated current sources with citations and freshness dates
+- [x] G5: the Telegram self-help bot answers TFT program, venue, menu, T&C, and release-pattern questions and can find currently observed slots from curated current sources with citations and freshness dates
   CHECK: node scripts/verify-telegram-guide.mjs
   EXPECT: Telegram guide verification passed
-  EVIDENCE: venue/menu, observed release-pattern, and observed-slot tracers pass locally. `/release VUE dinner` remains source-qualified. `/slots` enforces exact venue/all, party, meal, date/range or transparent weekend defaults, and optional preferred time against a bounded fixed-source AMEXPlatSG projection with per-venue 30-minute freshness. T&C remains pending, so this gate stays open.
+  EVIDENCE: 2026-08-30 venue/menu, observed release-pattern, observed-slot, and official-document tracers pass locally. `/terms` and `/faq` return fixed hash-bound summaries with exact reviewed page, version, capture time, and official Amex URL; a new unreviewed hash removes its clauses. `/release VUE dinner` remains source-qualified. `/slots` enforces exact venue/all, party, meal, date/range or transparent weekend defaults, and optional preferred time against a bounded fixed-source AMEXPlatSG projection with per-venue 30-minute freshness.
 
-- [ ] G6: unsupported, stale, ambiguous, adversarial, and prompt-injection questions fail safely without inventing eligibility, availability, booking rules, or menu facts
+- [x] G6: unsupported, stale, ambiguous, adversarial, and prompt-injection questions fail safely without inventing eligibility, availability, booking rules, or menu facts
   CHECK: node scripts/verify-telegram-safety.mjs
   EXPECT: Telegram safety verification passed
-  EVIDENCE: deterministic venue/menu/release surfaces reject unsupported, ambiguous, and prompt-injection-shaped questions; untrusted menu URLs and wrong release provenance fail closed; stale menu/release answers remain explicitly aged. Official-document injection coverage remains pending with the T&C/FAQ slice, so this gate stays open.
+  EVIDENCE: 2026-08-30 deterministic venue/menu/release/document surfaces reject unsupported, ambiguous, and prompt-injection-shaped questions; untrusted menu or document URLs, future review timestamps, wrong page hashes, invalid page references, and wrong release provenance fail closed. Eligibility output describes document scope without deciding that a user qualifies; merchant-specific fees, children policy, availability, and legal interpretation are not invented.
 
 - [ ] G7: Telegram webhook authentication, owner allowlists, public-user rate limits, payload limits, output escaping, reminder consent, retention limits, and secret isolation pass security regression tests
   CHECK: node scripts/verify-telegram-security.mjs
@@ -54,7 +54,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
-  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 241 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
+  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 279 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
 
 - [ ] G9: a real before-and-after test alert is delivered to the private owner channel and no unintended chat receives it
   EVIDENCE: pending

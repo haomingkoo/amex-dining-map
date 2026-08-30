@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "source": "data/table-for-two.json",
   "program": "American Express Table for Two by Platinum",
   "official_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
@@ -19,6 +19,285 @@
     "stale_after_minutes": 30
   },
   "manual_review_required": true,
+  "documents": [
+    {
+      "id": "tft-terms",
+      "kind": "terms",
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf",
+      "raw_sha256": "7ba815581e6c0cb0c50775e6db642f81b040a65ff5568a70f6aeb4ed4cc0a7ec",
+      "captured_at": "2026-08-29T23:50:31Z",
+      "review_status": "approved",
+      "clauses": [
+        {
+          "id": "eligibility",
+          "page": 1,
+          "topics": [
+            "eligibility",
+            "eligible",
+            "qualify",
+            "card",
+            "card required",
+            "card is required",
+            "centurion card",
+            "supplementary",
+            "basic"
+          ],
+          "summary": "The program covers Basic and Supplementary members of the Singapore-issued Platinum Card. This document scope does not determine whether a particular person or card qualifies."
+        },
+        {
+          "id": "benefit-cycle",
+          "page": 1,
+          "topics": [
+            "benefit",
+            "offer",
+            "cycle",
+            "voucher",
+            "carry forward",
+            "six",
+            "complimentary"
+          ],
+          "summary": "One complimentary dining offer is made available every two months, up to six times in 2026. An unused offer does not carry into a later cycle."
+        },
+        {
+          "id": "shared-account",
+          "page": 1,
+          "topics": [
+            "shared",
+            "account",
+            "supplementary voucher",
+            "one per card",
+            "redeemed",
+            "used"
+          ],
+          "summary": "Basic and Supplementary members can see the offer, but it is usable once per Card Account in each redemption cycle."
+        },
+        {
+          "id": "guests",
+          "page": 1,
+          "topics": [
+            "guest",
+            "guests",
+            "diner",
+            "diners",
+            "party",
+            "additional",
+            "children",
+            "child"
+          ],
+          "summary": "The offer is for two people and at least one diner must be an eligible Card Member. Additional diners must be declared in the booking portal, remain subject to merchant availability, and incur additional cost paid with the eligible card. The program terms do not state how children are counted."
+        },
+        {
+          "id": "solo-takeaway",
+          "page": 1,
+          "topics": [
+            "solo",
+            "alone",
+            "takeaway",
+            "take away",
+            "dine in"
+          ],
+          "summary": "A solo diner still receives food intended for two, and offer food is dine-in only rather than available for takeaway."
+        },
+        {
+          "id": "booking-confirmation",
+          "page": 1,
+          "topics": [
+            "booking",
+            "book",
+            "book directly",
+            "reservation",
+            "confirmed",
+            "confirmation",
+            "sms",
+            "guarantee",
+            "availability"
+          ],
+          "summary": "A valid booking must be made through the Experiences App. Capacity is first-come, first-served; confirmation requires a successful merchant-site reservation and merchant SMS. American Express does not guarantee a booking or availability."
+        },
+        {
+          "id": "menu-and-costs",
+          "page": 1,
+          "topics": [
+            "menu",
+            "price",
+            "cost",
+            "additional diner",
+            "voucher redeemed"
+          ],
+          "summary": "Displayed menu prices cover additional diners beyond the standard two and extra costs must be paid with the eligible card. If the cycle voucher was already redeemed, the document says the diner may instead pay the merchant directly using the eligible card and choose the curated or regular menu. Actual dishes must be checked in the current menu."
+        },
+        {
+          "id": "merchant-changes-blackouts",
+          "page": 1,
+          "topics": [
+            "blackout",
+            "merchant",
+            "restaurant change",
+            "participating",
+            "public holiday"
+          ],
+          "summary": "Participating merchants can change by cycle without notice, merchant blackout dates may apply, and the document lists public holidays and their eves as program-wide blackout dates."
+        },
+        {
+          "id": "cancellation",
+          "page": 2,
+          "topics": [
+            "cancel",
+            "cancellation",
+            "no show",
+            "no-show",
+            "fee",
+            "refund"
+          ],
+          "summary": "Each merchant sets its own cancellation policy. Card Members must review it before booking, and American Express says it is not liable for fees caused by a policy violation. The program document does not provide a venue-specific fee or deadline."
+        },
+        {
+          "id": "offer-combination",
+          "page": 2,
+          "topics": [
+            "combine",
+            "promotion",
+            "discount",
+            "cash",
+            "exchange",
+            "stack"
+          ],
+          "summary": "The offer cannot be exchanged for cash or in-kind and cannot be combined with other offers, promotions, privileges, or discounts unless stated otherwise."
+        }
+      ],
+      "title": "Table for Two - Platinum Edition Terms and Conditions",
+      "page_count": 3,
+      "page_text_sha256": [
+        "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+        "d0a2104700134f87df586fb2f496ba066534a9606da41c30513739c5d40e3d5f",
+        "8f5cba4caf5ce077412319d31cb80a4f0b066d06cde9cbc9ba72f42840163186"
+      ],
+      "extractor": "pypdf 6.7.1 extract_text normalized-whitespace-v1",
+      "lexical_index_version": "reviewed-topics-v1",
+      "reviewed_at": "2026-08-30T04:52:00Z"
+    },
+    {
+      "id": "tft-faq",
+      "kind": "faq",
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TableforTwo_FAQ.pdf",
+      "raw_sha256": "cbd8a1604459abd632a8e409ee603f9652a5907e60bb72a517c919cbb4aaeb93",
+      "captured_at": "2026-08-29T23:50:31Z",
+      "review_status": "current_baseline",
+      "clauses": [
+        {
+          "id": "voucher-dates",
+          "page": 1,
+          "topics": [
+            "voucher",
+            "receive",
+            "cycle",
+            "date",
+            "when",
+            "redemption period"
+          ],
+          "summary": "The Experiences App provides one voucher for each two-month cycle beginning 1 January, March, May, July, September, and November. Each voucher must be used within its own cycle."
+        },
+        {
+          "id": "unavailable-dates",
+          "page": 1,
+          "topics": [
+            "unavailable",
+            "date unavailable",
+            "dates unavailable",
+            "sold out",
+            "not released",
+            "open reservations",
+            "availability"
+          ],
+          "summary": "A date can be unavailable because all seats were booked or because the restaurant has not opened reservations for that date. The FAQ recommends trying another restaurant or checking again later; this is not a current seat claim."
+        },
+        {
+          "id": "guest-selector",
+          "page": 1,
+          "topics": [
+            "guest selector",
+            "party size",
+            "number of guests",
+            "odd seat",
+            "one seat",
+            "even numbers"
+          ],
+          "summary": "If a party-size option is missing, the remaining capacity may be too small. The FAQ says slots are released in even numbers, while odd-sized bookings can leave an odd number of seats. Try another time or date for a larger party."
+        },
+        {
+          "id": "otp-locked",
+          "page": 1,
+          "topics": [
+            "otp",
+            "locked",
+            "account is locked",
+            "sms",
+            "whatsapp",
+            "voice call",
+            "login code"
+          ],
+          "summary": "OTP attempts proceed by SMS, then WhatsApp, then automated voice call, with two minutes between attempts. If access remains blocked, the FAQ directs users to DiningCity support or the number on the back of the Card. Never send credentials or an OTP to this bot."
+        },
+        {
+          "id": "reservation-confirmed",
+          "page": 1,
+          "topics": [
+            "confirmed",
+            "confirmation",
+            "reservation is confirmed",
+            "reservation code",
+            "sms booking",
+            "manage reservation"
+          ],
+          "summary": "DiningCity sends an SMS with the confirmation and reservation code after a completed booking. The link in that message manages the reservation; missing messages should be raised with DiningCity support."
+        },
+        {
+          "id": "voucher-used",
+          "page": 2,
+          "topics": [
+            "voucher used",
+            "voucher is used",
+            "voucher redeemed",
+            "already used",
+            "reinstated",
+            "supplementary"
+          ],
+          "summary": "A voucher marked used may have been redeemed by another Basic or Supplementary member on the shared Card Account. The FAQ suggests reinstalling and signing in again, then calling the number on the back of the Card if the issue continues. An unused voucher can be reinstated after verification."
+        },
+        {
+          "id": "myca-login",
+          "page": 2,
+          "topics": [
+            "myca",
+            "log in again",
+            "login again",
+            "authentication",
+            "existing user"
+          ],
+          "summary": "The FAQ says all users, including existing app users, must complete MYCA authentication again. Do not send credentials to this bot."
+        },
+        {
+          "id": "face-id",
+          "page": 2,
+          "topics": [
+            "face id",
+            "biometric",
+            "90 days"
+          ],
+          "summary": "After 90 days, the app requires MYCA credentials again before biometric login can continue. Do not send credentials to this bot."
+        }
+      ],
+      "title": "Table for Two - Frequently Asked Questions",
+      "page_count": 2,
+      "page_text_sha256": [
+        "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+        "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e"
+      ],
+      "extractor": "pypdf 6.7.1 extract_text normalized-whitespace-v1",
+      "lexical_index_version": "reviewed-topics-v1",
+      "reviewed_at": "2026-08-30T04:52:00Z"
+    }
+  ],
   "venues": [
     {
       "id": "tft-15-stamford-restaurant",
@@ -257,7 +536,7 @@
       "aliases": [],
       "menus": {
         "default": {
-          "status": "no_pdf_found",
+          "status": "buffet_no_menu_expected",
           "checked_at": "2026-08-29T23:52:17Z"
         }
       },
@@ -310,7 +589,7 @@
       ],
       "menus": {
         "default": {
-          "status": "no_pdf_found",
+          "status": "buffet_no_menu_expected",
           "checked_at": "2026-08-29T23:52:17Z"
         }
       },
@@ -687,7 +966,7 @@
       "aliases": [],
       "menus": {
         "default": {
-          "status": "no_pdf_found",
+          "status": "buffet_no_menu_expected",
           "checked_at": "2026-08-29T23:52:17Z"
         }
       },

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -13,7 +14,22 @@ from typing import Any
 DEFAULT_SOURCE = Path("data/table-for-two.json")
 DEFAULT_RELEASE_HISTORY = Path("data/table-for-two-release-history.json")
 DEFAULT_OUTPUT = Path("reminders/app/tft_guide_catalog.json")
+DEFAULT_REVIEW_ROOT = Path("data/reviews/official-documents")
 SOURCE_PROJECT = "AMEXPlatSG"
+DOCUMENT_SPECS = {
+    "tft-terms": (
+        "terms",
+        "terms_url",
+        "terms_sha256",
+        "Table for Two - Platinum Edition Terms and Conditions",
+    ),
+    "tft-faq": (
+        "faq",
+        "faq_url",
+        "faq_sha256",
+        "Table for Two - Frequently Asked Questions",
+    ),
+}
 
 REVIEWED_ALIASES = {
     "tft-15-stamford-restaurant": ["15 Stamford"],
@@ -111,7 +127,93 @@ def _release_projection(history: dict, venue_ids: set[str]) -> dict[str, list[di
     }
 
 
-def build_catalog(source: dict, release_history: dict | None = None) -> dict:
+def _document_projection(source: dict, review_root: Path) -> list[dict]:
+    projected = []
+    source_documents = source.get("source_documents") or {}
+    captured_at = source.get("last_verified_at")
+    for document_id, (kind, url_key, hash_key, title) in DOCUMENT_SPECS.items():
+        source_url = source.get(url_key)
+        raw_sha256 = source_documents.get(hash_key)
+        base = {
+            "id": document_id,
+            "kind": kind,
+            "source_url": source_url,
+            "raw_sha256": raw_sha256,
+            "captured_at": captured_at,
+            "review_status": "review_required",
+            "clauses": [],
+        }
+        if not isinstance(raw_sha256, str) or re.fullmatch(r"[0-9a-f]{64}", raw_sha256) is None:
+            projected.append(base)
+            continue
+        decision_path = review_root / document_id / f"{raw_sha256}.json"
+        if not decision_path.exists():
+            projected.append(base)
+            continue
+        decision = json.loads(decision_path.read_text())
+        if (
+            decision.get("schema_version") != 1
+            or decision.get("document_id") != document_id
+            or decision.get("kind") != kind
+            or decision.get("source_url") != source_url
+            or decision.get("raw_sha256") != raw_sha256
+            or decision.get("review_status") not in {"approved", "current_baseline"}
+            or decision.get("extractor") != "pypdf 6.7.1 extract_text normalized-whitespace-v1"
+            or decision.get("lexical_index_version") != "reviewed-topics-v1"
+            or decision.get("title") != title
+            or not isinstance(decision.get("page_count"), int)
+            or not 1 <= decision["page_count"] <= 100
+            or len(decision.get("page_text_sha256") or []) != decision["page_count"]
+            or any(
+                not isinstance(page_hash, str)
+                or re.fullmatch(r"[0-9a-f]{64}", page_hash) is None
+                for page_hash in decision.get("page_text_sha256") or []
+            )
+        ):
+            raise ValueError(f"invalid review decision: {decision_path}")
+        clauses = decision.get("clauses") or []
+        seen_ids = set()
+        for clause in clauses:
+            clause_id = clause.get("id")
+            page = clause.get("page")
+            topics = clause.get("topics")
+            summary = clause.get("summary")
+            if (
+                not isinstance(clause_id, str)
+                or re.fullmatch(r"[a-z0-9-]{1,64}", clause_id) is None
+                or clause_id in seen_ids
+                or not isinstance(page, int)
+                or not 1 <= page <= decision["page_count"]
+                or not isinstance(topics, list)
+                or not 1 <= len(topics) <= 20
+                or any(not isinstance(topic, str) or not 1 <= len(topic) <= 80 for topic in topics)
+                or not isinstance(summary, str)
+                or not 1 <= len(summary) <= 600
+                or any(ord(character) < 32 and character not in "\n\t" for character in summary)
+            ):
+                raise ValueError(f"invalid reviewed clause in {decision_path}")
+            seen_ids.add(clause_id)
+        projected.append(
+            base
+            | {
+                "title": decision.get("title"),
+                "page_count": decision["page_count"],
+                "page_text_sha256": decision["page_text_sha256"],
+                "extractor": decision["extractor"],
+                "lexical_index_version": decision["lexical_index_version"],
+                "reviewed_at": decision.get("reviewed_at"),
+                "review_status": decision["review_status"],
+                "clauses": clauses,
+            }
+        )
+    return projected
+
+
+def build_catalog(
+    source: dict,
+    release_history: dict | None = None,
+    review_root: Path = DEFAULT_REVIEW_ROOT,
+) -> dict:
     if release_history is None:
         release_history = json.loads(DEFAULT_RELEASE_HISTORY.read_text())
     venue_ids = {str(venue["id"]) for venue in source.get("venues") or []}
@@ -141,7 +243,7 @@ def build_catalog(source: dict, release_history: dict | None = None) -> dict:
             }
         )
     return {
-        "schema_version": 3,
+        "schema_version": 4,
         "source": "data/table-for-two.json",
         "program": source.get("program") or "Table for Two",
         "official_url": source["official_url"],
@@ -161,6 +263,7 @@ def build_catalog(source: dict, release_history: dict | None = None) -> dict:
             "stale_after_minutes": 30,
         },
         "manual_review_required": bool(source.get("manual_review_required")),
+        "documents": _document_projection(source, review_root),
         "venues": sorted(venues, key=lambda item: item["name"].casefold()),
     }
 

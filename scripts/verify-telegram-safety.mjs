@@ -5,12 +5,15 @@ import fs from "node:fs";
 
 const root = process.cwd();
 const guide = fs.readFileSync("reminders/app/tft_guide.py", "utf8");
+const documents = fs.readFileSync("reminders/app/tft_documents.py", "utf8");
 
 assert.match(guide, /len\(matches\) != 1/);
 assert.match(guide, /project"\) != "AMEXPlatSG"/);
 assert.match(guide, /def _trusted_amex_url/);
 assert.doesNotMatch(guide, /\b(?:requests|httpx|urlopen)\b/);
 assert.doesNotMatch(guide, /\b(?:eval|exec)\s*\(/);
+assert.doesNotMatch(documents, /\b(?:requests|httpx|urlopen)\b/);
+assert.doesNotMatch(documents, /\b(?:eval|exec)\s*\(/);
 
 execFileSync("uv", [
   "run", "--python", "3.12",
@@ -19,6 +22,7 @@ execFileSync("uv", [
   "pytest",
   "reminders/tests/test_tft_guide_safety.py",
   "reminders/tests/test_tft_guide.py",
+  "reminders/tests/test_tft_documents.py",
   "-q",
 ], { cwd: root, stdio: "pipe", env: { ...process.env, PYTHONPATH: root } });
 

@@ -26,6 +26,14 @@ class TableForTwoDataTests(unittest.TestCase):
             self.assertTrue((venue.get("menu_pdf") or {}).get("url"))
             self.assertTrue(venue.get("menu_pdfs"))
 
+        by_name = {venue["name"]: venue for venue in venues}
+        for buffet in ("Colony", "Estate", "Peppermint", "Ginger"):
+            self.assertEqual(
+                by_name[buffet]["menu_pdf"]["status"],
+                "buffet_no_menu_expected",
+            )
+        self.assertEqual(by_name["One-Ninety"]["menu_pdf"]["status"], "no_pdf_found")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -8,9 +8,10 @@ fuzzy-matches every PDF to a venue in ``data/table-for-two.json``, downloads
 each PDF to compute a content hash, and writes back per-venue menu metadata
 so the frontend can link straight to the official PDF.
 
-Buffet venues (e.g. Colony) legitimately have no set menu PDF; those are
-marked with ``menu_pdf_status = "buffet_no_menu_expected"`` when the venue
-carries a "Buffet" app tag, and ``"no_pdf_found"`` otherwise (review).
+Buffet venues legitimately have no set menu PDF; those are marked with
+``menu_pdf_status = "buffet_no_menu_expected"`` when the reviewed venue
+category or app tags identify a buffet, and ``"no_pdf_found"`` otherwise
+(review).
 """
 
 from __future__ import annotations
@@ -165,7 +166,9 @@ def match_venue_to_filename(venue_name: str, candidates: list[str]) -> str | Non
 
 def has_buffet_tag(venue: dict) -> bool:
     tags = venue.get("app_tags") or []
-    return any("buffet" in t.lower() for t in tags)
+    return str(venue.get("category") or "").casefold() == "buffet" or any(
+        "buffet" in str(tag).casefold() for tag in tags
+    )
 
 
 def venue_menu_info(

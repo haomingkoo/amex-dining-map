@@ -12,7 +12,7 @@ from typing import Any
 from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
-from app import tft_slot_source, tft_slots
+from app import tft_documents, tft_slot_source, tft_slots
 
 
 CATALOG_PATH = Path(__file__).with_name("tft_guide_catalog.json")
@@ -157,6 +157,8 @@ def _help() -> str:
         "/menu VUE centurion — Centurion variant\n"
         "/release VUE dinner — observed first-detection pattern\n"
         "/slots — observed slots with date and any/weekend examples\n"
+        "/terms eligibility — reviewed official T&C summary\n"
+        "/faq unavailable dates — reviewed official FAQ summary\n"
         "/remind — create a one-shot slot reminder when enabled\n"
         "/reminders — list your active Telegram reminders\n"
         "/cancel RXXXXXX — cancel one active Telegram reminder\n"
@@ -411,6 +413,10 @@ def handle_message(
         return _help()
     if lowered == "/venues":
         return _venues(catalog, current)
+
+    document_answer = tft_documents.answer(message, catalog, current)
+    if document_answer is not None:
+        return document_answer
 
     natural_slot_query = re.fullmatch(
         r"(?:which|what) (?:tft|table for two) venues? (?:have|has) weekend slots?\??",

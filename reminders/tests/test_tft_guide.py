@@ -10,7 +10,7 @@ from app import tft_guide
 
 
 ROOT = Path(__file__).resolve().parents[2]
-NOW = datetime(2026, 8, 30, 5, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 8, 30, 5, 5, tzinfo=timezone.utc)
 
 
 def _catalog() -> dict:
@@ -26,6 +26,11 @@ def test_generated_catalog_matches_current_tft_source():
     source = json.loads((ROOT / "data" / "table-for-two.json").read_text())
 
     assert module.build_catalog(source) == _catalog()
+    assert _catalog()["schema_version"] == 4
+    assert [(item["id"], item["review_status"]) for item in _catalog()["documents"]] == [
+        ("tft-terms", "approved"),
+        ("tft-faq", "current_baseline"),
+    ]
     assert len(_catalog()["venues"]) == 23
 
 

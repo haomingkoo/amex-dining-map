@@ -31,6 +31,11 @@ jobs:
       - name: Refresh public roster snapshot
         run: python3 scripts/scrape_table_for_two.py
 
+      - name: Verify reviewed official document pages
+        run: |
+          python3 -m pip install --disable-pip-version-check pypdf==6.7.1
+          python3 scripts/verify_tft_official_documents.py
+
       - name: Refresh official menu versions
         run: python3 scripts/fetch_tft_menus.py --cache-dir ""
 

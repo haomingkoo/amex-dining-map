@@ -196,6 +196,37 @@ def test_private_menu_query_sends_once_and_replay_is_deduplicated(
         assert secret not in log_text
 
 
+def test_terms_delivery_log_is_diagnostic_without_user_content(
+    guide_client, monkeypatch, caplog
+):
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
+    client, settings = guide_client
+    question = "/terms eligibility private-note-123"
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.telegram.send_message", lambda *_args: 82
+    )
+
+    assert _post(client, _update(update_id=1201, text=question)).json() == {"ok": True}
+
+    log_text = "\n".join(
+        record.getMessage()
+        for record in caplog.records
+        if record.name == "amex_reminders.delivery"
+    )
+    assert '"command_class":"/terms"' in log_text
+    assert '"error_code":"sent"' in log_text
+    assert '"state":"done"' in log_text
+    for private_value in (
+        question,
+        "private-note-123",
+        settings.telegram_guide_bot_token,
+        WEBHOOK_SECRET,
+        "4444",
+        "1201",
+    ):
+        assert private_value not in log_text
+
+
 def test_private_slot_query_fetches_once_after_guards_and_replay_deduplicates(
     guide_client, monkeypatch
 ):

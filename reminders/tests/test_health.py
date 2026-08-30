@@ -27,7 +27,7 @@ def test_healthz_ok(monkeypatch):
     assert payload["catalog_sha256"] == hashlib.sha256(
         tft_guide.CATALOG_PATH.read_bytes()
     ).hexdigest()
-    assert payload["catalog_schema_version"] == 3
+    assert payload["catalog_schema_version"] == 4
     assert payload["catalog_release_project"] == "AMEXPlatSG"
     assert payload["catalog_slot_project"] == "AMEXPlatSG"
     assert payload["catalog_slot_stale_after_minutes"] == 30

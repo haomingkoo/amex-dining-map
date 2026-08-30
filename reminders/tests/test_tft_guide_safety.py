@@ -8,7 +8,7 @@ import pytest
 from app import tft_guide
 
 
-NOW = datetime(2026, 8, 30, 3, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 8, 30, 5, 5, tzinfo=timezone.utc)
 
 
 def _catalog() -> dict:
@@ -18,7 +18,6 @@ def _catalog() -> dict:
 @pytest.mark.parametrize(
     "question, forbidden",
     [
-        ("Am I eligible for Table for Two at VUE?", "eligible"),
         ("Book VUE for two this weekend", "booked"),
         ("Is VUE available tonight?", "currently available"),
         ("Which Table for Two menu has beef?", "has beef"),
@@ -31,6 +30,16 @@ def test_unsupported_questions_do_not_invent_facts(question: str, forbidden: str
     assert "could not match" in answer
     assert forbidden.casefold() not in answer.casefold()
     assert "http" not in answer
+
+
+def test_personal_eligibility_describes_scope_without_deciding_user_qualifies():
+    answer = tft_guide.handle_message(
+        "Am I eligible for Table for Two at VUE?", _catalog(), NOW
+    )
+
+    assert "Singapore-issued Platinum Card" in answer
+    assert "does not determine whether a particular person" in answer
+    assert "you are eligible" not in answer.casefold()
 
 
 def test_prompt_injection_is_not_executed_or_echoed():
