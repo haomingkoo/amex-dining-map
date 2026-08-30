@@ -29,12 +29,12 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G4: menu, venue, T&C, source, and release-pattern changes can trigger owner-channel alerts without leaking bot tokens, subscriber records, or internal diagnostics
   CHECK: node scripts/verify-telegram-change-dispatch.mjs
   EXPECT: Telegram change dispatch verification passed
-  EVIDENCE: 2026-08-30 expanded verifier passes source health, source-change, TFT roster/menu/document review, Love Dining review, release-pattern, owner-ingress, and delivery suites. TFT successor documents retain exact observed bytes and the prior reviewed bot projection, require canonical page-bound manifests and complete transitions, recover interrupted ledger writes before accepting another successor, distinguish FAQ events, and preserve source-scoped venue publication. Real delivery remains G9.
+  EVIDENCE: 2026-08-30 expanded verifier passes source health, source-change, TFT roster/menu/document review, Love Dining review, release-pattern, owner-ingress, and delivery suites. TFT successor documents and menu observations retain exact content-addressed bytes; menu B remains reviewable after the same URL serves C, and approvals default to the retained hash artifact. Canonical manifests, complete transitions, interrupted-write recovery, FAQ distinction, and source-scoped venue publication remain enforced. Real delivery remains G9.
 
 - [x] G5: the Telegram self-help bot answers TFT program, venue, menu, T&C, and release-pattern questions and can find currently observed slots from curated current sources with citations and freshness dates
   CHECK: node scripts/verify-telegram-guide.mjs
   EXPECT: Telegram guide verification passed
-  EVIDENCE: 2026-08-30 venue/menu, observed release-pattern, observed-slot, and official-document tracers pass locally. `/terms` and `/faq` return fixed hash-bound summaries with exact reviewed page, version, capture time, and official Amex URL; a new unreviewed hash retains that reviewed answer with an explicit successor-review warning. `/release VUE dinner` remains source-qualified. `/slots` enforces exact venue/all, party, meal, date/range or transparent weekend defaults, and optional preferred time against a bounded fixed-source AMEXPlatSG projection with per-venue 30-minute freshness.
+  EVIDENCE: 2026-08-30 program, venue/menu, observed release-pattern, observed-slot, and official-document tracers pass locally. `/about` and bounded common program questions cite the official source; `/venue` and exact natural venue questions return reviewed location/menu context without fuzzy guessing. `/terms` and `/faq` return fixed hash-bound summaries with exact reviewed page, version, capture time, and official Amex URL; a new unreviewed hash retains that reviewed answer with an explicit successor-review warning. `/release VUE dinner` remains source-qualified. `/slots` enforces exact venue/all, party, meal, date/range or transparent weekend defaults, and optional preferred time against a bounded fixed-source AMEXPlatSG projection with per-venue 30-minute freshness.
 
 - [x] G6: unsupported, stale, ambiguous, adversarial, and prompt-injection questions fail safely without inventing eligibility, availability, booking rules, or menu facts
   CHECK: node scripts/verify-telegram-safety.mjs
@@ -59,7 +59,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
-  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12; the direct suite reports 434 Python tests and 23 subtests, plus all JavaScript regression files, source-health workflow/schema checks, and frontend syntax validation.
+  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12; the direct suite reports 445 Python tests and 23 subtests, plus all JavaScript regression files, source-health workflow/schema checks, and frontend syntax validation.
 
 - [ ] G9: a real before-and-after test alert is delivered once to the private owner channel, Telegram confirms the configured destination ID, and no unintended chat receives it
   EVIDENCE: pending
@@ -75,7 +75,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G12: primary venue, hotel, menu, T&C, release, stale, recovery, and review-state transitions have review-safe before-and-after owner events, including additions and removals
   CHECK: node scripts/verify-telegram-change-dispatch.mjs
   EXPECT: Telegram change dispatch verification passed
-  EVIDENCE: 2026-08-30 verifier and 431-test suite pass. Venue/hotel, roster, menu, release, stale/recovery, and document transitions are source-scoped. TFT T&C/FAQ application retains exact observed and predecessor bytes, validates page-bound clause accounting, publishes additions/removals/modifications, suppresses layout-only noise, resumes interrupted ledger writes, blocks successor races, and verifies the rebuilt bot catalogue.
+  EVIDENCE: 2026-08-30 verifier and 445-test suite pass. Venue/hotel, roster, menu, release, stale/recovery, and document transitions are source-scoped. TFT T&C/FAQ application and menu observation archive retain exact current/candidate bytes, validate page/hash-bound evidence, publish additions/removals/modifications, suppress layout-only noise, resume interrupted writes, block successor races, and verify the rebuilt bot catalogue.
 
 - [x] G13: mobile users and the owner can see source-specific freshness, retained-snapshot, failure, and review-required state without mistaking optional enrichment age for official fact age
   CHECK: node scripts/verify-source-health.mjs

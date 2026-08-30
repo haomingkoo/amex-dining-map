@@ -64,6 +64,81 @@ def test_unknown_start_payload_falls_back_to_help():
     assert "attacker.example" not in answer
 
 
+def test_about_and_common_program_questions_are_bounded_and_cited():
+    for query in (
+        "/about",
+        "What is Table for Two?",
+        "How does TFT work?",
+        "Tell me about Table for Two",
+    ):
+        answer = tft_guide.handle_message(query, _catalog(), NOW)
+
+        assert answer.startswith("American Express Table for Two by Platinum")
+        assert "reviewed Table for Two venue roster" in answer
+        assert "does not determine personal eligibility" in answer
+        assert _catalog()["official_url"] in answer
+        assert "Roster checked:" in answer
+        assert "#/table-for-two" in answer
+        assert len(answer) <= tft_guide.MAX_REPLY_LENGTH
+
+
+def test_about_rejects_untrusted_official_source_url():
+    catalog = copy.deepcopy(_catalog())
+    catalog["official_url"] = "https://attacker.example/program"
+
+    answer = tft_guide.handle_message("What is TFT?", catalog, NOW)
+
+    assert "could not be verified safely" in answer
+    assert "attacker.example" not in answer
+
+
+def test_exact_venue_details_work_for_command_and_safe_common_questions():
+    for query in (
+        "/venue VUE",
+        "Where is VUE?",
+        "Tell me about VUE",
+    ):
+        answer = tft_guide.handle_message(query, _catalog(), NOW)
+
+        assert answer.startswith("VUE — reviewed venue details")
+        assert "OUE Bayfront, 50 Collyer Quay" in answer
+        assert "Indexed official menus: Centurion, Platinum" in answer
+        assert "Roster checked:" in answer
+        assert "Menu index checked:" in answer
+        assert _catalog()["official_url"] in answer
+        assert "#/table-for-two?venue=tft-vue" in answer
+        assert len(answer) <= tft_guide.MAX_REPLY_LENGTH
+
+    menu = tft_guide.handle_message("Does VUE have a menu?", _catalog(), NOW)
+    assert menu.startswith("VUE — official menu variants")
+    assert "VUE-Menu_Platinum.pdf" in menu
+    assert "VUE-Menu_Centurion.pdf" in menu
+
+
+def test_venue_details_do_not_fuzzy_guess_or_echo_unsafe_address():
+    unknown = tft_guide.handle_message("Where is VUW?", _catalog(), NOW)
+    assert "could not match" in unknown
+    assert "OUE Bayfront" not in unknown
+
+    catalog = copy.deepcopy(_catalog())
+    vue = next(venue for venue in catalog["venues"] if venue["id"] == "tft-vue")
+    vue["address"] = "Injected\nhttps://attacker.example"
+    answer = tft_guide.handle_message("/venue VUE", catalog, NOW)
+
+    assert "Address: unavailable in the reviewed snapshot" in answer
+    assert "attacker.example" not in answer
+
+
+def test_venue_details_disclose_stale_roster_and_menu_review_state():
+    catalog = copy.deepcopy(_catalog())
+    catalog["roster_checked_at"] = (NOW - timedelta(hours=37)).isoformat()
+
+    answer = tft_guide.handle_message("/venue VUE", catalog, NOW)
+
+    assert "Roster snapshot is older than 36 hours" in answer
+    assert "2 items awaiting manual review" in answer
+
+
 def test_vue_centurion_is_not_conflated_with_platinum():
     answer = tft_guide.handle_message("VUE black card menu", _catalog(), NOW)
     assert "VUE — Centurion menu" in answer

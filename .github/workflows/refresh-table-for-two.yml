@@ -38,7 +38,7 @@ jobs:
           python3 -m pip install --disable-pip-version-check pypdf==6.15.0
           python3 scripts/verify_tft_official_documents.py
 
-      - name: Refresh official menu versions
+      - name: Refresh and retain official menu versions
         id: menu_refresh
         run: python3 scripts/fetch_tft_menus.py --cache-dir ""
 
@@ -62,7 +62,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/table-for-two.json data/table-for-two-slots.json data/updates.json reminders/app/tft_guide_catalog.json data/reviews/official-document-pdfs
+          git add data/table-for-two.json data/table-for-two-slots.json data/updates.json reminders/app/tft_guide_catalog.json data/reviews/official-document-pdfs data/reviews/tft-menu-pdfs
           if [ -f data/changelog-table-for-two.md ]; then
             git add data/changelog-table-for-two.md
           fi

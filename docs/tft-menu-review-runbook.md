@@ -1,9 +1,12 @@
 # Table for Two menu review runbook
 
 The menu refresher is an inbox, not a publish boundary. New, changed, or
-ambiguous PDFs stay quarantined until an exact manifest is applied. A rejection
-keeps the current published menu. An approval requires the locally reviewed PDF
-and creates one reviewed before-and-after owner event.
+ambiguous PDFs stay quarantined until an exact manifest is applied. Every
+successfully observed menu version is retained atomically by content hash under
+`data/reviews/tft-menu-pdfs/`; a later change at the same URL cannot replace the
+bytes awaiting review. A rejection keeps the current published menu. An
+approval uses the retained candidate and creates one reviewed before-and-after
+owner event.
 
 ## Inspect the queue
 
@@ -27,9 +30,11 @@ python3 scripts/prepare_tft_menu_review.py \
   --output data/reviews/tft-menus/DECISION.json
 ```
 
-For an approval, use `--decision approved`, open the exact Amex URL shown in
-the queue, review it, and save that PDF locally. Do not edit the copied URL,
-hash, byte count, venue, card, roster hash, or listing hash in the manifest.
+For an approval, use `--decision approved` and review the exact retained file at
+`data/reviews/tft-menu-pdfs/<asset_sha256>.pdf`. The official Amex URL remains
+the public citation, but do not re-download it as review evidence: upstream may
+already serve a successor version. Do not edit the copied URL, hash, byte count,
+venue, card, roster hash, or listing hash in the manifest.
 
 ## Apply and verify
 
@@ -44,13 +49,16 @@ Approval:
 
 ```bash
 python3 scripts/apply_tft_menu_review.py \
-  --manifest data/reviews/tft-menus/DECISION.json \
-  --pdf /absolute/path/to/reviewed-candidate.pdf
+  --manifest data/reviews/tft-menus/DECISION.json
 ```
 
 The command validates the whole queue snapshot, exact candidate identity,
 roster, listing, Amex HTTPS URL, chronology, and—for approval—the PDF magic,
-size, and SHA-256. It atomically records the decision and active menu first,
+size, and SHA-256 from the retained content-addressed artifact. An explicit
+`--pdf` remains available for recovery but must match the same hash and size.
+Missing, oversized, tampered, or conflicting archive entries fail closed. The
+archive is append-only: rejection retains the observed bytes as provenance.
+It atomically records the decision and active menu first,
 then reconciles the owner event and bot catalogue from that durable receipt.
 An exact rerun repairs a missing event or stale catalogue without creating a
 duplicate; a conflicting decision fails.

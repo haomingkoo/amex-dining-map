@@ -30,6 +30,7 @@ assert.match(dispatch, /status.*published/);
 assert.doesNotMatch(dispatch, /TELEGRAM_BOT_TOKEN/);
 assert.match(dispatch, /record_owner_delivery_states/);
 const tftWorkflow = fs.readFileSync(".github/workflows/refresh-table-for-two.yml", "utf8");
+assert.match(tftWorkflow, /data\/reviews\/tft-menu-pdfs/);
 assert.ok(
   tftWorkflow.indexOf("scripts/verify_tft_official_documents.py")
     < tftWorkflow.indexOf("scripts/build_tft_guide_catalog.py"),
@@ -52,6 +53,7 @@ execFileSync("uv", [
   "scripts/tests/test_owner_alert_event_contract.py",
   "scripts/tests/test_source_change_updates.py",
   "scripts/tests/test_tft_menu_reviews.py",
+  "scripts/tests/test_tft_menu_pdf_retention.py",
   "scripts/tests/test_tft_roster_reviews.py",
   "scripts/tests/test_source_health.py",
   "scripts/tests/test_tft_official_documents.py",

@@ -136,11 +136,14 @@ independent.
 ## Public Telegram guide
 
 The guide bot is a separate, disabled-by-default Telegram identity. Its current
-surface is private chats only: `/start`, `/help`, `/venues`, exact venue/menu
-lookup, `/release <venue> [lunch|dinner]` observed release-pattern answers, and
+surface is private chats only: `/start`, `/help`, `/about`, `/venues`,
+`/venue <exact venue>`, exact venue/menu lookup,
+`/release <venue> [lunch|dinner]` observed release-pattern answers, and
 strict `/slots venue | party | meal | date/range/weekend | preferred time`
 queries. `/terms <topic>` and `/faq <topic>` return page-aware reviewed official
-document summaries.
+document summaries. Bounded common questions such as “What is Table for Two?”,
+“Where is VUE?”, and “Does VUE have a menu?” route to the same deterministic,
+cited interfaces; typos and ambiguous venues are never guessed.
 It uses a generated source catalogue with official Amex menu links and
 never invokes an LLM, follows a user URL, joins groups, or reads owner-channel
 configuration. The catalogue is bundled with the Railway revision; the TFT

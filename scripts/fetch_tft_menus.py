@@ -19,8 +19,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
+import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -59,6 +61,7 @@ USER_AGENT = "Mozilla/5.0 (compatible; AmexDiningMap/1.0)"
 HTTP_TIMEOUT = 15
 MAX_LISTING_BYTES = 2 * 1024 * 1024
 MAX_PDF_BYTES = 20 * 1024 * 1024
+REVIEW_PDF_ROOT = Path("data/reviews/tft-menu-pdfs")
 MENU_FILENAME_RE = re.compile(
     r"^[A-Za-z0-9][A-Za-z0-9._ -]{0,180}[-_]?Menu(?:[-_](?:Platinum|Centurion))?\.pdf$",
     re.IGNORECASE,
@@ -455,6 +458,42 @@ def maybe_save_pdf(pdf_bytes: bytes, filename: str, cache_dir: Path) -> None:
     destination.write_bytes(pdf_bytes)
 
 
+def retain_review_pdf(pdf_bytes: bytes, root: Path = REVIEW_PDF_ROOT) -> Path:
+    if not pdf_bytes.startswith(b"%PDF") or len(pdf_bytes) > MAX_PDF_BYTES:
+        raise ValueError("menu asset is not a bounded PDF")
+    digest = hashlib.sha256(pdf_bytes).hexdigest()
+    root.mkdir(parents=True, exist_ok=True)
+    destination = root / f"{digest}.pdf"
+    if destination.exists():
+        if destination.read_bytes() != pdf_bytes:
+            raise ValueError("retained menu PDF hash collision")
+        return destination
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{digest}.", suffix=".tmp", dir=root
+    )
+    try:
+        with os.fdopen(descriptor, "wb") as temporary:
+            temporary.write(pdf_bytes)
+            temporary.flush()
+            os.fsync(temporary.fileno())
+        try:
+            os.link(temporary_name, destination)
+        except FileExistsError:
+            if destination.read_bytes() != pdf_bytes:
+                raise ValueError("retained menu PDF hash collision")
+        directory = os.open(root, os.O_RDONLY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        try:
+            os.unlink(temporary_name)
+        except FileNotFoundError:
+            pass
+    return destination
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", default="data/table-for-two.json")
@@ -463,6 +502,12 @@ def main() -> int:
         "--cache-dir",
         default="data/tft-menus",
         help="Directory to save downloaded PDFs (set empty to skip).",
+    )
+    parser.add_argument(
+        "--review-pdf-root",
+        type=Path,
+        default=REVIEW_PDF_ROOT,
+        help="Content-addressed archive for exact observed menu PDF bytes.",
     )
     parser.add_argument(
         "--no-download",
@@ -568,8 +613,11 @@ def main() -> int:
                     if cache_dir is not None and not args.dry_run:
                         maybe_save_pdf(pdf_bytes, entry["filename"], cache_dir)
                 except (urllib.error.URLError, ValueError):
+                    pdf_bytes = None
                     observation_failed = True
                     print(f"  ! menu observation failed for {venue['name']}", file=sys.stderr)
+            if pdf_bytes is not None and not args.dry_run:
+                retain_review_pdf(pdf_bytes, args.review_pdf_root)
 
             previous = previous_menus.get(source_key)
             if previous is None and source_key == "platinum":
@@ -691,6 +739,7 @@ def main() -> int:
             "detected_at": checked_at,
         }
         if candidate_venue_ids and not args.no_download:
+            candidate_bytes: bytes | None = None
             try:
                 candidate_bytes = http_get(entry["url"], MAX_PDF_BYTES)
                 if not candidate_bytes.startswith(b"%PDF"):
@@ -698,7 +747,10 @@ def main() -> int:
                 asset["sha256"] = hashlib.sha256(candidate_bytes).hexdigest()
                 asset["bytes"] = len(candidate_bytes)
             except (urllib.error.URLError, ValueError):
+                candidate_bytes = None
                 asset["observation_error"] = "bounded_pdf_fetch_failed"
+            if candidate_bytes is not None and not args.dry_run:
+                retain_review_pdf(candidate_bytes, args.review_pdf_root)
         unmatched_assets.append(asset)
         if candidate_venue_ids:
             if candidate_venue_id:

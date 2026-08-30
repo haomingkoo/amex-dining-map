@@ -198,7 +198,8 @@ historical migration reference and is not the active architecture.
 Two isolated Telegram identities are implemented but disabled by default. The
 owner-alert bot can deliver reviewed before-and-after updates only to one fixed
 private channel. The public guide bot answers deterministic private-chat TFT
-venue and official-menu questions from a bundled source snapshot. It does not
+program, venue, official-menu, T&C, FAQ, slot, and release questions from a
+bundled source snapshot. It does not
 invoke an LLM, fetch user URLs, read subscriber data, or share the owner bot's
 token. Real Telegram activation remains pending; setup, rotation, monitoring,
 rollback, privacy, and freshness procedures are in

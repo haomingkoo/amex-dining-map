@@ -15,6 +15,7 @@ const dispatch = read("scripts/dispatch_owner_updates.py");
 const pages = read(".github/workflows/deploy-pages.yml");
 const projectVerifier = read("scripts/verify-project.mjs");
 const documentRunbook = compact(read("docs/tft-document-review-runbook.md"));
+const menuRunbook = compact(read("docs/tft-menu-review-runbook.md"));
 const railway = read("reminders/railway.toml");
 const uvicornLogs = JSON.parse(read("reminders/uvicorn-log-config.json"));
 
@@ -86,6 +87,11 @@ for (const phrase of [
   "source-ledger-refresh` with `queue: max",
   "inspect the queued and completed `Table for Two Alerts` runs",
 ]) assert.ok(docs.includes(phrase), `missing operations contract: ${phrase}`);
+for (const phrase of [
+  "data/reviews/tft-menu-pdfs/",
+  "do not re-download it as review evidence",
+  "archive is append-only",
+]) assert.ok(menuRunbook.includes(phrase), `missing menu retention contract: ${phrase}`);
 assert.ok(docs.indexOf("TELEGRAM_REMINDERS_EXPECTED_ENABLED=false") < docs.indexOf("TELEGRAM_REMINDERS_ENABLED=false"));
 assert.ok(docs.indexOf("TELEGRAM_REMINDERS_ENABLED=false") < docs.indexOf("TELEGRAM_GUIDE_ENABLED=false"));
 assert.ok(docs.indexOf("TELEGRAM_GUIDE_ENABLED=false") < docs.indexOf("delete the webhook with"));

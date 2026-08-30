@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -20,10 +22,31 @@ from scripts import build_tft_guide_catalog, source_change_alert, tft_menu_revie
 DEFAULT_DATA = Path("data/table-for-two.json")
 DEFAULT_UPDATES = Path("data/updates.json")
 DEFAULT_CATALOG = Path("reminders/app/tft_guide_catalog.json")
+DEFAULT_PDF_ROOT = Path("data/reviews/tft-menu-pdfs")
 
 
 def _load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _retained_pdf(manifest: dict, root: Path) -> bytes:
+    digest = manifest.get("asset_sha256")
+    if not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+        raise ValueError("menu review manifest has no valid asset hash")
+    path = root / f"{digest}.pdf"
+    if not path.exists():
+        raise ValueError("reviewed menu PDF is missing from the observation archive")
+    expected_size = manifest.get("bytes")
+    if (
+        not isinstance(expected_size, int)
+        or not 1 <= expected_size <= tft_menu_reviews.MAX_PDF_BYTES
+        or path.stat().st_size != expected_size
+    ):
+        raise ValueError("retained menu PDF size does not match the review manifest")
+    payload = path.read_bytes()
+    if hashlib.sha256(payload).hexdigest() != digest:
+        raise ValueError("retained menu PDF does not match its content-addressed path")
+    return payload
 
 
 def _catalog(payload: dict) -> dict:
@@ -157,6 +180,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--pdf", type=Path)
+    parser.add_argument("--pdf-root", type=Path, default=DEFAULT_PDF_ROOT)
     parser.add_argument("--data", type=Path, default=DEFAULT_DATA)
     parser.add_argument("--updates", type=Path, default=DEFAULT_UPDATES)
     parser.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
@@ -167,6 +191,8 @@ def main() -> int:
         payload = _load(args.data)
         manifest = _load(args.manifest)
         pdf_bytes = args.pdf.read_bytes() if args.pdf else None
+        if pdf_bytes is None and manifest.get("decision") == "approved":
+            pdf_bytes = _retained_pdf(manifest, args.pdf_root)
         updated, event = tft_menu_reviews.apply_review(
             payload, manifest, pdf_bytes=pdf_bytes
         )

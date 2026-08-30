@@ -180,7 +180,9 @@ def _menu_source_context(menu: dict, catalog: dict, now: datetime) -> str:
 def _help() -> str:
     return (
         "Table for Two helper\n\n"
+        "/about — what this source-grounded helper covers\n"
         "/venues — list bundled roster snapshot\n"
+        "/venue VUE — reviewed venue details\n"
         "/menu VUE platinum — official Amex menu\n"
         "/menu VUE centurion — Centurion variant\n"
         "/release VUE dinner — observed first-detection pattern\n"
@@ -195,6 +197,108 @@ def _help() -> str:
         "I use a generated source catalogue and do not guess. Confirm offers and bookings "
         "in the Amex Experiences App."
     )
+
+
+def _roster_context(catalog: dict, now: datetime) -> str:
+    try:
+        checked = datetime.fromisoformat(
+            str(catalog["roster_checked_at"]).replace("Z", "+00:00")
+        )
+        if checked.tzinfo is None or checked > now + timedelta(minutes=5):
+            freshness = " Roster freshness is unknown; verify the official source."
+        elif now - checked > MENU_STALE_AFTER:
+            freshness = " Roster snapshot is older than 36 hours; verify the official source."
+        else:
+            freshness = ""
+    except (KeyError, TypeError, ValueError):
+        freshness = " Roster freshness is unknown; verify the official source."
+    review = (
+        " Source snapshot is awaiting manual review."
+        if catalog.get("manual_review_required")
+        else ""
+    )
+    return f"Roster checked: {_date(catalog.get('roster_checked_at'))}.{review}{freshness}"
+
+
+def _about(catalog: dict, now: datetime) -> str:
+    return (
+        "American Express Table for Two by Platinum\n\n"
+        "This helper uses a reviewed Table for Two venue roster, indexed official Amex "
+        "menus, page-reviewed T&C and FAQ summaries, and bounded AMEXPlatSG slot and "
+        "release observations. It does not determine personal eligibility, interpret "
+        "terms, guarantee seats, or make a booking.\n\n"
+        f"{_roster_context(catalog, now)}\n"
+        f"{_official_source_line(catalog)}\n"
+        f"Open Table for Two: {explorer_url()}\n\n"
+        "Try /venues, /venue VUE, /terms benefit, /faq unavailable dates, or /slots."
+    )[:MAX_REPLY_LENGTH]
+
+
+def _safe_venue_text(value: Any, maximum: int) -> str | None:
+    if not isinstance(value, str) or not 1 <= len(value) <= maximum:
+        return None
+    if any(
+        character in "\r\n" or unicodedata.category(character).startswith("C")
+        for character in value
+    ):
+        return None
+    return value
+
+
+def _venue_details(venue: dict, catalog: dict, now: datetime) -> str:
+    name = _safe_venue_text(venue.get("name"), 120)
+    venue_id = str(venue.get("id") or "")
+    if name is None or re.fullmatch(r"[a-z0-9-]{1,80}", venue_id) is None:
+        return "That venue's reviewed metadata could not be verified safely. Use /venues."
+    address = _safe_venue_text(venue.get("address"), 300)
+    category = _safe_venue_text(venue.get("category"), 40)
+    details = [
+        f"Address: {address}" if address else "Address: unavailable in the reviewed snapshot",
+        f"Format: {category.title()}" if category else "Format: not specified",
+    ]
+    valid_menus = []
+    stale_menu = False
+    for key, menu in sorted((venue.get("menus") or {}).items()):
+        if not isinstance(menu, dict):
+            continue
+        valid, stale = _valid_published_menu(menu, now)
+        if valid:
+            label = _safe_venue_text(menu.get("label"), 40) or key.title()
+            valid_menus.append(label)
+            stale_menu = stale_menu or stale
+    if valid_menus:
+        details.append("Indexed official menus: " + ", ".join(valid_menus))
+        if stale_menu:
+            details.append("One or more menu checks are older than 36 hours; verify the official source.")
+    else:
+        buffet = any(
+            isinstance(menu, dict) and menu.get("status") == "buffet_no_menu_expected"
+            for menu in (venue.get("menus") or {}).values()
+        )
+        details.append(
+            "Current index marks this as a buffet; a set-menu PDF is not expected."
+            if buffet
+            else "No reviewed official menu PDF is currently matched; this does not prove no menu exists."
+        )
+    return (
+        f"{name} — reviewed venue details\n\n"
+        + "\n".join(details)
+        + f"\n\n{_roster_context(catalog, now)}\n"
+        + _menu_source_context(catalog.get("menu_source") or {}, catalog, now)
+        + f"\n{_official_source_line(catalog)}\n{_explorer_line(venue)}"
+    )[:MAX_REPLY_LENGTH]
+
+
+def _natural_venue_query(message: str) -> tuple[str, str] | None:
+    for intent, pattern in (
+        ("details", r"where is (.+?)"),
+        ("details", r"tell me about (.+?)"),
+        ("menu", r"does (.+?) have (?:an? )?(?:official )?menu"),
+    ):
+        match = re.fullmatch(pattern + r"[?!.]*", message, flags=re.IGNORECASE)
+        if match:
+            return intent, match.group(1).strip()
+    return None
 
 
 def _release_time(value: str | None, now: datetime) -> datetime | None:
@@ -450,8 +554,36 @@ def handle_message(
         return _help()
     if lowered in {"/start", "/help", "help"}:
         return _help()
+    about_questions = {
+        "what is table for two",
+        "what is tft",
+        "how does table for two work",
+        "how does tft work",
+        "tell me about table for two",
+        "tell me about tft",
+    }
+    if lowered == "/about" or normalize_venue(message) in about_questions:
+        return _about(catalog, current)
     if lowered == "/venues":
         return _venues(catalog, current)
+    if lowered == "/venue":
+        return "Which venue? Try /venue VUE or use /venues."
+    natural_venue = _natural_venue_query(message)
+    venue_intent, venue_query = (
+        ("details", message[len("/venue") :].strip())
+        if lowered.startswith("/venue ")
+        else natural_venue or (None, None)
+    )
+    if venue_query is not None:
+        matches = resolve_venue(venue_query, catalog)
+        if len(matches) != 1:
+            return (
+                "I could not match that to one exact Table for Two venue. "
+                "Use /venues, then send /venue <exact venue>."
+            )
+        if venue_intent == "menu":
+            return _menu_answer(matches[0], None, catalog, current)
+        return _venue_details(matches[0], catalog, current)
 
     document_answer = tft_documents.answer(message, catalog, current)
     if document_answer is not None:
