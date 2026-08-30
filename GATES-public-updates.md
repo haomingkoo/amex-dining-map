@@ -29,5 +29,5 @@ Scope: Public visitors see confirmed restaurant and menu changes first, while so
   EXPECT: project verification passed
   EVIDENCE: exit=0; shell=/bin/sh; cwd=/Users/koohaoming/dev/amex-dining-map; path=db7d51c629d2/23 entries; EXPECT=matched; output-sha256=f5d0ddf1b39eea2ba15da76b8e6c2c5e4c2e9a576c3ac12ab6f7612d5567295c; output-bytes=28
 
-- [ ] G5: the deployed 390-pixel mobile journey leads with confirmed additions, removals, and menu changes, keeps data freshness collapsed by default, and has no horizontal overflow or application error
-  EVIDENCE: pending
+- [x] G5: the deployed 390-pixel mobile journey leads with confirmed additions, removals, and menu changes, keeps data freshness collapsed by default, and has no horizontal overflow or application error
+  EVIDENCE: 2026-08-31 Pages run 33326979634 deployed eb2a7b7. Production at 390x844 showed 8 restaurants added, 2 restaurants removed, and 2 menus changed across two visible headline lines; the 12 primary rows led with Tajimaya Yakiniku, 8 lower-priority corrections and Data freshness were collapsed, TANOKE retained reviewed semantic before-and-after menu details without hashes, document scroll width equalled the 390-pixel viewport, and the updates panel contained no application error state.
