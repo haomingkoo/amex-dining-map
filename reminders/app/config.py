@@ -38,6 +38,8 @@ class Settings:
     telegram_global_limit_per_minute: int = 120
     telegram_user_limit_per_day: int = 200
     telegram_global_limit_per_day: int = 5_000
+    telegram_reminders_enabled: bool = False
+    telegram_reminder_dispatch_token: str = ""
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -121,6 +123,10 @@ def load_settings() -> Settings:
         telegram_global_limit_per_day=_env_int(
             "TELEGRAM_GLOBAL_LIMIT_PER_DAY", 5_000
         ),
+        telegram_reminders_enabled=_env_bool("TELEGRAM_REMINDERS_ENABLED"),
+        telegram_reminder_dispatch_token=os.getenv(
+            "TELEGRAM_REMINDER_DISPATCH_TOKEN", ""
+        ).strip(),
     )
     if settings.public_base_url.startswith("https://"):
         missing = []
@@ -205,5 +211,29 @@ def load_settings() -> Settings:
         if missing:
             raise RuntimeError(
                 "Telegram guide configuration is incomplete: " + ", ".join(missing)
+            )
+    if settings.telegram_reminders_enabled:
+        missing = []
+        token = settings.telegram_reminder_dispatch_token
+        if not settings.telegram_guide_enabled:
+            missing.append("TELEGRAM_GUIDE_ENABLED")
+        if (
+            re.fullmatch(r"[A-Za-z0-9_-]{43,256}", token) is None
+            or token.startswith(("YOUR_", "REPLACE_", "CHANGE_ME"))
+        ):
+            missing.append(
+                "TELEGRAM_REMINDER_DISPATCH_TOKEN (43+ random URL-safe characters)"
+            )
+        if token in {
+            settings.telegram_guide_webhook_secret,
+            settings.telegram_identity_hash_salt,
+            settings.owner_alert_ingest_token,
+            settings.alert_export_token,
+        }:
+            missing.append("independent Telegram reminder dispatch token")
+        if missing:
+            raise RuntimeError(
+                "Telegram reminder configuration is incomplete: "
+                + ", ".join(missing)
             )
     return settings

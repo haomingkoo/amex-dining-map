@@ -161,6 +161,21 @@ def test_positive_cache_and_single_flight_make_one_request():
     assert all(result == snapshot() for result in results)
 
 
+def test_authenticated_dispatch_can_force_one_refresh_past_positive_cache():
+    old = snapshot()
+    fresh = snapshot()
+    fresh["generated_at"] = "2026-08-30T03:01:00Z"
+    fresh["venues"][0]["checked_at"] = "2026-08-30T03:01:00Z"
+
+    assert tft_slot_source.load_snapshot(opener_for(old), lambda: 0) == old
+    assert (
+        tft_slot_source.load_snapshot(
+            opener_for(fresh), lambda: 1, force_refresh=True
+        )
+        == fresh
+    )
+
+
 def test_expired_last_known_good_is_returned_as_original_stale_data():
     first = tft_slot_source.load_snapshot(opener_for(snapshot()), lambda: 0)
 

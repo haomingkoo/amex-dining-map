@@ -141,14 +141,19 @@ def _fetch(opener: Callable = _opener) -> dict[str, Any]:
 def load_snapshot(
     opener: Callable = _opener,
     monotonic: Callable[[], float] = time.monotonic,
+    force_refresh: bool = False,
 ) -> dict[str, Any]:
     global _cached, _cached_at, _negative_until
     current = monotonic()
     with _lock:
-        if _cached is not None and current - _cached_at < POSITIVE_CACHE_SECONDS:
+        if (
+            not force_refresh
+            and _cached is not None
+            and current - _cached_at < POSITIVE_CACHE_SECONDS
+        ):
             return _cached
-        if current < _negative_until:
-            if _cached is not None:
+        if not force_refresh and current < _negative_until:
+            if _cached is not None and not force_refresh:
                 return _cached
             raise SlotSourceUnavailable("slot source is in negative cache")
         try:

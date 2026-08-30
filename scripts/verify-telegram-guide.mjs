@@ -27,6 +27,10 @@ execFileSync("node", ["scripts/verify-telegram-slots.mjs"], {
   cwd: root,
   stdio: "pipe",
 });
+execFileSync("node", ["scripts/verify-telegram-reminders.mjs"], {
+  cwd: root,
+  stdio: "pipe",
+});
 execFileSync("uv", [
   "run", "--python", "3.12",
   "--with-requirements", "reminders/requirements.txt",

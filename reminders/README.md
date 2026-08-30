@@ -142,14 +142,22 @@ Anything older than 30 minutes is labelled stale and cannot be described as
 current availability. An empty fresh match means only that no matching slot was
 observed in the cached check—not that the Amex Experiences App is sold out.
 
-The current guide does not yet answer substantive T&C questions or create
-Telegram reminders; those remain #39–#40. Real slot freshness still depends on
-the half-hour workflow and Pages deployment completing inside the 30-minute
-window.
+The guide also contains a disabled-by-default, one-shot reminder lifecycle:
+`/remind`, `/reminders`, `/cancel [reminder ID]`, and `/delete_me`. Setup collects
+one exact venue, party size, lunch or dinner, and an absolute SGT date, range,
+or up to ten specific dates. A confirmed reminder sends at most one notification
+after the first fresh cached AMEXPlatSG match, then closes. It is separate from
+email subscribers. Substantive T&C answers remain #40. Real slot freshness still
+depends on the half-hour workflow and Pages deployment completing inside the
+30-minute window.
 
 Spam controls are intentionally quiet: Telegram's webhook secret is checked
-before JSON parsing, update IDs are durably deduplicated, identities are stored
-only as keyed hashes, and per-user/global minute and daily quotas are
+before JSON parsing, update IDs are durably deduplicated, and guide-only
+identities are stored as keyed hashes. A reminder draft stores no raw Telegram
+identity. After explicit confirmation, proactive delivery necessarily stores
+the private chat ID in SQLite; it is never logged or exported and is erased when
+the reminder is cancelled or reaches a terminal delivery state. Per-user/global
+minute and daily quotas are
 consumed atomically. Groups, bots, unsupported updates, and rate-limited bursts
 return success without sending a reply, preventing warning-message
 amplification. Replay metadata expires after seven days and quota metadata
@@ -157,7 +165,14 @@ after 24 hours; message text and usernames are not stored.
 
 Before enabling, create a separate BotFather bot and generate two independent
 43+ character values for `TELEGRAM_GUIDE_WEBHOOK_SECRET` and
-`TELEGRAM_IDENTITY_HASH_SALT`. Keep Railway on one persistent SQLite-backed
+`TELEGRAM_IDENTITY_HASH_SALT`. To enable reminders, also generate an independent
+`TELEGRAM_REMINDER_DISPATCH_TOKEN`, add the same dispatch token and
+`REMINDERS_API_BASE` as GitHub Actions secrets, and set
+`TELEGRAM_REMINDERS_ENABLED=true` on Railway. After live acceptance, set the
+GitHub Actions repository variable `TELEGRAM_REMINDERS_EXPECTED_ENABLED=true`;
+then a missing API base or dispatch token fails Pages instead of silently
+skipping. Before activation, missing secrets produce a visible workflow warning.
+Keep Railway on one persistent SQLite-backed
 replica. Register `/api/telegram/guide/webhook` with Telegram using the secret
 token, `allowed_updates=["message"]`, and `drop_pending_updates=true` only for
 the first activation. Real private-chat, replay, group-ignore, and rate-limit
@@ -201,14 +216,20 @@ unset TELEGRAM_GUIDE_BOT_TOKEN TELEGRAM_GUIDE_WEBHOOK_SECRET GUIDE_WEBHOOK_URL
 Monitor Railway health and error rates, Telegram `pending_update_count` and
 `last_error_message`, SQLite volume use, and the age/manual-review fields in the
 bundled TFT catalogue. A healthy HTTP endpoint is not proof of a working bot;
-send `/venues`, both VUE menu variants, `/release VUE dinner`, an unknown venue,
-and a group message
+send `/venues`, both VUE menu variants, `/release VUE dinner`, the exact `/slots`
+and conversational weekend queries, then create/list/cancel a test reminder and
+send a group message
 from real Telegram clients after each activation.
 
 For token rotation, disable `TELEGRAM_GUIDE_ENABLED`, delete the webhook, rotate
 the BotFather token and both independent random secrets, redeploy, register the
 new webhook without dropping pending updates, repeat acceptance, then re-enable.
 Rotate owner-alert and guide-bot credentials separately.
+Before rotating `TELEGRAM_IDENTITY_HASH_SALT`, disable reminder creation and
+dispatch and verify SQLite has zero reminder rows in `active`, `claimed`, or
+`sending` state. Drain or cancel them first; startup deliberately fails if a new
+salt would strand live reminders. The bot token, webhook secret, and dispatch
+token can be rotated without changing reminder ownership.
 
 ```bash
 read -rs TELEGRAM_GUIDE_BOT_TOKEN; export TELEGRAM_GUIDE_BOT_TOKEN
@@ -230,7 +251,19 @@ Rollback by disabling the guide flag and deleting its webhook; owner alerts and
 email reminders remain independent. If delivery is ambiguous, inspect the
 stored terminal state and Telegram webhook information instead of resending.
 Restore only from the persistent SQLite volume or a verified backup, never from
-chat logs. The service stores no message text or usernames.
+chat logs. The service stores no message text or usernames. Reminder delivery is
+at-most-once across ambiguous Telegram failures: a timeout, malformed response,
+stale in-flight claim, or 5xx becomes terminal `unknown` and is not blindly
+resent. The post-Pages workflow calls the authenticated Railway dispatch endpoint
+with the exact deployed snapshot generation; a mismatch fails closed.
+Each request claims at most two matched reminders, moves each from `claimed` to
+`sending` only immediately before the provider call, and returns a random run ID
+plus aggregate counts. The workflow performs at most 25 bounded calls while
+`more=true`. A stale never-attempted `claimed` row safely returns to active;
+only a stale `sending` row becomes terminal `unknown`.
+The service transactionally caps the complete `active`/`claimed`/`sending`
+population at 1,000, so every live reminder remains inside one bounded scan and
+newer matches cannot be stranded behind an unbounded nonmatching queue.
 
 ## Operational logs
 
@@ -244,6 +277,29 @@ Guide and owner delivery attempts also emit privacy-safe outcome events with
 state, bounded error code, command class where applicable, attempt, and latency.
 HTTP 200 can still contain a terminal Telegram outcome, so alert on `unknown`,
 `dead`, and `catalog_invalid`, and inspect their SQLite rows before intervention.
+Reminder dispatch emits `telegram_reminder_run` aggregate counts and
+`telegram_reminder_delivery` terminal outcomes. These logs never include chat
+IDs, principal hashes, reminder IDs, venue/date criteria, message text, provider
+responses, or tokens. Correlate the internal dispatch request in Railway with
+the matching successful Pages run and its `generated_at`; `409` means the public
+projection did not match the deployed generation, while `503` means the feature
+or fixed source was unavailable. Do not manually resend `unknown` rows.
+For aggregate diagnosis in an authorized Railway shell, query counts and oldest
+state timestamps only—never dump reminder rows:
+
+```sql
+SELECT state, COUNT(*) AS count, MIN(updated_ts) AS oldest
+FROM telegram_reminders GROUP BY state ORDER BY state;
+SELECT state, COUNT(*) AS count, MIN(updated_ts) AS oldest
+FROM telegram_reminder_deliveries GROUP BY state ORDER BY state;
+```
+
+Compare `claimed` older than five minutes with the next run's
+`reconciled_claimed_count`; it should return to active. A nonzero
+`reconciled_unknown_count`, `receipt_conflict`, or `store_unavailable` needs
+operator review, not manual resend. The random run ID in the workflow summary,
+endpoint response, delivery events, and aggregate run event is the correlation
+key; it is not a user or reminder identifier.
 
 For email reminders, monitor the Table for Two Alerts workflow conclusion,
 Resend delivery/bounce events, the cached availability age, and the incremental

@@ -145,7 +145,10 @@ def discard_update(conn: sqlite3.Connection, bot_scope: str, update_id: int) -> 
 def consume_limits(
     conn: sqlite3.Connection,
     policies: list[tuple[str, int, int]],
+    event_type: str = "guide",
 ) -> bool:
+    if event_type not in {"guide", "management"}:
+        raise ValueError("invalid Telegram rate event type")
     now = _now()
     purge(conn)
     conn.commit()
@@ -155,8 +158,8 @@ def consume_limits(
             cutoff = _iso(now - timedelta(minutes=within_minutes))
             count = conn.execute(
                 "SELECT COUNT(*) AS n FROM telegram_rate_events "
-                "WHERE scope_key = ? AND event_type = 'guide' AND created_ts >= ?",
-                (key, cutoff),
+                "WHERE scope_key = ? AND event_type = ? AND created_ts >= ?",
+                (key, event_type, cutoff),
             ).fetchone()["n"]
             if int(count) >= maximum:
                 conn.rollback()
@@ -164,8 +167,8 @@ def consume_limits(
         unique_keys = sorted({key for key, _maximum, _minutes in policies})
         conn.executemany(
             "INSERT INTO telegram_rate_events (scope_key, event_type, created_ts) "
-            "VALUES (?, 'guide', ?)",
-            [(key, _iso(now)) for key in unique_keys],
+            "VALUES (?, ?, ?)",
+            [(key, event_type, _iso(now)) for key in unique_keys],
         )
         conn.commit()
         return True

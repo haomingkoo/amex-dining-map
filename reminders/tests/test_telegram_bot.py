@@ -4,12 +4,13 @@ from dataclasses import replace
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import json
 import logging
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app import db, telegram_bot_store, tft_slot_source
+from app import db, telegram_bot_store, telegram_reminders, tft_guide, tft_slot_source
 from app.config import Settings
 from app.main import app
 from app.telegram_bot_routes import BOT_SCOPE, get_settings
@@ -58,6 +59,11 @@ def guide_client(tmp_path: Path):
     settings = _settings(tmp_path / "guide.db")
     db.init_db(settings.db_path)
     telegram_bot_store.init_db(settings.db_path)
+    conn = db.connect(settings.db_path)
+    try:
+        telegram_reminders.init_db(conn)
+    finally:
+        conn.close()
     app.dependency_overrides[get_settings] = lambda: settings
     with TestClient(app) as client:
         yield client, settings
@@ -67,6 +73,28 @@ def guide_client(tmp_path: Path):
 def _post(client: TestClient, payload: dict, secret: str | None = WEBHOOK_SECRET):
     headers = {"X-Telegram-Bot-Api-Secret-Token": secret} if secret else {}
     return client.post("/api/telegram/guide/webhook", json=payload, headers=headers)
+
+
+def _enabled_reminder_settings(settings: Settings) -> Settings:
+    return replace(
+        settings,
+        telegram_reminders_enabled=True,
+        telegram_reminder_dispatch_token="d" * 43,
+    )
+
+
+def _seed_active_reminder(settings: Settings, now: datetime, requested_date: str):
+    conn = db.connect(settings.db_path)
+    try:
+        principal = telegram_bot_store.identity_key(
+            "user", 4444, settings.telegram_identity_hash_salt
+        )
+        for text in ("/remind", "VUE", "2", "dinner", requested_date, "YES"):
+            telegram_reminders.handle_message(
+                conn, principal, 4444, text, tft_guide.load_catalog(), now
+            )
+    finally:
+        conn.close()
 
 
 def test_wrong_webhook_secret_has_no_side_effect(guide_client, monkeypatch):
@@ -593,3 +621,415 @@ def test_concurrent_duplicate_claim_has_one_winner(tmp_path: Path):
         results = list(pool.map(lambda _index: claim_once(), range(2)))
 
     assert sorted(results) == [False, True]
+
+
+def test_private_guided_reminder_flow_is_replay_safe_and_keeps_guide_commands(
+    guide_client, monkeypatch
+):
+    client, settings = guide_client
+    settings = replace(
+        settings,
+        telegram_reminders_enabled=True,
+        telegram_reminder_dispatch_token="d" * 43,
+    )
+    app.dependency_overrides[get_settings] = lambda: settings
+    sends = []
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.telegram.send_message",
+        lambda *args: sends.append(args) or len(sends),
+    )
+    requested_date = (datetime.now(timezone.utc) + timedelta(days=10)).date().isoformat()
+    steps = [
+        "/remind",
+        "/venues",
+        "VUE",
+        "2",
+        "dinner",
+        requested_date,
+        "YES",
+    ]
+    for index, text in enumerate(steps, start=30_000):
+        assert _post(client, _update(update_id=index, text=text)).json() == {"ok": True}
+    replay = _post(client, _update(update_id=30_006, text="YES"))
+
+    assert replay.json() == {"ok": True}
+    assert len(sends) == len(steps)
+    assert "Table for Two — cached roster" in sends[1][2]
+    assert "How many people" in sends[2][2]
+    assert "store this private chat ID" in sends[0][2]
+    assert "Active reminder R" in sends[-1][2]
+    conn = db.connect(settings.db_path)
+    try:
+        row = conn.execute(
+            "SELECT state, chat_id, venue_id, party_size, meal FROM telegram_reminders"
+        ).fetchone()
+        assert tuple(row) == ("active", 4444, "tft-vue", 2, "Dinner")
+        assert conn.execute(
+            "SELECT COUNT(*) FROM telegram_reminder_conversations"
+        ).fetchone()[0] == 0
+    finally:
+        conn.close()
+
+
+def test_reminder_dispatch_auth_precedes_source_loading(guide_client, monkeypatch):
+    client, settings = guide_client
+    settings = replace(
+        settings,
+        telegram_reminders_enabled=True,
+        telegram_reminder_dispatch_token="d" * 43,
+    )
+    app.dependency_overrides[get_settings] = lambda: settings
+    loads = []
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.tft_slot_source.load_snapshot",
+        lambda: loads.append(1) or {},
+    )
+
+    response = client.post(
+        "/api/internal/telegram/reminders/dispatch",
+        json={"expected_generated_at": datetime.now(timezone.utc).isoformat()},
+        headers={"X-Telegram-Reminder-Dispatch-Token": "wrong"},
+    )
+
+    assert response.status_code == 401
+    assert loads == []
+
+
+def test_management_and_delete_confirmation_have_independent_quota(
+    guide_client, monkeypatch
+):
+    client, settings = guide_client
+    settings = replace(
+        settings,
+        telegram_reminders_enabled=True,
+        telegram_reminder_dispatch_token="d" * 43,
+        telegram_user_limit_per_minute=1,
+    )
+    app.dependency_overrides[get_settings] = lambda: settings
+    sends = []
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.telegram.send_message",
+        lambda *args: sends.append(args) or len(sends),
+    )
+
+    _post(client, _update(update_id=40_001, text="/remind"))
+    _post(client, _update(update_id=40_002, text="spam that exhausts guide quota"))
+    _post(client, _update(update_id=40_003, text="/delete_me"))
+    _post(client, _update(update_id=40_004, text="DELETE"))
+
+    assert len(sends) == 3
+    assert "Delete your Telegram reminder data" in sends[-2][2]
+    assert "Email reminders were not changed" in sends[-1][2]
+
+
+def test_reminder_dispatch_generation_mismatch_fails_before_claim_or_send(
+    guide_client, monkeypatch
+):
+    client, settings = guide_client
+    settings = replace(
+        settings,
+        telegram_reminders_enabled=True,
+        telegram_reminder_dispatch_token="d" * 43,
+    )
+    app.dependency_overrides[get_settings] = lambda: settings
+    snapshot = {
+        "schema_version": 1,
+        "source_project": "AMEXPlatSG",
+        "generated_at": "2026-08-30T04:00:00+00:00",
+        "venues": [],
+    }
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.tft_slot_source.load_snapshot",
+        lambda force_refresh=False: snapshot,
+    )
+    sends = []
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.telegram.send_message",
+        lambda *args: sends.append(args) or 1,
+    )
+
+    response = client.post(
+        "/api/internal/telegram/reminders/dispatch",
+        json={"expected_generated_at": "2026-08-30T04:01:00+00:00"},
+        headers={"X-Telegram-Reminder-Dispatch-Token": "d" * 43},
+    )
+
+    assert response.status_code == 409
+    assert sends == []
+    conn = db.connect(settings.db_path)
+    try:
+        assert conn.execute(
+            "SELECT COUNT(*) FROM telegram_reminder_deliveries"
+        ).fetchone()[0] == 0
+    finally:
+        conn.close()
+
+
+def test_dispatch_bypasses_prewarmed_old_snapshot_once(guide_client, monkeypatch):
+    client, settings = guide_client
+    settings = replace(
+        settings,
+        telegram_reminders_enabled=True,
+        telegram_reminder_dispatch_token="d" * 43,
+    )
+    app.dependency_overrides[get_settings] = lambda: settings
+    old = {
+        "schema_version": 1,
+        "source_project": "AMEXPlatSG",
+        "generated_at": "2026-08-30T04:00:00+00:00",
+        "venues": [],
+    }
+    fresh = {**old, "generated_at": "2026-08-30T04:01:00+00:00"}
+    calls = []
+
+    def load(force_refresh=False):
+        calls.append(force_refresh)
+        return fresh if force_refresh else old
+
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.tft_slot_source.load_snapshot", load
+    )
+    response = client.post(
+        "/api/internal/telegram/reminders/dispatch",
+        json={"expected_generated_at": fresh["generated_at"]},
+        headers={"X-Telegram-Reminder-Dispatch-Token": "d" * 43},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["claimed"] == 0
+    assert calls == [False, True]
+
+
+def test_dispatch_source_and_store_failures_have_correlated_privacy_safe_logs(
+    guide_client, monkeypatch, caplog
+):
+    client, settings = guide_client
+    settings = _enabled_reminder_settings(settings)
+    app.dependency_overrides[get_settings] = lambda: settings
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
+    expected = datetime.now(timezone.utc).isoformat()
+    headers = {"X-Telegram-Reminder-Dispatch-Token": "d" * 43}
+    body = {"expected_generated_at": expected}
+
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.tft_slot_source.load_snapshot",
+        lambda force_refresh=False: (_ for _ in ()).throw(
+            tft_slot_source.SlotSourceUnavailable("CANARY_SOURCE_SECRET")
+        ),
+    )
+    source_response = client.post(
+        "/api/internal/telegram/reminders/dispatch", json=body, headers=headers
+    )
+    source_logs = [
+        record.getMessage()
+        for record in caplog.records
+        if '"event":"telegram_reminder_run"' in record.getMessage()
+    ]
+    assert source_response.status_code == 503
+    assert '"error_code":"slot_source_unavailable"' in source_logs[-1]
+    assert '"run_id":' in source_logs[-1]
+    assert "CANARY_SOURCE_SECRET" not in source_logs[-1]
+
+    caplog.clear()
+    snapshot = {
+        "schema_version": 1,
+        "source_project": "AMEXPlatSG",
+        "generated_at": expected,
+        "venues": [],
+    }
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.tft_slot_source.load_snapshot",
+        lambda force_refresh=False: snapshot,
+    )
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.telegram_reminders.claim_notifications",
+        lambda *_args: (_ for _ in ()).throw(
+            RuntimeError("CANARY_STORE_SECRET")
+        ),
+    )
+    store_response = client.post(
+        "/api/internal/telegram/reminders/dispatch", json=body, headers=headers
+    )
+    store_logs = [
+        record.getMessage()
+        for record in caplog.records
+        if '"event":"telegram_reminder_run"' in record.getMessage()
+    ]
+    assert store_response.status_code == 503
+    assert '"error_code":"store_unavailable"' in store_logs[-1]
+    assert '"run_id":' in store_logs[-1]
+    assert "CANARY_STORE_SECRET" not in store_logs[-1]
+    assert "d" * 43 not in "\n".join(source_logs + store_logs)
+
+
+def test_receipt_conflict_after_send_logs_unknown_and_failed_run_without_pii(
+    guide_client, monkeypatch, caplog
+):
+    client, settings = guide_client
+    settings = _enabled_reminder_settings(settings)
+    app.dependency_overrides[get_settings] = lambda: settings
+    now = datetime.now(timezone.utc)
+    requested_date = (now + timedelta(days=10)).date().isoformat()
+    _seed_active_reminder(settings, now, requested_date)
+    snapshot = {
+        "schema_version": 1,
+        "source_project": "AMEXPlatSG",
+        "generated_at": now.isoformat(),
+        "venues": [
+            {
+                "id": "tft-vue",
+                "project": "AMEXPlatSG",
+                "status": "live_available",
+                "checked_at": (now - timedelta(minutes=2)).isoformat(),
+                "meals": [
+                    {
+                        "meal": "Dinner",
+                        "status": "available",
+                        "slots": [
+                            {"date": requested_date, "time": "19:00", "max_seats": 2}
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.tft_slot_source.load_snapshot",
+        lambda force_refresh=False: snapshot,
+    )
+    sends = []
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.telegram.send_message",
+        lambda *args: sends.append(args) or 900,
+    )
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.telegram_reminders.complete_notification",
+        lambda *_args: (_ for _ in ()).throw(
+            RuntimeError("CANARY_RECEIPT_SECRET")
+        ),
+    )
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
+
+    response = client.post(
+        "/api/internal/telegram/reminders/dispatch",
+        json={"expected_generated_at": snapshot["generated_at"]},
+        headers={"X-Telegram-Reminder-Dispatch-Token": "d" * 43},
+    )
+
+    assert response.status_code == 500
+    assert len(sends) == 1
+    log_text = "\n".join(record.getMessage() for record in caplog.records)
+    assert '"error_code":"receipt_conflict"' in log_text
+    assert '"state":"unknown"' in log_text
+    assert '"event":"telegram_reminder_run"' in log_text
+    for forbidden in (
+        "CANARY_RECEIPT_SECRET",
+        "4444",
+        requested_date,
+        "tft-vue",
+        "d" * 43,
+        sends[0][2],
+    ):
+        assert forbidden not in log_text
+
+
+def test_reminder_dispatch_sends_once_then_terminally_closes_destination(
+    guide_client, monkeypatch, caplog
+):
+    client, settings = guide_client
+    settings = replace(
+        settings,
+        telegram_reminders_enabled=True,
+        telegram_reminder_dispatch_token="d" * 43,
+    )
+    app.dependency_overrides[get_settings] = lambda: settings
+    now = datetime.now(timezone.utc)
+    requested_date = (now + timedelta(days=10)).date().isoformat()
+    conn = db.connect(settings.db_path)
+    try:
+        principal = telegram_bot_store.identity_key(
+            "user", 4444, settings.telegram_identity_hash_salt
+        )
+        for text in ("/remind", "VUE", "2", "dinner", requested_date, "YES"):
+            telegram_reminders.handle_message(
+                conn, principal, 4444, text, tft_guide.load_catalog(), now
+            )
+    finally:
+        conn.close()
+    snapshot = {
+        "schema_version": 1,
+        "source_project": "AMEXPlatSG",
+        "generated_at": now.isoformat(),
+        "venues": [
+            {
+                "id": "tft-vue",
+                "project": "AMEXPlatSG",
+                "status": "live_available",
+                "checked_at": (now - timedelta(minutes=2)).isoformat(),
+                "meals": [
+                    {
+                        "meal": "Dinner",
+                        "status": "available",
+                        "slots": [
+                            {"date": requested_date, "time": "19:00", "max_seats": 2}
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.tft_slot_source.load_snapshot", lambda: snapshot
+    )
+    sends = []
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.telegram.send_message",
+        lambda *args: sends.append(args) or 501,
+    )
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
+    headers = {"X-Telegram-Reminder-Dispatch-Token": "d" * 43}
+    body = {"expected_generated_at": snapshot["generated_at"]}
+
+    first = client.post(
+        "/api/internal/telegram/reminders/dispatch", json=body, headers=headers
+    )
+    replay = client.post(
+        "/api/internal/telegram/reminders/dispatch", json=body, headers=headers
+    )
+
+    first_payload = first.json()
+    replay_payload = replay.json()
+    assert {key: first_payload[key] for key in ("ok", "claimed", "sent", "unknown", "dead", "skipped", "more")} == {
+        "ok": True, "claimed": 1, "sent": 1, "unknown": 0,
+        "dead": 0, "skipped": 0, "more": False,
+    }
+    assert {key: replay_payload[key] for key in ("ok", "claimed", "sent", "unknown", "dead", "skipped", "more")} == {
+        "ok": True, "claimed": 0, "sent": 0, "unknown": 0,
+        "dead": 0, "skipped": 0, "more": False,
+    }
+    assert len(first_payload["run_id"]) == len(replay_payload["run_id"]) == 16
+    assert len(sends) == 1
+    assert sends[0][1] == 4444
+    assert "not a booking guarantee" in sends[0][2]
+    conn = db.connect(settings.db_path)
+    try:
+        row = conn.execute(
+            "SELECT state, chat_id FROM telegram_reminders"
+        ).fetchone()
+        assert tuple(row) == ("notified", 0)
+    finally:
+        conn.close()
+    logged_values = []
+    for record in caplog.records:
+        payload = json.loads(record.getMessage())
+        pending = [payload]
+        while pending:
+            value = pending.pop()
+            if isinstance(value, dict):
+                pending.extend(value.values())
+            elif isinstance(value, list):
+                pending.extend(value)
+            else:
+                logged_values.append(value)
+    for forbidden in (4444, requested_date, "tft-vue", "d" * 43, sends[0][2]):
+        assert forbidden not in logged_values

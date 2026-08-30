@@ -127,3 +127,27 @@ def test_telegram_guide_config_rejects_reused_secrets(monkeypatch):
 
     with pytest.raises(RuntimeError, match="independent Telegram"):
         load_settings()
+
+
+def test_telegram_reminder_config_requires_independent_dispatch_secret(monkeypatch):
+    shared = "s" * 43
+    monkeypatch.setenv("TELEGRAM_GUIDE_ENABLED", "true")
+    monkeypatch.setenv(
+        "TELEGRAM_GUIDE_BOT_TOKEN",
+        "987654321:separatepublicbotabcdefghijklmnopqrstuvwxyz",
+    )
+    monkeypatch.setenv("TELEGRAM_GUIDE_WEBHOOK_SECRET", "w" * 43)
+    monkeypatch.setenv("TELEGRAM_IDENTITY_HASH_SALT", shared)
+    monkeypatch.setenv("TELEGRAM_REMINDERS_ENABLED", "true")
+    monkeypatch.setenv("TELEGRAM_REMINDER_DISPATCH_TOKEN", shared)
+
+    with pytest.raises(RuntimeError, match="independent Telegram reminder"):
+        load_settings()
+
+
+def test_telegram_reminders_cannot_run_without_guide(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_REMINDERS_ENABLED", "true")
+    monkeypatch.setenv("TELEGRAM_REMINDER_DISPATCH_TOKEN", "d" * 43)
+
+    with pytest.raises(RuntimeError, match="TELEGRAM_GUIDE_ENABLED"):
+        load_settings()

@@ -11,7 +11,7 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app import db, owner_alert_store, telegram_bot_store, tft_guide
+from app import db, owner_alert_store, telegram_bot_store, telegram_reminders, tft_guide
 from app.config import load_settings
 from app.owner_alert_routes import router as owner_alert_router
 from app.observability import configure_logging
@@ -45,6 +45,13 @@ app.add_middleware(RequestLoggingMiddleware)
 db.init_db(settings.db_path)
 owner_alert_store.init_db(settings.db_path)
 telegram_bot_store.init_db(settings.db_path)
+telegram_reminder_conn = db.connect(settings.db_path)
+try:
+    telegram_reminders.init_db(
+        telegram_reminder_conn, settings.telegram_identity_hash_salt
+    )
+finally:
+    telegram_reminder_conn.close()
 app.include_router(router)
 app.include_router(owner_alert_router)
 app.include_router(telegram_bot_router)

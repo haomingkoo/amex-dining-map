@@ -30,21 +30,29 @@ def test_projection_matches_current_source_and_is_bounded():
 
 
 def test_vue_projection_preserves_exact_slot_facts():
-    projected = MODULE.build_snapshot(_source())
+    source = _source()
+    projected = MODULE.build_snapshot(source)
+    source_vue = next(venue for venue in source["venues"] if venue["id"] == "tft-vue")
+    source_availability = source_vue["availability"]
     vue = next(venue for venue in projected["venues"] if venue["id"] == "tft-vue")
 
     assert vue["project"] == "AMEXPlatSG"
     assert vue["status"] == "live_available"
-    assert vue["checked_at"] == "2026-08-30T02:22:35Z"
+    assert vue["checked_at"] == source_availability["checked_at"]
     assert vue["meals"] == [
         {
-            "meal": "Dinner",
-            "status": "available",
+            "meal": meal["meal"],
+            "status": meal["status"],
             "slots": [
-                {"date": "2026-10-29", "time": value, "max_seats": 2}
-                for value in ("18:00", "18:30", "19:00", "19:30", "20:00")
+                {
+                    "date": slot["date"],
+                    "time": slot["time"],
+                    "max_seats": slot["max_seats"],
+                }
+                for slot in meal["slots"]
             ],
         }
+        for meal in source_availability["meals"]
     ]
 
 

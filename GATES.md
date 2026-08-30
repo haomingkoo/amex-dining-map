@@ -44,17 +44,17 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [ ] G7: Telegram webhook authentication, owner allowlists, public-user rate limits, payload limits, output escaping, reminder consent, retention limits, and secret isolation pass security regression tests
   CHECK: node scripts/verify-telegram-security.mjs
   EXPECT: Telegram security verification passed
-  EVIDENCE: 2026-08-30 guide webhook authentication, replay, private-chat, rate, payload, retention, escaping, and secret-isolation checks pass. Telegram reminder consent and privileged interactive controls remain pending.
+  EVIDENCE: 2026-08-30 guide webhook authentication, replay, private-chat, rate, payload, retention, escaping, and secret-isolation checks pass. Reminder setup repeats raw chat-ID storage and retention consent before activation; list, cancellation, deletion, and management quotas are principal-scoped. Real private-Telegram acceptance remains pending.
 
 - [ ] G7A: a Telegram user can create, inspect, and cancel a TFT slot reminder with an explicit venue, party size, meal, and date range
   CHECK: node scripts/verify-telegram-reminders.mjs
   EXPECT: Telegram reminder verification passed
-  EVIDENCE: pending
+  EVIDENCE: deterministic one-shot lifecycle, bounded and expiring setup, HMAC ownership, non-enumerating cancellation, two-step deletion, fresh AMEXPlatSG matching, transactional claims, terminal delivery receipts, post-Pages generation gating, and privacy-safe dispatch logs pass locally. Real private-Telegram mobile acceptance remains pending, so this gate stays open.
 
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
-  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 213 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
+  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 241 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
 
 - [ ] G9: a real before-and-after test alert is delivered to the private owner channel and no unintended chat receives it
   EVIDENCE: pending
