@@ -16,10 +16,10 @@ Tracker: parent #34; vertical slices #35 through #42.
   EXPECT: security audit verification passed
   EVIDENCE: 2026-08-30 verifier passed; Pages run 33283464189 succeeded; Railway health, CORS, headers, and disabled OpenAPI were production-probed; Dependabot reported no open alerts.
 
-- [ ] G2: the deployed mobile Table for Two journey exposes venue details, current menu and official-source links, T&Cs context, release-pattern qualifications, and working reminder signup without browser-visible failures
+- [x] G2: the deployed mobile Table for Two journey exposes venue details, current menu and official-source links, T&Cs context, release-pattern qualifications, and working reminder signup without browser-visible failures
   CHECK: node scripts/verify-tft-browser-evidence.mjs
   EXPECT: TFT browser evidence verification passed
-  EVIDENCE: 2026-08-30 production at 390x844 preserved the first-visit VUE deep link, selected VUE, showed current AMEXPlatSG slots plus menu/release timestamps and review caveats, submitted the email reminder UI with API 200, and had no app exception or horizontal overflow. Two handled DiningCity 404 probes remain for stale missing-project venues; the executable evidence verifier is still pending, so this gate stays open.
+  EVIDENCE: 2026-08-30 exact Pages run 33300418007 deployed 697eb35. Browser acceptance at 390x844 and 320x740 passed VUE, Osteria Mozza, and One-Ninety deep-link reloads, per-venue review warnings, exact reviewed menus, T&C/roster/Google links, reminder-form visibility, release qualifications, loaded OpenStreetMap tiles, zero clipped focus-card descendants, zero page console errors, and no API-key watermark. Two expected handled DiningCity 404 probes remain for stale missing-project venues. The live-bound evidence verifier passed against app SHA 5a446a4193c6 and Railway deployment 530a9425-58c8-4451-b6e4-84ccf6352f40.
 
 - [x] G3: owner updates are formatted as concise before-and-after alerts and can only be delivered to the configured private Telegram channel
   CHECK: node scripts/verify-telegram-owner-alerts.mjs
