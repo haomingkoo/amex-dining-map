@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "source": "data/table-for-two.json",
   "program": "American Express Table for Two by Platinum",
   "official_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
@@ -13,11 +13,17 @@
     "updated_at": "2026-08-30T02:22:35+00:00",
     "observation_count": 2643
   },
+  "slot_source": {
+    "url": "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json",
+    "project": "AMEXPlatSG",
+    "stale_after_minutes": 30
+  },
   "manual_review_required": true,
   "venues": [
     {
       "id": "tft-15-stamford-restaurant",
       "name": "15 Stamford Restaurant",
+      "dining_city_id": "2055188",
       "dining_city_name": "15 Stamford Restaurant",
       "category": "restaurant",
       "address": "15 Stamford Road, Singapore 178906",
@@ -75,6 +81,7 @@
     {
       "id": "tft-baes-cocktail-club",
       "name": "Bae's Cocktail Club",
+      "dining_city_id": "205194844",
       "dining_city_name": "Bae's Cocktail Club",
       "category": "restaurant",
       "address": "21 Tanjong Pagar Road, #01-04/05, Singapore 088444",
@@ -119,6 +126,7 @@
     {
       "id": "tft-capitol-bistro-bar-patisserie",
       "name": "Capitol Bistro. Bar. Patisserie",
+      "dining_city_id": "205192162",
       "dining_city_name": "Capitol Bistro. Bar. Patisserie",
       "category": "cafe",
       "address": "13 Stamford Road, #01-86/87, Arcade @ The Capitol Kempinski, Singapore 178905",
@@ -141,6 +149,7 @@
     {
       "id": "tft-colony",
       "name": "Colony",
+      "dining_city_id": "205191500",
       "dining_city_name": "Colony",
       "category": "buffet",
       "address": "The Ritz-Carlton, Millenia Singapore, 7 Raffles Avenue, Singapore 039799",
@@ -183,6 +192,7 @@
     {
       "id": "tft-cultivate",
       "name": "Cultivate",
+      "dining_city_id": "205194002",
       "dining_city_name": "Cultivate Café",
       "category": "restaurant",
       "address": "2 Cook Street, Maxwell Reserve, Singapore 078857",
@@ -240,6 +250,7 @@
     {
       "id": "tft-estate",
       "name": "Estate",
+      "dining_city_id": "205195358",
       "dining_city_name": "Estate",
       "category": "buffet",
       "address": "Hilton Singapore Orchard, Level 5, 333 Orchard Road, Singapore 238867",
@@ -290,6 +301,7 @@
     {
       "id": "tft-ginger",
       "name": "Ginger",
+      "dining_city_id": "205195398",
       "dining_city_name": "Ginger at Park Royal",
       "category": "buffet",
       "address": "PARKROYAL on Beach Road, 7500 Beach Road, Singapore 199591",
@@ -331,6 +343,7 @@
     {
       "id": "tft-highhouse",
       "name": "HighHouse",
+      "dining_city_id": "205194016",
       "dining_city_name": "HighHouse",
       "category": "restaurant",
       "address": "1 Raffles Place, Level 61-62, Singapore 048616",
@@ -375,6 +388,7 @@
     {
       "id": "tft-kaya-at-the-standard",
       "name": "Kaya at The Standard",
+      "dining_city_id": "205192104",
       "dining_city_name": "Kaya at The Standard",
       "category": "restaurant",
       "address": "The Standard, Singapore, 2nd Floor, 12 Orange Grove Road, Singapore 258353",
@@ -430,6 +444,7 @@
     {
       "id": "tft-kees",
       "name": "Kee's",
+      "dining_city_id": "205194842",
       "dining_city_name": "Kee's",
       "category": "cafe",
       "address": "21 Carpenter Street, Singapore 059984",
@@ -488,6 +503,7 @@
     {
       "id": "tft-la-brasserie",
       "name": "La Brasserie",
+      "dining_city_id": "205173372",
       "dining_city_name": "La Brasserie",
       "category": "restaurant",
       "address": "80 Collyer Quay, The Fullerton Bay Hotel, Singapore 049326",
@@ -543,6 +559,7 @@
     {
       "id": "tft-latido",
       "name": "Latido",
+      "dining_city_id": "205195352",
       "dining_city_name": "Latido",
       "category": "restaurant",
       "address": "40 Tras Street, Singapore 078979",
@@ -598,6 +615,7 @@
     {
       "id": "tft-one-ninety",
       "name": "One-Ninety",
+      "dining_city_id": "205174978",
       "dining_city_name": "One-Ninety Restaurant",
       "category": "restaurant",
       "address": "Four Seasons Hotel Singapore, Lobby Level, 190 Orchard Boulevard, Singapore 248646",
@@ -629,6 +647,7 @@
     {
       "id": "tft-osteria-mozza",
       "name": "Osteria Mozza",
+      "dining_city_id": "205194420",
       "dining_city_name": "Osteria Mozza",
       "category": "restaurant",
       "address": "Hilton Singapore Orchard, Level 5, 333 Orchard Road, Singapore 238867",
@@ -661,6 +680,7 @@
     {
       "id": "tft-peppermint",
       "name": "Peppermint",
+      "dining_city_id": "205194942",
       "dining_city_name": "Peppermint",
       "category": "buffet",
       "address": "PARKROYAL COLLECTION Marina Bay, Level 4, 6 Raffles Boulevard, Singapore 039594",
@@ -700,6 +720,7 @@
     {
       "id": "tft-polo-bar-steakhouse",
       "name": "Polo Bar Steakhouse",
+      "dining_city_id": "205194006",
       "dining_city_name": "Polo Bar Steakhouse",
       "category": "restaurant",
       "address": "2 Cook Street, Maxwell Reserve, Singapore 078857",
@@ -744,6 +765,7 @@
     {
       "id": "tft-rappu",
       "name": "Rappu",
+      "dining_city_id": "205194830",
       "dining_city_name": "RAPPU",
       "category": "restaurant",
       "address": "52 Duxton Road, Singapore 089516",
@@ -799,6 +821,7 @@
     {
       "id": "tft-sarai",
       "name": "Sarai",
+      "dining_city_id": "205178290",
       "dining_city_name": "Sarai",
       "category": "restaurant",
       "address": "163 Tanglin Road, #03-122 Tanglin Mall, Singapore 247933",
@@ -854,6 +877,7 @@
     {
       "id": "tft-tanoke",
       "name": "TANOKE",
+      "dining_city_id": "205174962",
       "dining_city_name": "TANOKE",
       "category": "restaurant",
       "address": "7 Purvis Street, Level 2, Singapore 188586",
@@ -909,6 +933,7 @@
     {
       "id": "tft-the-feather-blade",
       "name": "The Feather Blade",
+      "dining_city_id": "205194812",
       "dining_city_name": "The Feather Blade",
       "category": "restaurant",
       "address": "61 Tanjong Pagar Road, Singapore 088482",
@@ -954,6 +979,7 @@
     {
       "id": "tft-the-plump-frenchman",
       "name": "The Plump Frenchman",
+      "dining_city_id": "205194944",
       "dining_city_name": "The Plump Frenchman",
       "category": "cafe",
       "address": "20 Tan Quee Lan Street, #01-20 Guoco Midtown II, Singapore 188107",
@@ -999,6 +1025,7 @@
     {
       "id": "tft-vineyard",
       "name": "Vineyard",
+      "dining_city_id": "2055283",
       "dining_city_name": "Vineyard @ Hort Park",
       "category": "restaurant",
       "address": "33 Hyderabad Road, #02-02 HortPark, Singapore 119578",
@@ -1056,6 +1083,7 @@
     {
       "id": "tft-vue",
       "name": "VUE",
+      "dining_city_id": "205194014",
       "dining_city_name": "VUE",
       "category": "restaurant",
       "address": "OUE Bayfront, 50 Collyer Quay, Rooftop Level 19, Singapore 049321",

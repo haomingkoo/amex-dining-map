@@ -84,6 +84,12 @@ def catalog_health() -> dict[str, Any]:
             "catalog_release_project": (catalog.get("release_source") or {}).get(
                 "project"
             ),
+            "catalog_slot_project": (catalog.get("slot_source") or {}).get(
+                "project"
+            ),
+            "catalog_slot_stale_after_minutes": (
+                catalog.get("slot_source") or {}
+            ).get("stale_after_minutes"),
         }
     except (OSError, ValueError, TypeError):
         return {"catalog_ok": False}

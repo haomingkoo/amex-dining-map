@@ -128,7 +128,7 @@ async def telegram_guide_webhook(
     first_word = message.text.strip().split(maxsplit=1)[0].lower()
     command_class = (
         first_word
-        if first_word in {"/start", "/help", "/venues", "/menu", "/release"}
+        if first_word in {"/start", "/help", "/venues", "/menu", "/release", "/slots"}
         else "query"
     )
 
@@ -153,7 +153,11 @@ async def telegram_guide_webhook(
         return {"ok": True}
 
     try:
-        answer = tft_guide.handle_message(message.text, tft_guide.load_catalog())
+        answer = await run_in_threadpool(
+            tft_guide.handle_message,
+            message.text,
+            tft_guide.load_catalog(),
+        )
     except (
         OSError,
         ValueError,

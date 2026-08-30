@@ -50,7 +50,7 @@ the same `deployment_id`. A health response from the previous instance is not
 acceptance. Record `revision` (Railway Git SHA when supplied, otherwise the
 deterministic guide/app bundle fingerprint) and verify
 `catalog_ok`, `catalog_sha256`, schema, roster/menu check times, release snapshot
-time, and exact `AMEXPlatSG` release provenance. These fields contain no
+time, and exact `AMEXPlatSG` release and slot provenance. These fields contain no
 credentials or subscriber data and identify the source bundle actually serving.
 Finally probe the intended disabled/enabled feature state.
 
@@ -118,7 +118,9 @@ disabling owner alerts; public guide and email reminders remain independent.
 
 The guide bot is a separate, disabled-by-default Telegram identity. Its current
 surface is private chats only: `/start`, `/help`, `/venues`, exact venue/menu
-lookup, and `/release <venue> [lunch|dinner]` observed release-pattern answers.
+lookup, `/release <venue> [lunch|dinner]` observed release-pattern answers, and
+strict `/slots venue | party | meal | date/range/weekend | preferred time`
+queries.
 It uses a generated source catalogue with official Amex menu links and
 never invokes an LLM, follows a user URL, joins groups, or reads owner-channel
 configuration. The catalogue is bundled with the Railway revision; the TFT
@@ -129,8 +131,21 @@ observation counts, median and range, tracker confidence, latest detection, and
 history freshness. They explicitly describe scheduled AMEXPlatSG cache
 detection—not an official release policy or current availability.
 
-The current guide does not yet answer T&C or current-slot questions and does not
-create Telegram reminders; those remain #38–#40.
+Slot lookup reads only the fixed
+`https://amex-explorer.kooexperience.com/data/table-for-two-slots.json`
+projection. The half-hour availability workflow rebuilds the sub-1 MiB file
+after each AMEXPlatSG refresh and Pages publishes it. Railway rejects redirects,
+non-JSON or oversized bodies, malformed schemas, and wrong source provenance;
+it caches a valid projection for 60 seconds and a failed load for 15 seconds.
+Matching uses each venue's own `checked_at`, never the top-level generation time.
+Anything older than 30 minutes is labelled stale and cannot be described as
+current availability. An empty fresh match means only that no matching slot was
+observed in the cached check—not that the Amex Experiences App is sold out.
+
+The current guide does not yet answer substantive T&C questions or create
+Telegram reminders; those remain #39–#40. Real slot freshness still depends on
+the half-hour workflow and Pages deployment completing inside the 30-minute
+window.
 
 Spam controls are intentionally quiet: Telegram's webhook secret is checked
 before JSON parsing, update IDs are durably deduplicated, identities are stored

@@ -12,6 +12,8 @@ from typing import Any
 from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
+from app import tft_slot_source, tft_slots
+
 
 CATALOG_PATH = Path(__file__).with_name("tft_guide_catalog.json")
 MENU_STALE_AFTER = timedelta(hours=36)
@@ -154,6 +156,7 @@ def _help() -> str:
         "/menu VUE platinum — official Amex menu\n"
         "/menu VUE centurion — Centurion variant\n"
         "/release VUE dinner — observed first-detection pattern\n"
+        "/slots — observed slots with date and any/weekend examples\n"
         "/help — show these commands\n\n"
         "I use a generated source catalogue and do not guess. Confirm offers and bookings "
         "in the Amex Experiences App."
@@ -391,13 +394,74 @@ def _menu_answer(venue: dict, card: str | None, catalog: dict, now: datetime) ->
     )[:MAX_REPLY_LENGTH]
 
 
-def handle_message(text: str, catalog: dict, now: datetime | None = None) -> str:
+def handle_message(
+    text: str,
+    catalog: dict,
+    now: datetime | None = None,
+    slot_loader=None,
+) -> str:
     message = " ".join(text.strip().split())
     lowered = message.casefold()
+    current = now or datetime.now(timezone.utc)
     if lowered in {"/start", "/help", "help"}:
         return _help()
     if lowered == "/venues":
-        return _venues(catalog, now or datetime.now(timezone.utc))
+        return _venues(catalog, current)
+
+    natural_slot_query = re.fullmatch(
+        r"(?:which|what) (?:tft|table for two) venues? (?:have|has) weekend slots?\??",
+        lowered,
+    ) is not None
+    if lowered == "/slots" or lowered.startswith("/slots ") or natural_slot_query:
+        if natural_slot_query:
+            today = current.astimezone(SGT).date()
+            parsed = tft_slots.SlotRequest(
+                venue_text="any",
+                party_size=2,
+                meal="Lunch or Dinner",
+                start_date=today,
+                end_date=today + timedelta(days=tft_slots.WEEKEND_RANGE_DAYS - 1),
+                weekend_only=True,
+                preferred_time=None,
+            )
+        else:
+            parsed = tft_slots.parse_request(message, current)
+        if isinstance(parsed, str):
+            return parsed
+        source = catalog.get("slot_source") or {}
+        if (
+            source.get("url") != tft_slot_source.SOURCE_URL
+            or source.get("project") != tft_slots.PROJECT
+            or source.get("stale_after_minutes") != 30
+        ):
+            return "The slot source metadata could not be verified safely."
+        if parsed.venue_text.casefold() == "any":
+            venues = list(catalog.get("venues") or [])
+            explorer = "Open Table for Two: https://amex-explorer.kooexperience.com/#/table-for-two"
+        else:
+            venues = resolve_venue(parsed.venue_text, catalog)
+            if len(venues) != 1:
+                return (
+                    "I could not match that to one exact Table for Two venue. "
+                    "Use /venues, or use any to search all venues."
+                )
+            explorer = _explorer_line(venues[0])
+        try:
+            snapshot = (slot_loader or tft_slot_source.load_snapshot)()
+        except tft_slot_source.SlotSourceUnavailable:
+            return (
+                "I could not load the bounded AMEXPlatSG slot source right now, so I "
+                "will not make an availability claim.\n"
+                f"{_official_source_line(catalog)}\n{explorer}"
+            )
+        return tft_slots.answer(
+            parsed,
+            venues,
+            snapshot,
+            current,
+            _official_source_line(catalog),
+            explorer,
+        )[:MAX_REPLY_LENGTH]
 
     if lowered == "/release" or lowered.startswith("/release "):
         query = message[len("/release") :].strip()
@@ -419,7 +483,7 @@ def handle_message(text: str, catalog: dict, now: datetime | None = None) -> str
                 "Use /venues, then send /release <exact venue> lunch or dinner."
             )
         return _release_answer(
-            matches[0], meal, catalog, now or datetime.now(timezone.utc)
+            matches[0], meal, catalog, current
         )
 
     is_menu_command = lowered == "/menu" or lowered.startswith("/menu ")
@@ -451,4 +515,4 @@ def handle_message(text: str, catalog: dict, now: datetime | None = None) -> str
         wants_menu = True
     if not wants_menu:
         return _help()
-    return _menu_answer(matches[0], card, catalog, now or datetime.now(timezone.utc))
+    return _menu_answer(matches[0], card, catalog, current)

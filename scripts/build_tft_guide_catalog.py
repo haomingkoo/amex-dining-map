@@ -130,6 +130,7 @@ def build_catalog(source: dict, release_history: dict | None = None) -> dict:
             {
                 "id": venue["id"],
                 "name": venue["name"],
+                "dining_city_id": venue.get("dining_city_id"),
                 "dining_city_name": venue.get("dining_city_name"),
                 "category": venue.get("category"),
                 "address": venue.get("address"),
@@ -140,7 +141,7 @@ def build_catalog(source: dict, release_history: dict | None = None) -> dict:
             }
         )
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "source": "data/table-for-two.json",
         "program": source.get("program") or "Table for Two",
         "official_url": source["official_url"],
@@ -153,6 +154,11 @@ def build_catalog(source: dict, release_history: dict | None = None) -> dict:
             "project": release_history.get("source_project"),
             "updated_at": release_history.get("updated_at"),
             "observation_count": len(release_history.get("observations") or []),
+        },
+        "slot_source": {
+            "url": "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json",
+            "project": SOURCE_PROJECT,
+            "stale_after_minutes": 30,
         },
         "manual_review_required": bool(source.get("manual_review_required")),
         "venues": sorted(venues, key=lambda item: item["name"].casefold()),

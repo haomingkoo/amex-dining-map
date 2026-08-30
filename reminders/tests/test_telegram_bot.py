@@ -9,7 +9,7 @@ import logging
 import pytest
 from fastapi.testclient import TestClient
 
-from app import db, telegram_bot_store
+from app import db, telegram_bot_store, tft_slot_source
 from app.config import Settings
 from app.main import app
 from app.telegram_bot_routes import BOT_SCOPE, get_settings
@@ -168,6 +168,93 @@ def test_private_menu_query_sends_once_and_replay_is_deduplicated(
         assert secret not in log_text
 
 
+def test_private_slot_query_fetches_once_after_guards_and_replay_deduplicates(
+    guide_client, monkeypatch
+):
+    client, _settings_value = guide_client
+    fetches = []
+    sends = []
+    checked_at = datetime.now(timezone.utc).isoformat()
+
+    def load_slots():
+        fetches.append(1)
+        return {
+            "schema_version": 1,
+            "source_project": "AMEXPlatSG",
+            "generated_at": checked_at,
+            "venues": [
+                {
+                    "id": "tft-vue",
+                    "project": "AMEXPlatSG",
+                    "status": "live_available",
+                    "checked_at": checked_at,
+                    "meals": [
+                        {
+                            "meal": "Dinner",
+                            "status": "available",
+                            "slots": [
+                                {
+                                    "date": "2026-10-29",
+                                    "time": "19:00",
+                                    "max_seats": 2,
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+    monkeypatch.setattr("app.tft_slot_source.load_snapshot", load_slots)
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.telegram.send_message",
+        lambda *args: sends.append(args) or 91,
+    )
+    update = _update(
+        update_id=6001,
+        text="/slots VUE | 2 | dinner | 2026-10-29 | 19:00",
+    )
+
+    assert _post(client, update).json() == {"ok": True}
+    assert _post(client, update).json() == {"ok": True}
+
+    assert len(fetches) == 1
+    assert len(sends) == 1
+    assert "Observed matching AMEXPlatSG slots" in sends[0][2]
+    assert "2026-10-29 19:00" in sends[0][2]
+
+
+def test_slot_source_failure_is_a_completed_bounded_reply(guide_client, monkeypatch):
+    client, settings = guide_client
+    sends = []
+
+    def fail():
+        raise tft_slot_source.SlotSourceUnavailable
+
+    monkeypatch.setattr("app.tft_slot_source.load_snapshot", fail)
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.telegram.send_message",
+        lambda *args: sends.append(args) or 92,
+    )
+    update = _update(
+        update_id=6002,
+        text="/slots VUE | 2 | dinner | 2026-10-29",
+    )
+
+    assert _post(client, update).json() == {"ok": True}
+    assert len(sends) == 1
+    assert "will not make an availability claim" in sends[0][2]
+    conn = db.connect(settings.db_path)
+    try:
+        row = conn.execute(
+            "SELECT state FROM telegram_webhook_updates WHERE bot_scope = ? AND update_id = ?",
+            (BOT_SCOPE, 6002),
+        ).fetchone()
+    finally:
+        conn.close()
+    assert row["state"] == "done"
+
+
 @pytest.mark.parametrize("chat_type", ["group", "supergroup", "channel"])
 def test_non_private_updates_are_ignored(guide_client, monkeypatch, chat_type):
     client, _settings_value = guide_client
@@ -211,6 +298,31 @@ def test_rate_limited_spam_sends_no_warning_amplification(guide_client, monkeypa
         assert row is None
     finally:
         conn.close()
+
+
+def test_rate_limit_runs_before_slot_source_fetch(guide_client, monkeypatch):
+    client, settings = guide_client
+    app.dependency_overrides[get_settings] = lambda: replace(
+        settings, telegram_user_limit_per_minute=1
+    )
+    fetches = []
+    monkeypatch.setattr(
+        "app.tft_slot_source.load_snapshot", lambda: fetches.append(1) or {}
+    )
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.telegram.send_message", lambda *_args: 93
+    )
+
+    assert _post(client, _update(6101)).json() == {"ok": True}
+    assert _post(
+        client,
+        _update(
+            6102,
+            text="/slots VUE | 2 | dinner | 2026-10-29",
+        ),
+    ).json() == {"ok": True}
+
+    assert fetches == []
 
 
 def test_sustained_rate_limited_burst_does_not_grow_replay_table(
