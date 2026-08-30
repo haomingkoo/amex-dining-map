@@ -12,7 +12,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 import re
@@ -47,7 +47,6 @@ CONTEXT_OPTS: dict[str, Any] = {
 CLOSING_NOTES: dict[str, str] = {
     "Jia He Grand Chinese Restaurant": "Not eligible from 26 April 2026",
     "Quenino": "Permanently closed from 1 May 2026",
-    "Sen Of Japan": "Temporarily closed for renovation 8 April – 30 June 2026",
 }
 
 PRESERVED_ENRICHMENT_FIELDS = ("lat", "lng")
@@ -124,6 +123,48 @@ def annotate_location_metadata(record: dict) -> None:
         "This Love Dining entry bundles multiple outlets into one source record, "
         "so the map pin is intentionally hidden until the branches are split cleanly."
     )
+
+
+def _official_date(value: str) -> datetime | None:
+    try:
+        return datetime.strptime(value, "%d %B %Y").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def annotate_eligibility_metadata(record: dict) -> None:
+    text = normalize_inline_text(
+        f"{record.get('closing_note') or ''} {record.get('notes') or ''}"
+    )
+    valid_until = re.search(
+        r"privileges will only be valid until (\d{1,2} [A-Za-z]+ 20\d{2})",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if valid_until and (moment := _official_date(valid_until.group(1))):
+        record["eligibility_status"] = "ineligible"
+        record["eligibility_effective_from"] = (moment + timedelta(days=1)).date().isoformat()
+        return
+
+    change = re.search(
+        r"(?:effective from|not eligible from|permanently closed from) "
+        r"(\d{1,2} [A-Za-z]+ 20\d{2})",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if change and (moment := _official_date(change.group(1))):
+        record["eligibility_status"] = "ineligible"
+        record["eligibility_effective_from"] = moment.date().isoformat()
+        return
+
+    resumed = re.search(
+        r"(?:privileges (?:will )?resume|(?:will )?reopen) on (\d{1,2} [A-Za-z]+ 20\d{2})",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if resumed and (moment := _official_date(resumed.group(1))):
+        record["eligibility_status"] = "eligible"
+        record["eligibility_effective_from"] = moment.date().isoformat()
 
 
 def preserve_existing_enrichment(records: list[dict]) -> list[dict]:
@@ -673,6 +714,7 @@ def main() -> None:
     all_records = restaurants + hotels
     for record in all_records:
         annotate_location_metadata(record)
+        annotate_eligibility_metadata(record)
     checked_at = now_utc_iso()
     print(f"\nTotal: {len(all_records)} venues")
 

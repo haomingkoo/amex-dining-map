@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 from pathlib import Path
+import json
+import logging
 
 import pytest
 from fastapi.testclient import TestClient
@@ -71,6 +73,58 @@ def test_subscribe_creates_pending_and_sends_one_email(client):
     conn = db.connect(client.db_path)
     assert conn.execute("SELECT status FROM subscribers").fetchone()["status"] == "pending"
     conn.close()
+
+
+def test_operational_logs_are_structured_and_do_not_expose_email_or_tokens(client, caplog):
+    caplog.set_level(logging.INFO)
+
+    response = client.post("/api/subscribe?token=must-not-log", json=_body())
+
+    assert response.status_code == 200
+    assert response.headers["x-request-id"]
+    app_records = [
+        record for record in caplog.records if record.name.startswith("amex_reminders.")
+    ]
+    combined = "\n".join(record.getMessage() for record in app_records)
+    assert "guest@example.com" not in combined
+    assert "must-not-log" not in combined
+    lifecycle = [
+        json.loads(record.getMessage())
+        for record in app_records
+        if record.name == "amex_reminders.lifecycle"
+    ]
+    assert lifecycle[-1]["event"] == "subscription_pending"
+    assert len(lifecycle[-1]["recipient_id"]) == 12
+    requests = [
+        json.loads(record.getMessage())
+        for record in app_records
+        if record.name == "amex_reminders.http"
+    ]
+    assert requests[-1]["path"] == "/api/subscribe"
+    assert requests[-1]["status"] == 200
+
+
+def test_email_failure_log_redacts_provider_error_body(client, caplog, monkeypatch):
+    caplog.set_level(logging.INFO)
+    monkeypatch.setattr(
+        routes,
+        "send_email",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            RuntimeError("provider echoed guest@example.com and secret-token")
+        ),
+    )
+
+    with pytest.raises(RuntimeError):
+        client.post("/api/subscribe", json=_body())
+
+    app_messages = "\n".join(
+        record.getMessage()
+        for record in caplog.records
+        if record.name.startswith("amex_reminders.")
+    )
+    assert "guest@example.com" not in app_messages
+    assert "secret-token" not in app_messages
+    assert '"error_type":"RuntimeError"' in app_messages
 
 
 def test_honeypot_is_silent_noop(client):

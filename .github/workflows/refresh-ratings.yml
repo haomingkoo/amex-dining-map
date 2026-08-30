@@ -2,18 +2,18 @@ name: Refresh Google Maps Ratings
 
 on:
   schedule:
-    # Every Sunday at 02:00 UTC — incremental (missing records only)
+    # Every Sunday at 02:00 UTC — bounded rotation of missing or >90-day records
     - cron: "0 2 * * 0"
   workflow_dispatch:
     inputs:
       datasets:
-        description: "Datasets to scrape (space-separated: global japan love)"
+        description: "Datasets to scrape (space-separated: global japan love tft stays)"
         required: false
-        default: "global japan love"
+        default: "global japan love tft stays"
       missing_only:
         description: "Only scrape records not yet in the ratings cache"
         required: false
-        default: "true"
+        default: "false"
         type: boolean
 
 permissions:
@@ -45,19 +45,21 @@ jobs:
           playwright install chromium
           playwright install-deps chromium
 
-      - name: Scrape ratings (incremental)
+      - name: Scrape ratings (bounded freshness rotation)
         env:
           PYTHONUNBUFFERED: "1"
-          INPUT_DATASETS: ${{ github.event.inputs.datasets || 'global japan love' }}
-          INPUT_MISSING_ONLY: ${{ github.event.inputs.missing_only != 'false' && 'true' || 'false' }}
+          INPUT_DATASETS: ${{ github.event.inputs.datasets || 'global japan love tft stays' }}
+          INPUT_MISSING_ONLY: ${{ github.event.inputs.missing_only == 'true' && 'true' || 'false' }}
         run: |
           read -r -a datasets <<< "$INPUT_DATASETS"
           for dataset in "${datasets[@]}"; do
-            case "$dataset" in global|japan|love) ;; *) echo "Unsupported dataset: $dataset"; exit 2 ;; esac
+            case "$dataset" in global|japan|love|tft|stays) ;; *) echo "Unsupported dataset: $dataset"; exit 2 ;; esac
           done
           args=(--datasets "${datasets[@]}" --concurrency 2)
           if [ "$INPUT_MISSING_ONLY" = "true" ]; then
             args+=(--missing-only)
+          else
+            args+=(--max-age-days 90 --max-queries 250)
           fi
           python3 scripts/scrape_google_ratings_playwright.py "${args[@]}"
 

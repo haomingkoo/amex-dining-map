@@ -42,13 +42,25 @@ assert.strictEqual(
 );
 assert.strictEqual(
   context.tableForTwoRawAvailabilityKey({ availability: { status: "live_no_seats", captured_at: staleCapture } }),
-  "no_seats",
+  "stale",
 );
 assert.strictEqual(
   context.tableForTwoRawAvailabilityKey({ availability: { status: "live_no_seats", captured_at: futureCapture } }),
-  "unknown",
+  "stale",
 );
 assert.strictEqual(
   context.tableForTwoRawAvailabilityKey({ availability: { status: "live_available", captured_at: staleCapture } }),
+  "stale",
+);
+assert.strictEqual(
+  context.tableForTwoRawAvailabilityKey({ availability: { status: "live_available", checked_at: freshCapture } }),
   "available",
+);
+assert.strictEqual(
+  context.tableForTwoRawAvailabilityKey({ availability: { status: "live_available", checked_at: staleCapture } }),
+  "stale",
+);
+assert.strictEqual(
+  context.tableForTwoRawAvailabilityKey({ availability: { status: "live_available" } }),
+  "unknown",
 );

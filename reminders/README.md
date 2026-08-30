@@ -31,11 +31,23 @@ cp .env.example .env              # fill in values
 | GET/POST | `/api/manage?token=` | View or update reminder settings with the dedicated manage token |
 | GET  | `/api/subscribers` | Active subscribers export (Bearer `ALERT_EXPORT_TOKEN`) |
 | POST | `/api/owner-alerts/events` | Reviewed update ingestion (Bearer `OWNER_ALERT_INGEST_TOKEN`) |
+| POST | `/api/telegram/guide/webhook` | Authenticated private-chat Telegram guide ingress |
 
 ## Deployment (Railway)
 
 Service root = `reminders/`. Mount a persistent volume at `/data` and set `DB_PATH=/data/reminders.db`.
 See `.env.example` for the full env var list.
+
+For a CLI deployment from the repository root, preserve that service root:
+
+```bash
+railway up reminders --path-as-root --detach --service amex-reminders --json
+```
+
+Capture the returned deployment ID, poll `railway deployment list --json` until
+that exact deployment is `SUCCESS`, then require `/healthz` to return `200` with
+the same `deployment_id`. A health response from the previous instance is not
+acceptance. Finally probe the intended disabled/enabled feature state.
 
 Security controls include explicit double opt-in actions, separate manage and
 unsubscribe capabilities, atomic keyed-hash IP/email/global quotas, 16 KiB API
@@ -75,6 +87,17 @@ Immediately before enabling, set `OWNER_ALERT_NOT_BEFORE` to the current UTC
 instant; do not copy an old fixed date, because that could release recent
 historical ledger events on the first run.
 
+Create the owner-alert bot separately in BotFather, add it to a private channel
+with post-only permission, and obtain the numeric `-100...` channel ID from a
+trusted Telegram update/API inspection. Verify the ID against a test channel
+message before enabling. Enable in this order: deploy secrets and cutoff, test
+authenticated ingestion while disabled, enable the flag, send one reviewed test
+event, then verify its single `sent` row. On `unknown` or `dead`, inspect the
+owner delivery table and Railway `owner_alert_delivery` event; never blindly
+replay an ambiguous delivery. Rotate by disabling, replacing the bot token and
+ingestion token independently, redeploying, testing, then enabling. Roll back by
+disabling owner alerts; public guide and email reminders remain independent.
+
 ## Public Telegram guide
 
 The guide bot is a separate, disabled-by-default Telegram identity. Its v1
@@ -83,8 +106,11 @@ lookup. It uses a generated source catalogue with official Amex menu links and
 never invokes an LLM, follows a user URL, joins groups, or reads owner-channel
 configuration. The catalogue is bundled with the Railway revision; the TFT
 refresh rebuilds it, but a normal reviewed Railway deployment is required to
-serve that newer revision. Answers always expose the source check time and warn
+serve that newer revision. Substantive venue and menu answers expose the source check time and warn
 when the bundled roster or menu index is stale.
+
+The current v1 does not yet answer T&C, release-pattern, or slot questions and
+does not create Telegram reminders; those remain #38–#40.
 
 Spam controls are intentionally quiet: Telegram's webhook secret is checked
 before JSON parsing, update IDs are durably deduplicated, identities are stored
@@ -101,3 +127,73 @@ replica. Register `/api/telegram/guide/webhook` with Telegram using the secret
 token, `allowed_updates=["message"]`, and `drop_pending_updates=true` only for
 the first activation. Real private-chat, replay, group-ignore, and rate-limit
 acceptance remains mandatory before calling the bot live.
+
+### Guide bot activation and operations
+
+Read secrets into an ephemeral shell without echoing or command-line arguments,
+then register the webhook. `drop_pending_updates=true` is for first activation
+or an intentional queue reset only. Unset all temporary values immediately.
+
+```bash
+read -rs TELEGRAM_GUIDE_BOT_TOKEN; export TELEGRAM_GUIDE_BOT_TOKEN
+read -rs TELEGRAM_GUIDE_WEBHOOK_SECRET; export TELEGRAM_GUIDE_WEBHOOK_SECRET
+export GUIDE_WEBHOOK_URL='https://<service-host>/api/telegram/guide/webhook'
+
+curl --fail --silent --show-error \
+  "https://api.telegram.org/bot${TELEGRAM_GUIDE_BOT_TOKEN}/setWebhook" \
+  --data-urlencode "url=${GUIDE_WEBHOOK_URL}" \
+  --data-urlencode "secret_token=${TELEGRAM_GUIDE_WEBHOOK_SECRET}" \
+  --data-urlencode 'allowed_updates=["message"]' \
+  --data-urlencode 'drop_pending_updates=true'
+
+curl --fail --silent --show-error \
+  "https://api.telegram.org/bot${TELEGRAM_GUIDE_BOT_TOKEN}/getWebhookInfo"
+
+unset TELEGRAM_GUIDE_BOT_TOKEN TELEGRAM_GUIDE_WEBHOOK_SECRET GUIDE_WEBHOOK_URL
+```
+
+Monitor Railway health and error rates, Telegram `pending_update_count` and
+`last_error_message`, SQLite volume use, and the age/manual-review fields in the
+bundled TFT catalogue. A healthy HTTP endpoint is not proof of a working bot;
+send `/venues`, both VUE menu variants, an unknown venue, and a group message
+from real Telegram clients after each activation.
+
+For token rotation, disable `TELEGRAM_GUIDE_ENABLED`, delete the webhook, rotate
+the BotFather token and both independent random secrets, redeploy, register the
+new webhook without dropping pending updates, repeat acceptance, then re-enable.
+Rotate owner-alert and guide-bot credentials separately.
+
+```bash
+curl --fail --silent --show-error \
+  "https://api.telegram.org/bot${TELEGRAM_GUIDE_BOT_TOKEN}/deleteWebhook" \
+  --data-urlencode 'drop_pending_updates=false'
+```
+
+Rollback by disabling the guide flag and deleting its webhook; owner alerts and
+email reminders remain independent. If delivery is ambiguous, inspect the
+stored terminal state and Telegram webhook information instead of resending.
+Restore only from the persistent SQLite volume or a verified backup, never from
+chat logs. The service stores no message text or usernames.
+
+## Operational logs
+
+Railway emits one JSON line per HTTP request with a generated request ID, method,
+path, status, and latency. Subscription events record only a short keyed recipient
+fingerprint and the state transition; emails, names, tokens, query strings,
+Telegram message text, and credentials are never logged. Use the `X-Request-ID`
+response header to correlate a browser failure with Railway logs.
+
+Guide and owner delivery attempts also emit privacy-safe outcome events with
+state, bounded error code, command class where applicable, attempt, and latency.
+HTTP 200 can still contain a terminal Telegram outcome, so alert on `unknown`,
+`dead`, and `catalog_invalid`, and inspect their SQLite rows before intervention.
+
+For email reminders, monitor the Table for Two Alerts workflow conclusion,
+Resend delivery/bounce events, the cached availability age, and the incremental
+sent-key receipt file. A failed delivery step still commits refreshed availability
+and then fails the job visibly. Rotate export/hash/Resend secrets one at a time:
+pause the workflow, update Railway and GitHub copies where shared, probe export,
+send one controlled test, then resume. Back up the SQLite volume before schema or
+credential work, verify the copy opens and passes an integrity check, and test a
+restore in a temporary service before relying on it. During an incident, disable
+the affected surface first; do not delete the volume or sent receipts.

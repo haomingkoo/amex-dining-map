@@ -13,10 +13,18 @@ from __future__ import annotations
 import json
 import urllib.error
 import urllib.request
+from datetime import datetime, timedelta, timezone
+
+
+AVAILABILITY_STALE_AFTER = timedelta(minutes=30)
 
 
 def open_tables_exist(
-    venues: list[str], sessions: list[str], data_url: str, timeout: int = 4
+    venues: list[str],
+    sessions: list[str],
+    data_url: str,
+    timeout: int = 4,
+    now: datetime | None = None,
 ) -> bool:
     try:
         with urllib.request.urlopen(data_url, timeout=timeout) as response:
@@ -27,9 +35,22 @@ def open_tables_exist(
     want_any = not venues or any(item.lower() == "any" for item in venues)
     want_venues = {item.lower() for item in venues}
     want_sessions = {item.lower() for item in sessions}
+    current = now or datetime.now(timezone.utc)
     for venue in data.get("venues", []):
         availability = venue.get("availability") or {}
         if availability.get("status") != "live_available":
+            continue
+        try:
+            checked = datetime.fromisoformat(
+                str(availability["checked_at"]).replace("Z", "+00:00")
+            )
+        except (KeyError, TypeError, ValueError):
+            continue
+        if (
+            checked.tzinfo is None
+            or checked > current + timedelta(minutes=5)
+            or current - checked > AVAILABILITY_STALE_AFTER
+        ):
             continue
         name = str(venue.get("name") or "").lower()
         if not want_any and name not in want_venues:

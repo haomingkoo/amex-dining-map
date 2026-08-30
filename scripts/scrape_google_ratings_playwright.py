@@ -38,6 +38,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import datetime
 import json
 import re
 import sys
@@ -368,6 +369,10 @@ def parse_args() -> argparse.Namespace:
                    help="Optional newline-delimited list of record IDs to refresh")
     p.add_argument("--missing-only", action="store_true",
                    help="Skip records already in ratings cache")
+    p.add_argument("--max-age-days", type=int,
+                   help="Refresh only missing ratings or ratings older than this many days")
+    p.add_argument("--max-queries", type=int, default=0,
+                   help="Bound this run to the first N eligible records (0 = unlimited)")
     p.add_argument("--concurrency", type=int, default=3,
                    help="Parallel browser instances (default: 3)")
     p.add_argument("--batch-size", type=int, default=100,
@@ -377,6 +382,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    if args.max_age_days is not None and args.max_age_days < 0:
+        raise SystemExit("--max-age-days must be zero or greater")
+    if args.max_queries < 0:
+        raise SystemExit("--max-queries must be zero or greater")
+    if args.concurrency < 1 or args.batch_size < 1:
+        raise SystemExit("--concurrency and --batch-size must be positive")
 
     existing: dict[str, dict] = {}
     if RATINGS_PATH.exists():
@@ -384,6 +395,15 @@ def main() -> None:
         print(f"Existing cache: {len(existing)} records")
 
     skip_ids = set(existing.keys()) if args.missing_only else set()
+    if args.max_age_days is not None and not args.missing_only:
+        cutoff = datetime.date.today() - datetime.timedelta(days=args.max_age_days)
+        for record_id, rating in existing.items():
+            try:
+                checked = datetime.date.fromisoformat(str(rating.get("scraped_at") or ""))
+            except (AttributeError, ValueError):
+                continue
+            if checked >= cutoff:
+                skip_ids.add(record_id)
 
     allowed_ids: set[str] | None = None
     if args.ids_file:
@@ -407,6 +427,9 @@ def main() -> None:
         pairs = build_queries(records, name, skip_ids)
         print(f"  {name}: {len(pairs)} queries (of {len(records)} records)")
         all_queries.extend(pairs)
+
+    if args.max_queries > 0:
+        all_queries = all_queries[: args.max_queries]
 
     print(f"\nTotal queries: {len(all_queries)}")
     if not all_queries:

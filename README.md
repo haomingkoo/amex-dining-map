@@ -99,7 +99,7 @@ Useful targeted checks:
 python3 scripts/verify_global_dining_official.py --country-code TW --max-list 40
 python3 scripts/scrape_love_dining.py --diff --no-geocode
 python3 scripts/scrape_table_for_two.py --availability-only
-python3 scripts/check_table_for_two_availability.py --venue-id tft-15-stamford-restaurant --meal Lunch --times 12:00,12:30 --date 2026-04-28
+python3 scripts/check_table_for_two_availability.py --venue-id tft-15-stamford-restaurant --meal Lunch --times 12:00,12:30 --date YYYY-MM-DD
 python3 scripts/source_change_alert.py --program "Plat Stay" --meta data/plat-stay-source.json --data data/plat-stays.json --output /tmp/plat-stay-alert.md
 ```
 
@@ -112,10 +112,12 @@ python3 scripts/source_change_alert.py --program "Plat Stay" --meta data/plat-st
 - `refresh-table-for-two.yml`: daily public Table for Two roster and baseline
   `AMEXPlatSG` availability refresh at `22:00 UTC`, including official menu PDF
   version checks. The browser also refreshes availability while the page is open.
-- `table-for-two-alerts.yml`: twice-hourly Table for Two availability refresh
+- `table-for-two-alerts.yml`: scheduled at minutes 17 and 47 for Table for Two availability refresh
   and Resend email sender. It exports confirmed subscriptions from the Railway
   reminder service, sends newly matched slots, stores salted sent-key hashes,
   and records first-seen release observations.
+  GitHub schedules can start late or be skipped during platform load; the UI's
+  checked timestamp and stale state are authoritative, not the nominal cron.
 - `refresh-global-dining.yml`: daily Amex Global/Local Dining refresh at
   `21:30 UTC`.
 - Source-change workflows open/update GitHub Issues labelled `data-alert` when
@@ -175,7 +177,7 @@ venues, party size, sessions, and date range to the FastAPI service in
 sends double-opt-in messages through Resend, and supports explicit plus
 email-provider one-click unsubscribe through POST actions.
 
-The twice-hourly workflow exports confirmed subscribers and matches them against
+The scheduled workflow exports confirmed subscribers and matches them against
 the latest `AMEXPlatSG` availability cache. Required workflow secrets are:
 
 ```text
@@ -190,6 +192,17 @@ RESEND_FROM=<verified sender>
 See [`reminders/README.md`](reminders/README.md) for service endpoints and local
 development. The older Google Apps Script setup remains under `docs/` as a
 historical migration reference and is not the active architecture.
+
+## Telegram Companions
+
+Two isolated Telegram identities are implemented but disabled by default. The
+owner-alert bot can deliver reviewed before-and-after updates only to one fixed
+private channel. The public guide bot answers deterministic private-chat TFT
+venue and official-menu questions from a bundled source snapshot. It does not
+invoke an LLM, fetch user URLs, read subscriber data, or share the owner bot's
+token. Real Telegram activation remains pending; setup, rotation, monitoring,
+rollback, privacy, and freshness procedures are in
+[`reminders/README.md`](reminders/README.md).
 
 ## Public Updates
 
@@ -207,7 +220,7 @@ python3 scripts/review_update.py <update-id> --status published --note "Checked 
 
 ## Observed Table for Two Release Patterns
 
-The twice-hourly availability job records when each venue, date, and meal first
+The scheduled availability job records when each venue, date, and meal first
 appears. The site derives typical lead times only after at least three repeat
 observations. Detection time is shown only when at least 60% of observations
 fall in the same half-hour window.

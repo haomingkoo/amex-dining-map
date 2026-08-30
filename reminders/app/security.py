@@ -2,12 +2,53 @@
 
 from __future__ import annotations
 
+import logging
+import time
+import uuid
 from collections.abc import Awaitable, Callable
 
 from starlette.datastructures import MutableHeaders
 from starlette.responses import JSONResponse
 
+from app.observability import log_event
+
 ASGIApp = Callable[[dict, Callable[[], Awaitable[dict]], Callable[[dict], Awaitable[None]]], Awaitable[None]]
+
+logger = logging.getLogger("amex_reminders.http")
+
+
+class RequestLoggingMiddleware:
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: dict, receive: Callable, send: Callable) -> None:
+        if scope.get("type") != "http":
+            await self.app(scope, receive, send)
+            return
+
+        request_id = uuid.uuid4().hex
+        started = time.monotonic()
+        status = 500
+
+        async def send_with_request_id(message: dict) -> None:
+            nonlocal status
+            if message.get("type") == "http.response.start":
+                status = int(message.get("status", 500))
+                MutableHeaders(scope=message)["X-Request-ID"] = request_id
+            await send(message)
+
+        try:
+            await self.app(scope, receive, send_with_request_id)
+        finally:
+            log_event(
+                logger,
+                "http_request",
+                request_id=request_id,
+                method=scope.get("method", ""),
+                path=scope.get("path", ""),
+                status=status,
+                duration_ms=round((time.monotonic() - started) * 1000),
+            )
 
 
 class SecurityHeadersMiddleware:

@@ -90,6 +90,7 @@ const TABLE_FOR_TWO_OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefi
 const TABLE_FOR_TWO_TNC_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf";
 const TABLE_FOR_TWO_FAQ_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TableforTwo_FAQ.pdf";
 const TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES = 30;
+const GOOGLE_RATING_STALE_DAYS = 90;
 const TABLE_FOR_TWO_DININGCITY_API_BASE = "https://api.diningcity.asia/public";
 const TABLE_FOR_TWO_DININGCITY_PROJECT = "AMEXPlatSG";
 const TABLE_FOR_TWO_DININGCITY_PROJECT_TITLE = "AMEX Platinum SG";
@@ -201,7 +202,7 @@ const PROGRAMS = {
     label: "Alerts",
     title: "Alerts",
     description:
-      "Change watch for property additions, removals, and blackout note updates.",
+      "Published benefit changes with explicit before-and-after evidence and official source links.",
     defaultRoute: "alerts",
   },
 };
@@ -398,7 +399,7 @@ const ROUTES = {
     id: "stays",
     programId: "stays",
     label: "Overview",
-    eyebrow: "Plat Stay / Live",
+    eyebrow: "Plat Stay / Cached snapshot",
     title: "Stay Explorer",
     description:
       "Explore the Plat Stay hotel set, then jump to the official booking or contact page.",
@@ -414,7 +415,7 @@ const ROUTES = {
     eyebrow: "Alerts / Change Watch",
     title: "Alerts And Change Watch",
     description:
-      "Track list changes, terms movement, and blackout note updates.",
+      "Review published venue, menu, terms, and source changes with before-and-after evidence.",
     briefTitle: "Change Watch",
     getBriefSummary: () => buildAlertsSummary(),
     getBriefCards: () => buildAlertsCards(),
@@ -1191,6 +1192,9 @@ function externalSignalCard(source, signal) {
   const meta = [
     formatReviewCount(signal.review_count),
     sourceConfidenceLabel(signal.match_confidence),
+    signal.last_checked_at || signal.scraped_at
+      ? `checked ${formatSourceDate(signal.last_checked_at || signal.scraped_at)}`
+      : "check date unknown",
   ]
     .filter(Boolean)
     .map((item) => `<span>${escapeHtml(item)}</span>`)
@@ -1780,6 +1784,15 @@ function googleRating(record) {
   return direct || alias;
 }
 
+function googleRatingForRanking(record) {
+  const rating = googleRating(record);
+  const checked = new Date(rating?.scraped_at || "");
+  if (!rating || Number.isNaN(checked.getTime())) return null;
+  const ageMs = Date.now() - checked.getTime();
+  if (ageMs < -24 * 60 * 60 * 1000) return null;
+  return ageMs <= GOOGLE_RATING_STALE_DAYS * 24 * 60 * 60 * 1000 ? rating : null;
+}
+
 function bestGoogleMapsUrl(record) {
   const scraped = googleRating(record);
   if (scraped && scraped.maps_url) return scraped.maps_url;
@@ -1792,13 +1805,14 @@ function googleRatingBadge(record) {
   const url = bestGoogleMapsUrl(record)
     || (record.dataset === "plat_stay" ? stayGoogleMapsUrl(record) : diningGoogleMapsUrl(record));
   const countStr = g.review_count ? ` · ${Number(g.review_count).toLocaleString()} reviews` : "";
+  const checkedStr = ` · checked ${formatSourceDate(g.scraped_at)}`;
   const tag = url ? "a" : "span";
   const attrs = url
     ? ` href="${escapeHtml(url)}" target="_blank" rel="noopener"`
     : "";
   return `<${tag} class="google-badge"${attrs}>
     <span class="google-stars">${escapeHtml(String(g.rating))}</span>
-    <span class="google-meta">Google Maps${escapeHtml(countStr)}</span>
+    <span class="google-meta">Google Maps${escapeHtml(countStr)}${escapeHtml(checkedStr)}</span>
   </${tag}>`;
 }
 
@@ -2050,7 +2064,10 @@ function diningMarkerPopupHtml(record, rankNumber = 0) {
   const cuisine = (record.cuisines || []).slice(0, 2).join(", ");
   const facts = diningCompactFacts(record);
   const score = record.country === "Japan" ? tabelogScore(record) : 0;
-  const rating = score ? `${score.toFixed(2).replace(/\.?0+$/, "")} Tabelog` : "";
+  const tabelogChecked = qualitySignals(record).tabelog?.last_checked_at;
+  const rating = score
+    ? `${score.toFixed(2).replace(/\.?0+$/, "")} Tabelog · checked ${formatSourceDate(tabelogChecked)}`
+    : "";
   return `
     <article class="popup-card dining-popup-card">
       <div class="popup-name">${rankNumber ? `<span class="popup-rank">#${escapeHtml(String(rankNumber))}</span> ` : ""}${escapeHtml(record.name)}</div>
@@ -2420,6 +2437,27 @@ function formatTimestamp(value) {
   });
 }
 
+function formatSourceDate(value) {
+  if (!value) return "date unknown";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "date unknown";
+  return date.toLocaleDateString("en-SG", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  });
+}
+
+function tabelogCheckedRange(records) {
+  const dates = records
+    .map((record) => qualitySignals(record).tabelog?.last_checked_at)
+    .filter(Boolean)
+    .sort();
+  if (!dates.length) return "Tabelog check dates unknown";
+  const first = formatSourceDate(dates[0]);
+  const last = formatSourceDate(dates[dates.length - 1]);
+  return first === last ? `Tabelog checked ${first}` : `Tabelog checked ${first}–${last}`;
+}
+
 function updateKindLabel(kind) {
   return {
     added: "Added",
@@ -2562,7 +2600,8 @@ function diningSourceName(kind) {
 function diningSourceCacheLabelForKind(kind) {
   const meta = diningSourceMeta(kind);
   if (!meta?.fetched_at) return "";
-  return `${diningSourceName(kind)} cached ${formatTimestamp(meta.fetched_at)}`;
+  const review = meta.manual_review_required ? " · source review required" : "";
+  return `${diningSourceName(kind)} cached ${formatTimestamp(meta.fetched_at)}${review}`;
 }
 
 function diningSourceCacheLabel(record) {
@@ -2580,52 +2619,26 @@ function diningRouteCacheSummary(records = state.scopeRecords) {
 }
 
 function buildAlertsSummary() {
-  const meta = state.staysSourceMeta;
-  if (!meta) {
-    return "Wire this panel to snapshot diffs, additions, removals, and blackout changes so users can see what moved before we add nudges.";
-  }
-
-  return `Latest Plat Stay source fetched ${formatTimestamp(meta.fetched_at)}. ${meta.record_count || state.stays.length} properties are in the current snapshot.`;
+  const latest = state.updates[0];
+  if (!latest) return "No reviewed public changes have been published yet.";
+  return `${state.updates.length} reviewed change${state.updates.length === 1 ? "" : "s"} published. Latest: ${latest.subject || latest.program} on ${formatTimestamp(latest.detected_at)}.`;
 }
 
 function buildAlertsCards() {
-  const meta = state.staysSourceMeta;
-  const countries = new Set(state.stays.map((record) => record.country).filter(Boolean));
-  return [
-    {
-      kicker: "Live now",
-      title: "Current Plat Stay snapshot",
-      body: meta
-        ? `${meta.record_count || state.stays.length} properties from ${meta.page_count || "?"} PDF pages. ${state.stays.length} records are available in-app across ${countries.size} countries.`
-        : "Plat Stay source metadata is not available yet, but the app is ready to surface it here once the sync writes it.",
-      links: meta
-        ? [
-            {
-              label: "Official Plat Stay PDF",
-              href: meta.resolved_url || meta.canonical_url || "https://go.amex/platstay",
-            },
-          ]
-        : [],
-    },
-    {
-      kicker: "Watch for",
-      title: "What should trigger an alert",
-      body:
-        "Property additions, removals, blackout-note changes, booking contact changes, and any source-file refresh that materially changes the list or rules.",
-    },
-    {
-      kicker: "Archive",
-      title: "Snapshot every sync",
-      body:
-        "Each sync should keep the current source hash and a structured copy of the records so we can compare adds, drops, and terms deltas without guessing.",
-    },
-    {
-      kicker: "Nudge later",
-      title: "Telegram or email",
-      body:
-        "Once the diff layer exists, the same alert summary can drive Telegram nudges, email digests, or a lightweight webhook without exposing noisy false alarms.",
-    },
-  ];
+  return state.updates.slice(0, 8).map((update) => {
+    const changes = (update.changes || []).slice(0, 2).map((change) =>
+      `${change.field || "Change"}: ${updateValueLabel(change.before)} → ${updateValueLabel(change.after)}`
+    );
+    return {
+      kicker: `${updateKindLabel(update.kind)} · ${formatTimestamp(update.detected_at)}`,
+      title: update.subject || update.program || "Benefit change",
+      body: changes.join("; ") || "Reviewed source change published without a field comparison.",
+      links: [
+        update.route ? { label: "Open section", href: update.route } : null,
+        update.source_url ? { label: "Official source", href: update.source_url } : null,
+      ].filter(Boolean),
+    };
+  });
 }
 
 function activeFilterCount() {
@@ -3126,7 +3139,7 @@ function filterRestaurants(options = {}) {
     if (tabelog === "4_5plus" && !(tScore != null && tScore >= 4.5)) return false;
 
     // Google Maps rating filter
-    const gRating = googleRating(record);
+    const gRating = googleRatingForRanking(record);
     if (googleRatingFilterValue === "has_rating" && !gRating) return false;
     if (googleRatingFilterValue === "3plus" && !(gRating && gRating.rating >= 3.0)) return false;
     if (googleRatingFilterValue === "3_5plus" && !(gRating && gRating.rating >= 3.5)) return false;
@@ -3153,14 +3166,14 @@ function filterRestaurants(options = {}) {
     state.filtered = state.filtered.filter((record) => tabelogReviewCount(record) > 0).slice(0, tabelogTop);
   } else if (sort === "rating_high") {
     state.filtered.sort((a, b) => {
-      const aRating = googleRating(a)?.rating ?? -1;
-      const bRating = googleRating(b)?.rating ?? -1;
+      const aRating = googleRatingForRanking(a)?.rating ?? -1;
+      const bRating = googleRatingForRanking(b)?.rating ?? -1;
       return bRating - aRating;
     });
   } else if (sort === "reviews_high") {
     state.filtered.sort((a, b) => {
-      const aCount = googleRating(a)?.review_count ?? 0;
-      const bCount = googleRating(b)?.review_count ?? 0;
+      const aCount = googleRatingForRanking(a)?.review_count ?? 0;
+      const bCount = googleRatingForRanking(b)?.review_count ?? 0;
       return bCount - aCount;
     });
   } else if (sort === "tabelog_reviews_high") {
@@ -3197,13 +3210,17 @@ function renderStats() {
 
   const mappedText = filteredMapped === state.filtered.length ? "" : `, ${filteredMapped} mapped`;
   const scopeMappedText = filteredMapped === state.scopeRecords.length ? "" : `, ${filteredMapped} mapped`;
-  const cacheSummary = [diningRouteCacheSummary(), pocketAvailabilityCacheLabel()]
+  const cacheSummary = [
+    diningRouteCacheSummary(),
+    pocketAvailabilityCacheLabel(),
+    isJapanRankRoute(route) ? tabelogCheckedRange(state.scopeRecords) : "",
+  ]
     .filter(Boolean)
     .join(" · ");
   const cacheText = cacheSummary ? ` · ${cacheSummary}.` : ".";
 
   if (isJapanRankRoute(route)) {
-    const metric = state.japanRankMetric === "score" ? "Tabelog score" : "Tabelog reviews";
+    const metric = state.japanRankMetric === "score" ? "archived Tabelog score" : "archived Tabelog reviews";
     const place = state.japanRankPrefecture || "Japan";
     const { start, end } = japanRankVisibleBounds();
     summaryStripText.textContent = `${place} sorted by ${metric}: showing ${start}-${end} of ${state.japanRankTotal}${cacheText}`;
@@ -3273,7 +3290,7 @@ function japanRankDetailMarkup(record) {
   const tabelogBadge = signal && score
     ? `<a class="tabelog-badge" href="${escapeHtml(signal.url || tabelogSearchUrl(record) || "#")}" target="_blank" rel="noopener">
         <span class="tabelog-stars">${escapeHtml(String(score))}</span>
-        <span class="tabelog-meta">Tabelog${signal.review_count ? ` · ${Number(signal.review_count).toLocaleString()} reviews` : ""}</span>
+        <span class="tabelog-meta">Tabelog${signal.review_count ? ` · ${Number(signal.review_count).toLocaleString()} reviews` : ""} · checked ${escapeHtml(formatSourceDate(signal.last_checked_at))}</span>
       </a>`
     : "";
   const gBadge = googleRatingBadge(record);
@@ -3403,8 +3420,8 @@ function renderJapanRankPanel() {
         <label class="filter-wrap">
           <span class="label">Sort by</span>
           <select id="rank-metric-filter">
-            <option value="score"${state.japanRankMetric === "score" ? " selected" : ""}>Tabelog score</option>
-            <option value="reviews"${state.japanRankMetric === "reviews" ? " selected" : ""}>Tabelog reviews</option>
+            <option value="score"${state.japanRankMetric === "score" ? " selected" : ""}>Archived Tabelog score</option>
+            <option value="reviews"${state.japanRankMetric === "reviews" ? " selected" : ""}>Archived Tabelog reviews</option>
           </select>
         </label>
         <label class="filter-wrap">
@@ -3637,7 +3654,7 @@ function renderFocusCard() {
   const tabelogBadge = tabelogSignal && tabelogScore != null
     ? `<a class="tabelog-badge" href="${escapeHtml(tabelogSignal.url || tabelogSearchUrl(record) || "#")}" target="_blank" rel="noopener">
         <span class="tabelog-stars">${escapeHtml(String(tabelogScore))}</span>
-        <span class="tabelog-meta">Tabelog${tabelogSignal.review_count ? ` · ${Number(tabelogSignal.review_count).toLocaleString()} reviews` : ""}</span>
+        <span class="tabelog-meta">Tabelog${tabelogSignal.review_count ? ` · ${Number(tabelogSignal.review_count).toLocaleString()} reviews` : ""} · checked ${escapeHtml(formatSourceDate(tabelogSignal.last_checked_at))}</span>
       </a>`
     : "";
 
@@ -3852,7 +3869,7 @@ function renderMobileCards(resetPage = true) {
     const kidPolicyKnown = isJapan && record.child_policy_norm && record.child_policy_norm !== "unknown";
     const gMobile = googleRating(record);
     const googleRatingInline = gMobile && gMobile.rating != null
-      ? `<span class="card-google-rating">★ ${gMobile.rating}${gMobile.review_count ? ` · ${Number(gMobile.review_count).toLocaleString()}` : ""}</span>`
+      ? `<span class="card-google-rating">★ ${gMobile.rating}${gMobile.review_count ? ` · ${Number(gMobile.review_count).toLocaleString()}` : ""} · ${escapeHtml(formatSourceDate(gMobile.scraped_at))}</span>`
       : "";
     const regionDot = `<span class="card-region-dot" style="background:${markerColor(record)}" aria-hidden="true"></span>`;
     const cardSummary = diningSummaryPayload(record);
@@ -4338,6 +4355,24 @@ function stayFocusSummary(record, status) {
   return `${prefix}${raw}`;
 }
 
+function stayNameProfile(record) {
+  const raw = String(record.name || "");
+  const match = raw.match(/^(.*?)\s*\(From (\d{1,2}) ([A-Za-z]+) (20\d{2})\)$/);
+  if (!match) return { displayName: raw, eligibilityNote: "" };
+  const month = [
+    "january", "february", "march", "april", "may", "june",
+    "july", "august", "september", "october", "november", "december",
+  ].indexOf(match[3].toLowerCase());
+  if (month < 0) return { displayName: raw, eligibilityNote: "" };
+  const effectiveKey = `${match[4]}-${String(month + 1).padStart(2, "0")}-${String(match[2]).padStart(2, "0")}`;
+  const effective = new Date(`${effectiveKey}T00:00:00Z`);
+  const started = Number.isFinite(effective.getTime()) && effective.getTime() <= Date.now();
+  return {
+    displayName: match[1],
+    eligibilityNote: `${started ? "Eligible since" : "Eligible from"} ${formatSourceDate(effectiveKey)}`,
+  };
+}
+
 function activeStayFilterCount() {
   let count = 0;
   if (staysSearchInput.value.trim()) count += 1;
@@ -4438,7 +4473,7 @@ function createStayMarker(record) {
 
   // Simple popup: just name + location + rating + Google Maps link (matching Dining style)
   const ratingHtml = gRating && gRating.rating != null
-    ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
+    ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""} · ${escapeHtml(formatSourceDate(gRating.scraped_at))}</div>`
     : "";
   marker.on("click", () => {
     setActiveStayRecord(record.id);
@@ -4469,7 +4504,7 @@ function filterStays() {
     }
 
     // Google Maps rating filter
-    const gRating = googleRating(record);
+    const gRating = googleRatingForRanking(record);
     if (googleRatingFilterValue === "has_rating" && !gRating) return false;
     if (googleRatingFilterValue === "3plus" && !(gRating && gRating.rating >= 3.0)) return false;
     if (googleRatingFilterValue === "3_5plus" && !(gRating && gRating.rating >= 3.5)) return false;
@@ -4482,14 +4517,14 @@ function filterStays() {
   // Apply sorting
   if (sort === "rating_high") {
     state.stayFiltered.sort((a, b) => {
-      const aRating = googleRating(a)?.rating ?? -1;
-      const bRating = googleRating(b)?.rating ?? -1;
+      const aRating = googleRatingForRanking(a)?.rating ?? -1;
+      const bRating = googleRatingForRanking(b)?.rating ?? -1;
       return bRating - aRating;
     });
   } else if (sort === "reviews_high") {
     state.stayFiltered.sort((a, b) => {
-      const aCount = googleRating(a)?.review_count ?? 0;
-      const bCount = googleRating(b)?.review_count ?? 0;
+      const aCount = googleRatingForRanking(a)?.review_count ?? 0;
+      const bCount = googleRatingForRanking(b)?.review_count ?? 0;
       return bCount - aCount;
     });
   } else if (sort === "name_a") {
@@ -4512,16 +4547,19 @@ function renderStayStats() {
   const filteredCountries = uniqueValues(state.stayFiltered.map((record) => record.country));
   const selected = stayDateRange();
   const filterCount = activeStayFilterCount();
+  const sourceFreshness = state.staysSourceMeta?.fetched_at
+    ? `Official source cached ${formatTimestamp(state.staysSourceMeta.fetched_at)}`
+    : "Official source cache time unavailable";
 
   if (filterCount > 0) {
     const mappedText = mapped === state.stayFiltered.length ? "" : `, ${mapped} mapped`;
     const filterSummary = selected
-      ? `${state.stayFiltered.length} of ${state.stays.length} properties remain after date and location filters, across ${filteredCountries.length} countries${mappedText}.`
-      : `${state.stayFiltered.length} of ${state.stays.length} properties shown after filters, across ${filteredCountries.length} countries${mappedText}.`;
+      ? `${state.stayFiltered.length} of ${state.stays.length} properties remain after date and location filters, across ${filteredCountries.length} countries${mappedText} · ${sourceFreshness}.`
+      : `${state.stayFiltered.length} of ${state.stays.length} properties shown after filters, across ${filteredCountries.length} countries${mappedText} · ${sourceFreshness}.`;
     staysSummaryStripText.textContent = filterSummary;
   } else {
     const mappedText = mapped === state.stays.length ? "" : `, ${mapped} mapped`;
-    staysSummaryStripText.textContent = `${state.stays.length} properties across ${scopeCountries.length} countries${mappedText}.`;
+    staysSummaryStripText.textContent = `${state.stays.length} properties across ${scopeCountries.length} countries${mappedText} · ${sourceFreshness}.`;
   }
 
   staysResultsText.textContent = state.stayActiveId ? "Selected property · Plat Stay" : "Click a pin to select · Plat Stay";
@@ -4586,10 +4624,12 @@ function renderStayFocusCard() {
     .join("");
   const summary = stayFocusSummary(record, status);
   const locationNote = stayLocationNote(record);
+  const nameProfile = stayNameProfile(record);
 
   staysFocusCard.innerHTML = `
     <div class="focus-kicker">${escapeHtml(record.city || "City unknown")} / ${escapeHtml(record.country || "Country unknown")}</div>
-    <h3 class="focus-title">${escapeHtml(record.name)}</h3>
+    <h3 class="focus-title">${escapeHtml(nameProfile.displayName)}</h3>
+    ${nameProfile.eligibilityNote ? `<div class="focus-note">${escapeHtml(nameProfile.eligibilityNote)}</div>` : ""}
     ${gBadge ? `<div class="focus-ratings">${gBadge}</div>` : ""}
     <div class="focus-subtitle">${escapeHtml(record.eligible_room_type || "Eligible room type not listed")}</div>
     <div class="focus-address">${escapeHtml(record.address)}</div>
@@ -4644,7 +4684,7 @@ function renderStayTable() {
       focusActiveStayOnMap();
     });
     row.innerHTML = `
-      <td><div class="table-title">${escapeHtml(record.name)}</div></td>
+      <td><div class="table-title">${escapeHtml(stayNameProfile(record).displayName)}</div></td>
       <td>
         <div>${escapeHtml(record.country || "Country unknown")}</div>
         <div class="table-sub">${escapeHtml(record.city || record.address)}</div>
@@ -4669,7 +4709,7 @@ function renderStayMobileCards() {
     const status = stayAvailability(record);
     const g = googleRating(record);
     const googleRatingInline = g && g.rating != null
-      ? `<span class="badge blue">★ ${g.rating}${g.review_count ? ` · ${Number(g.review_count).toLocaleString()}` : ""}</span>`
+      ? `<span class="badge blue">★ ${g.rating}${g.review_count ? ` · ${Number(g.review_count).toLocaleString()}` : ""} · ${escapeHtml(formatSourceDate(g.scraped_at))}</span>`
       : "";
     const locationBadge = stayLocationBadge(record);
     const card = document.createElement("article");
@@ -4678,7 +4718,8 @@ function renderStayMobileCards() {
       <div class="mobile-card-top">
         <div>
           <div class="focus-kicker">${escapeHtml(record.city || "City unknown")} / ${escapeHtml(record.country || "Country unknown")}</div>
-          <h3 class="mobile-card-title">${escapeHtml(record.name)}</h3>
+          <h3 class="mobile-card-title">${escapeHtml(stayNameProfile(record).displayName)}</h3>
+          ${stayNameProfile(record).eligibilityNote ? `<div class="mobile-card-subtitle">${escapeHtml(stayNameProfile(record).eligibilityNote)}</div>` : ""}
           <div class="mobile-card-subtitle">${escapeHtml(record.eligible_room_type || "Eligible room type not listed")}</div>
         </div>
       </div>
@@ -4985,10 +5026,6 @@ async function refreshTableForTwoLiveAvailability({ force = false } = {}) {
           record.availability = availability;
           record.slot_source_status = "diningcity_amex_platinum_project";
           record.search_text = tableForTwoSearchText(record);
-          if (isTableForTwoRoute(resolveRouteFromHash())) {
-            refreshTableForTwoDateOptions();
-            filterTableForTwo();
-          }
         }
         return availability;
       })
@@ -5545,7 +5582,7 @@ function filterTableForTwo() {
     if (residualSearch && !fuzzyMatchSearch(record.search_text || tableForTwoSearchText(record), residualSearch)) return false;
     return true;
   });
-  const availabilityRank = { available: 0, no_seats: 1, unknown: 2 };
+  const availabilityRank = { available: 0, no_seats: 1, stale: 2, unknown: 3 };
   state.tableForTwoFiltered.sort((a, b) => {
     const rankA = availabilityRank[tableForTwoAvailabilityKey(a, filters)] ?? 4;
     const rankB = availabilityRank[tableForTwoAvailabilityKey(b, filters)] ?? 4;
@@ -5570,7 +5607,7 @@ function filterTableForTwo() {
   const payload = tableForTwoPayload();
   const freshAvailableCount = venues.filter((record) => tableForTwoAvailabilityKey(record, filters) === "available").length;
   const freshNoSeatCount = venues.filter((record) => tableForTwoAvailabilityKey(record, filters) === "no_seats").length;
-  const staleCaptureCount = venues.filter((record) => tableForTwoAvailabilityIsStale(record)).length;
+  const staleCaptureCount = venues.filter((record) => tableForTwoAvailabilityKey(record, filters) === "stale").length;
   const pendingCount = venues.filter((record) => tableForTwoAvailabilityKey(record, filters) === "unknown").length;
   const filterLabel = [
     `${partySize} pax`,
@@ -5591,10 +5628,11 @@ function filterTableForTwo() {
     filterLabel,
     !autoAvailabilityOnly && freshAvailableCount ? `${freshAvailableCount} bookable` : "",
     !autoAvailabilityOnly && freshNoSeatCount ? `${freshNoSeatCount} not bookable` : "",
-    staleCaptureCount ? `source older than ${TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES} min` : "",
+    staleCaptureCount ? `${staleCaptureCount} stale source check${staleCaptureCount === 1 ? "" : "s"}` : "",
     pendingCount ? `${pendingCount} source checks pending` : "",
     availabilityCheckedText,
     verifiedText,
+    payload.manual_review_required ? "roster review required" : "",
   ].filter(Boolean);
   tableForTwoSummaryStripText.textContent = `${statusBits.join(" · ")}.`;
   tableForTwoListSummary.textContent =
@@ -5665,10 +5703,11 @@ function tableForTwoResidualSearch(search) {
 
 function tableForTwoRawAvailabilityKey(record) {
   const status = record.availability?.status || "unknown";
+  const capturedTime = new Date(record.availability?.checked_at || record.availability?.captured_at || "").getTime();
+  if (!Number.isFinite(capturedTime)) return "unknown";
+  if (tableForTwoAvailabilityIsStale(record)) return "stale";
   if (status === "live_available" || status === "captured_available" || status === "available") return "available";
   if (status === "live_no_seats" || status === "captured_no_seats" || status === "no_seats") {
-    const capturedTime = new Date(record.availability?.captured_at || "").getTime();
-    if (Number.isFinite(capturedTime) && Date.now() - capturedTime < -5 * 60 * 1000) return "unknown";
     return "no_seats";
   }
   return "unknown";
@@ -5781,6 +5820,7 @@ function tableForTwoMatchingSlots(record, filters = {}) {
 function tableForTwoAvailabilityKey(record, filters = {}) {
   const rawKey = tableForTwoRawAvailabilityKey(record);
   if (rawKey === "unknown") return "unknown";
+  if (rawKey === "stale") return "stale";
   if (rawKey === "no_seats") return "no_seats";
   return tableForTwoMatchingSlots(record, filters).length ? "available" : "no_seats";
 }
@@ -5801,7 +5841,7 @@ function tableForTwoRecordMatchesFilters(record, filters) {
     return key === "available";
   }
   if (filters.availability === "no_seats") return key === "no_seats";
-  if (filters.availability === "stale") return tableForTwoAvailabilityIsStale(record);
+  if (filters.availability === "stale") return key === "stale";
   if (filters.availability === "unknown") return key === "unknown";
   return true;
 }
@@ -5810,7 +5850,8 @@ function tableForTwoAvailabilityLabel(record, filters = state.tableForTwoCurrent
   const partySize = Number(filters.partySize || tableForTwoSelectedPartySize());
   const key = tableForTwoAvailabilityKey(record, filters);
   if (key === "available") return `${partySize} pax available`;
-  if (key === "no_seats") return tableForTwoAvailabilityIsStale(record) ? "Last check: not bookable" : "Not bookable";
+  if (key === "no_seats") return "Not bookable";
+  if (key === "stale") return "Stale availability check";
   return "Source pending";
 }
 
@@ -5818,6 +5859,7 @@ function tableForTwoAvailabilityBadgeClass(record, filters = state.tableForTwoCu
   const key = tableForTwoAvailabilityKey(record, filters);
   if (key === "available") return "green";
   if (key === "no_seats") return "amber";
+  if (key === "stale") return "amber";
   return "";
 }
 
@@ -5954,6 +5996,7 @@ function tableForTwoCompactAvailabilityLine(record, filters = state.tableForTwoC
   const slots = tableForTwoMatchingSlots(record, filters);
   if (!slots.length) {
     if (key === "unknown") return "Source check pending";
+    if (key === "stale") return `Availability check is older than ${TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES} min; verify in the Amex app.`;
     return tableForTwoNoMatchLine(record, filters);
   }
   const dates = uniqueValues(slots.map((slot) => slot.date).filter(Boolean)).sort();
@@ -5973,19 +6016,20 @@ function tableForTwoBestAvailabilityLine(record, filters = state.tableForTwoCurr
   const matchingSlots = tableForTwoMatchingSlots(record, filters);
   if (!matchingSlots.length) {
     if (key === "unknown") return "Source check pending.";
+    if (key === "stale") return `Availability check is older than ${TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES} min; verify in the Amex app.`;
     return tableForTwoNoMatchLine(record, filters);
   }
   return tableForTwoSlotGroupSummaries(matchingSlots).join(" | ");
 }
 
 function tableForTwoFreshnessLabel(record) {
-  const capturedAt = record.availability?.captured_at;
+  const capturedAt = record.availability?.checked_at || record.availability?.captured_at;
   if (!capturedAt) return "No availability check yet";
   return `Checked ${formatTimestamp(capturedAt)}`;
 }
 
 function tableForTwoAvailabilityIsStale(record) {
-  const capturedAt = record.availability?.captured_at;
+  const capturedAt = record.availability?.checked_at || record.availability?.captured_at;
   if (!capturedAt) return false;
   const capturedDate = new Date(capturedAt);
   if (Number.isNaN(capturedDate.getTime())) return false;
@@ -6002,6 +6046,7 @@ function tableForTwoDateListSummary(dates, prefix = "Dates") {
 
 function tableForTwoDateSummary(record, filters = state.tableForTwoCurrentFilters || {}) {
   const availability = record.availability || {};
+  if (tableForTwoAvailabilityKey(record, filters) === "stale") return "Stale availability snapshot";
   const matchingDates = uniqueValues(tableForTwoMatchingSlots(record, filters).map((slot) => slot.date).filter(Boolean));
   if (matchingDates.length) return tableForTwoDateRangeSummary(matchingDates);
   if (filters.date) return `Not bookable on ${tableForTwoDateOptionLabel(filters.date)}`;
@@ -6141,7 +6186,7 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
     return `
       <div class="tft-calendar-empty">
         <div class="focus-kicker">Availability</div>
-        <h4>${escapeHtml(key === "unknown" ? "Availability pending" : "Not bookable")}</h4>
+        <h4>${escapeHtml(key === "unknown" ? "Availability pending" : key === "stale" ? "Stale availability snapshot" : "Not bookable")}</h4>
         <p>${escapeHtml(tableForTwoBestAvailabilityLine(record, filters))}</p>
       </div>
     `;
@@ -6196,11 +6241,14 @@ function tableForTwoReleasePatterns(record) {
 
 function tableForTwoReleasePatternHtml(record) {
   const patterns = tableForTwoReleasePatterns(record);
+  const observedThrough = state.tableForTwoReleaseHistory?.updated_at
+    ? ` Observed through ${formatTimestamp(state.tableForTwoReleaseHistory.updated_at)}.`
+    : " Observation update time is unavailable.";
   if (!patterns.length) {
     return `
       <div class="tft-release-pattern">
         <div class="focus-kicker">Observed release pattern</div>
-        <p>Not enough repeat observations yet. Availability alerts still work normally.</p>
+        <p>Not enough repeat observations yet. Availability alerts still work normally.${escapeHtml(observedThrough)}</p>
       </div>`;
   }
   const rows = patterns.map((pattern) => {
@@ -6222,7 +6270,7 @@ function tableForTwoReleasePatternHtml(record) {
     <div class="tft-release-pattern">
       <div class="focus-kicker">Observed release pattern</div>
       ${rows}
-      <p>First detected by periodic cache checks. This is an observed pattern, not an official Amex or restaurant release policy.</p>
+      <p>First detected by periodic cache checks.${escapeHtml(observedThrough)} This is an observed pattern, not an official Amex or restaurant release policy.</p>
     </div>`;
 }
 
@@ -6250,7 +6298,7 @@ function renderTableForTwoList() {
     const availabilityBadgeClass = tableForTwoAvailabilityBadgeClass(record, filters);
     const rating = googleRating(record);
     const ratingStr = rating && rating.rating != null
-      ? `<span class="card-google-rating">★ ${escapeHtml(String(rating.rating))}${rating.review_count ? ` (${Number(rating.review_count).toLocaleString()})` : ""}</span>`
+      ? `<span class="card-google-rating">★ ${escapeHtml(String(rating.rating))}${rating.review_count ? ` (${Number(rating.review_count).toLocaleString()})` : ""} · ${escapeHtml(formatSourceDate(rating.scraped_at))}</span>`
       : "";
     card.innerHTML = `
       <div class="mobile-card-head">
@@ -6320,11 +6368,21 @@ function renderTableForTwoCard() {
   const gBadge = googleRatingBadge(record);
   const googleMapsUrl = bestGoogleMapsUrl(record) || googleMapsSearchUrl([displayName, "Singapore"]);
   const menuPdf = record.menu_pdf || {};
-  const menuPdfLinks = tableForTwoPublishedMenus(record)
+  const publishedMenus = tableForTwoPublishedMenus(record);
+  const menuPdfLinks = publishedMenus
     .map((menu, index) => `<a class="inline-link${index === 0 ? " primary-action" : ""}" href="${escapeHtml(menu.url)}" target="_blank" rel="noopener">${escapeHtml(`${menu.label || "Set"} menu (PDF)`)}</a>`)
     .join("");
   const menuPdfNote = !menuPdfLinks && menuPdf.status === "buffet_no_menu_expected"
     ? `<div class="focus-note">Buffet venue — no set menu PDF.</div>`
+    : "";
+  const menuCheckedAt = publishedMenus
+    .map((menu) => menu.checked_at)
+    .filter(Boolean)
+    .sort()
+    .at(-1) || payload.menu_source?.checked_at;
+  const menuSourceNote = `<div class="focus-note">Official menu index checked ${escapeHtml(menuCheckedAt ? formatTimestamp(menuCheckedAt) : "time unavailable")}.${payload.manual_review_required ? " Wider source review is required." : ""}</div>`;
+  const sourceReviewWarning = payload.manual_review_required
+    ? '<div class="focus-note focus-note-warn">Official roster or source files changed. Manual review is required before treating the venue and menu set as final.</div>'
     : "";
 
   tableForTwoFocusCard.innerHTML = `
@@ -6340,6 +6398,7 @@ function renderTableForTwoCard() {
     </div>
     ${record.address ? `<div class="focus-address">${escapeHtml(record.address)}</div>` : ""}
     ${profileDescription ? `<p class="focus-summary tft-profile-desc">${escapeHtml(profileDescription)}</p>` : ""}
+    ${sourceReviewWarning}
     ${tableForTwoSlotMatchesHtml(record, filters)}
     ${tableForTwoReleasePatternHtml(record)}
     <div class="price-grid tft-status-grid">
@@ -6365,6 +6424,7 @@ function renderTableForTwoCard() {
       </div>
     </div>
     ${menuPdfNote}
+    ${menuSourceNote}
     <div class="focus-actions">
       ${menuPdfLinks}
       <a class="inline-link${menuPdfLinks ? "" : " primary-action"}" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
@@ -6493,7 +6553,7 @@ function createLoveDiningMarker(record) {
   const gRating = googleRating(record);
   const cuisine = record.cuisine || "";
   const ratingHtml = gRating && gRating.rating != null
-    ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""}</div>`
+    ? `<div style="margin-top:4px; font-size:0.9em">★ ${gRating.rating}${gRating.review_count ? ` (${gRating.review_count})` : ""} · ${escapeHtml(formatSourceDate(gRating.scraped_at))}</div>`
     : "";
   marker.on("click", () => {
     setActiveLoveDiningRecord(record.id);
@@ -6607,14 +6667,44 @@ function loveDiningSourceUrl(record) {
   return record.type === "hotel" ? LOVE_DINING_HOTELS_URL : LOVE_DINING_RESTAURANTS_URL;
 }
 
-function loveDiningUnavailable(record) {
+function singaporeTodayKey(now = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-SG", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Asia/Singapore",
+  }).formatToParts(now);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function loveDiningEligibilityState(record, today = singaporeTodayKey()) {
+  const status = record.eligibility_status;
+  const effectiveFrom = /^\d{4}-\d{2}-\d{2}$/.test(record.eligibility_effective_from || "")
+    ? record.eligibility_effective_from
+    : "";
+  if (status === "ineligible") {
+    if (effectiveFrom && today < effectiveFrom) {
+      return { key: "future_change", effectiveFrom };
+    }
+    return { key: "ineligible", effectiveFrom };
+  }
+  if (status === "eligible") return { key: "eligible", effectiveFrom };
+
   const combined = normalizeInlineText(`${record.closing_note || ""} ${record.notes || ""}`).toLowerCase();
-  return /not eligible|permanently closed|temporarily closed|closed for renovation/.test(combined);
+  if (/not eligible|permanently closed|temporarily closed|closed for renovation/.test(combined)) {
+    return { key: "review_required", effectiveFrom: "" };
+  }
+  return { key: "eligible", effectiveFrom: "" };
+}
+
+function loveDiningUnavailable(record) {
+  return loveDiningEligibilityState(record).key === "ineligible";
 }
 
 function loveDiningOrderProfile(record) {
   const combined = normalizeInlineText(`${record.name || ""} ${record.cuisine || ""} ${record.notes || ""}`).toLowerCase();
-  if (/not eligible|permanently closed|temporarily closed|closed for renovation/.test(combined)) {
+  if (["ineligible", "future_change", "review_required"].includes(loveDiningEligibilityState(record).key)) {
     return {
       key: "special",
       label: "Check eligibility",
@@ -6658,18 +6748,29 @@ function loveDiningOrderProfile(record) {
 
 function loveDiningBenefitProfile(record) {
   const order = loveDiningOrderProfile(record);
-  const isUnavailable = loveDiningUnavailable(record);
+  const eligibility = loveDiningEligibilityState(record);
+  const isUnavailable = eligibility.key === "ineligible";
+  const isFutureChange = eligibility.key === "future_change";
+  const sourceReviewRequired = Boolean(state.loveDiningSourceMeta?.manual_review_required);
   const isFixed20 = LOVE_DINING_FIXED_20_IDS.has(record.id);
   const maxSavingsPct = isFixed20 ? 20 : 50;
   const isHotel = record.type === "hotel";
   const savingsKey = isUnavailable ? "unavailable" : isFixed20 ? "twenty" : "fifty";
+  const futureLastEligible = eligibility.effectiveFrom
+    ? new Date(`${eligibility.effectiveFrom}T00:00:00Z`)
+    : null;
+  if (futureLastEligible) futureLastEligible.setUTCDate(futureLastEligible.getUTCDate() - 1);
   const savingsLabel = isUnavailable
     ? "Eligibility warning"
+    : isFutureChange
+      ? `Eligible until ${formatSourceDate(futureLastEligible?.toISOString())}`
     : isFixed20
-      ? "20% special outlet"
-      : "Up to 50%";
+      ? `${sourceReviewRequired ? "Last reviewed: " : ""}20% special outlet`
+      : `${sourceReviewRequired ? "Last reviewed: " : ""}up to 50%`;
   const savingsDetail = isUnavailable
-    ? "This venue has a closure, renovation, or future ineligibility note in the official listing."
+    ? "The structured effective date has passed; verify the official listing before planning."
+    : isFutureChange
+      ? `The official listing says eligibility changes from ${formatSourceDate(eligibility.effectiveFrom)}.`
     : isFixed20
       ? "This outlet is listed with a fixed or special 20% benefit in the official hotel terms."
       : isHotel
@@ -6677,6 +6778,8 @@ function loveDiningBenefitProfile(record) {
         : "Restaurant benefit scale: 50% for 2 diners, 35% for 3, 25% for 4, and 20% for 5–20 diners.";
   const appliesTo = isUnavailable
     ? "Eligibility is restricted for this venue; verify the official listing before planning."
+    : isFutureChange
+      ? `The last reviewed benefit applies only before ${formatSourceDate(eligibility.effectiveFrom)}; verify before booking.`
     : isFixed20
       ? "Specified hotel item or total-food-bill offer in the hotel T&Cs."
       : isHotel
@@ -6685,7 +6788,7 @@ function loveDiningBenefitProfile(record) {
   const ladder = isHotel
     ? "1 adult 15%; 2 adults 50%; 3 adults 35% or 33% depending on hotel group; 4 adults 25%; 5–10 adults 20%."
     : "1 diner 15%; 2 diners 50%; 3 diners 35%; 4 diners 25%; 5–20 diners 20%.";
-  const appliesKey = isUnavailable || isFixed20
+  const appliesKey = isUnavailable || isFutureChange || isFixed20
     ? "special"
     : order.key === "buffet"
       ? "buffet"
@@ -6828,8 +6931,11 @@ function filterLoveDining() {
   const total = state.loveDining.length;
   const cachedLabel = loveDiningCachedLabel();
   const reviewSuffix = state.loveDiningSourceMeta?.manual_review_required ? " · source review required" : "";
+  const reviewedBaseline = state.loveDiningSourceMeta?.manual_review_required
+    ? `benefit details last reviewed ${formatSourceDate(state.loveDiningSourceMeta.records_reviewed_at || state.loveDiningSourceMeta.terms_reviewed_at)}`
+    : "50% for 2 eligible diners";
   loveSummaryStripText.textContent = n === total
-    ? `${total} venues · 50% for 2 eligible diners · cached ${cachedLabel}${reviewSuffix}`
+    ? `${total} venues · ${reviewedBaseline} · cached ${cachedLabel}${reviewSuffix}`
     : `${n} of ${total} venues · cached ${cachedLabel}${reviewSuffix}`;
   loveResultsText.textContent = `${n} venue${n === 1 ? "" : "s"} shown`;
   loveMobileSummary.textContent = `${n} venue${n === 1 ? "" : "s"}`;
@@ -6987,7 +7093,7 @@ function renderLoveDiningMobileList() {
     const g = loveDiningShouldHideMapPin(record) ? null : googleRating(record);
     const benefit = loveDiningBenefitProfile(record);
     const ratingStr = g && g.rating != null
-      ? `<span class="card-google-rating">★ ${g.rating}${g.review_count ? ` (${Number(g.review_count).toLocaleString()})` : ""}</span>`
+      ? `<span class="card-google-rating">★ ${g.rating}${g.review_count ? ` (${Number(g.review_count).toLocaleString()})` : ""} · ${escapeHtml(formatSourceDate(g.scraped_at))}</span>`
       : "";
     card.innerHTML = `
       <div class="mobile-card-head">

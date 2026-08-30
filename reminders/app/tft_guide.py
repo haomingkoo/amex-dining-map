@@ -96,7 +96,7 @@ def _menu_source_context(menu: dict, catalog: dict, now: datetime) -> str:
 def _help() -> str:
     return (
         "Table for Two helper\n\n"
-        "/venues — list current cached roster\n"
+        "/venues — list bundled roster snapshot\n"
         "/menu VUE platinum — official Amex menu\n"
         "/menu VUE centurion — Centurion variant\n"
         "/help — show these commands\n\n"

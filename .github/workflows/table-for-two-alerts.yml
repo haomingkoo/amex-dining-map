@@ -52,7 +52,9 @@ jobs:
         run: python3 scripts/track_table_for_two_releases.py
 
       - name: Send matching alert emails
+        id: alerts
         if: steps.config.outputs.enabled == 'true'
+        continue-on-error: true
         env:
           REMINDERS_API_BASE: ${{ secrets.REMINDERS_API_BASE }}
           ALERT_EXPORT_TOKEN: ${{ secrets.ALERT_EXPORT_TOKEN }}
@@ -64,6 +66,7 @@ jobs:
         run: python3 scripts/send_table_for_two_alerts.py
 
       - name: Commit refreshed availability and alert state
+        if: always()
         env:
           COMMIT_MESSAGE: "chore: refresh table for two availability"
           MUST_STAGE: |
@@ -78,3 +81,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           bash scripts/commit_and_push.sh
+
+      - name: Report alert delivery failure
+        if: steps.alerts.outcome == 'failure'
+        run: |
+          echo "Availability was refreshed and committed, but alert delivery failed." >&2
+          exit 1

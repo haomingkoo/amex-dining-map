@@ -73,6 +73,7 @@ def test_send_resend_message_builds_payload(monkeypatch):
     def fake_urlopen(req, timeout=30):
         captured["url"] = req.full_url
         captured["auth"] = req.get_header("Authorization")
+        captured["idempotency"] = req.get_header("Idempotency-key")
         captured["data"] = json.loads(req.data.decode("utf-8"))
         return _Resp({"id": "abc"})
 
@@ -81,13 +82,50 @@ def test_send_resend_message_builds_payload(monkeypatch):
     alerts._send_resend_message(
         message,
         {"api_key": "re_key", "sender": "dinnertime@kooexperience.com", "timeout": 30},
+        "abc123",
     )
 
     assert captured["url"] == "https://api.resend.com/emails"
     assert captured["auth"] == "Bearer re_key"
+    assert captured["idempotency"] == "tft-alert-abc123"
     assert captured["data"]["subject"] == "Table for Two alert"
     assert captured["data"]["to"] == ["a@example.com"]
     assert "html body" in captured["data"]["html"]
     assert captured["data"]["headers"]["List-Unsubscribe"] == (
         "<https://svc/api/unsubscribe?token=z>"
     )
+
+
+def test_send_messages_persists_each_confirmed_receipt_before_next_send(tmp_path, monkeypatch):
+    messages = []
+    for recipient in ("first@example.com", "second@example.com"):
+        message = EmailMessage()
+        message["Subject"] = "Table for Two alert"
+        message["From"] = "dinnertime@kooexperience.com"
+        message["To"] = recipient
+        message.set_content("body")
+        messages.append(message)
+    calls = []
+
+    def send(message, config, key):
+        calls.append((message["To"], key))
+        if len(calls) == 2:
+            raise RuntimeError("second failed")
+
+    monkeypatch.setattr(alerts, "_send_resend_message", send)
+    sent_log = tmp_path / "sent.json"
+
+    try:
+        alerts.send_messages(
+            messages,
+            ["first-key", "second-key"],
+            {"api_key": "re_key", "sender": "sender@example.com"},
+            sent_log,
+            {},
+        )
+    except RuntimeError:
+        pass
+
+    persisted = json.loads(sent_log.read_text())
+    assert "first-key" in persisted["sent_keys"]
+    assert "second-key" not in persisted["sent_keys"]

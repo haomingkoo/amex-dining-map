@@ -3,15 +3,19 @@
 from __future__ import annotations
 
 import hmac
+import logging
+import time
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 
 from app import db, owner_alert_store, telegram
 from app.config import Settings, load_settings
 from app.owner_alerts import OwnerAlertRequest, format_owner_alert
+from app.observability import log_event
 
 
 router = APIRouter()
+logger = logging.getLogger("amex_reminders.delivery")
 
 
 def get_settings() -> Settings:
@@ -66,6 +70,7 @@ def ingest_owner_events(
     state = "sent"
     error_code = None
     message_id = None
+    started = time.monotonic()
     try:
         message_id = telegram.send_message(
             settings.telegram_bot_token,
@@ -88,6 +93,14 @@ def ingest_owner_events(
         )
     finally:
         conn.close()
+    log_event(
+        logger,
+        "owner_alert_delivery",
+        state=state,
+        error_code=error_code or "sent",
+        attempt=claimed.attempt_count,
+        duration_ms=round((time.monotonic() - started) * 1000),
+    )
     return {
         "ok": True,
         "id": event.id,

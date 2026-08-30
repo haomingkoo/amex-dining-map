@@ -1,5 +1,7 @@
 # Table for Two Reminders Implementation Plan
 
+> Historical and superseded. This plan predates the deployed security hardening; use `reminders/README.md` for the active architecture and behavior. In particular, re-subscribing no longer replaces confirmed preferences before explicit confirmation.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the abandoned Google-Form/Sheet/Gmail-SMTP reminder signup with a native on-site form backed by a FastAPI + SQLite service on Railway, double opt-in, sending via the existing Resend account; rewire the existing alert job to read subscribers from the new API and send via Resend.

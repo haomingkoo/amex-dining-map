@@ -1,7 +1,7 @@
 # Table for Two Reminder Signup — Design Spec
 
 **Date:** 2026-06-24
-**Status:** Approved (design), pending implementation
+**Status:** Historical and superseded. The active implementation and security behavior are documented in `reminders/README.md`.
 **Branch:** `feat/table-for-two-reminders`
 
 ## Objective
@@ -164,4 +164,4 @@ independently. Env: `RESEND_API_KEY`, `RESEND_FROM=dinnertime@kooexperience.com`
 - Moving the scraper/matcher off GitHub Actions onto Railway.
 - Moving sent-state dedup from the repo JSON into the DB.
 - CAPTCHA / Turnstile.
-- Subscriber self-service edit (re-subscribe with new prefs covers it for now).
+- Subscriber self-service edit was deferred in this historical design. The active service preserves confirmed preferences until changed settings are explicitly confirmed.

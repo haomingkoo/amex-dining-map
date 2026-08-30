@@ -6,6 +6,7 @@ import hmac
 import hashlib
 import ipaddress
 import json
+import logging
 from datetime import date
 from html import escape as html_escape
 
@@ -17,9 +18,11 @@ from app import db
 from app.availability import open_tables_exist
 from app.config import Settings, load_settings
 from app.emailer import confirm_email_html, send_email
+from app.observability import log_event
 from app.schemas import VENUES_PATH, SubscribeRequest
 
 router = APIRouter()
+logger = logging.getLogger("amex_reminders.lifecycle")
 
 RATE_LIMIT_MAX = 5
 RATE_LIMIT_WINDOW_MIN = 60
@@ -80,6 +83,7 @@ def subscribe(
 ) -> dict:
     success = {"ok": True, "message": "Check your email to confirm your reminder."}
     if payload.website.strip():  # honeypot — pretend success, do nothing
+        log_event(logger, "subscribe_honeypot")
         return success
 
     sub_input = payload.to_input()
@@ -100,6 +104,7 @@ def subscribe(
             RATE_LIMIT_WINDOW_MIN,
         )
         if not allowed:
+            log_event(logger, "subscribe_rate_limited")
             raise HTTPException(
                 status_code=429, detail="Too many attempts; please try again later."
             )
@@ -124,16 +129,32 @@ def subscribe(
     matches_exist = open_tables_exist(
         sub_input.venues, sub_input.sessions, settings.table_data_url
     )
-    send_email(
-        sub_input.email,
-        "Confirm your Table for Two reminders",
-        confirm_email_html(
-            sub_input.name, confirm_url, unsub_url, manage_url, matches_exist
-        ),
-        api_key=settings.resend_api_key,
-        sender=settings.resend_from,
-        list_unsubscribe_url=unsub_url,
-    )
+    recipient_id = abuse_key("email", sub_input.email, settings).split(":", 1)[1][:12]
+    try:
+        send_email(
+            sub_input.email,
+            "Confirm your Table for Two reminders",
+            confirm_email_html(
+                sub_input.name, confirm_url, unsub_url, manage_url, matches_exist
+            ),
+            api_key=settings.resend_api_key,
+            sender=settings.resend_from,
+            list_unsubscribe_url=unsub_url,
+        )
+    except Exception as exc:
+        logger.error(
+            json.dumps(
+                {
+                    "event": "confirmation_email_failed",
+                    "recipient_id": recipient_id,
+                    "error_type": type(exc).__name__,
+                },
+                separators=(",", ":"),
+                sort_keys=True,
+            )
+        )
+        raise
+    log_event(logger, "subscription_pending", recipient_id=recipient_id)
     return success
 
 
@@ -171,6 +192,7 @@ def confirm(token: str = "", settings: Settings = Depends(get_settings)) -> HTML
     finally:
         conn.close()
     if ok:
+        log_event(logger, "subscription_confirmed")
         return HTMLResponse(
             _page(
                 "You're subscribed",
@@ -210,6 +232,7 @@ def unsubscribe(
     finally:
         conn.close()
     if ok:
+        log_event(logger, "subscription_unsubscribed")
         return HTMLResponse(
             _page("Unsubscribed", "You won't receive any more Table for Two reminders.")
         )
@@ -411,6 +434,7 @@ async def manage_update(
         db.update_preferences(conn, token, validated.to_input())
     finally:
         conn.close()
+    log_event(logger, "subscription_preferences_updated")
     return {"ok": True, "message": "Your reminder preferences are updated."}
 
 

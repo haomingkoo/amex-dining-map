@@ -1,6 +1,6 @@
 # Security audit — 30 August 2026
 
-Scope: the public static explorer, data-driven rendering, GitHub Actions, the Railway FastAPI/SQLite reminder service, dependencies, live response controls, secrets handling, abuse paths, and the planned Telegram ingress.
+Scope: the public static explorer, data-driven rendering, GitHub Actions, the Railway FastAPI/SQLite reminder service, dependencies, live response controls, secrets handling, abuse paths, and the implemented, disabled-by-default Telegram ingress.
 
 ## Outcome
 
@@ -37,26 +37,29 @@ unauthenticated export denial without creating a subscription or sending email.
 
 ## Telegram threat model
 
-Before enabling the bot:
+Before enabling either Telegram surface:
 
 - Verify Telegram's webhook secret header with constant-time comparison.
 - Deduplicate every update ID before side effects.
-- Use numeric owner user and channel IDs, never usernames, for privileged delivery.
+- Use a numeric fixed channel ID, never a username, for one-way owner delivery. Require a numeric owner-user allowlist if privileged inbound commands are added later.
+- Keep owner-alert and public-guide bot identities, tokens, and secrets separate.
 - Accept public v1 usage only in private chats; ignore group and channel commands.
 - Keep the bot token, webhook secret, owner IDs, and ingestion token only in deployment secrets.
-- Apply per-user and global limits, bounded input/output, expiring conversation state, and idempotent delivery keys.
+- Apply per-user and global limits, bounded input/output, and idempotent delivery keys. Expiring conversation state is required when Telegram reminder conversations are added.
 - Treat official document and menu text as untrusted evidence, not instructions.
 - Never fetch a user-supplied URL or give an optional language model credentials, network tools, subscriber exports, or delivery authority.
 - Escape Telegram formatting and allow citations only through reviewed URL policies.
-- Store minimal Telegram identifiers and provide deletion and retention behavior.
+- Store minimal Telegram identifiers. Deletion behavior is required when persistent Telegram reminder profiles are added; the current guide stores only keyed identities, replay state, and quota state with bounded retention.
 - “Find a slot” reads cached AMEXPlatSG observations only; it never books, handles Amex credentials, or guarantees inventory.
 
 ## Verification evidence
 
 - Baseline reminder suite before changes: 40 passed on Python 3.12.
 - Hardened reminder suite: 47 passed on Python 3.12.
+- Post-Telegram guide suite: 100 reminder tests passed on Python 3.12; the project, Telegram guide, and Telegram security verifiers also passed for `c650dcb`.
 - Updated fully resolved production dependency audit: no known vulnerabilities.
 - Frontend syntax and all JavaScript regression scripts pass, including unsafe-protocol negative controls.
+- Neither Telegram bot has passed real-channel or real-private-chat acceptance; both remain disabled production features until G9/G10 pass.
 - Live pre-deployment evidence: static HTTPS/HSTS/nosniff present; reminder CORS restricted correctly; subscriber export returned 401 without credentials; reminder responses lacked security headers before this change.
 
 ## Production recheck

@@ -11,6 +11,10 @@
 - Scheduled Table for Two menu PDF version tracking.
 - Per-venue Table for Two release lead-time patterns based on first-seen cached
   availability, with observation counts and confidence labels.
+- Disabled-by-default private Telegram owner alerts for reviewed before-and-after
+  menu, venue, terms, and source changes.
+- Disabled-by-default deterministic Telegram TFT guide for exact venue and
+  official-menu lookups with source timestamps and Explorer deep links.
 
 ### Changed
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 import pytest
 
@@ -11,7 +13,17 @@ def test_healthz_ok():
     response = TestClient(app).get("/healthz")
 
     assert response.status_code == 200
-    assert response.json() == {"ok": True}
+    assert response.json() == {
+        "ok": True,
+        "deployment_id": "local",
+        "revision": "local",
+    }
+
+
+def test_production_server_disables_query_string_access_logs():
+    railway_config = (Path(__file__).parents[1] / "railway.toml").read_text()
+
+    assert "--no-access-log" in railway_config
 
 
 def test_owner_alert_config_can_be_disabled(monkeypatch):

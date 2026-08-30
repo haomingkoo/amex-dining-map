@@ -1400,6 +1400,11 @@ def main() -> None:
         "official_expanded_counts": dict(sorted(official_stats["expanded_counts"].items())),
         "failed_count": len(failed),
     }
+    if SOURCE_META_PATH.exists():
+        previous_meta = json.loads(SOURCE_META_PATH.read_text())
+        for key in ("manual_review_required", "major_change_reasons"):
+            if previous_meta.get(key):
+                meta[key] = previous_meta[key]
     meta.update(global_dining_terms_meta_fields(fetched_at))
     SOURCE_META_PATH.write_text(json.dumps(meta, indent=2, ensure_ascii=False) + "\n")
     print(f"Wrote metadata → {SOURCE_META_PATH}")

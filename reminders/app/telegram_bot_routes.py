@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hmac
 import json
+import logging
+import time
 from datetime import datetime, timezone
 from typing import Annotated, Literal
 
@@ -13,10 +15,12 @@ from starlette.concurrency import run_in_threadpool
 
 from app import db, telegram, telegram_bot_store, tft_guide
 from app.config import Settings, load_settings
+from app.observability import log_event
 
 
 BOT_SCOPE = "tft-guide-v1"
 router = APIRouter()
+logger = logging.getLogger("amex_reminders.delivery")
 
 
 class TelegramUser(BaseModel):
@@ -111,6 +115,10 @@ async def telegram_guide_webhook(
     if not claimed.should_process:
         return {"ok": True}
 
+    started = time.monotonic()
+    first_word = message.text.strip().split(maxsplit=1)[0].lower()
+    command_class = first_word if first_word in {"/start", "/help", "/venues", "/menu"} else "query"
+
     user_key = telegram_bot_store.identity_key(
         "user", message.sender.id, settings.telegram_identity_hash_salt
     )
@@ -143,6 +151,14 @@ async def telegram_guide_webhook(
         json.JSONDecodeError,
     ):
         _finish(settings, payload.update_id, "dead", "catalog_invalid")
+        log_event(
+            logger,
+            "telegram_guide_delivery",
+            command_class=command_class,
+            state="dead",
+            error_code="catalog_invalid",
+            duration_ms=round((time.monotonic() - started) * 1000),
+        )
         return {"ok": True}
     try:
         message_id = await run_in_threadpool(
@@ -154,6 +170,22 @@ async def telegram_guide_webhook(
     except telegram.TelegramDeliveryError as exc:
         terminal = "unknown" if exc.state in {"unknown", "retry"} else "dead"
         _finish(settings, payload.update_id, terminal, exc.code)
+        log_event(
+            logger,
+            "telegram_guide_delivery",
+            command_class=command_class,
+            state=terminal,
+            error_code=exc.code,
+            duration_ms=round((time.monotonic() - started) * 1000),
+        )
         return {"ok": True}
     _finish(settings, payload.update_id, "done", "sent", message_id)
+    log_event(
+        logger,
+        "telegram_guide_delivery",
+        command_class=command_class,
+        state="done",
+        error_code="sent",
+        duration_ms=round((time.monotonic() - started) * 1000),
+    )
     return {"ok": True}

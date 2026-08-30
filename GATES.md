@@ -29,7 +29,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [ ] G4: menu, venue, T&C, source, and release-pattern changes can trigger owner-channel alerts without leaking bot tokens, subscriber records, or internal diagnostics
   CHECK: node scripts/verify-telegram-change-dispatch.mjs
   EXPECT: Telegram change dispatch verification passed
-  EVIDENCE: pending
+  EVIDENCE: 2026-08-30 verifier passes for the implemented reviewed-update dispatch. Broader detector/review coverage remains tracked by #51, so this gate stays open.
 
 - [ ] G5: the Telegram self-help bot answers TFT program, venue, menu, T&C, and release-pattern questions and can find currently observed slots from curated current sources with citations and freshness dates
   CHECK: node scripts/verify-telegram-guide.mjs
@@ -44,7 +44,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [ ] G7: Telegram webhook authentication, owner allowlists, public-user rate limits, payload limits, output escaping, reminder consent, retention limits, and secret isolation pass security regression tests
   CHECK: node scripts/verify-telegram-security.mjs
   EXPECT: Telegram security verification passed
-  EVIDENCE: pending
+  EVIDENCE: 2026-08-30 guide webhook authentication, replay, private-chat, rate, payload, retention, escaping, and secret-isolation checks pass. Telegram reminder consent and privileged interactive controls remain pending.
 
 - [ ] G7A: a Telegram user can create, inspect, and cancel a TFT slot reminder with an explicit venue, party size, meal, and date range
   CHECK: node scripts/verify-telegram-reminders.mjs
@@ -54,7 +54,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
-  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12. Re-run after each Telegram slice before retaining this approval.
+  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 130 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
 
 - [ ] G9: a real before-and-after test alert is delivered to the private owner channel and no unintended chat receives it
   EVIDENCE: pending
@@ -65,4 +65,4 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [ ] G11: the deployed site, reminder service, owner channel, and self-help bot are documented with setup, rotation, monitoring, rollback, privacy, freshness, and known-limit procedures
   CHECK: node scripts/verify-operations-docs.mjs
   EXPECT: operations documentation verification passed
-  EVIDENCE: pending
+  EVIDENCE: Railway root deployment, health acceptance, Telegram activation, rotation, monitoring, rollback, privacy-safe logging, freshness, and disabled-state procedures are documented. A verifier and real bot/channel configuration remain pending.

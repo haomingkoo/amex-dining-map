@@ -586,7 +586,9 @@ def resend_config_from_env() -> dict[str, Any]:
     }
 
 
-def _send_resend_message(message: EmailMessage, config: dict[str, Any]) -> None:
+def _send_resend_message(
+    message: EmailMessage, config: dict[str, Any], idempotency_key: str
+) -> None:
     html_part = message.get_body(preferencelist=("html",))
     html_body = html_part.get_content() if html_part else message.get_content()
     payload: dict[str, Any] = {
@@ -610,6 +612,7 @@ def _send_resend_message(message: EmailMessage, config: dict[str, Any]) -> None:
         headers={
             "Authorization": f"Bearer {config['api_key']}",
             "Content-Type": "application/json",
+            "Idempotency-Key": f"tft-alert-{idempotency_key[:48]}",
             "User-Agent": "amex-reminders/1.0",
         },
         method="POST",
@@ -619,21 +622,30 @@ def _send_resend_message(message: EmailMessage, config: dict[str, Any]) -> None:
             status = int(getattr(response, "status", 200))
             body = response.read().decode("utf-8", errors="replace")
         if status >= 300:
-            raise RuntimeError(f"Resend API failed status={status} body={body[:500]}")
+            raise RuntimeError(f"Resend API failed status={status}")
     except urllib.error.HTTPError as exc:
-        err_body = exc.read().decode("utf-8", errors="replace")
-        raise RuntimeError(f"Resend API HTTP {exc.code}: {err_body[:500]}") from exc
+        request_id = (exc.headers.get("x-request-id") or exc.headers.get("request-id") or "unknown")[:100]
+        raise RuntimeError(f"Resend API HTTP {exc.code}; request_id={request_id}") from exc
     except urllib.error.URLError as exc:
         raise RuntimeError(f"Resend connect failed: {exc.reason}") from exc
 
 
-def send_messages(messages: list[EmailMessage], config: dict[str, Any]) -> None:
+def send_messages(
+    messages: list[EmailMessage],
+    sent_keys_for_messages: list[str],
+    config: dict[str, Any],
+    sent_log_path: Path,
+    sent_keys: dict[str, str],
+) -> None:
     if not messages:
         return
     if not config["api_key"] or not config["sender"]:
         raise RuntimeError("RESEND_API_KEY and RESEND_FROM are required when matches need emails")
-    for message in messages:
-        _send_resend_message(message, config)
+    for message, sent_key in zip(messages, sent_keys_for_messages, strict=True):
+        _send_resend_message(message, config, sent_key)
+        timestamp = now_iso()
+        sent_keys[sent_key] = timestamp
+        write_json(sent_log_path, {"updated_at": timestamp, "sent_keys": sent_keys})
 
 
 def fetch_api_subscriptions(
@@ -753,16 +765,11 @@ def main() -> int:
 
     if args.dry_run:
         print(f"Loaded {len(subscriptions)} subscriptions; {len(messages)} emails would be sent.")
-        for message in messages:
-            print(f"- {message['To']}: {message['Subject']}")
+        for index, message in enumerate(messages, start=1):
+            print(f"- recipient {index}: {message['Subject']}")
         return 0
 
-    send_messages(messages, resend_config)
-    timestamp = now_iso()
-    for key in newly_sent_keys:
-        sent_keys[key] = timestamp
-    if messages:
-        write_json(sent_log_path, {"updated_at": timestamp, "sent_keys": sent_keys})
+    send_messages(messages, newly_sent_keys, resend_config, sent_log_path, sent_keys)
     print(f"Loaded {len(subscriptions)} subscriptions; sent {len(messages)} Table for Two alert emails.")
     return 0
 

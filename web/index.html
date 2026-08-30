@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="referrer" content="no-referrer" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://unpkg.com 'sha256-90NOhZXjmeW3vQImYt/72fDiHhYEqZIa0+7+U0w7+JU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://amex-reminders-production.up.railway.app; form-action 'self'; upgrade-insecure-requests" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://unpkg.com 'sha256-90NOhZXjmeW3vQImYt/72fDiHhYEqZIa0+7+U0w7+JU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://amex-reminders-production.up.railway.app https://api.diningcity.asia; form-action 'self'; upgrade-insecure-requests" />
     <meta name="color-scheme" content="dark light" />
     <meta name="theme-color" content="#070d16" />
     <title>Amex Platinum Benefits Explorer Singapore | Dining, Hotels, Table for Two</title>
@@ -336,7 +336,7 @@
                 </label>
 
                 <label class="filter-wrap" id="tabelog-filter-wrap">
-                  <span class="label">Tabelog rating</span>
+                  <span class="label">Archived Tabelog rating</span>
                   <select id="tabelog-filter">
                     <option value="">Any rating</option>
                     <option value="available">Has Tabelog score</option>
@@ -348,10 +348,10 @@
                 </label>
 
                 <label class="filter-wrap" id="google-rating-filter-wrap">
-                  <span class="label">Google rating</span>
+                  <span class="label">Google rating checked ≤90d</span>
                   <select id="google-rating-filter">
                     <option value="">Any rating</option>
-                    <option value="has_rating">Has rating</option>
+                    <option value="has_rating">Has fresh-enough rating</option>
                     <option value="3plus">3.0+</option>
                     <option value="3_5plus">3.5+</option>
                     <option value="4plus">4.0+</option>
@@ -363,9 +363,9 @@
                   <span class="label">Sort by</span>
                   <select id="sort-filter">
                     <option value="">Default</option>
-                    <option value="rating_high">Rating (highest)</option>
-                    <option value="reviews_high">Reviews (most)</option>
-                    <option value="tabelog_reviews_high">Tabelog reviews (most)</option>
+                    <option value="rating_high">Recent Google rating (highest)</option>
+                    <option value="reviews_high">Recent Google reviews (most)</option>
+                    <option value="tabelog_reviews_high">Archived Tabelog reviews (most)</option>
                     <option value="name_a">Name (A-Z)</option>
                   </select>
                 </label>
@@ -616,10 +616,10 @@
                 </div>
 
                 <label class="filter-wrap">
-                  <span class="label">Google rating</span>
+                  <span class="label">Google rating checked ≤90d</span>
                   <select id="stays-google-rating-filter">
                     <option value="">Any rating</option>
-                    <option value="has_rating">Has rating</option>
+                    <option value="has_rating">Has fresh-enough rating</option>
                     <option value="3plus">3.0+</option>
                     <option value="3_5plus">3.5+</option>
                     <option value="4plus">4.0+</option>
@@ -631,8 +631,8 @@
                   <span class="label">Sort by</span>
                   <select id="stays-sort-filter">
                     <option value="">Default</option>
-                    <option value="rating_high">Rating (highest)</option>
-                    <option value="reviews_high">Reviews (most)</option>
+                    <option value="rating_high">Recent rating (highest)</option>
+                    <option value="reviews_high">Recent reviews (most)</option>
                     <option value="name_a">Name (A-Z)</option>
                   </select>
                 </label>
@@ -952,6 +952,8 @@
                       <option value="" selected>All states</option>
                       <option value="available">Bookable</option>
                       <option value="no_seats">Not bookable</option>
+                      <option value="stale">Stale check</option>
+                      <option value="unknown">Source pending</option>
                     </select>
                   </label>
 

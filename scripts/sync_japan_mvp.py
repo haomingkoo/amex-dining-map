@@ -1084,7 +1084,12 @@ def main() -> None:
             print(f"Enriched {index}/{len(normalized)} venues...")
 
     save_json(JSON_PATH, normalized)
-    save_json(SOURCE_PATH, build_source_meta(normalized, fetched_at))
+    source_meta = build_source_meta(normalized, fetched_at)
+    previous_source_meta = load_json(SOURCE_PATH, {})
+    for key in ("manual_review_required", "major_change_reasons"):
+        if previous_source_meta.get(key):
+            source_meta[key] = previous_source_meta[key]
+    save_json(SOURCE_PATH, source_meta)
     save_json(GEOJSON_PATH, to_geojson(normalized))
     write_kml_outputs(normalized)
 
