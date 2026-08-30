@@ -598,6 +598,8 @@ function createMarkerClusterIcon(cluster) {
 function createMarkerClusterGroup() {
   if (!hasMarkerCluster) return null;
   return L.markerClusterGroup({
+    animate: false,
+    animateAddingMarkers: false,
     showCoverageOnHover: false,
     removeOutsideVisibleBounds: true,
     spiderfyOnMaxZoom: true,
