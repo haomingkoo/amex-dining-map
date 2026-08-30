@@ -1,7 +1,61 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-30T23:40:21Z",
+  "updated_at": "2026-08-30T23:56:13Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_failed",
+      "subject": "Love Dining",
+      "detected_at": "2026-08-30T23:56:13Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Failures": "clear",
+          "Snapshot": "current",
+          "Refresh attempt": "success"
+        }
+      },
+      "after": {
+        "state": "failed",
+        "fields": {
+          "Source state": "failed",
+          "Failures": "failed",
+          "Snapshot": "retained",
+          "Refresh attempt": "failure"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "failed"
+        },
+        {
+          "field": "Failures",
+          "before": "clear",
+          "after": "failed"
+        },
+        {
+          "field": "Snapshot",
+          "before": "current",
+          "after": "retained"
+        },
+        {
+          "field": "Refresh attempt",
+          "before": "success",
+          "after": "failure"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "f07cb3104e4317089870",
+      "stream_id": "325506f85300a0ec65a3",
+      "occurrence": 1,
+      "id": "0fc4c5b3ade6067e5061"
+    },
     {
       "program": "Global Dining",
       "program_id": "global-dining",
@@ -1662,6 +1716,12 @@
         "latest_transition_id": "14c3bf4c98f05e8f8948",
         "occurrences": {
           "14c3bf4c98f05e8f8948": 1
+        }
+      },
+      "325506f85300a0ec65a3": {
+        "latest_transition_id": "f07cb3104e4317089870",
+        "occurrences": {
+          "f07cb3104e4317089870": 1
         }
       },
       "3da2da7369597146b234": {
