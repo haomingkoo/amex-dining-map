@@ -311,7 +311,7 @@ def test_old_message_is_ignored_without_send(guide_client, monkeypatch):
 def test_transport_unknown_is_not_blindly_retried(guide_client, monkeypatch, caplog):
     from app.telegram import TelegramDeliveryError
 
-    client, _settings_value = guide_client
+    client, settings = guide_client
     caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
     calls = []
 
@@ -326,7 +326,51 @@ def test_transport_unknown_is_not_blindly_retried(guide_client, monkeypatch, cap
     assert len(calls) == 1
     log_text = "\n".join(record.getMessage() for record in caplog.records)
     assert '"state":"unknown"' in log_text
-    assert "/menu VUE platinum" not in log_text
+    for secret in (
+        "/menu VUE platinum",
+        settings.telegram_guide_bot_token,
+        WEBHOOK_SECRET,
+        "4444",
+        "1001",
+    ):
+        assert secret not in log_text
+
+
+def test_transport_dead_is_logged_without_identity_or_message(
+    guide_client, monkeypatch, caplog
+):
+    from app.telegram import TelegramDeliveryError
+
+    client, settings = guide_client
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
+
+    def dead(*args):
+        raise TelegramDeliveryError("telegram_rejected", "dead")
+
+    monkeypatch.setattr("app.telegram_bot_routes.telegram.send_message", dead)
+
+    assert _post(client, _update(update_id=7007)).json() == {"ok": True}
+    conn = db.connect(settings.db_path)
+    try:
+        row = conn.execute(
+            "SELECT state, outcome_code FROM telegram_webhook_updates "
+            "WHERE bot_scope = ? AND update_id = ?",
+            (BOT_SCOPE, 7007),
+        ).fetchone()
+    finally:
+        conn.close()
+    assert dict(row) == {"state": "dead", "outcome_code": "telegram_rejected"}
+    log_text = "\n".join(record.getMessage() for record in caplog.records)
+    assert '"state":"dead"' in log_text
+    assert '"error_code":"telegram_rejected"' in log_text
+    for secret in (
+        "/menu VUE platinum",
+        settings.telegram_guide_bot_token,
+        WEBHOOK_SECRET,
+        "4444",
+        "7007",
+    ):
+        assert secret not in log_text
 
 
 def test_invalid_bundled_catalog_is_quarantined_without_500(
@@ -361,7 +405,14 @@ def test_invalid_bundled_catalog_is_quarantined_without_500(
         conn.close()
     log_text = "\n".join(record.getMessage() for record in caplog.records)
     assert '"error_code":"catalog_invalid"' in log_text
-    assert "/menu VUE platinum" not in log_text
+    for secret in (
+        "/menu VUE platinum",
+        settings.telegram_guide_bot_token,
+        WEBHOOK_SECRET,
+        "4444",
+        "8101",
+    ):
+        assert secret not in log_text
 
 
 def test_stale_processing_claim_becomes_unknown_without_resend(tmp_path: Path):
