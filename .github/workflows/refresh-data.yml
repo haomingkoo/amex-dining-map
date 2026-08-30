@@ -93,10 +93,21 @@ jobs:
           exit 1
 
       - name: Dispatch published owner updates
+        id: owner_dispatch
         env:
           OWNER_ALERT_INGEST_URL: ${{ secrets.OWNER_ALERT_INGEST_URL }}
           OWNER_ALERT_INGEST_TOKEN: ${{ secrets.OWNER_ALERT_INGEST_TOKEN }}
         run: python3 scripts/dispatch_owner_updates.py
+
+      - name: Commit owner delivery receipts
+        if: always() && steps.owner_dispatch.outcome != 'skipped'
+        env:
+          COMMIT_MESSAGE: "chore: record owner alert delivery"
+          MUST_STAGE: data/updates.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash scripts/commit_and_push.sh
 
       - name: Open Plat Stay alert issue
         if: always() && steps.plat_stay_alert.outputs.alert_required == 'true'

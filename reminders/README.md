@@ -74,6 +74,17 @@ channel ID. The request body cannot select a destination. Confirmed deliveries
 are durably deduplicated in SQLite; review-required entries are withheld without
 consuming their event ID.
 
+The public update ledger separates a semantic transition from its occurrence.
+A workflow retry of the latest A→B transition is deduplicated, while a later
+A→B after B→A receives a new occurrence ID and can notify again. Stable stream
+keys are hashes; raw source entity keys are not published. Ledger updates use
+an exclusive process lock and fsync-backed atomic replacement. Compact hashed
+occurrence state survives display-ledger retention and migrates legacy events.
+Review-required and
+published-but-undelivered events are protected from the resolved-event cap;
+terminal ingestion outcomes are written back as non-secret states by a second,
+conflict-failing workflow commit and are not automatically posted again.
+
 Telegram has no idempotency key. A timeout can happen after Telegram accepted a
 message but before the service received proof, so ambiguous outcomes are stored
 as `unknown` and are not retried automatically. Definite retryable failures are

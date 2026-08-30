@@ -29,7 +29,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [ ] G4: menu, venue, T&C, source, and release-pattern changes can trigger owner-channel alerts without leaking bot tokens, subscriber records, or internal diagnostics
   CHECK: node scripts/verify-telegram-change-dispatch.mjs
   EXPECT: Telegram change dispatch verification passed
-  EVIDENCE: 2026-08-30 verifier passes for the implemented reviewed-update dispatch. Broader detector/review coverage remains tracked by #51, so this gate stays open.
+  EVIDENCE: 2026-08-30 verifier passes for reviewed-update dispatch. Stream-scoped occurrence IDs deduplicate direct retries but preserve A→B→A→B recurrences, including after retention and legacy migration. Atomic locked ledger writes, protected review/undelivered retention, persisted terminal delivery states, and no terminal replay pass regressions. Clause-level T&C, unmatched-menu, and per-event quarantine coverage remain tracked by #51, so this gate stays open.
 
 - [ ] G5: the Telegram self-help bot answers TFT program, venue, menu, T&C, and release-pattern questions and can find currently observed slots from curated current sources with citations and freshness dates
   CHECK: node scripts/verify-telegram-guide.mjs
@@ -54,7 +54,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
-  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 147 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
+  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 162 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
 
 - [ ] G9: a real before-and-after test alert is delivered to the private owner channel and no unintended chat receives it
   EVIDENCE: pending

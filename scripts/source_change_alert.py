@@ -8,10 +8,13 @@ GitHub issue only when source hashes, counts, or official records move.
 from __future__ import annotations
 
 import argparse
+import fcntl
 import hashlib
 import json
 import os
 import subprocess
+import tempfile
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -102,6 +105,16 @@ PUBLIC_META_FIELDS = {
     key: label
     for key, label in META_FIELD_LABELS.items()
     if key != "manual_review_required"
+}
+
+MAX_RETAINED_RESOLVED_UPDATES = 500
+TERMINAL_OWNER_DELIVERY_STATES = {
+    "sent",
+    "before_activation",
+    "withheld",
+    "unknown",
+    "dead",
+    "schema_rejected",
 }
 
 
@@ -219,9 +232,38 @@ def record_source_url(record: dict[str, Any] | None, meta: dict[str, Any]) -> st
 
 
 def update_event_id(payload: dict[str, Any]) -> str:
-    stable = {key: value for key, value in payload.items() if key != "detected_at"}
+    ignored = {
+        "detected_at",
+        "id",
+        "transition_id",
+        "stream_id",
+        "occurrence",
+        "status",
+        "reviewed_at",
+        "review_note",
+        "owner_delivery_state",
+        "owner_delivery_recorded_at",
+    }
+    stable = {key: value for key, value in payload.items() if key not in ignored}
     raw = json.dumps(stable, ensure_ascii=False, sort_keys=True)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:20]
+
+
+def update_stream_id(program_id: str, entity_key: str) -> str:
+    raw = json.dumps([program_id, entity_key], ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:20]
+
+
+def _occurrence_id(stream_id: str, transition_id: str, occurrence: int) -> str:
+    raw = f"{stream_id}:{transition_id}:{occurrence}"
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:20]
+
+
+def assign_event_identity(event: dict[str, Any], entity_key: str) -> None:
+    event["transition_id"] = update_event_id(event)
+    event["stream_id"] = update_stream_id(str(event["program_id"]), entity_key)
+    event["occurrence"] = 1
+    event["id"] = _occurrence_id(event["stream_id"], event["transition_id"], 1)
 
 
 def build_record_update_events(
@@ -252,7 +294,7 @@ def build_record_update_events(
             "changes": [{"field": "Listing", "before": "Not listed", "after": "Listed"}],
             "source_url": record_source_url(record, meta),
         }
-        event["id"] = update_event_id(event)
+        assign_event_identity(event, f"record:{key}")
         events.append(event)
 
     for key in sorted(set(old_by_key) - set(new_by_key)):
@@ -270,7 +312,7 @@ def build_record_update_events(
             "changes": [{"field": "Listing", "before": "Listed", "after": "Not listed"}],
             "source_url": record_source_url(record, meta),
         }
-        event["id"] = update_event_id(event)
+        assign_event_identity(event, f"record:{key}")
         events.append(event)
 
     for key in sorted(set(old_by_key) & set(new_by_key)):
@@ -295,7 +337,7 @@ def build_record_update_events(
             "changes": changes,
             "source_url": record_source_url(new_record, meta),
         }
-        event["id"] = update_event_id(event)
+        assign_event_identity(event, f"record:{key}")
         events.append(event)
 
     return events
@@ -329,28 +371,223 @@ def build_meta_update_event(
         "changes": changes,
         "source_url": record_source_url(None, new_meta),
     }
-    event["id"] = update_event_id(event)
+    assign_event_identity(event, "meta")
     return event
+
+
+def _event_sort_key(event: dict[str, Any]) -> tuple[str, str]:
+    return event.get("detected_at") or "", event.get("id") or ""
+
+
+def _legacy_stream_id(event: dict[str, Any]) -> str:
+    return update_stream_id(
+        str(event.get("program_id") or event.get("program") or "unknown"),
+        f"legacy:{event.get('subject') or event.get('kind') or 'unknown'}",
+    )
+
+
+def _identity(event: dict[str, Any]) -> tuple[str, str, int]:
+    transition_id = str(event.get("transition_id") or update_event_id(event))
+    stream_id = str(event.get("stream_id") or _legacy_stream_id(event))
+    try:
+        occurrence = max(1, int(event.get("occurrence") or 1))
+    except (TypeError, ValueError):
+        occurrence = 1
+    return transition_id, stream_id, occurrence
+
+
+def _identity_state(
+    payload: dict[str, Any], ordered_existing: list[dict[str, Any]]
+) -> tuple[dict[str, str], dict[tuple[str, str], int]]:
+    latest_by_stream: dict[str, str] = {}
+    max_occurrence: dict[tuple[str, str], int] = {}
+    for event in ordered_existing:
+        transition_id, stream_id, occurrence = _identity(event)
+        latest_by_stream.setdefault(stream_id, transition_id)
+        key = (stream_id, transition_id)
+        max_occurrence[key] = max(max_occurrence.get(key, 0), occurrence)
+
+    streams = payload.get("identity_state", {}).get("streams", {})
+    if not isinstance(streams, dict):
+        return latest_by_stream, max_occurrence
+    for stream_id, state in streams.items():
+        if not isinstance(stream_id, str) or not isinstance(state, dict):
+            continue
+        latest = state.get("latest_transition_id")
+        if isinstance(latest, str):
+            latest_by_stream[stream_id] = latest
+        occurrences = state.get("occurrences")
+        if not isinstance(occurrences, dict):
+            continue
+        for transition_id, occurrence in occurrences.items():
+            try:
+                value = max(1, int(occurrence))
+            except (TypeError, ValueError):
+                continue
+            key = (stream_id, str(transition_id))
+            max_occurrence[key] = max(max_occurrence.get(key, 0), value)
+    return latest_by_stream, max_occurrence
+
+
+def _render_identity_state(
+    latest_by_stream: dict[str, str],
+    max_occurrence: dict[tuple[str, str], int],
+) -> dict[str, Any]:
+    streams: dict[str, dict[str, Any]] = {}
+    for stream_id in sorted(latest_by_stream):
+        streams[stream_id] = {
+            "latest_transition_id": latest_by_stream[stream_id],
+            "occurrences": {
+                transition_id: occurrence
+                for (candidate_stream, transition_id), occurrence in sorted(
+                    max_occurrence.items()
+                )
+                if candidate_stream == stream_id
+            },
+        }
+    return {"streams": streams}
+
+
+def _migrate_legacy_stream(
+    event: dict[str, Any],
+    stream_id: str,
+    latest_by_stream: dict[str, str],
+    max_occurrence: dict[tuple[str, str], int],
+) -> None:
+    if stream_id in latest_by_stream:
+        return
+    legacy_stream_id = _legacy_stream_id(event)
+    latest = latest_by_stream.get(legacy_stream_id)
+    if latest is None or legacy_stream_id == stream_id:
+        return
+    latest_by_stream[stream_id] = latest
+    for (candidate_stream, transition_id), occurrence in list(max_occurrence.items()):
+        if candidate_stream == legacy_stream_id:
+            key = (stream_id, transition_id)
+            max_occurrence[key] = max(max_occurrence.get(key, 0), occurrence)
+
+
+@contextmanager
+def _ledger_lock(path: Path):
+    digest = hashlib.sha256(str(path.resolve()).encode("utf-8")).hexdigest()[:20]
+    lock_path = Path(tempfile.gettempdir()) / f"amex-owner-ledger-{digest}.lock"
+    descriptor = os.open(lock_path, os.O_RDWR | os.O_CREAT, 0o600)
+    with os.fdopen(descriptor, "r+", encoding="utf-8") as handle:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        yield
+
+
+def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
+    )
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            handle.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary_name, path)
+        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    except BaseException:
+        try:
+            os.unlink(temporary_name)
+        except FileNotFoundError:
+            pass
+        raise
+
+
+def retain_updates(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    ordered = sorted(events, key=_event_sort_key, reverse=True)
+    protected = []
+    resolved = []
+    for event in ordered:
+        delivery_state = event.get("owner_delivery_state")
+        if event.get("status") == "review_required" or (
+            event.get("status") == "published"
+            and delivery_state not in TERMINAL_OWNER_DELIVERY_STATES
+        ):
+            protected.append(event)
+        else:
+            resolved.append(event)
+    resolved_budget = max(0, MAX_RETAINED_RESOLVED_UPDATES - len(protected))
+    return sorted(
+        [*protected, *resolved[:resolved_budget]],
+        key=_event_sort_key,
+        reverse=True,
+    )
 
 
 def append_updates(path: Path, events: list[dict[str, Any]], updated_at: str) -> None:
     if not events:
         return
-    payload = load_json(path) if path.exists() else {"schema_version": 1, "updates": []}
-    existing = payload.get("updates") if isinstance(payload, dict) else []
-    existing = existing if isinstance(existing, list) else []
-    known_ids = {event.get("id") for event in existing if isinstance(event, dict)}
-    additions = [event for event in events if event["id"] not in known_ids]
-    if not additions:
-        return
-    payload["schema_version"] = 1
-    payload["updated_at"] = updated_at
-    payload["updates"] = sorted(
-        [*additions, *existing],
-        key=lambda event: (event.get("detected_at") or "", event.get("id") or ""),
-        reverse=True,
-    )[:500]
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with _ledger_lock(path):
+        raw = path.read_text(encoding="utf-8") if path.exists() else ""
+        payload = json.loads(raw) if raw.strip() else {"schema_version": 1, "updates": []}
+        existing = payload.get("updates") if isinstance(payload, dict) else []
+        existing = existing if isinstance(existing, list) else []
+        existing = [event for event in existing if isinstance(event, dict)]
+        ordered_existing = sorted(existing, key=_event_sort_key, reverse=True)
+        latest_by_stream, max_occurrence = _identity_state(payload, ordered_existing)
+        known_ids = {event.get("id") for event in ordered_existing}
+
+        additions = []
+        for incoming in events:
+            event = dict(incoming)
+            transition_id, stream_id, _occurrence = _identity(event)
+            _migrate_legacy_stream(
+                event, stream_id, latest_by_stream, max_occurrence
+            )
+            latest = latest_by_stream.get(stream_id)
+            if latest == transition_id:
+                continue
+            occurrence = max_occurrence.get((stream_id, transition_id), 0) + 1
+            event["transition_id"] = transition_id
+            event["stream_id"] = stream_id
+            event["occurrence"] = occurrence
+            event["id"] = _occurrence_id(stream_id, transition_id, occurrence)
+            if event["id"] in known_ids:
+                continue
+            additions.append(event)
+            known_ids.add(event["id"])
+            latest_by_stream[stream_id] = transition_id
+            max_occurrence[(stream_id, transition_id)] = occurrence
+        if not additions:
+            return
+        payload["schema_version"] = 1
+        payload["updated_at"] = updated_at
+        payload["identity_state"] = _render_identity_state(
+            latest_by_stream, max_occurrence
+        )
+        payload["updates"] = retain_updates([*additions, *existing])
+        _atomic_write_json(path, payload)
+
+
+def record_owner_delivery_states(
+    path: Path, outcomes: dict[str, str], recorded_at: str
+) -> int:
+    if not outcomes or not path.exists():
+        return 0
+    with _ledger_lock(path):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        changed = 0
+        for event in payload.get("updates") or []:
+            state = outcomes.get(str(event.get("id")))
+            if state is None or event.get("owner_delivery_state") == state:
+                continue
+            event["owner_delivery_state"] = state
+            event["owner_delivery_recorded_at"] = recorded_at
+            changed += 1
+        if not changed:
+            return 0
+        payload["updated_at"] = recorded_at
+        payload["updates"] = retain_updates(payload.get("updates") or [])
+        _atomic_write_json(path, payload)
+        return changed
 
 
 def _strip_nested(value: Any) -> Any:

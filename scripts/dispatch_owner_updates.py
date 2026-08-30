@@ -13,6 +13,11 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+try:
+    from scripts import source_change_alert
+except ModuleNotFoundError:  # Direct `python scripts/dispatch_owner_updates.py`.
+    import source_change_alert
+
 
 DEFAULT_UPDATES = Path("data/updates.json")
 
@@ -21,7 +26,13 @@ def published_events(
     path: Path, days: int = 90, now: datetime | None = None
 ) -> list[dict]:
     payload = json.loads(path.read_text())
-    current = [event for event in payload.get("updates", []) if event.get("status") == "published"]
+    current = [
+        event
+        for event in payload.get("updates", [])
+        if event.get("status") == "published"
+        and event.get("owner_delivery_state")
+        not in source_change_alert.TERMINAL_OWNER_DELIVERY_STATES
+    ]
     cutoff = (now or datetime.now(timezone.utc)) - timedelta(days=days)
     eligible = []
     for event in current:
@@ -37,7 +48,12 @@ def published_events(
     return eligible
 
 
-def dispatch(url: str, token: str, events: list[dict]) -> int:
+def dispatch(
+    url: str,
+    token: str,
+    events: list[dict],
+    terminal_outcomes: dict[str, str] | None = None,
+) -> int:
     complete = 0
     failures = []
     for event in events:
@@ -55,6 +71,8 @@ def dispatch(url: str, token: str, events: list[dict]) -> int:
                 body = response.read(65_537)
         except urllib.error.HTTPError as exc:
             if exc.code == 422:
+                if terminal_outcomes is not None:
+                    terminal_outcomes[str(event.get("id"))] = "schema_rejected"
                 print(
                     f"::warning title=Owner alert schema rejected::{event.get('id')} "
                     "was quarantined; later events will still be attempted.",
@@ -68,8 +86,12 @@ def dispatch(url: str, token: str, events: list[dict]) -> int:
             raise RuntimeError("Owner alert ingress did not acknowledge the event")
         state = payload.get("state")
         if state in {"sent", "before_activation", "withheld"}:
+            if terminal_outcomes is not None:
+                terminal_outcomes[str(event.get("id"))] = str(state)
             complete += 1
         elif state in {"unknown", "dead"}:
+            if terminal_outcomes is not None:
+                terminal_outcomes[str(event.get("id"))] = str(state)
             event_id = event.get("id")
             error_code = payload.get("error_code") or "not_reported"
             print(
@@ -100,7 +122,15 @@ def main() -> int:
     if not 1 <= args.days <= 365:
         raise RuntimeError("Owner alert replay window must be between 1 and 365 days")
     events = published_events(args.updates, args.days)
-    count = dispatch(url, token, events)
+    terminal_outcomes: dict[str, str] = {}
+    try:
+        count = dispatch(url, token, events, terminal_outcomes)
+    finally:
+        source_change_alert.record_owner_delivery_states(
+            args.updates,
+            terminal_outcomes,
+            source_change_alert.now_iso(),
+        )
     print(f"Owner alert ingress accepted {count} published ledger event(s).")
     return 0
 

@@ -44,6 +44,11 @@ class OwnerAlertEvent(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     id: Annotated[str, Field(pattern=r"^[A-Za-z0-9._:-]{8,128}$")]
+    transition_id: Annotated[str | None, Field(pattern=r"^[0-9a-f]{20}$")] = None
+    stream_id: Annotated[str | None, Field(pattern=r"^[0-9a-f]{20}$")] = None
+    occurrence: Annotated[int | None, Field(ge=1)] = None
+    owner_delivery_state: Annotated[str | None, Field(max_length=40)] = None
+    owner_delivery_recorded_at: datetime | None = None
     program: Annotated[str, Field(min_length=1, max_length=80)]
     program_id: Annotated[str, Field(pattern=r"^[a-z0-9-]{1,80}$")]
     route: Annotated[str, Field(pattern=r"^#/[a-z0-9/_-]{1,160}$")]
@@ -58,7 +63,7 @@ class OwnerAlertEvent(BaseModel):
     reviewed_at: datetime | None = None
     review_note: Annotated[str | None, Field(max_length=500)] = None
 
-    @field_validator("detected_at", "reviewed_at")
+    @field_validator("detected_at", "reviewed_at", "owner_delivery_recorded_at")
     @classmethod
     def timestamps_are_aware_utc(cls, value: datetime | None) -> datetime | None:
         if value is None:

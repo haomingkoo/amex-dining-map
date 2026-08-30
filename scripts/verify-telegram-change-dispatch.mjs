@@ -13,11 +13,19 @@ for (const name of workflows) {
   const contents = fs.readFileSync(`.github/workflows/${name}`, "utf8");
   assert.match(contents, /scripts\/dispatch_owner_updates\.py/, `${name} does not dispatch owner updates`);
   assert.match(contents, /OWNER_ALERT_INGEST_TOKEN/, `${name} does not use the isolated ingestion token`);
+  assert.match(contents, /id: owner_dispatch/, `${name} does not identify the dispatch step`);
+  assert.match(
+    contents,
+    /if: always\(\) && steps\.owner_dispatch\.outcome != 'skipped'/,
+    `${name} does not persist receipts after an attempted dispatch`,
+  );
+  assert.match(contents, /MUST_STAGE: data\/updates\.json/, `${name} does not limit receipt commits to the ledger`);
 }
 
 const dispatch = fs.readFileSync("scripts/dispatch_owner_updates.py", "utf8");
 assert.match(dispatch, /status.*published/);
 assert.doesNotMatch(dispatch, /TELEGRAM_BOT_TOKEN/);
+assert.match(dispatch, /record_owner_delivery_states/);
 
 execFileSync("uv", [
   "run", "--python", "3.12",
