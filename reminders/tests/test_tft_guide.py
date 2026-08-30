@@ -47,6 +47,21 @@ def test_vue_platinum_natural_query_is_exact_and_cited():
     assert "#/table-for-two?venue=tft-vue" in answer
 
 
+def test_venue_start_link_returns_reviewed_venue_context():
+    answer = tft_guide.handle_message("/start venue_tft-vue", _catalog(), NOW)
+
+    assert "VUE — official menu variants" in answer
+    assert "VUE-Menu_Platinum.pdf" in answer
+    assert "VUE-Menu_Centurion.pdf" in answer
+
+
+def test_unknown_start_payload_falls_back_to_help():
+    answer = tft_guide.handle_message("/start https://attacker.example", _catalog(), NOW)
+
+    assert answer.startswith("Table for Two helper")
+    assert "attacker.example" not in answer
+
+
 def test_vue_centurion_is_not_conflated_with_platinum():
     answer = tft_guide.handle_message("VUE black card menu", _catalog(), NOW)
     assert "VUE — Centurion menu" in answer

@@ -48,6 +48,9 @@ def send_message(bot_token: str, chat_id: int, text: str) -> int:
         if payload.get("ok") is not True:
             raise ValueError("Telegram response was not successful")
         message_id = int(payload["result"]["message_id"])
+        response_chat_id = int(payload["result"]["chat"]["id"])
+        if response_chat_id != int(chat_id):
+            raise ValueError("Telegram response destination did not match")
     except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
         raise TelegramDeliveryError("telegram_response_unknown", "unknown") from exc
     return message_id

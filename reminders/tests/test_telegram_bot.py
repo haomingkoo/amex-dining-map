@@ -495,7 +495,10 @@ def test_transport_unknown_is_not_blindly_retried(guide_client, monkeypatch, cap
     assert _post(client, _update()).json() == {"ok": True}
     assert _post(client, _update()).json() == {"ok": True}
     assert len(calls) == 1
-    log_text = "\n".join(record.getMessage() for record in caplog.records)
+    log_payloads = [json.loads(record.getMessage()) for record in caplog.records]
+    for payload in log_payloads:
+        payload.pop("request_id", None)
+    log_text = json.dumps(log_payloads, sort_keys=True, separators=(",", ":"))
     assert '"state":"unknown"' in log_text
     for secret in (
         "/menu VUE platinum",

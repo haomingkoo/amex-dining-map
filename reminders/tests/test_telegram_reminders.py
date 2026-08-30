@@ -86,6 +86,48 @@ def test_guided_confirmation_stores_chat_only_after_explicit_yes(tmp_path: Path)
         conn.close()
 
 
+def test_reminder_start_link_preselects_reviewed_venue_without_storing_chat(tmp_path: Path):
+    conn = connection(tmp_path / "reminders.db")
+    try:
+        reply = telegram_reminders.handle_message(
+            conn,
+            PRINCIPAL_A,
+            111,
+            "/start remind_tft-vue",
+            tft_guide.load_catalog(),
+            NOW,
+        )
+
+        assert "for VUE" in reply
+        assert "How many people" in reply
+        conversation = conn.execute(
+            "SELECT state, venue_id, venue_name FROM telegram_reminder_conversations"
+        ).fetchone()
+        assert tuple(conversation) == ("party", "tft-vue", "VUE")
+        assert conn.execute("SELECT COUNT(*) FROM telegram_reminders").fetchone()[0] == 0
+    finally:
+        conn.close()
+
+
+def test_unknown_reminder_start_link_fails_closed(tmp_path: Path):
+    conn = connection(tmp_path / "reminders.db")
+    try:
+        reply = telegram_reminders.handle_message(
+            conn,
+            PRINCIPAL_A,
+            111,
+            "/start remind_tft-not-real",
+            tft_guide.load_catalog(),
+            NOW,
+        )
+        assert "not in the reviewed TFT roster" in reply
+        assert conn.execute(
+            "SELECT COUNT(*) FROM telegram_reminder_conversations"
+        ).fetchone()[0] == 0
+    finally:
+        conn.close()
+
+
 def test_resumed_confirmation_repeats_chat_storage_and_deletion_consent(
     tmp_path: Path,
 ):
@@ -273,6 +315,10 @@ def test_fresh_match_claims_one_bounded_notification_and_replay_none(tmp_path: P
         assert "19:00" in notification.text and "19:30" in notification.text
         assert "not a booking guarantee" in notification.text
         assert "checked 30 Aug 2026, 11:55 SGT" in notification.text
+        assert (
+            "#/table-for-two?venue=tft-vue&party=2&meal=dinner&date=2026-10-29"
+            in notification.text
+        )
         assert telegram_reminders.begin_notification(
             conn, notification.reminder_id, notification.chat_id, NOW
         )

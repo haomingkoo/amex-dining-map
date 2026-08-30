@@ -43,7 +43,10 @@ def test_vue_filters_party_meal_date_and_preferred_time_together():
     assert "2 pax, Dinner, 2026-10-29, within 60 minutes of 19:00 SGT" in result
     assert "checked 30 Aug, 10:50 SGT" in result
     assert "Booking and voucher redemption remain in the Amex Experiences App" in result
-    assert "#/table-for-two?venue=tft-vue" in result
+    assert (
+        "#/table-for-two?venue=tft-vue&party=2&meal=dinner&date=2026-10-29&time=19%3A00"
+        in result
+    )
 
 
 @pytest.mark.parametrize(
@@ -134,7 +137,11 @@ def test_weekend_any_uses_transparent_next_30_day_defaults():
     assert "Colony — 2026-09-05 19:00" in result
     assert "2026-09-07" not in result
     assert "weekends in the next 30 days" in result
-    assert "Open Table for Two:" in result
+    assert (
+        "Open filtered Table for Two: https://amex-explorer.kooexperience.com/"
+        "#/table-for-two?party=2&meal=dinner&day=weekend"
+        in result
+    )
 
 
 def test_conversational_weekend_query_defaults_transparently_and_checks_both_meals():

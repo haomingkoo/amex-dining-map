@@ -57,6 +57,8 @@ jobs:
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
 
       - name: Stage Static Site
+        env:
+          TELEGRAM_GUIDE_BOT_USERNAME: ${{ vars.TELEGRAM_GUIDE_BOT_USERNAME }}
         run: |
           mkdir -p site
           cp -R web/. site/
@@ -75,10 +77,12 @@ jobs:
             table-for-two-slots.json \
             table-for-two-release-history.json \
             updates.json \
-            google-maps-ratings.json
+            google-maps-ratings.json \
+            telegram-guide.json
           do
             cp "data/${file}" site/data/
           done
+          python3 scripts/build_telegram_public_config.py --output site/data/telegram-guide.json
           cp .nojekyll site/
           cp CNAME site/
           short_sha="${GITHUB_SHA::7}"

@@ -222,6 +222,33 @@ token on Railway and GitHub, set `TELEGRAM_REMINDERS_ENABLED=true`, deploy,
 verify health, create/list/cancel a real test reminder, and only then set
 `TELEGRAM_REMINDERS_EXPECTED_ENABLED=true` in GitHub Actions.
 
+Set the non-secret GitHub Actions repository variable
+`TELEGRAM_GUIDE_BOT_USERNAME` to the guide bot's public username only after the
+guide passes live acceptance. Pages validates the username and then exposes
+venue-specific `Ask on Telegram` and `Set Telegram reminder` actions. The bot
+accepts only bounded `venue_<venue-id>` and `remind_<venue-id>` start payloads;
+unknown payloads fall back to reviewed help and cannot inject a URL or command.
+
+Use the secret-safe readiness checker from the repository root. It reads values
+from the environment, prints no identifiers, Telegram response bodies, or
+secret values, and never sends a message:
+
+```bash
+railway run --service amex-reminders python3 scripts/check_telegram_readiness.py --phase config
+railway run --service amex-reminders python3 scripts/check_telegram_readiness.py --phase identities
+railway run --service amex-reminders python3 scripts/check_telegram_readiness.py --phase owner
+railway run --service amex-reminders python3 scripts/check_telegram_readiness.py --phase guide
+railway run --service amex-reminders python3 scripts/check_telegram_readiness.py --phase reminders
+```
+
+Run `config` and `identities` before activation. Run the other read-only phases
+after each corresponding deployment; they verify health, exact bot/channel
+identity, least channel privilege, webhook separation, public username parity,
+and wrong-credential rejection. A successful check prints only
+`TELEGRAM READINESS OK phase=<phase>`. Real message delivery still requires the
+explicit G9/G10 acceptance procedure; the readiness checker cannot prove that a
+human saw the intended message.
+
 ### Guide bot activation and operations
 
 Read secrets into an ephemeral shell without echoing or command-line arguments,

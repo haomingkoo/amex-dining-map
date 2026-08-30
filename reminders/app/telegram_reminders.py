@@ -315,13 +315,30 @@ def handle_message(
         "/start", "/help", "/venues", "/menu", "/release", "/slots"
     }:
         return None
+    start_reminder = re.fullmatch(r"/start remind_([a-z0-9-]{1,80})", lowered)
     is_command = lowered in {
         "/remind", "/reminders", "/cancel", "/delete_me", "/confirm"
-    } or lowered.startswith("/cancel ")
+    } or lowered.startswith("/cancel ") or start_reminder is not None
     if conversation is None and not is_command:
         if expired_conversation:
             return "Reminder setup expired. Send /remind to start again."
         return None
+
+    if start_reminder is not None:
+        matches = tft_guide.resolve_venue(start_reminder.group(1), catalog)
+        if len(matches) != 1:
+            return "That venue link is not in the reviewed TFT roster. Use /venues."
+        venue = matches[0]
+        _save_conversation(
+            conn, principal_key, "party", now,
+            venue_id=venue["id"], venue_name=venue["name"],
+        )
+        return (
+            f"Create one Table for Two reminder for {venue['name']} (2/4). "
+            "Setup expires after 15 idle minutes.\n"
+            "How many people (1–10)?\n"
+            "If you confirm, I will store this private chat ID and the criteria until the reminder ends or is cancelled. /delete_me removes your Telegram reminder data; email reminders are separate."
+        )
 
     if lowered == "/remind":
         if conversation is None:
@@ -659,7 +676,7 @@ def claim_notifications(
             f"TFT reminder {row['id']} matched\n\n{_summary(row)}\n"
             + "\n".join(lines)
             + more
-            + f"\n\nObserved in cached AMEXPlatSG data checked {checked}. Availability can change and this is not a booking guarantee. Book and redeem in the Amex Experiences App.\nOpen venue: https://amex-explorer.kooexperience.com/#/table-for-two?venue={row['venue_id']}"
+            + f"\n\nObserved in cached AMEXPlatSG data checked {checked}. Availability can change and this is not a booking guarantee. Book and redeem in the Amex Experiences App.\nOpen filtered venue: {tft_guide.explorer_url(venue_id=row['venue_id'], party_size=row['party_size'], meal=row['meal'], date_value=row['date_start'])}"
         )
         notifications.append(
             Notification(

@@ -23,6 +23,27 @@ assert.equal(context.parseVenue("#/table-for-two?venue=../../etc/passwd"), null)
 assert.equal(context.parseVenue("#/table-for-two?venue=amex-global-singapore-vue"), null);
 assert.equal(context.parseVenue("#/table-for-two"), null);
 
+const filtersStart = source.indexOf("function tableForTwoFiltersFromHash(");
+const filtersEnd = source.indexOf("\nfunction ", filtersStart + 10);
+assert.ok(filtersStart >= 0 && filtersEnd > filtersStart, "filter deep-link parser not found");
+const filtersContext = { URLSearchParams, Date };
+vm.runInNewContext(
+  `${source.slice(filtersStart, filtersEnd)}\nthis.parseFilters = tableForTwoFiltersFromHash;`,
+  filtersContext,
+);
+assert.deepEqual(
+  JSON.parse(JSON.stringify(filtersContext.parseFilters(
+    "#/table-for-two?venue=tft-vue&party=2&meal=dinner&date=2026-10-29&time=19:00&day=weekday",
+  ))),
+  { party: "2", session: "Dinner", date: "2026-10-29", time: "19:00", day: "weekday" },
+);
+assert.deepEqual(
+  JSON.parse(JSON.stringify(filtersContext.parseFilters(
+    "#/table-for-two?party=99&meal=breakfast&date=2026-02-30&time=19:17&day=holiday",
+  ))),
+  { party: "", session: "", date: "", time: "", day: "" },
+);
+
 assert.match(
   source,
   /setActiveTableForTwoRecord\(linkedVenueId, \{ scrollDetails: true \}\)/,
@@ -35,6 +56,7 @@ assert.match(
 );
 assert.match(source, /payload\.menu_source\?\.review_required/);
 assert.match(source, /menu review item/);
+assert.match(source, /applyTableForTwoFiltersFromHash\(\);[\s\S]*refreshTableForTwoDateOptions\(\);/);
 
 const reviewStart = source.indexOf("function tableForTwoVenueMenuReviewItems(");
 const reviewEnd = source.indexOf("\nfunction ", reviewStart + 10);

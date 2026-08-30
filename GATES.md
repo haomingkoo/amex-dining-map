@@ -51,18 +51,29 @@ Tracker: parent #34; vertical slices #35 through #42.
   EXPECT: Telegram reminder verification passed
   EVIDENCE: 2026-08-30 deterministic one-shot lifecycle, bounded and expiring setup, HMAC ownership, non-enumerating cancellation, two-step deletion, fresh AMEXPlatSG matching, transactional claims, terminal delivery receipts, post-Pages generation gating, and privacy-safe dispatch logs pass locally. Real private-Telegram mobile acceptance remains G10.
 
+- [ ] G7B: configuration-gated mobile Telegram actions preserve the exact TFT venue and supported slot filters, and BotFather start payloads resolve only reviewed venues
+  CHECK: node scripts/verify-telegram-deep-links.mjs
+  EXPECT: Telegram deep-link verification passed
+  EVIDENCE: pending deployment and mobile acceptance.
+
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
   EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 367 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
 
-- [ ] G9: a real before-and-after test alert is delivered to the private owner channel and no unintended chat receives it
+- [ ] G9: a real before-and-after test alert is delivered once to the private owner channel, Telegram confirms the configured destination ID, and no unintended chat receives it
   EVIDENCE: pending
 
-- [ ] G10: a real Telegram user can ask for a TFT menu or T&C, find an observed slot, and create then cancel a reminder, while an adversarial question receives the bounded fallback
+- [ ] G10: a real Telegram user can ask for a cited TFT menu and page-aware T&C, find a fresh observed slot or bounded empty result, create/list/receive/cancel/delete a reminder without duplicate delivery, and receive bounded behavior for adversarial and group messages
   EVIDENCE: pending
 
 - [x] G11: the deployed site, reminder service, owner channel, and self-help bot are documented with setup, rotation, monitoring, rollback, privacy, freshness, and known-limit procedures
   CHECK: node scripts/verify-operations-docs.mjs
   EXPECT: operations documentation verification passed
   EVIDENCE: 2026-08-30 executable operations verifier passes config/example parity, disabled defaults, non-secret health state, Railway and Pages acceptance, feature activation order, safe rollback order, workflow credential seams, 36-hour catalogue and 30-minute slot thresholds, aggregate-safe diagnostics, and honest correlation limits. Real bot/channel acceptance remains G9/G10.
+
+- [ ] G12: primary venue, hotel, menu, T&C, release, stale, recovery, and review-state transitions have review-safe before-and-after owner events, including additions and removals
+  EVIDENCE: current dispatch covers normalized reviewed events, but complete source-transition coverage remains under #51 and #53.
+
+- [ ] G13: mobile users and the owner can see source-specific freshness, retained-snapshot, failure, and review-required state without mistaking optional enrichment age for official fact age
+  EVIDENCE: pending #53.

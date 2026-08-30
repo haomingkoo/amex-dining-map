@@ -9,6 +9,7 @@ const LOVE_DINING_DATA_URL = "../data/love-dining.json";
 const LOVE_DINING_META_URL = "../data/love-dining-source.json";
 const TABLE_FOR_TWO_DATA_URL = "../data/table-for-two.json";
 const TABLE_FOR_TWO_RELEASE_HISTORY_URL = "../data/table-for-two-release-history.json";
+const TELEGRAM_GUIDE_CONFIG_URL = "../data/telegram-guide.json";
 const UPDATES_DATA_URL = "../data/updates.json";
 const GOOGLE_RATINGS_URL = "../data/google-maps-ratings.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
@@ -530,6 +531,7 @@ const state = {
   tableForTwoToolbarOpen: false,
   tableForTwo: null,
   tableForTwoReleaseHistory: null,
+  telegramGuideConfig: null,
   tableForTwoFiltered: [],
   tableForTwoMarkers: new Map(),
   tableForTwoActiveId: null,
@@ -2327,12 +2329,18 @@ async function ensureTableForTwoDataLoaded() {
   if (state.dataLoaded.tableForTwo) return;
   if (!dataLoadPromises.tableForTwo) {
     dataLoadPromises.tableForTwo = (async () => {
-      const [tableForTwo, releaseHistory] = await Promise.all([
+      const [tableForTwo, releaseHistory, telegramGuideConfig] = await Promise.all([
         fetchJson(TABLE_FOR_TWO_DATA_URL),
         fetchJson(TABLE_FOR_TWO_RELEASE_HISTORY_URL),
+        fetchJson(TELEGRAM_GUIDE_CONFIG_URL).catch(() => ({
+          schema_version: 1,
+          enabled: false,
+          bot_username: null,
+        })),
       ]);
       state.tableForTwo = tableForTwo;
       state.tableForTwoReleaseHistory = releaseHistory;
+      state.telegramGuideConfig = telegramGuideConfig;
       tableForTwoVenues().forEach((record) => {
         record.search_text = tableForTwoSearchText(record);
       });
@@ -2705,6 +2713,35 @@ function tableForTwoVenueIdFromHash(hashValue = window.location.hash) {
   const query = String(hashValue || "").split("?", 2)[1] || "";
   const venueId = new URLSearchParams(query).get("venue") || "";
   return /^tft-[a-z0-9-]{1,120}$/.test(venueId) ? venueId : null;
+}
+
+function tableForTwoFiltersFromHash(hashValue = window.location.hash) {
+  const query = String(hashValue || "").split("?", 2)[1] || "";
+  const params = new URLSearchParams(query);
+  const party = params.get("party") || "";
+  const meal = (params.get("meal") || "").toLowerCase();
+  const date = params.get("date") || "";
+  const time = params.get("time") || "";
+  const day = (params.get("day") || "").toLowerCase();
+  const parsedDate = /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(`${date}T00:00:00Z`) : null;
+  const validDate = parsedDate && !Number.isNaN(parsedDate.getTime())
+    && parsedDate.toISOString().slice(0, 10) === date;
+  return {
+    party: /^(?:[1-9]|10)$/.test(party) ? party : "",
+    session: meal === "lunch" ? "Lunch" : meal === "dinner" ? "Dinner" : "",
+    date: validDate ? date : "",
+    time: /^(?:[01]\d|2[0-3]):(?:00|30)$/.test(time) ? time : "",
+    day: ["weekend", "weekday"].includes(day) ? day : "",
+  };
+}
+
+function applyTableForTwoFiltersFromHash(hashValue = window.location.hash) {
+  const filters = tableForTwoFiltersFromHash(hashValue);
+  if (filters.party) tableForTwoPartySizeFilter.value = filters.party;
+  if (filters.session) tableForTwoSessionFilter.value = filters.session;
+  if (filters.date) tableForTwoDateFilter.value = filters.date;
+  if (filters.time) tableForTwoTimeFilter.value = filters.time;
+  if (filters.day) tableForTwoDayFilter.value = filters.day;
 }
 
 function resolveRouteFromHash(hashValue = window.location.hash) {
@@ -6300,6 +6337,20 @@ function tableForTwoVenueMenuReviewWarning(items) {
   return "";
 }
 
+function tableForTwoTelegramDeepLink(action, record) {
+  const config = state.telegramGuideConfig || {};
+  const username = String(config.bot_username || "");
+  if (
+    config.schema_version !== 1
+    || config.enabled !== true
+    || !["venue", "remind"].includes(action)
+    || !record?.id
+    || !/^[a-z0-9-]{1,80}$/.test(record.id)
+    || !/^[A-Za-z][A-Za-z0-9_]{1,28}[Bb][Oo][Tt]$/.test(username)
+  ) return "";
+  return `https://t.me/${username}?start=${action}_${record.id}`;
+}
+
 function renderTableForTwoList() {
   if (!state.tableForTwoFiltered.length) {
     tableForTwoResultsList.innerHTML = '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
@@ -6399,6 +6450,8 @@ function renderTableForTwoCard() {
     .at(-1) || payload.menu_source?.checked_at;
   const venueMenuReviewItems = tableForTwoVenueMenuReviewItems(payload, record);
   const venueMenuReviewWarning = tableForTwoVenueMenuReviewWarning(venueMenuReviewItems);
+  const telegramAskUrl = tableForTwoTelegramDeepLink("venue", record);
+  const telegramReminderUrl = tableForTwoTelegramDeepLink("remind", record);
   const menuSourceNote = `<div class="focus-note">Official menu index checked ${escapeHtml(menuCheckedAt ? formatTimestamp(menuCheckedAt) : "time unavailable")}.${payload.menu_source?.review_required ? ` ${payload.menu_source.review_queue_count || 0} menu review item${payload.menu_source.review_queue_count === 1 ? " is" : "s are"} pending.` : payload.manual_review_required ? " Wider source review is required." : ""}</div>`;
   const sourceReviewWarning = payload.manual_review_required
     ? '<div class="focus-note focus-note-warn">Official roster or source files changed. Manual review is required before treating the venue list as final.</div>'
@@ -6455,6 +6508,8 @@ function renderTableForTwoCard() {
       ${tableForTwoHasMapPin(record) ? `<button type="button" class="ghost-btn secondary" data-tft-focus-map="true">Center on map</button>` : ""}
       <a class="inline-link subtle" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Official roster</a>
       <a class="inline-link subtle" href="${escapeHtml(payload.terms_url || TABLE_FOR_TWO_TNC_URL)}" target="_blank" rel="noopener">T&Cs PDF</a>
+      ${telegramAskUrl ? `<a class="inline-link subtle" href="${escapeHtml(telegramAskUrl)}" target="_blank" rel="noopener">Ask on Telegram</a>` : ""}
+      ${telegramReminderUrl ? `<a class="inline-link subtle" href="${escapeHtml(telegramReminderUrl)}" target="_blank" rel="noopener">Set Telegram reminder</a>` : ""}
     </div>
   `;
 
@@ -7264,6 +7319,7 @@ async function applyRoute(routeId) {
     await ensureRouteDataLoaded(route);
     if (applyToken !== routeApplyToken) return;
     refreshTableForTwoCategoryOptions();
+    applyTableForTwoFiltersFromHash();
     refreshTableForTwoDateOptions();
     renderTableForTwoAlertSignup();
     filterTableForTwo();

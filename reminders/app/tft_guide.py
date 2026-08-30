@@ -10,6 +10,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
+from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
 from app import tft_documents, tft_slot_source, tft_slots
@@ -69,14 +70,36 @@ def _official_source_line(catalog: dict, label: str = "Official TFT page") -> st
     return f"{label}: {url}"
 
 
+def explorer_url(
+    venue_id: str | None = None,
+    party_size: int | None = None,
+    meal: str | None = None,
+    date_value: str | None = None,
+    day: str | None = None,
+    preferred_time: str | None = None,
+) -> str:
+    params = []
+    if venue_id and re.fullmatch(r"[a-z0-9-]{1,80}", venue_id):
+        params.append(("venue", venue_id))
+    if party_size is not None and 1 <= party_size <= 10:
+        params.append(("party", str(party_size)))
+    if meal in {"Lunch", "Dinner"}:
+        params.append(("meal", meal.lower()))
+    if date_value and re.fullmatch(r"\d{4}-\d{2}-\d{2}", date_value):
+        params.append(("date", date_value))
+    if day in {"weekend", "weekday"}:
+        params.append(("day", day))
+    if preferred_time and re.fullmatch(r"(?:[01]\d|2[0-3]):(?:00|30)", preferred_time):
+        params.append(("time", preferred_time))
+    query = urlencode(params)
+    return "https://amex-explorer.kooexperience.com/#/table-for-two" + (f"?{query}" if query else "")
+
+
 def _explorer_line(venue: dict) -> str:
     venue_id = str(venue.get("id") or "")
     if re.fullmatch(r"[a-z0-9-]{1,80}", venue_id) is None:
         return "Explorer venue link could not be verified safely."
-    return (
-        "Open venue: https://amex-explorer.kooexperience.com/"
-        f"#/table-for-two?venue={venue_id}"
-    )
+    return f"Open venue: {explorer_url(venue_id=venue_id)}"
 
 
 def resolve_venue(query: str, catalog: dict) -> list[dict]:
@@ -417,6 +440,14 @@ def handle_message(
     message = " ".join(text.strip().split())
     lowered = message.casefold()
     current = now or datetime.now(timezone.utc)
+    start_venue = re.fullmatch(r"/start venue_([a-z0-9-]{1,80})", lowered)
+    if start_venue:
+        matches = resolve_venue(start_venue.group(1), catalog)
+        if len(matches) == 1:
+            return _menu_answer(matches[0], None, catalog, current)
+        return "That venue link is not in the reviewed TFT roster. Use /venues."
+    if lowered.startswith("/start "):
+        return _help()
     if lowered in {"/start", "/help", "help"}:
         return _help()
     if lowered == "/venues":
@@ -455,7 +486,7 @@ def handle_message(
             return "The slot source metadata could not be verified safely."
         if parsed.venue_text.casefold() == "any":
             venues = list(catalog.get("venues") or [])
-            explorer = "Open Table for Two: https://amex-explorer.kooexperience.com/#/table-for-two"
+            venue_id = None
         else:
             venues = resolve_venue(parsed.venue_text, catalog)
             if len(venues) != 1:
@@ -463,7 +494,19 @@ def handle_message(
                     "I could not match that to one exact Table for Two venue. "
                     "Use /venues, or use any to search all venues."
                 )
-            explorer = _explorer_line(venues[0])
+            venue_id = str(venues[0].get("id") or "")
+        explorer = "Open filtered Table for Two: " + explorer_url(
+            venue_id=venue_id,
+            party_size=parsed.party_size,
+            meal=parsed.meal if parsed.meal in {"Lunch", "Dinner"} else None,
+            date_value=None if parsed.weekend_only else parsed.start_date.isoformat(),
+            day="weekend" if parsed.weekend_only else None,
+            preferred_time=(
+                parsed.preferred_time.strftime("%H:%M")
+                if parsed.preferred_time is not None
+                else None
+            ),
+        )
         try:
             snapshot = (slot_loader or tft_slot_source.load_snapshot)()
         except tft_slot_source.SlotSourceUnavailable:

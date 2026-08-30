@@ -5,6 +5,7 @@ from __future__ import annotations
 import hmac
 import json
 import logging
+import re
 import secrets
 import time
 from datetime import datetime, timezone
@@ -212,7 +213,11 @@ async def telegram_guide_webhook(
     try:
         reminder_command = first_word in {
             "/remind", "/reminders", "/cancel", "/delete_me"
-        }
+        } or (
+            first_word == "/start"
+            and re.fullmatch(r"/start remind_[a-z0-9-]{1,80}", message.text.strip().casefold())
+            is not None
+        )
         if settings.telegram_reminders_enabled:
             answer = await run_in_threadpool(
                 _reminder_answer,
