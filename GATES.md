@@ -29,7 +29,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [ ] G4: menu, venue, T&C, source, and release-pattern changes can trigger owner-channel alerts without leaking bot tokens, subscriber records, or internal diagnostics
   CHECK: node scripts/verify-telegram-change-dispatch.mjs
   EXPECT: Telegram change dispatch verification passed
-  EVIDENCE: 2026-08-30 verifier passes for reviewed-update dispatch. Stream-scoped occurrence IDs deduplicate direct retries but preserve A→B→A→B recurrences, including after retention and legacy migration. Atomic locked ledger writes, protected review/undelivered/retracted retention, persisted terminal delivery states, and no terminal replay pass regressions. Six reviewed Love Dining hotel-attribution corrections now carry exact Hotel before/after values; three false published additions are retracted and excluded from dispatch. Clause-level T&C and unmatched-menu coverage remain tracked by #51, so this gate stays open.
+  EVIDENCE: 2026-08-30 verifier passes for reviewed-update dispatch. Stream-scoped occurrence IDs deduplicate direct retries but preserve A→B→A→B recurrences, including after retention and legacy migration. Atomic locked ledger writes, protected review/undelivered/retracted retention, persisted terminal delivery states, and no terminal replay pass regressions. Six reviewed Love Dining hotel-attribution corrections carry exact before/after values. Current restaurant and hotel T&C baselines bind 77 reviewed clauses to 44 exact page hashes; prior PDF content was unavailable, so the aggregate hash event is rejected without a retroactive clause claim. Synthetic next-version transitions prove exact clause events and layout-only suppression. Unmatched-menu and live future-transition acceptance remain tracked by #51, so this gate stays open.
 
 - [x] G5: the Telegram self-help bot answers TFT program, venue, menu, T&C, and release-pattern questions and can find currently observed slots from curated current sources with citations and freshness dates
   CHECK: node scripts/verify-telegram-guide.mjs
@@ -54,7 +54,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
-  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 296 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
+  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 323 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
 
 - [ ] G9: a real before-and-after test alert is delivered to the private owner channel and no unintended chat receives it
   EVIDENCE: pending

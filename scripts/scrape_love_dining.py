@@ -230,13 +230,22 @@ def build_meta(
     }
     previous_meta = json.loads(META_PATH.read_text(encoding="utf-8")) if META_PATH.exists() else {}
     reviewed_terms_hashes = previous_meta.get("reviewed_terms_hashes") or terms_hashes
+    reviewed_terms_manifest_sha256 = dict(
+        previous_meta.get("reviewed_terms_manifest_sha256") or {}
+    )
     reviewed_records_sha256 = previous_meta.get("reviewed_records_sha256") or records_sha256
     terms_reviewed_at = previous_meta.get("terms_reviewed_at") or checked_at
+    terms_reviewed_at_by_document = dict(
+        previous_meta.get("terms_reviewed_at_by_document") or {}
+    )
     records_reviewed_at = previous_meta.get("records_reviewed_at") or checked_at
 
     if mark_reviewed or mark_terms_reviewed:
         reviewed_terms_hashes = terms_hashes
         terms_reviewed_at = checked_at
+        terms_reviewed_at_by_document = {
+            key: checked_at for key in terms_hashes
+        }
     if mark_reviewed or mark_records_reviewed:
         reviewed_records_sha256 = records_sha256
         records_reviewed_at = checked_at
@@ -264,7 +273,9 @@ def build_meta(
         "records_reviewed_at": records_reviewed_at,
         "terms_hashes": terms_hashes,
         "reviewed_terms_hashes": reviewed_terms_hashes,
+        "reviewed_terms_manifest_sha256": reviewed_terms_manifest_sha256,
         "terms_reviewed_at": terms_reviewed_at,
+        "terms_reviewed_at_by_document": terms_reviewed_at_by_document,
         "manual_review_required": manual_review_required,
         "major_change_reasons": major_change_reasons,
         "official_pages": {
@@ -687,7 +698,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--dry-run", action="store_true", help="Scrape, print summary, don't write")
     p.add_argument("--diff", action="store_true", help="Show additions/removals vs existing file")
     p.add_argument("--no-geocode", action="store_true", help="Skip geocoding pass")
-    p.add_argument("--mark-reviewed", action="store_true", help="Mark current official records and T&C PDFs as reviewed")
+    p.add_argument("--mark-reviewed", action="store_true", help=argparse.SUPPRESS)
     p.add_argument(
         "--mark-records-reviewed",
         action="store_true",
@@ -696,7 +707,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--mark-terms-reviewed",
         action="store_true",
-        help="Mark only the current restaurant and hotel T&C PDFs as reviewed",
+        help=argparse.SUPPRESS,
     )
     return p.parse_args()
 
@@ -705,6 +716,11 @@ def main() -> None:
     from playwright.sync_api import sync_playwright
 
     args = parse_args()
+    if args.mark_reviewed or args.mark_terms_reviewed:
+        raise SystemExit(
+            "T&C reviews require an exact hash-bound manifest; use "
+            "scripts/apply_love_dining_document_review.py"
+        )
 
     print("Launching browser...")
     with sync_playwright() as p:

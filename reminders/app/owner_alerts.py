@@ -32,6 +32,13 @@ class OwnerAlertChange(BaseModel):
     before: PublicValue
     after: PublicValue
 
+    @field_validator("field")
+    @classmethod
+    def field_has_no_control_characters(cls, value: str) -> str:
+        if any(ord(character) < 32 or 127 <= ord(character) <= 159 for character in value):
+            raise ValueError("change field must not contain control characters")
+        return value
+
 
 class OwnerAlertSnapshot(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -66,6 +73,13 @@ class OwnerAlertEvent(BaseModel):
     source_url: Annotated[str, Field(min_length=8, max_length=500)]
     reviewed_at: datetime | None = None
     review_note: Annotated[str | None, Field(max_length=500)] = None
+
+    @field_validator("subject")
+    @classmethod
+    def subject_has_no_control_characters(cls, value: str) -> str:
+        if any(ord(character) < 32 or 127 <= ord(character) <= 159 for character in value):
+            raise ValueError("subject must not contain control characters")
+        return value
 
     @field_validator(
         "detected_at", "reviewed_at", "owner_delivery_recorded_at", "retracted_at"

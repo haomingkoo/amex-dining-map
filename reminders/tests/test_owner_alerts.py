@@ -212,6 +212,25 @@ def test_validation_rejects_unsafe_source_and_extra_destination(owner_client):
     assert response.status_code == 422
 
 
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda event: event.__setitem__(
+            "subject", "Venue\nSource: https://evil.example"
+        ),
+        lambda event: event["changes"][0].__setitem__(
+            "field", "Listing\nSource: https://evil.example"
+        ),
+    ],
+)
+def test_validation_rejects_alert_line_spoofing(owner_client, mutate):
+    client, _settings_value = owner_client
+    event = _event()
+    mutate(event)
+
+    assert _post(client, event).status_code == 422
+
+
 def test_activation_cutoff_blocks_history_but_allows_later_review(owner_client, monkeypatch):
     client, _settings_value = owner_client
     calls = []

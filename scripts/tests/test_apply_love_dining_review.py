@@ -22,7 +22,7 @@ def _load(path: str):
     return json.loads((ROOT / path).read_text())
 
 
-def test_review_publishes_corrections_retracts_bad_events_and_keeps_terms_pending():
+def test_review_publishes_corrections_and_preserves_current_terms_state():
     manifest = _load(
         "data/reviews/love-dining/2026-08-30-hotel-attribution-correction.json"
     )
@@ -52,10 +52,8 @@ def test_review_publishes_corrections_retracts_bad_events_and_keeps_terms_pendin
             assert correction["corrects"] == [original_id]
     assert events[manifest["source_event_id"]]["status"] == "rejected"
     assert reviewed_meta["reviewed_records_sha256"] == manifest["records_sha256"]
-    assert reviewed_meta["manual_review_required"] is True
-    assert reviewed_meta["major_change_reasons"] == [
-        "Love Dining T&C PDF changed: restaurants, hotels"
-    ]
+    assert reviewed_meta["manual_review_required"] is False
+    assert reviewed_meta["major_change_reasons"] == []
     for event in reviewed_ledger["updates"]:
         if not event.get("transition_id"):
             continue

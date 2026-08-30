@@ -114,6 +114,10 @@ def test_record_review_does_not_approve_changed_terms(tmp_path, monkeypatch):
     monkeypatch.setattr(MODULE, "fetch_bytes", lambda url: url.encode())
     records = [{"id": "one", "name": "One", "type": "hotel"}]
     previous = MODULE.build_meta(records, "2026-08-01T00:00:00Z", mark_reviewed=True)
+    previous["reviewed_terms_manifest_sha256"] = {
+        "restaurants": "a" * 64,
+        "hotels": "b" * 64,
+    }
     meta_path.write_text(json.dumps(previous))
     monkeypatch.setattr(MODULE, "fetch_bytes", lambda url: (url + "changed").encode())
 
@@ -125,5 +129,11 @@ def test_record_review_does_not_approve_changed_terms(tmp_path, monkeypatch):
 
     assert reviewed["reviewed_records_sha256"] == reviewed["records_sha256"]
     assert reviewed["reviewed_terms_hashes"] == previous["terms_hashes"]
+    assert reviewed["terms_reviewed_at_by_document"] == previous[
+        "terms_reviewed_at_by_document"
+    ]
+    assert reviewed["reviewed_terms_manifest_sha256"] == previous[
+        "reviewed_terms_manifest_sha256"
+    ]
     assert reviewed["terms_hashes"] != reviewed["reviewed_terms_hashes"]
     assert reviewed["manual_review_required"] is True
