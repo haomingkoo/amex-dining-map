@@ -75,7 +75,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [ ] G12: primary venue, hotel, menu, T&C, release, stale, recovery, and review-state transitions have review-safe before-and-after owner events, including additions and removals
   EVIDENCE: TFT venue additions/removals now use a hash-bound complete reviewed roster, source-scoped quarantine, resumable occurrence-safe ledger application, and exact before/after events. Menu, release, source-health, and existing normalized venue/hotel events are covered. Operational wiring for reviewed successor TFT T&C/FAQ clause transitions remains under #51.
 
-- [ ] G13: mobile users and the owner can see source-specific freshness, retained-snapshot, failure, and review-required state without mistaking optional enrichment age for official fact age
+- [x] G13: mobile users and the owner can see source-specific freshness, retained-snapshot, failure, and review-required state without mistaking optional enrichment age for official fact age
   CHECK: node scripts/verify-source-health.mjs
   EXPECT: source health verification passed
-  EVIDENCE: local verifier and 390x844 browser acceptance passed for all nine sources with primary/enrichment separation, exact dates, coverage, runtime staleness, review state, and zero horizontal overflow. Pending exact production deployment acceptance.
+  EVIDENCE: 2026-08-30 verifier passed; Pages run 33302192683 deployed 7c281a8. Production at 390x844 rendered all nine sources with primary/enrichment separation, exact dates, coverage, runtime staleness, review state, and no horizontal overflow. The deployed snapshot truthfully reports TFT availability stale at 21/23, Google mixed-age at 2,933/2,947, and Tabelog stale at 781/839.
