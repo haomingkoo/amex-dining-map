@@ -96,3 +96,13 @@ Tracker: parent #34; vertical slices #35 through #42.
   CHECK: node scripts/tests/test_frontend_work_budget.js
   EXPECT: Frontend work-budget verification passed
   EVIDENCE: exit=0; shell=/bin/sh; cwd=/Users/koohaoming/dev/amex-dining-map; path=db7d51c629d2/23 entries; EXPECT=matched; output-sha256=3f43302433a517b3bc0e200090e03d38ef69bda948ae7b1d456e57f44cbc17b5; output-bytes=41
+
+- [x] G17: the primary route starts without waiting for updates or source-health panels, and critical scripts begin downloading from the document head
+  CHECK: node scripts/tests/test_initial_load_path.js
+  EXPECT: Initial load-path verification passed
+  EVIDENCE: exit=0; shell=/bin/sh; cwd=/Users/koohaoming/dev/amex-dining-map; path=db7d51c629d2/23 entries; EXPECT=matched; output-sha256=0d5efb8494f7cb922566f7fae488d0afc37547e2b1bce490008b9e519cd9323d; output-bytes=38
+
+- [x] G18: production TFT loads bounded ratings and release-pattern projections instead of global ratings and raw observations
+  CHECK: node scripts/tests/test_tft_public_payloads.js && python3 -m unittest scripts.tests.test_public_data_projections && echo "TFT projection gates passed"
+  EXPECT: TFT projection gates passed
+  EVIDENCE: exit=0; shell=/bin/sh; cwd=/Users/koohaoming/dev/amex-dining-map; path=db7d51c629d2/23 entries; EXPECT=matched; output-sha256=e0a534f0f979b5023d88da877273b5cdbd79d793999c8b45ead008ddbc37e52a; output-bytes=197

@@ -8,11 +8,13 @@ const STAYS_META_URL = "../data/plat-stay-source.json";
 const LOVE_DINING_DATA_URL = "../data/love-dining.json";
 const LOVE_DINING_META_URL = "../data/love-dining-source.json";
 const TABLE_FOR_TWO_DATA_URL = "../data/table-for-two.json";
-const TABLE_FOR_TWO_RELEASE_HISTORY_URL = "../data/table-for-two-release-history.json";
+const TABLE_FOR_TWO_RELEASE_HISTORY_URL = "../data/table-for-two-release-history-summary.json";
+const TABLE_FOR_TWO_RELEASE_HISTORY_FALLBACK_URL = "../data/table-for-two-release-history.json";
 const TELEGRAM_GUIDE_CONFIG_URL = "../data/telegram-guide.json";
 const UPDATES_DATA_URL = "../data/updates.json";
 const SOURCE_HEALTH_DATA_URL = "../data/source-health.json";
 const GOOGLE_RATINGS_URL = "../data/google-maps-ratings.json";
+const TABLE_FOR_TWO_GOOGLE_RATINGS_URL = "../data/google-maps-ratings-table-for-two.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
 const LOVE_FIT_OPTIONS = { padding: [48, 48], maxZoom: 15 };
@@ -494,6 +496,7 @@ const state = {
   japanSourceMeta: null,
   globalSourceMeta: null,
   pocketAvailability: null,
+  pocketAvailabilityLoaded: false,
   stays: [],
   staysSourceMeta: null,
   scopeRecords: [],
@@ -549,6 +552,7 @@ const state = {
   tableForTwoLiveRefreshTimer: null,
   googleRatings: {},
   googleRatingsLoaded: false,
+  tableForTwoGoogleRatingsLoaded: false,
   updates: [],
   updatesReadAt: null,
   sourceHealth: [],
@@ -565,7 +569,9 @@ const dataLoadPromises = {
   stays: null,
   loveDining: null,
   tableForTwo: null,
+  pocketAvailability: null,
   googleRatings: null,
+  tableForTwoGoogleRatings: null,
 };
 let routeApplyToken = 0;
 let isMobileViewport = window.innerWidth <= MOBILE_BREAKPOINT;
@@ -1745,7 +1751,7 @@ function pocketFilterPrompt(record) {
   return '<button type="button" class="ghost-btn secondary" data-select-japan-pocket="true">Select Japan to filter Pocket availability</button>';
 }
 
-function selectJapanForPocketFilters(selectedDate = "") {
+async function selectJapanForPocketFilters(selectedDate = "") {
   const dateValue = typeof selectedDate === "string" ? selectedDate : "";
   if (Array.from(countryFilter.options).some((option) => option.value === "Japan")) {
     countryFilter.value = "Japan";
@@ -1755,6 +1761,7 @@ function selectJapanForPocketFilters(selectedDate = "") {
     setPocketDateRangeInput("start", dateValue);
     if (state.activeId) state.pocketCalendarMonths[state.activeId] = dateValue.slice(0, 7);
   }
+  await ensurePocketAvailabilityLoaded();
   refreshFilterOptions();
   setToolbarOpen(true);
   filterRestaurants();
@@ -2241,6 +2248,23 @@ async function loadGoogleRatings({ refreshCurrentRoute = false } = {}) {
   if (refreshCurrentRoute) rerenderCurrentRouteAfterAuxiliaryData();
 }
 
+async function loadTableForTwoGoogleRatings({ refreshCurrentRoute = false } = {}) {
+  if (state.googleRatingsLoaded || state.tableForTwoGoogleRatingsLoaded) return;
+  if (!dataLoadPromises.tableForTwoGoogleRatings) {
+    dataLoadPromises.tableForTwoGoogleRatings = (async () => {
+      const ratings = await fetchJson(TABLE_FOR_TWO_GOOGLE_RATINGS_URL)
+        || await fetchJson(GOOGLE_RATINGS_URL);
+      if (ratings && typeof ratings === "object") {
+        state.googleRatings = { ...state.googleRatings, ...ratings };
+      }
+      state.tableForTwoGoogleRatingsLoaded = true;
+    })();
+  }
+
+  await dataLoadPromises.tableForTwoGoogleRatings;
+  if (refreshCurrentRoute) rerenderCurrentRouteAfterAuxiliaryData();
+}
+
 function currentRouteNeedsGoogleRatings(route = currentRoute()) {
   if (isDiningRoute(route)) {
     return Boolean(googleRatingFilter.value)
@@ -2253,28 +2277,73 @@ function currentRouteNeedsGoogleRatings(route = currentRoute()) {
   return false;
 }
 
+function isJapanDiningRoute(route = currentRoute()) {
+  return route.id === "dining/japan" || route.id === "dining/japan/top";
+}
+
+function diningFiltersNeedPocketAvailability() {
+  return Boolean(
+    countryFilter.value === "Japan"
+    || pocketAvailabilityFilter.value
+    || pocketSessionFilter.value
+    || pocketDateFilter.value
+    || pocketDateEndFilter.value
+    || pocketPartyFilter.value
+  );
+}
+
+function currentRouteNeedsPocketAvailability(route = currentRoute()) {
+  return isDiningRoute(route)
+    && (isJapanDiningRoute(route) || diningFiltersNeedPocketAvailability());
+}
+
+function shouldLoadGoogleRatingsInBackground(route = currentRoute()) {
+  return isLiveDataRoute(route)
+    && !isTableForTwoRoute(route)
+    && (!isDiningRoute(route) || isJapanDiningRoute(route));
+}
+
+function applyPocketAvailability(pocketAvailability) {
+  const pocketAvailabilityRecords = pocketAvailability?.records || {};
+  state.restaurants.forEach((record) => {
+    if (record.country === "Japan") {
+      record.pocket_availability = pocketAvailabilityRecords[record.id] || null;
+    }
+  });
+  state.pocketAvailability = pocketAvailability || null;
+  state.pocketAvailabilityLoaded = true;
+}
+
+async function ensurePocketAvailabilityLoaded({ refreshCurrentRoute = false } = {}) {
+  if (state.pocketAvailabilityLoaded) return;
+  if (!dataLoadPromises.pocketAvailability) {
+    dataLoadPromises.pocketAvailability = (async () => {
+      const pocketAvailability = await fetchJson(POCKET_AVAILABILITY_URL);
+      applyPocketAvailability(pocketAvailability);
+    })();
+  }
+  await dataLoadPromises.pocketAvailability;
+  if (refreshCurrentRoute && isDiningRoute() && state.dataLoaded.dining) {
+    filterRestaurants();
+  }
+}
+
 async function ensureDiningDataLoaded() {
   if (state.dataLoaded.dining) return;
   if (!dataLoadPromises.dining) {
     dataLoadPromises.dining = (async () => {
-      const [japanRecords, japanMeta, globalRecords, globalMeta, pocketAvailability] = await Promise.all([
+      const [japanRecords, japanMeta, globalRecords, globalMeta] = await Promise.all([
         fetchJson(DATA_URL),
         fetchJson(JAPAN_META_URL),
         fetchJson(GLOBAL_DATA_URL),
         fetchJson(GLOBAL_META_URL),
-        fetchJson(POCKET_AVAILABILITY_URL),
       ]);
-      const pocketAvailabilityRecords = pocketAvailability?.records || {};
-      (Array.isArray(japanRecords) ? japanRecords : []).forEach((record) => {
-        record.pocket_availability = pocketAvailabilityRecords[record.id] || null;
-      });
       state.restaurants = [
         ...(Array.isArray(japanRecords) ? japanRecords : []),
         ...(Array.isArray(globalRecords) ? globalRecords : []),
       ];
       state.japanSourceMeta = japanMeta || null;
       state.globalSourceMeta = globalMeta || null;
-      state.pocketAvailability = pocketAvailability || null;
       state.restaurants.forEach((record) => {
         record.search_text = (record.search_text || "").toLowerCase();
       });
@@ -2345,7 +2414,8 @@ async function ensureTableForTwoDataLoaded() {
     dataLoadPromises.tableForTwo = (async () => {
       const [tableForTwo, releaseHistory, telegramGuideConfig] = await Promise.all([
         fetchJson(TABLE_FOR_TWO_DATA_URL),
-        fetchJson(TABLE_FOR_TWO_RELEASE_HISTORY_URL),
+        fetchJson(TABLE_FOR_TWO_RELEASE_HISTORY_URL)
+          .then((payload) => payload || fetchJson(TABLE_FOR_TWO_RELEASE_HISTORY_FALLBACK_URL)),
         fetchJson(TELEGRAM_GUIDE_CONFIG_URL).catch(() => ({
           schema_version: 1,
           enabled: false,
@@ -2368,6 +2438,9 @@ async function ensureTableForTwoDataLoaded() {
 async function ensureRouteDataLoaded(route = currentRoute()) {
   if (isDiningRoute(route)) {
     await ensureDiningDataLoaded();
+    if (currentRouteNeedsPocketAvailability(route)) {
+      await ensurePocketAvailabilityLoaded();
+    }
   } else if (isStayRoute(route)) {
     await ensureStaysDataLoaded();
   } else if (isLoveDiningRoute(route)) {
@@ -2376,9 +2449,11 @@ async function ensureRouteDataLoaded(route = currentRoute()) {
     await ensureTableForTwoDataLoaded();
   }
 
-  if (currentRouteNeedsGoogleRatings(route)) {
+  if (isTableForTwoRoute(route)) {
+    void loadTableForTwoGoogleRatings({ refreshCurrentRoute: true });
+  } else if (currentRouteNeedsGoogleRatings(route)) {
     await loadGoogleRatings();
-  } else if (isLiveDataRoute(route)) {
+  } else if (shouldLoadGoogleRatingsInBackground(route)) {
     void loadGoogleRatings({ refreshCurrentRoute: true });
   }
 }
@@ -4279,6 +4354,13 @@ function setActiveRecord(id, options = {}) {
   }
   updateDiningMarkerStyles();
   if (id && options.scrollDetails) maybeScrollDiningDetailsIntoView();
+  if (id) {
+    const activeRecord = state.restaurants.find((record) => record.id === id);
+    void loadGoogleRatings({ refreshCurrentRoute: true });
+    if (activeRecord?.country === "Japan") {
+      void ensurePocketAvailabilityLoaded({ refreshCurrentRoute: true });
+    }
+  }
 }
 
 /** Centralized zoom configuration - single source of truth */
@@ -7616,7 +7698,7 @@ function navigateToRouteHash(routeHash) {
 
 async function init() {
   initTheme();
-  await Promise.all([loadUpdates(), loadSourceHealth()]);
+  void Promise.all([loadUpdates(), loadSourceHealth()]);
 
   // Set min date on stays date inputs to today
   const today = new Date().toISOString().split("T")[0];
@@ -7643,7 +7725,7 @@ searchInput.addEventListener("input", () => {
     if (isDiningRoute()) filterRestaurants();
   }, SEARCH_DEBOUNCE_MS);
 });
-countryFilter.addEventListener("change", () => {
+countryFilter.addEventListener("change", async () => {
   prefectureFilter.value = "";
   cityFilter.value = "";
   districtFilter.value = "";
@@ -7660,6 +7742,9 @@ countryFilter.addEventListener("change", () => {
     pocketDateFilter.value = "";
     pocketDateEndFilter.value = "";
     pocketPartyFilter.value = "";
+  }
+  if (diningFiltersNeedPocketAvailability()) {
+    await ensurePocketAvailabilityLoaded();
   }
   refreshFilterOptions();
   filterRestaurants();
@@ -7684,29 +7769,44 @@ cityFilter.addEventListener("change", () => {
   districtFilter,
   cuisineFilter,
   tabelogFilter,
-  googleRatingFilter,
-  sortFilter,
   tabelogTopFilter,
   lunchFilter,
   dinnerFilter,
   kidsFilter,
   menuFilter,
   reservationFilter,
-  pocketAvailabilityFilter,
-  pocketSessionFilter,
 ].forEach((element) => {
   element.addEventListener("change", filterRestaurants);
 });
-pocketDateFilter.addEventListener("change", (event) => {
+
+async function applyDiningRatingFilter() {
+  if (currentRouteNeedsGoogleRatings()) {
+    await loadGoogleRatings();
+  }
+  if (isDiningRoute()) filterRestaurants();
+}
+
+async function applyPocketFilter() {
+  if (diningFiltersNeedPocketAvailability()) {
+    await ensurePocketAvailabilityLoaded();
+  }
+  if (isDiningRoute()) filterRestaurants();
+}
+
+googleRatingFilter.addEventListener("change", applyDiningRatingFilter);
+sortFilter.addEventListener("change", applyDiningRatingFilter);
+pocketAvailabilityFilter.addEventListener("change", applyPocketFilter);
+pocketSessionFilter.addEventListener("change", applyPocketFilter);
+pocketDateFilter.addEventListener("change", async (event) => {
   setPocketDateRangeInput("start", event.target.value);
-  filterRestaurants();
+  await applyPocketFilter();
 });
-pocketDateEndFilter.addEventListener("change", (event) => {
+pocketDateEndFilter.addEventListener("change", async (event) => {
   setPocketDateRangeInput("end", event.target.value);
-  filterRestaurants();
+  await applyPocketFilter();
 });
-pocketPartyFilter.addEventListener("input", filterRestaurants);
-pocketPartyFilter.addEventListener("change", filterRestaurants);
+pocketPartyFilter.addEventListener("input", applyPocketFilter);
+pocketPartyFilter.addEventListener("change", applyPocketFilter);
 
 resetFiltersButton.addEventListener("click", () => {
   resetFilterControls();

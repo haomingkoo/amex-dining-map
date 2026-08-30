@@ -49,10 +49,12 @@ jobs:
         run: |
           python3 -m unittest \
             scripts.tests.test_table_for_two_retry \
-            scripts.tests.test_table_for_two_data
+            scripts.tests.test_table_for_two_data \
+            scripts.tests.test_public_data_projections
           for test_file in scripts/tests/test_table_for_two_*.js; do
             node "$test_file"
           done
+          node scripts/tests/test_tft_public_payloads.js
 
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
@@ -85,10 +87,18 @@ jobs:
             cp "data/${file}" site/data/
           done
           python3 scripts/build_telegram_public_config.py --output site/data/telegram-guide.json
+          python3 scripts/build_public_data_projections.py \
+            --table-for-two data/table-for-two.json \
+            --ratings data/google-maps-ratings.json \
+            --release-history data/table-for-two-release-history.json \
+            --tft-ratings-output site/data/google-maps-ratings-table-for-two.json \
+            --release-summary-output site/data/table-for-two-release-history-summary.json
           cp .nojekyll site/
           cp CNAME site/
-          short_sha="${GITHUB_SHA::7}"
-          sed -i "s/?v=dev/?v=${short_sha}/g" site/index.html
+          app_version="$(sha256sum site/app.js | cut -c1-12)"
+          styles_version="$(sha256sum site/styles.css | cut -c1-12)"
+          sed -i "s/app.js?v=dev/app.js?v=${app_version}/g" site/index.html
+          sed -i "s/styles.css?v=dev/styles.css?v=${styles_version}/g" site/index.html
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
