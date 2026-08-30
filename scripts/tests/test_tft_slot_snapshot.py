@@ -29,7 +29,7 @@ def test_projection_matches_current_source_and_is_bounded():
     assert len(json.dumps(projected, separators=(",", ":")).encode()) < 1_000_000
 
 
-def test_vue_projection_preserves_exact_slot_facts():
+def test_vue_projection_preserves_current_source_facts():
     source = _source()
     projected = MODULE.build_snapshot(source)
     source_vue = next(venue for venue in source["venues"] if venue["id"] == "tft-vue")
@@ -37,7 +37,7 @@ def test_vue_projection_preserves_exact_slot_facts():
     vue = next(venue for venue in projected["venues"] if venue["id"] == "tft-vue")
 
     assert vue["project"] == "AMEXPlatSG"
-    assert vue["status"] == "live_available"
+    assert vue["status"] == source_availability["status"]
     assert vue["checked_at"] == source_availability["checked_at"]
     assert vue["meals"] == [
         {

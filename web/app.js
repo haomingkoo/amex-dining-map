@@ -21,6 +21,7 @@ const INTRO_STORAGE_KEY = "amex-benefits-intro-v3";
 const UPDATES_READ_STORAGE_KEY = "amex-benefits-updates-read-v1";
 const THEME_STORAGE_KEY = "theme-preference";
 const MOBILE_BREAKPOINT = 820;
+const SEARCH_DEBOUNCE_MS = 200;
 const THEME_TILE_URLS = {
   dark: "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
   light: "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
@@ -569,6 +570,7 @@ const dataLoadPromises = {
 let routeApplyToken = 0;
 let isMobileViewport = window.innerWidth <= MOBILE_BREAKPOINT;
 let lastViewportWidth = window.innerWidth;
+let diningSearchTimer = null;
 
 const hasLeaflet = typeof window !== "undefined" && typeof window.L !== "undefined";
 const hasMarkerCluster = hasLeaflet && typeof L.markerClusterGroup === "function";
@@ -2203,19 +2205,25 @@ async function fetchJson(url) {
 function rerenderCurrentRouteAfterAuxiliaryData() {
   const route = currentRoute();
   if (isDiningRoute(route) && state.dataLoaded.dining) {
-    filterRestaurants();
+    renderFocusCard();
+    renderTable();
+    renderMobileCards(false);
     return;
   }
   if (isStayRoute(route) && state.dataLoaded.stays) {
-    filterStays();
+    renderStayFocusCard();
+    renderStayTable();
+    renderStayMobileCards();
     return;
   }
   if (isLoveDiningRoute(route) && state.dataLoaded.loveDining) {
-    filterLoveDining();
+    renderLoveDiningCard();
+    renderLoveDiningMobileList();
     return;
   }
   if (isTableForTwoRoute(route) && state.dataLoaded.tableForTwo) {
-    filterTableForTwo();
+    renderTableForTwoList();
+    renderTableForTwoCard();
   }
 }
 
@@ -7537,7 +7545,6 @@ async function applyRoute(routeId) {
     if (linkedVenueId && tableForTwoVenues().some((record) => record.id === linkedVenueId)) {
       setActiveTableForTwoRecord(linkedVenueId, { scrollDetails: true });
     }
-    ensureTableForTwoLiveRefresh();
     if (hasLeaflet && tableForTwoMap) {
       setTimeout(() => {
         tableForTwoMap.invalidateSize();
@@ -7630,7 +7637,12 @@ async function init() {
   showIntroGate();
 }
 
-searchInput.addEventListener("input", filterRestaurants);
+searchInput.addEventListener("input", () => {
+  window.clearTimeout(diningSearchTimer);
+  diningSearchTimer = window.setTimeout(() => {
+    if (isDiningRoute()) filterRestaurants();
+  }, SEARCH_DEBOUNCE_MS);
+});
 countryFilter.addEventListener("change", () => {
   prefectureFilter.value = "";
   cityFilter.value = "";

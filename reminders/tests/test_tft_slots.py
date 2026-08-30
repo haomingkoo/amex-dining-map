@@ -22,6 +22,18 @@ def snapshot() -> dict:
     payload = json.loads((ROOT / "data" / "table-for-two-slots.json").read_text())
     vue = next(venue for venue in payload["venues"] if venue["id"] == "tft-vue")
     vue["checked_at"] = (NOW - timedelta(minutes=10)).isoformat()
+    vue["project"] = "AMEXPlatSG"
+    vue["status"] = "live_available"
+    vue["meals"] = [
+        {
+            "meal": "Dinner",
+            "status": "available",
+            "slots": [
+                {"date": "2026-10-29", "time": value, "max_seats": 2}
+                for value in ("18:00", "18:30", "19:00", "19:30", "20:00")
+            ],
+        }
+    ]
     return payload
 
 
