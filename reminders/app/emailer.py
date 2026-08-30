@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import urllib.error
 import urllib.request
+from html import escape
 
 RESEND_ENDPOINT = "https://api.resend.com/emails"
 
@@ -52,20 +53,23 @@ def send_email(
 def _shell(
     title: str, body_html: str, unsubscribe_url: str, manage_url: str | None = None
 ) -> str:
+    safe_title = escape(title)
+    safe_unsubscribe_url = escape(unsubscribe_url, quote=True)
+    safe_manage_url = escape(manage_url, quote=True) if manage_url else None
     manage_link = (
-        f'<a href="{manage_url}" style="color:#8a94a6">Manage your reminders</a> · '
-        if manage_url
+        f'<a href="{safe_manage_url}" style="color:#8a94a6">Manage your reminders</a> · '
+        if safe_manage_url
         else ""
     )
     return f"""\
 <div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
             max-width:480px;margin:0 auto;padding:24px;color:#1a2332">
-  <h1 style="font-size:20px;margin:0 0 16px">{title}</h1>
+  <h1 style="font-size:20px;margin:0 0 16px">{safe_title}</h1>
   {body_html}
   <hr style="border:none;border-top:1px solid #e5e9f0;margin:24px 0 12px">
   <p style="font-size:12px;color:#8a94a6;margin:0">
     Table for Two reminders · Unofficial Platinum Experience.<br>
-    {manage_link}<a href="{unsubscribe_url}" style="color:#8a94a6">Unsubscribe</a>.
+    {manage_link}<a href="{safe_unsubscribe_url}" style="color:#8a94a6">Unsubscribe</a>.
   </p>
 </div>"""
 
@@ -77,7 +81,8 @@ def confirm_email_html(
     manage_url: str | None = None,
     matches_exist: bool = False,
 ) -> str:
-    greeting = f"Hi {name}," if name else "Hi,"
+    greeting = f"Hi {escape(name)}," if name else "Hi,"
+    safe_confirm_url = escape(confirm_url, quote=True)
     good_news = (
         '<p style="font-size:15px;line-height:1.5;margin:0 0 16px;padding:10px 12px;'
         "background:#eaf7f3;border-radius:8px;color:#0f5132\">\U0001f389 Good news — "
@@ -91,7 +96,7 @@ def confirm_email_html(
   <p style="font-size:15px;line-height:1.5;margin:0 0 16px">{greeting} please confirm
      your email to start receiving Table for Two availability reminders.</p>
   <p style="margin:0 0 20px">
-    <a href="{confirm_url}"
+    <a href="{safe_confirm_url}"
        style="display:inline-block;background:#1a2332;color:#fff;text-decoration:none;
               padding:12px 22px;border-radius:8px;font-size:15px">Confirm my email</a>
   </p>

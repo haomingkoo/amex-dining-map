@@ -50,6 +50,18 @@ def test_send_email_posts_to_resend(monkeypatch):
     assert "List-Unsubscribe" in captured["data"]["headers"]
 
 
+def test_confirmation_email_escapes_name_and_links():
+    html = emailer.confirm_email_html(
+        '<img src=x onerror="alert(1)">',
+        'https://svc/confirm?token=a&next="bad"',
+        "https://svc/unsubscribe?token=a&b=1",
+    )
+
+    assert "<img src=x" not in html
+    assert "&lt;img src=x onerror=&quot;alert(1)&quot;&gt;" in html
+    assert 'token=a&amp;next=&quot;bad&quot;' in html
+
+
 def test_send_email_raises_on_non_2xx(monkeypatch):
     def fake_urlopen(req, timeout=30):
         return _FakeResp(500, b'{"error":"boom"}')

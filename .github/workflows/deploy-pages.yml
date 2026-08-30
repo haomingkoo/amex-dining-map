@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: main
 
@@ -54,7 +54,7 @@ jobs:
           done
 
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
 
       - name: Stage Static Site
         run: |
@@ -84,7 +84,7 @@ jobs:
           sed -i "s/?v=dev/?v=${short_sha}/g" site/index.html
 
       - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: site
 
@@ -94,7 +94,7 @@ jobs:
       - name: Deploy attempt 1
         id: deploy_1
         continue-on-error: true
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
 
       - name: Wait before deploy retry
         if: steps.deploy_1.outcome == 'failure'
@@ -104,7 +104,7 @@ jobs:
         id: deploy_2
         if: steps.deploy_1.outcome == 'failure'
         continue-on-error: true
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
 
       - name: Wait before final deploy retry
         if: steps.deploy_1.outcome == 'failure' && steps.deploy_2.outcome == 'failure'
@@ -113,4 +113,4 @@ jobs:
       - name: Deploy attempt 3
         id: deployment
         if: steps.deploy_1.outcome == 'failure' && steps.deploy_2.outcome == 'failure'
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

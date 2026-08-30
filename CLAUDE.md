@@ -1,5 +1,19 @@
 # CLAUDE.md — amex-dining-map
 
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs live in GitHub Issues; external PRs are not a triage surface. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the canonical `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix` labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This is a single-context repository. See `docs/agents/domain.md`.
+
 ## What This Project Is
 
 An AMEX Platinum dining map covering three programs:
@@ -276,9 +290,9 @@ reused from `trader-koo`).
 ```
 Native form on the site (web/, #/table-for-two)
    POST /api/subscribe  → store 'pending', send double opt-in confirm email
-   GET  /api/confirm     → activate
-   GET  /api/manage?token=  → token-only self-service page (view/edit/unsubscribe, no login)
-   GET  /api/unsubscribe?token= → one-click off
+   GET  /api/confirm     → render confirmation action; POST activates
+   GET  /api/manage?token=  → dedicated-token self-service page; POST updates
+   GET  /api/unsubscribe?token= → render action; POST unsubscribes
    GET  /api/subscribers → Bearer ALERT_EXPORT_TOKEN export for the alert job
         │
         ▼
@@ -286,9 +300,9 @@ scripts/send_table_for_two_alerts.py  (GitHub Action, runs from main)
    fetches active subscribers from /api/subscribers, sends matches/expired via Resend
 ```
 
-Security: double opt-in; per-IP rate limit + honeypot on subscribe; CORS locked to
-the site origin; manage/unsubscribe authed by a per-subscriber 256-bit token
-delivered only to the subscriber's inbox (no email-lookup, no passwords).
+Security: double opt-in; atomic keyed-hash IP/email/global limits plus honeypot;
+CORS locked to the site origin; separate per-subscriber manage and unsubscribe
+capabilities; no-store token pages; bounded retention and request sizes.
 
 **Deploy the service:** `cd reminders && railway up -c` (linked to the `amex-reminders`
 project). Local dev/tests use a Python 3.11–3.13 venv (`reminders/.venv`); Railway
@@ -297,5 +311,6 @@ pins 3.12. Run `reminders/.venv/bin/python -m pytest reminders/tests`.
 **Secrets** (Railway service + GitHub Actions): `RESEND_API_KEY`, `RESEND_FROM`,
 `ALERT_EXPORT_TOKEN`, `REMINDERS_API_BASE`, plus service-only `DB_PATH`,
 `ALLOWED_ORIGIN`, `PUBLIC_BASE_URL`, `CONFIRM_TOKEN_EXPIRY_HOURS`, and the existing
-`ALERT_HASH_SALT`. The `Table for Two Alerts` workflow runs from `main`, so the
+`ALERT_HASH_SALT`, plus service-only `ABUSE_HASH_SALT` and proxy/rate settings.
+The `Table for Two Alerts` workflow runs from `main`, so the
 alert job only picks up rewires after a merge.

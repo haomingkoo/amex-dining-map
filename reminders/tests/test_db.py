@@ -38,7 +38,7 @@ def test_init_db_creates_tables(conn):
         ).fetchall()
     }
 
-    assert {"subscribers", "subscribe_events"} <= names
+    assert {"subscribers", "subscribe_events", "pending_subscriber_changes"} <= names
 
 
 def test_upsert_pending_creates_pending_row(conn):
@@ -107,22 +107,22 @@ def test_active_subscribers_export_shape(conn):
 def test_get_by_unsubscribe_token(conn):
     db.upsert_pending(conn, _sub(), ip="1.2.3.4")
     token = conn.execute(
-        "SELECT unsubscribe_token FROM subscribers"
-    ).fetchone()["unsubscribe_token"]
+        "SELECT manage_token FROM subscribers"
+    ).fetchone()["manage_token"]
 
-    record = db.get_by_unsubscribe_token(conn, token)
+    record = db.get_by_manage_token(conn, token)
 
     assert record is not None
     assert record["email"] == "a@example.com"
     assert record["status"] == "pending"
-    assert db.get_by_unsubscribe_token(conn, "nope") is None
+    assert db.get_by_manage_token(conn, "nope") is None
 
 
 def test_update_preferences(conn):
     db.upsert_pending(conn, _sub(), ip="1.2.3.4")
     token = conn.execute(
-        "SELECT unsubscribe_token FROM subscribers"
-    ).fetchone()["unsubscribe_token"]
+        "SELECT manage_token FROM subscribers"
+    ).fetchone()["manage_token"]
 
     changed = SubscriberInput(
         email="a@example.com",
@@ -135,7 +135,7 @@ def test_update_preferences(conn):
     )
     assert db.update_preferences(conn, token, changed) is True
 
-    record = db.get_by_unsubscribe_token(conn, token)
+    record = db.get_by_manage_token(conn, token)
     assert record["party_size"] == 4
     assert record["sessions"] == ["Lunch"]
 
@@ -173,8 +173,9 @@ def test_init_db_migrates_missing_dates_column(tmp_path: Path):
         for row in conn.execute("PRAGMA table_info(subscribers)").fetchall()
     }
     assert "dates" in columns
-    row = conn.execute("SELECT dates FROM subscribers").fetchone()
+    row = conn.execute("SELECT dates, manage_token FROM subscribers").fetchone()
     assert json.loads(row["dates"]) == []
+    assert row["manage_token"] == "tok"
     conn.close()
 
 
@@ -201,3 +202,18 @@ def test_event_count_window(conn):
 
     assert db.count_recent_events(conn, "9.9.9.9", "subscribe_attempt", 60) == 2
     assert db.count_recent_events(conn, "8.8.8.8", "subscribe_attempt", 60) == 0
+
+
+def test_consume_rate_limits_is_atomic(conn):
+    limits = [("ip:one", "subscribe", 2), ("email:one", "subscribe", 2)]
+    assert db.consume_rate_limits(conn, limits, 60) is True
+    assert db.consume_rate_limits(conn, limits, 60) is True
+    assert db.consume_rate_limits(conn, limits, 60) is False
+    rows = conn.execute("SELECT COUNT(*) AS n FROM subscribe_events").fetchone()["n"]
+    assert rows == 4
+
+
+def test_database_file_is_owner_only(tmp_path: Path):
+    path = tmp_path / "private.db"
+    db.init_db(path)
+    assert path.stat().st_mode & 0o777 == 0o600

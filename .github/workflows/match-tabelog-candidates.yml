@@ -30,27 +30,35 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
 
       - name: Run Tabelog matcher batch
         env:
           PYTHONUNBUFFERED: "1"
+          INPUT_OFFSET: ${{ inputs.offset }}
+          INPUT_LIMIT: ${{ inputs.limit }}
+          INPUT_TOP: ${{ inputs.top }}
+          INPUT_PAUSE: ${{ inputs.pause }}
         run: |
+          [[ "$INPUT_OFFSET" =~ ^[0-9]+$ ]] || { echo "offset must be an integer"; exit 2; }
+          [[ "$INPUT_LIMIT" =~ ^[0-9]+$ ]] || { echo "limit must be an integer"; exit 2; }
+          [[ "$INPUT_TOP" =~ ^[0-9]+$ ]] || { echo "top must be an integer"; exit 2; }
+          [[ "$INPUT_PAUSE" =~ ^[0-9]+([.][0-9]+)?$ ]] || { echo "pause must be numeric"; exit 2; }
           mkdir -p artifacts
           python3 scripts/match_tabelog_candidates.py \
-            --offset "${{ inputs.offset }}" \
-            --limit "${{ inputs.limit }}" \
-            --top "${{ inputs.top }}" \
-            --pause "${{ inputs.pause }}" \
-            --output "artifacts/tabelog-candidates-${{ inputs.offset }}-${{ inputs.limit }}.json"
+            --offset "$INPUT_OFFSET" \
+            --limit "$INPUT_LIMIT" \
+            --top "$INPUT_TOP" \
+            --pause "$INPUT_PAUSE" \
+            --output "artifacts/tabelog-candidates-${INPUT_OFFSET}-${INPUT_LIMIT}.json"
 
       - name: Upload matcher output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: tabelog-candidates-${{ inputs.offset }}-${{ inputs.limit }}
           path: artifacts/

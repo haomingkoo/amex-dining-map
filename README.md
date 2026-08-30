@@ -172,7 +172,8 @@ Current coordinate audit notes:
 The Table for Two page contains a native signup form. It sends the selected
 venues, party size, sessions, and date range to the FastAPI service in
 `reminders/`. The service stores pending and confirmed subscriptions in SQLite,
-sends double-opt-in messages through Resend, and supports one-click unsubscribe.
+sends double-opt-in messages through Resend, and supports explicit plus
+email-provider one-click unsubscribe through POST actions.
 
 The twice-hourly workflow exports confirmed subscribers and matches them against
 the latest `AMEXPlatSG` availability cache. Required workflow secrets are:
@@ -181,6 +182,7 @@ the latest `AMEXPlatSG` availability cache. Required workflow secrets are:
 REMINDERS_API_BASE=https://<service-host>
 ALERT_EXPORT_TOKEN=<random long token>
 ALERT_HASH_SALT=<random long string>
+ABUSE_HASH_SALT=<different random long string, Railway service>
 RESEND_API_KEY=<resend API key>
 RESEND_FROM=<verified sender>
 ```

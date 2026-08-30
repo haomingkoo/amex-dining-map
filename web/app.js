@@ -1046,6 +1046,63 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
+function safeRenderedUrl(value, baseHref = "https://amex-explorer.kooexperience.com/") {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (raw.startsWith("#/")) return raw;
+  try {
+    const url = new URL(raw, baseHref);
+    if (url.protocol === "https:") return url.href;
+    if (url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)) {
+      return url.href;
+    }
+    if (url.protocol === "mailto:") return url.href;
+  } catch {
+    return "";
+  }
+  return "";
+}
+
+function sanitizeRenderedUrls(root) {
+  const elements = [];
+  if (root instanceof Element && root.matches("a[href], img[src]")) elements.push(root);
+  if (root instanceof Element || root instanceof Document) {
+    elements.push(...root.querySelectorAll("a[href], img[src]"));
+  }
+  elements.forEach((element) => {
+    const attribute = element instanceof HTMLAnchorElement ? "href" : "src";
+    const value = element.getAttribute(attribute);
+    const safe = safeRenderedUrl(value, window.location.href);
+    if (safe) {
+      if (safe !== value) element.setAttribute(attribute, safe);
+    } else {
+      element.removeAttribute(attribute);
+      if (element instanceof HTMLAnchorElement) element.setAttribute("aria-disabled", "true");
+    }
+  });
+}
+
+function installRenderedUrlSanitizer() {
+  sanitizeRenderedUrls(document);
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === "attributes") {
+        sanitizeRenderedUrls(mutation.target);
+        return;
+      }
+      mutation.addedNodes.forEach((node) => {
+        if (node instanceof Element) sanitizeRenderedUrls(node);
+      });
+    });
+  });
+  observer.observe(document.documentElement, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ["href", "src"],
+  });
+}
+
 function tagSection(title, tags, tone = "") {
   if (!tags || !tags.length) return "";
   const badges = tags
@@ -7429,6 +7486,8 @@ window.addEventListener("resize", () => {
     fitDiningMapToVisibleMarkers();
   }
 });
+
+installRenderedUrlSanitizer();
 
 init().catch(() => {
   focusCard.innerHTML =

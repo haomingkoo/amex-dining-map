@@ -26,27 +26,28 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: main
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.11"
 
       - name: Run description generator
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          INPUT_MIN_WORDS: ${{ github.event.inputs.min_words || '20' }}
+          INPUT_BATCH_SIZE: ${{ github.event.inputs.batch_size || '20' }}
+          INPUT_COUNTRY: ${{ github.event.inputs.country }}
         run: |
-          # On scheduled runs use defaults; on manual runs use inputs
-          MIN_WORDS="${{ github.event.inputs.min_words || '20' }}"
-          BATCH_SIZE="${{ github.event.inputs.batch_size || '20' }}"
-          COUNTRY="${{ github.event.inputs.country }}"
-          ARGS="--min-words $MIN_WORDS --batch-size $BATCH_SIZE"
-          if [ -n "$COUNTRY" ]; then
-            ARGS="$ARGS --country \"$COUNTRY\""
+          [[ "$INPUT_MIN_WORDS" =~ ^[0-9]+$ ]] || { echo "min_words must be an integer"; exit 2; }
+          [[ "$INPUT_BATCH_SIZE" =~ ^[0-9]+$ ]] || { echo "batch_size must be an integer"; exit 2; }
+          args=(--min-words "$INPUT_MIN_WORDS" --batch-size "$INPUT_BATCH_SIZE")
+          if [ -n "$INPUT_COUNTRY" ]; then
+            args+=(--country "$INPUT_COUNTRY")
           fi
-          eval python3 scripts/generate_global_descriptions.py $ARGS
+          python3 scripts/generate_global_descriptions.py "${args[@]}"
 
       - name: Commit updated descriptions
         run: |

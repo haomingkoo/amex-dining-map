@@ -1,0 +1,68 @@
+# Gates: TFT security, owner alerts, and self-help bot
+
+OWNS: GATES.md, SECURITY_AUDIT.md, README.md, PRODUCT.md, reminders/**, scripts/**, web/**, data/**, .github/workflows/**
+
+Scope: Audit and harden Amex Explorer, verify the live mobile TFT journey, and deliver separately secured owner-channel alerts and a source-grounded Telegram self-help bot.
+
+Tracker: parent #34; vertical slices #35 through #42.
+
+- [ ] G0: the completion ledger has valid, reviewable acceptance oracles
+  CHECK: node /Users/koohaoming/.codex/skills/unlazy/scripts/gate-lint.mjs GATES.md
+  EXPECT: LINT OK
+  EVIDENCE: pending
+
+- [ ] G1: the security audit covers the static site, reminder API, automation workflows, dependencies, live headers, secrets, abuse paths, and Telegram threat model with no unresolved critical finding
+  CHECK: node scripts/verify-security-audit.mjs
+  EXPECT: security audit verification passed
+  EVIDENCE: pending
+
+- [ ] G2: the deployed mobile Table for Two journey exposes venue details, current menu and official-source links, T&Cs context, release-pattern qualifications, and working reminder signup without browser-visible failures
+  CHECK: node scripts/verify-tft-browser-evidence.mjs
+  EXPECT: TFT browser evidence verification passed
+  EVIDENCE: pending
+
+- [ ] G3: owner updates are formatted as concise before-and-after alerts and can only be delivered to the configured private Telegram channel
+  CHECK: node scripts/verify-telegram-owner-alerts.mjs
+  EXPECT: Telegram owner alert verification passed
+  EVIDENCE: pending
+
+- [ ] G4: menu, venue, T&C, source, and release-pattern changes can trigger owner-channel alerts without leaking bot tokens, subscriber records, or internal diagnostics
+  CHECK: node scripts/verify-telegram-change-dispatch.mjs
+  EXPECT: Telegram change dispatch verification passed
+  EVIDENCE: pending
+
+- [ ] G5: the Telegram self-help bot answers TFT program, venue, menu, T&C, and release-pattern questions and can find currently observed slots from curated current sources with citations and freshness dates
+  CHECK: node scripts/verify-telegram-guide.mjs
+  EXPECT: Telegram guide verification passed
+  EVIDENCE: pending
+
+- [ ] G6: unsupported, stale, ambiguous, adversarial, and prompt-injection questions fail safely without inventing eligibility, availability, booking rules, or menu facts
+  CHECK: node scripts/verify-telegram-safety.mjs
+  EXPECT: Telegram safety verification passed
+  EVIDENCE: pending
+
+- [ ] G7: Telegram webhook authentication, owner allowlists, public-user rate limits, payload limits, output escaping, reminder consent, retention limits, and secret isolation pass security regression tests
+  CHECK: node scripts/verify-telegram-security.mjs
+  EXPECT: Telegram security verification passed
+  EVIDENCE: pending
+
+- [ ] G7A: a Telegram user can create, inspect, and cancel a TFT slot reminder with an explicit venue, party size, meal, and date range
+  CHECK: node scripts/verify-telegram-reminders.mjs
+  EXPECT: Telegram reminder verification passed
+  EVIDENCE: pending
+
+- [ ] G8: the complete existing and new automated test suites pass from a production-supported Python version and the frontend remains syntactically valid
+  CHECK: node scripts/verify-project.mjs
+  EXPECT: project verification passed
+  EVIDENCE: pending
+
+- [ ] G9: a real before-and-after test alert is delivered to the private owner channel and no unintended chat receives it
+  EVIDENCE: pending
+
+- [ ] G10: a real Telegram user can ask for a TFT menu or T&C, find an observed slot, and create then cancel a reminder, while an adversarial question receives the bounded fallback
+  EVIDENCE: pending
+
+- [ ] G11: the deployed site, reminder service, owner channel, and self-help bot are documented with setup, rotation, monitoring, rollback, privacy, freshness, and known-limit procedures
+  CHECK: node scripts/verify-operations-docs.mjs
+  EXPECT: operations documentation verification passed
+  EVIDENCE: pending

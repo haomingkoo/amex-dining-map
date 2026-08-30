@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, EmailStr, field_validator, model_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 from app.db import SubscriberInput
 
@@ -29,14 +29,14 @@ _KNOWN_VENUES = load_known_venues()
 
 class SubscribeRequest(BaseModel):
     email: EmailStr
-    name: str | None = None
+    name: str | None = Field(default=None, max_length=80)
     party_size: int
-    sessions: list[Literal["Lunch", "Dinner"]]
-    venues: list[str]
+    sessions: list[Literal["Lunch", "Dinner"]] = Field(min_length=1, max_length=2)
+    venues: list[str] = Field(min_length=1, max_length=30)
     date_start: date
     date_end: date
-    dates: list[date] = []  # optional specific dates; empty = match the whole range
-    website: str = ""  # honeypot — handled in the route, not validated here
+    dates: list[date] = Field(default_factory=list, max_length=31)
+    website: str = Field(default="", max_length=200)
 
     @field_validator("party_size")
     @classmethod

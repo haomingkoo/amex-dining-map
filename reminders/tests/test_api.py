@@ -96,7 +96,16 @@ def test_confirm_activates_and_appears_in_export(client):
     client.post("/api/subscribe", json=_body())
     token = _token(client.db_path, "confirm_token")
 
-    confirmed = client.get(f"/api/confirm?token={token}")
+    landing = client.get(f"/api/confirm?token={token}")
+    assert landing.status_code == 200
+    assert "Confirm reminders" in landing.text
+
+    before = client.get(
+        "/api/subscribers", headers={"Authorization": "Bearer export-secret"}
+    )
+    assert before.json()["subscriptions"] == []
+
+    confirmed = client.post(f"/api/confirm?token={token}")
     assert confirmed.status_code == 200
 
     export = client.get(
@@ -121,7 +130,7 @@ def test_export_requires_valid_token(client):
 
 def test_manage_page_shows_subscription_and_updates(client):
     client.post("/api/subscribe", json=_body())
-    token = _token(client.db_path, "unsubscribe_token")
+    token = _token(client.db_path, "manage_token")
 
     page = client.get(f"/api/manage?token={token}")
     assert page.status_code == 200
@@ -154,13 +163,90 @@ def test_manage_invalid_token_rejected(client):
 def test_unsubscribe_removes_from_export(client):
     client.post("/api/subscribe", json=_body())
     confirm_token = _token(client.db_path, "confirm_token")
-    client.get(f"/api/confirm?token={confirm_token}")
+    client.post(f"/api/confirm?token={confirm_token}")
     unsub_token = _token(client.db_path, "unsubscribe_token")
 
-    unsubscribed = client.get(f"/api/unsubscribe?token={unsub_token}")
+    landing = client.get(f"/api/unsubscribe?token={unsub_token}")
+    assert landing.status_code == 200
+    still_active = client.get(
+        "/api/subscribers", headers={"Authorization": "Bearer export-secret"}
+    )
+    assert len(still_active.json()["subscriptions"]) == 1
+
+    unsubscribed = client.post(f"/api/unsubscribe?token={unsub_token}")
     assert unsubscribed.status_code == 200
 
     export = client.get(
         "/api/subscribers", headers={"Authorization": "Bearer export-secret"}
     )
     assert export.json()["subscriptions"] == []
+
+
+def test_active_resubscribe_keeps_current_settings_until_confirmed(client):
+    client.post("/api/subscribe", json=_body(party_size=2, sessions=["Dinner"]))
+    client.post(f"/api/confirm?token={_token(client.db_path, 'confirm_token')}")
+
+    client.post("/api/subscribe", json=_body(party_size=4, sessions=["Lunch"]))
+    conn = db.connect(client.db_path)
+    current = conn.execute(
+        "SELECT status, party_size, sessions FROM subscribers WHERE email = ?",
+        ("guest@example.com",),
+    ).fetchone()
+    pending = conn.execute(
+        "SELECT confirm_token FROM pending_subscriber_changes WHERE email = ?",
+        ("guest@example.com",),
+    ).fetchone()
+    conn.close()
+
+    assert current["status"] == "active"
+    assert current["party_size"] == 2
+    assert current["sessions"] == '["Dinner"]'
+    assert pending is not None
+
+    client.post(f"/api/confirm?token={pending['confirm_token']}")
+    conn = db.connect(client.db_path)
+    changed = conn.execute(
+        "SELECT status, party_size, sessions FROM subscribers WHERE email = ?",
+        ("guest@example.com",),
+    ).fetchone()
+    conn.close()
+    assert changed["status"] == "active"
+    assert changed["party_size"] == 4
+    assert changed["sessions"] == '["Lunch"]'
+
+
+def test_forwarded_for_spoof_prefix_does_not_bypass_rate_limit(client):
+    for index in range(5):
+        response = client.post(
+            "/api/subscribe",
+            json=_body(email=f"guest{index}@example.com"),
+            headers={"X-Forwarded-For": f"198.51.100.{index}, 203.0.113.10"},
+        )
+        assert response.status_code == 200
+
+    blocked = client.post(
+        "/api/subscribe",
+        json=_body(email="another@example.com"),
+        headers={"X-Forwarded-For": "192.0.2.99, 203.0.113.10"},
+    )
+    assert blocked.status_code == 429
+
+
+def test_api_security_headers_and_body_limit(client):
+    response = client.get("/api/manage?token=invalid")
+    assert response.headers["cache-control"] == "no-store"
+    assert response.headers["referrer-policy"] == "no-referrer"
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["x-frame-options"] == "DENY"
+    assert "frame-ancestors 'none'" in response.headers["content-security-policy"]
+
+    oversized = client.post(
+        "/api/subscribe",
+        content=b"x" * 20_000,
+        headers={"Content-Type": "application/json"},
+    )
+    assert oversized.status_code == 413
+
+
+def test_openapi_is_not_public(client):
+    assert client.get("/openapi.json").status_code == 404

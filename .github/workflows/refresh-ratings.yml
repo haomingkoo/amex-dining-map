@@ -30,31 +30,36 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
 
       - name: Install Playwright
         run: |
-          pip install playwright
+          pip install playwright==1.62.0
           playwright install chromium
           playwright install-deps chromium
 
       - name: Scrape ratings (incremental)
         env:
           PYTHONUNBUFFERED: "1"
+          INPUT_DATASETS: ${{ github.event.inputs.datasets || 'global japan love' }}
+          INPUT_MISSING_ONLY: ${{ github.event.inputs.missing_only != 'false' && 'true' || 'false' }}
         run: |
-          DATASETS="${{ github.event.inputs.datasets || 'global japan love' }}"
-          MISSING_FLAG="${{ github.event.inputs.missing_only != 'false' && '--missing-only' || '' }}"
-          python3 scripts/scrape_google_ratings_playwright.py \
-            --datasets $DATASETS \
-            $MISSING_FLAG \
-            --concurrency 2
+          read -r -a datasets <<< "$INPUT_DATASETS"
+          for dataset in "${datasets[@]}"; do
+            case "$dataset" in global|japan|love) ;; *) echo "Unsupported dataset: $dataset"; exit 2 ;; esac
+          done
+          args=(--datasets "${datasets[@]}" --concurrency 2)
+          if [ "$INPUT_MISSING_ONLY" = "true" ]; then
+            args+=(--missing-only)
+          fi
+          python3 scripts/scrape_google_ratings_playwright.py "${args[@]}"
 
       - name: Commit updated ratings
         run: |

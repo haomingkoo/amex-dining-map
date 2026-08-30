@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /reminders
+    schedule:
+      interval: weekly
+    labels:
+      - ready-for-agent
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - ready-for-agent
+    open-pull-requests-limit: 5

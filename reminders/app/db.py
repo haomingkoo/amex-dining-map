@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import secrets
 import sqlite3
 from dataclasses import dataclass, field
@@ -24,6 +25,7 @@ CREATE TABLE IF NOT EXISTS subscribers (
   confirm_token TEXT,
   confirm_token_expires_ts TEXT,
   unsubscribe_token TEXT NOT NULL,
+  manage_token TEXT NOT NULL,
   source_ip TEXT,
   created_ts TEXT NOT NULL,
   confirmed_ts TEXT,
@@ -32,6 +34,23 @@ CREATE TABLE IF NOT EXISTS subscribers (
 CREATE INDEX IF NOT EXISTS idx_subscribers_status ON subscribers(status);
 CREATE INDEX IF NOT EXISTS idx_subscribers_confirm_token ON subscribers(confirm_token);
 CREATE INDEX IF NOT EXISTS idx_subscribers_unsub_token ON subscribers(unsubscribe_token);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_subscribers_email_unique ON subscribers(email);
+
+CREATE TABLE IF NOT EXISTS pending_subscriber_changes (
+  email TEXT PRIMARY KEY,
+  name TEXT,
+  party_size INTEGER NOT NULL,
+  sessions TEXT NOT NULL,
+  venues TEXT NOT NULL,
+  date_start TEXT NOT NULL,
+  date_end TEXT NOT NULL,
+  dates TEXT NOT NULL DEFAULT '[]',
+  confirm_token TEXT NOT NULL UNIQUE,
+  confirm_token_expires_ts TEXT NOT NULL,
+  source_ip TEXT,
+  created_ts TEXT NOT NULL,
+  FOREIGN KEY(email) REFERENCES subscribers(email) ON DELETE CASCADE
+);
 
 CREATE TABLE IF NOT EXISTS subscribe_events (
   id INTEGER PRIMARY KEY,
@@ -79,6 +98,10 @@ def connect(path: Path | str) -> sqlite3.Connection:
         path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA busy_timeout = 5000")
+    conn.execute("PRAGMA foreign_keys = ON")
+    if str(path) != ":memory:":
+        os.chmod(path, 0o600)
     return conn
 
 
@@ -94,6 +117,21 @@ def init_db(path: Path | str) -> None:
             conn.execute(
                 "ALTER TABLE subscribers ADD COLUMN dates TEXT NOT NULL DEFAULT '[]'"
             )
+        if "manage_token" not in columns:
+            conn.execute("ALTER TABLE subscribers ADD COLUMN manage_token TEXT")
+        for row in conn.execute(
+            "SELECT id, unsubscribe_token FROM subscribers "
+            "WHERE manage_token IS NULL OR manage_token = ''"
+        ).fetchall():
+            conn.execute(
+                "UPDATE subscribers SET manage_token = ? WHERE id = ?",
+                (row["unsubscribe_token"], row["id"]),
+            )
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_subscribers_manage_token "
+            "ON subscribers(manage_token)"
+        )
+        purge_expired_records(conn)
         conn.commit()
     finally:
         conn.close()
@@ -118,8 +156,36 @@ def upsert_pending(
     venues = json.dumps(sub.venues)
     dates = json.dumps(sub.dates)
     existing = conn.execute(
-        "SELECT id FROM subscribers WHERE email = ?", (sub.email,)
+        "SELECT id, status FROM subscribers WHERE email = ?", (sub.email,)
     ).fetchone()
+    if existing and existing["status"] == "active":
+        conn.execute(
+            """
+            INSERT INTO pending_subscriber_changes (
+                email, name, party_size, sessions, venues, date_start, date_end,
+                dates, confirm_token, confirm_token_expires_ts, source_ip, created_ts
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(email) DO UPDATE SET
+                name = excluded.name,
+                party_size = excluded.party_size,
+                sessions = excluded.sessions,
+                venues = excluded.venues,
+                date_start = excluded.date_start,
+                date_end = excluded.date_end,
+                dates = excluded.dates,
+                confirm_token = excluded.confirm_token,
+                confirm_token_expires_ts = excluded.confirm_token_expires_ts,
+                source_ip = excluded.source_ip,
+                created_ts = excluded.created_ts
+            """,
+            (
+                sub.email, sub.name, sub.party_size, sessions, venues,
+                sub.date_start, sub.date_end, dates, confirm_token,
+                confirm_expires, ip, now_iso,
+            ),
+        )
+        conn.commit()
+        return confirm_token
     if existing:
         conn.execute(
             """
@@ -142,13 +208,13 @@ def upsert_pending(
             INSERT INTO subscribers (
                 email, name, party_size, sessions, venues, date_start, date_end,
                 dates, status, confirm_token, confirm_token_expires_ts,
-                unsubscribe_token, source_ip, created_ts
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
+                unsubscribe_token, manage_token, source_ip, created_ts
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?)
             """,
             (
                 sub.email, sub.name, sub.party_size, sessions, venues,
                 sub.date_start, sub.date_end, dates, confirm_token, confirm_expires,
-                new_token(), ip, now_iso,
+                new_token(), new_token(), ip, now_iso,
             ),
         )
     conn.commit()
@@ -162,12 +228,39 @@ def confirm(conn: sqlite3.Connection, token: str) -> bool:
         "SELECT id, confirm_token_expires_ts FROM subscribers WHERE confirm_token = ?",
         (token,),
     ).fetchone()
-    if not row or _is_expired(row["confirm_token_expires_ts"]):
+    if row:
+        if _is_expired(row["confirm_token_expires_ts"]):
+            return False
+        conn.execute(
+            "UPDATE subscribers SET status = 'active', confirmed_ts = ?, "
+            "confirm_token = NULL, source_ip = NULL WHERE id = ?",
+            (_iso(_now()), row["id"]),
+        )
+        conn.commit()
+        return True
+
+    pending = conn.execute(
+        "SELECT * FROM pending_subscriber_changes WHERE confirm_token = ?",
+        (token,),
+    ).fetchone()
+    if not pending or _is_expired(pending["confirm_token_expires_ts"]):
         return False
     conn.execute(
-        "UPDATE subscribers SET status = 'active', confirmed_ts = ?, "
-        "confirm_token = NULL WHERE id = ?",
-        (_iso(_now()), row["id"]),
+        """
+        UPDATE subscribers
+        SET name = ?, party_size = ?, sessions = ?, venues = ?, date_start = ?,
+            date_end = ?, dates = ?, status = 'active', confirmed_ts = ?
+        WHERE email = ? AND status = 'active'
+        """,
+        (
+            pending["name"], pending["party_size"], pending["sessions"],
+            pending["venues"], pending["date_start"], pending["date_end"],
+            pending["dates"], _iso(_now()), pending["email"],
+        ),
+    )
+    conn.execute(
+        "DELETE FROM pending_subscriber_changes WHERE email = ?",
+        (pending["email"],),
     )
     conn.commit()
     return True
@@ -182,6 +275,13 @@ def unsubscribe(conn: sqlite3.Connection, token: str) -> bool:
         (_iso(_now()), token),
     )
     conn.commit()
+    if cur.rowcount > 0:
+        conn.execute(
+            "DELETE FROM pending_subscriber_changes WHERE email IN "
+            "(SELECT email FROM subscribers WHERE unsubscribe_token = ?)",
+            (token,),
+        )
+        conn.commit()
     return cur.rowcount > 0
 
 
@@ -209,15 +309,15 @@ def active_subscribers(conn: sqlite3.Connection) -> list[dict]:
     ]
 
 
-def get_by_unsubscribe_token(conn: sqlite3.Connection, token: str) -> dict | None:
-    """Look up a subscriber by their secret unsubscribe/manage token."""
+def get_by_manage_token(conn: sqlite3.Connection, token: str) -> dict | None:
+    """Look up a subscriber by their dedicated secret management token."""
     if not token:
         return None
     row = conn.execute(
         """
         SELECT email, name, party_size, sessions, venues, date_start, date_end,
                dates, status
-        FROM subscribers WHERE unsubscribe_token = ?
+        FROM subscribers WHERE manage_token = ?
         """,
         (token,),
     ).fetchone()
@@ -247,7 +347,7 @@ def update_preferences(
         UPDATE subscribers
         SET name = ?, party_size = ?, sessions = ?, venues = ?,
             date_start = ?, date_end = ?, dates = ?
-        WHERE unsubscribe_token = ? AND status != 'unsubscribed'
+        WHERE manage_token = ? AND status != 'unsubscribed'
         """,
         (
             sub.name, sub.party_size, json.dumps(sub.sessions), json.dumps(sub.venues),
@@ -256,6 +356,33 @@ def update_preferences(
     )
     conn.commit()
     return cur.rowcount > 0
+
+
+def purge_expired_records(
+    conn: sqlite3.Connection,
+    *,
+    unsubscribed_retention_days: int = 30,
+    event_retention_hours: int = 24,
+) -> None:
+    now = _now()
+    conn.execute(
+        "DELETE FROM pending_subscriber_changes WHERE confirm_token_expires_ts < ?",
+        (_iso(now),),
+    )
+    conn.execute(
+        "DELETE FROM subscribers WHERE status = 'pending' "
+        "AND confirm_token_expires_ts IS NOT NULL AND confirm_token_expires_ts < ?",
+        (_iso(now),),
+    )
+    conn.execute(
+        "DELETE FROM subscribers WHERE status = 'unsubscribed' "
+        "AND unsubscribed_ts IS NOT NULL AND unsubscribed_ts < ?",
+        (_iso(now - timedelta(days=unsubscribed_retention_days)),),
+    )
+    conn.execute(
+        "DELETE FROM subscribe_events WHERE created_ts < ?",
+        (_iso(now - timedelta(hours=event_retention_hours)),),
+    )
 
 
 def log_event(conn: sqlite3.Connection, ip: str, event_type: str) -> None:
@@ -277,3 +404,41 @@ def count_recent_events(
         (ip, event_type, cutoff),
     ).fetchone()
     return int(row["n"])
+
+
+def consume_rate_limits(
+    conn: sqlite3.Connection,
+    limits: list[tuple[str, str, int]],
+    within_minutes: int,
+    retention_hours: int = 24,
+) -> bool:
+    """Atomically consume one event for every limit key, or none when blocked."""
+    now = _now()
+    cutoff = _iso(now - timedelta(minutes=within_minutes))
+    retention_cutoff = _iso(now - timedelta(hours=retention_hours))
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        conn.execute(
+            "DELETE FROM subscribe_events WHERE created_ts < ?",
+            (retention_cutoff,),
+        )
+        for source_key, event_type, maximum in limits:
+            row = conn.execute(
+                "SELECT COUNT(*) AS n FROM subscribe_events "
+                "WHERE source_ip = ? AND event_type = ? AND created_ts >= ?",
+                (source_key, event_type, cutoff),
+            ).fetchone()
+            if int(row["n"]) >= maximum:
+                conn.rollback()
+                return False
+        now_iso = _iso(now)
+        conn.executemany(
+            "INSERT INTO subscribe_events (source_ip, event_type, created_ts) "
+            "VALUES (?, ?, ?)",
+            [(source_key, event_type, now_iso) for source_key, event_type, _ in limits],
+        )
+        conn.commit()
+        return True
+    except Exception:
+        conn.rollback()
+        raise

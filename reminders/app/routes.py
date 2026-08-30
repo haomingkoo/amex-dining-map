@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import hmac
+import hashlib
+import ipaddress
 import json
 from datetime import date
 from html import escape as html_escape
@@ -27,11 +29,32 @@ def get_settings() -> Settings:
     return load_settings()
 
 
-def client_ip(request: Request) -> str:
+def client_ip(request: Request, settings: Settings) -> str:
     forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+    hops = max(0, settings.trusted_proxy_hops)
+    if forwarded and hops:
+        chain = [part.strip() for part in forwarded.split(",") if part.strip()]
+        if len(chain) >= hops:
+            candidate = chain[-hops]
+            try:
+                return str(ipaddress.ip_address(candidate))
+            except ValueError:
+                pass
+    peer = request.client.host if request.client else "unknown"
+    try:
+        return str(ipaddress.ip_address(peer))
+    except ValueError:
+        return "unknown"
+
+
+def abuse_key(kind: str, value: str, settings: Settings) -> str:
+    secret = settings.abuse_hash_salt or settings.alert_export_token
+    digest = hmac.new(
+        secret.encode("utf-8"),
+        f"{kind}:{value}".encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    return f"{kind}:{digest}"
 
 
 def _page(title: str, message: str) -> str:
@@ -59,31 +82,45 @@ def subscribe(
     if payload.website.strip():  # honeypot — pretend success, do nothing
         return success
 
-    ip = client_ip(request)
     sub_input = payload.to_input()
+    ip = client_ip(request, settings)
     conn = db.connect(settings.db_path)
     try:
-        recent = db.count_recent_events(
-            conn, ip, "subscribe_attempt", RATE_LIMIT_WINDOW_MIN
+        allowed = db.consume_rate_limits(
+            conn,
+            [
+                (abuse_key("ip", ip, settings), "subscribe", settings.subscribe_ip_limit),
+                (
+                    abuse_key("email", sub_input.email, settings),
+                    "subscribe",
+                    settings.subscribe_email_limit,
+                ),
+                (abuse_key("global", "all", settings), "subscribe", settings.subscribe_global_limit),
+            ],
+            RATE_LIMIT_WINDOW_MIN,
         )
-        if recent >= RATE_LIMIT_MAX:
+        if not allowed:
             raise HTTPException(
                 status_code=429, detail="Too many attempts; please try again later."
             )
-        db.log_event(conn, ip, "subscribe_attempt")
         confirm_token = db.upsert_pending(
-            conn, sub_input, ip, settings.confirm_token_expiry_hours
+            conn,
+            sub_input,
+            abuse_key("ip", ip, settings),
+            settings.confirm_token_expiry_hours,
         )
         unsub_token = conn.execute(
-            "SELECT unsubscribe_token FROM subscribers WHERE email = ?",
+            "SELECT unsubscribe_token, manage_token FROM subscribers WHERE email = ?",
             (sub_input.email,),
-        ).fetchone()["unsubscribe_token"]
+        ).fetchone()
     finally:
         conn.close()
 
     confirm_url = f"{settings.public_base_url}/api/confirm?token={confirm_token}"
-    unsub_url = f"{settings.public_base_url}/api/unsubscribe?token={unsub_token}"
-    manage_url = f"{settings.public_base_url}/api/manage?token={unsub_token}"
+    unsub_url = (
+        f"{settings.public_base_url}/api/unsubscribe?token={unsub_token['unsubscribe_token']}"
+    )
+    manage_url = f"{settings.public_base_url}/api/manage?token={unsub_token['manage_token']}"
     matches_exist = open_tables_exist(
         sub_input.venues, sub_input.sessions, settings.table_data_url
     )
@@ -100,7 +137,33 @@ def subscribe(
     return success
 
 
+def _confirmation_form(title: str, message: str, action: str, label: str) -> str:
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>{title}</title></head>
+<body style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+background:#070d16;color:#e8edf5;display:flex;min-height:100vh;align-items:center;
+justify-content:center;margin:0"><main style="max-width:420px;padding:32px;text-align:center">
+<h1 style="font-size:22px;margin:0 0 12px">{title}</h1>
+<p style="font-size:15px;line-height:1.5;color:#aab4c4;margin:0 0 20px">{message}</p>
+<form method="post" action="{html_escape(action, quote=True)}">
+<button type="submit" style="padding:12px 20px;border:0;border-radius:8px;background:#4db8a6;
+color:#07120f;font-weight:700;cursor:pointer">{label}</button></form>
+</main></body></html>"""
+
+
 @router.get("/api/confirm", response_class=HTMLResponse)
+def confirm_page(token: str = "", settings: Settings = Depends(get_settings)) -> HTMLResponse:
+    return HTMLResponse(
+        _confirmation_form(
+            "Confirm your reminders",
+            "Confirm that you want to activate these Table for Two reminder settings.",
+            f"{settings.public_base_url}/api/confirm?token={html_escape(token, quote=True)}",
+            "Confirm reminders",
+        )
+    )
+
+
+@router.post("/api/confirm", response_class=HTMLResponse)
 def confirm(token: str = "", settings: Settings = Depends(get_settings)) -> HTMLResponse:
     conn = db.connect(settings.db_path)
     try:
@@ -124,6 +187,20 @@ def confirm(token: str = "", settings: Settings = Depends(get_settings)) -> HTML
 
 
 @router.get("/api/unsubscribe", response_class=HTMLResponse)
+def unsubscribe_page(
+    token: str = "", settings: Settings = Depends(get_settings)
+) -> HTMLResponse:
+    return HTMLResponse(
+        _confirmation_form(
+            "Unsubscribe from reminders",
+            "Confirm that you want to stop all Table for Two reminder emails.",
+            f"{settings.public_base_url}/api/unsubscribe?token={html_escape(token, quote=True)}",
+            "Unsubscribe",
+        )
+    )
+
+
+@router.post("/api/unsubscribe", response_class=HTMLResponse)
 def unsubscribe(
     token: str = "", settings: Settings = Depends(get_settings)
 ) -> HTMLResponse:
@@ -295,7 +372,7 @@ def _manage_page(record: dict, token: str, base: str, venue_names: list[str]) ->
 def manage(token: str = "", settings: Settings = Depends(get_settings)) -> HTMLResponse:
     conn = db.connect(settings.db_path)
     try:
-        record = db.get_by_unsubscribe_token(conn, token)
+        record = db.get_by_manage_token(conn, token)
     finally:
         conn.close()
     if not record:
@@ -320,7 +397,7 @@ async def manage_update(
 ) -> dict:
     conn = db.connect(settings.db_path)
     try:
-        record = db.get_by_unsubscribe_token(conn, token)
+        record = db.get_by_manage_token(conn, token)
         if not record or record["status"] == "unsubscribed":
             raise HTTPException(status_code=400, detail="This link is no longer valid.")
         body = await request.json()
