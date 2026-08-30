@@ -102,5 +102,6 @@ assert.doesNotMatch(app, /stale source check/);
 assert.match(css, /\.source-health-summary-row[\s\S]*min-height: 56px/);
 assert.match(css, /\.source-health-summary-row:focus-visible/);
 assert.match(css, /\.updates-secondary > summary[\s\S]*min-height: 48px/);
+assert.match(css, /\.updates-headline[\s\S]*-webkit-line-clamp: 2/);
 
 console.log("Public updates UI verification passed");

@@ -710,12 +710,15 @@ input,
 }
 
 .updates-headline {
+  display: -webkit-box;
   overflow: hidden;
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.35;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .updates-count {
@@ -1222,6 +1225,11 @@ input,
     flex-direction: row;
     align-items: baseline;
     gap: 12px;
+  }
+
+  .updates-headline {
+    display: block;
+    white-space: nowrap;
   }
 
   .updates-panel {
