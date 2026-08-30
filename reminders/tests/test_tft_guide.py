@@ -10,7 +10,7 @@ from app import tft_guide
 
 
 ROOT = Path(__file__).resolve().parents[2]
-NOW = datetime(2026, 8, 30, 1, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 8, 30, 3, 0, tzinfo=timezone.utc)
 
 
 def _catalog() -> dict:
@@ -166,3 +166,149 @@ def test_venues_warns_when_bundled_roster_is_stale():
     catalog["roster_checked_at"] = (NOW - timedelta(hours=37)).isoformat()
     answer = tft_guide.handle_message("/venues", catalog, NOW)
     assert "older than 36 hours" in answer
+
+
+def test_vue_dinner_release_pattern_is_observed_bounded_and_cited():
+    answer = tft_guide.handle_message("/release VUE dinner", _catalog(), NOW)
+
+    assert answer.startswith("VUE — observed first-detection pattern")
+    assert "median first-detected lead 60 days (range 18–60)" in answer
+    assert "8 observations; tracker confidence: medium" in answer
+    assert "around 00:30 SGT in about 62% of observations" in answer
+    assert "Latest included detection: 30 Aug 2026, 02:52 SGT" in answer
+    assert "not an Amex or restaurant release policy" in answer
+    assert "does not show current seat availability" in answer
+    assert _catalog()["official_url"] in answer
+    assert "#/table-for-two?venue=tft-vue" in answer
+    assert "currently available" not in answer
+    assert "sold out" not in answer
+
+
+def test_release_without_meal_keeps_meals_separate_and_bounded():
+    answer = tft_guide.handle_message("/release VUE", _catalog(), NOW)
+
+    assert "Lunch: median first-detected lead" in answer
+    assert "Dinner: median first-detected lead" in answer
+    assert answer.index("Dinner:") < answer.index("Lunch:")
+    assert len(answer) <= tft_guide.MAX_REPLY_LENGTH
+
+
+def test_release_time_is_omitted_when_confidence_policy_suppresses_it():
+    catalog = copy.deepcopy(_catalog())
+    vue = next(venue for venue in catalog["venues"] if venue["id"] == "tft-vue")
+    dinner = next(
+        pattern for pattern in vue["release_patterns"] if pattern["meal"] == "Dinner"
+    )
+    dinner["typical_first_seen_sgt"] = None
+    dinner["typical_time_observation_share"] = 0.5
+
+    answer = tft_guide.handle_message("/release VUE dinner", catalog, NOW)
+
+    assert "median first-detected lead" in answer
+    assert "First detected around" not in answer
+
+
+def test_release_snapshot_staleness_is_explicit_without_suppressing_history():
+    catalog = copy.deepcopy(_catalog())
+    catalog["release_source"]["updated_at"] = (
+        NOW - timedelta(hours=37)
+    ).isoformat()
+
+    answer = tft_guide.handle_message("/release VUE dinner", catalog, NOW)
+
+    assert "older than 36 hours" in answer
+    assert "treat the pattern as stale" in answer
+    assert "median first-detected lead" in answer
+
+
+def test_invalid_or_future_release_evidence_is_not_reported():
+    catalog = copy.deepcopy(_catalog())
+    vue = next(venue for venue in catalog["venues"] if venue["id"] == "tft-vue")
+    dinner = next(
+        pattern for pattern in vue["release_patterns"] if pattern["meal"] == "Dinner"
+    )
+    dinner["latest_observation_at"] = (NOW + timedelta(days=1)).isoformat()
+
+    answer = tft_guide.handle_message("/release VUE dinner", catalog, NOW)
+
+    assert "not enough valid repeated Dinner observations" in answer
+    assert "median first-detected lead" not in answer
+
+
+def test_invalid_release_snapshot_suppresses_pattern_metrics():
+    catalog = copy.deepcopy(_catalog())
+    catalog["release_source"]["updated_at"] = "not-a-date"
+
+    answer = tft_guide.handle_message("/release VUE dinner", catalog, NOW)
+
+    assert "could not be verified safely" in answer
+    assert "median first-detected lead" not in answer
+
+
+def test_wrong_release_project_suppresses_pattern_metrics():
+    catalog = copy.deepcopy(_catalog())
+    catalog["release_source"]["project"] = "GenericDiningCity"
+
+    answer = tft_guide.handle_message("/release VUE dinner", catalog, NOW)
+
+    assert "could not be verified safely" in answer
+    assert "median first-detected lead" not in answer
+
+
+def test_unknown_release_venue_and_meal_do_not_guess():
+    venue = tft_guide.handle_message("/release VUW dinner", _catalog(), NOW)
+    meal = tft_guide.handle_message("/release VUE breakfast", _catalog(), NOW)
+
+    assert "could not match" in venue
+    assert "could not match" in meal
+    assert "median first-detected lead" not in venue + meal
+
+
+def test_release_help_and_manual_review_context_are_visible():
+    help_text = tft_guide.handle_message("/help", _catalog(), NOW)
+    answer = tft_guide.handle_message("/release VUE dinner", _catalog(), NOW)
+
+    assert "/release VUE dinner" in help_text
+    assert "awaiting manual review" in answer
+
+
+def test_release_projection_joins_by_stable_venue_id_not_display_name():
+    module_path = ROOT / "scripts" / "build_tft_guide_catalog.py"
+    spec = importlib.util.spec_from_file_location("build_tft_guide_catalog_join", module_path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader
+    spec.loader.exec_module(module)
+    source = json.loads((ROOT / "data" / "table-for-two.json").read_text())
+    history = json.loads(
+        (ROOT / "data" / "table-for-two-release-history.json").read_text()
+    )
+    for item in history["patterns"]:
+        if item["venue_id"] == "tft-vue":
+            item["venue_name"] = "Untrusted renamed display value"
+    for item in history["observations"]:
+        if item["venue_id"] == "tft-vue":
+            item["venue_name"] = "Another untrusted display value"
+    history["observations"].append(
+        {
+            "venue_id": "tft-vue",
+            "venue_name": "Untrusted newer baseline",
+            "meal": "Dinner",
+            "slot_date": "2026-12-31",
+            "first_seen_at": "2026-08-30T02:00:00Z",
+            "lead_days": 123,
+            "baseline": True,
+        }
+    )
+
+    catalog = module.build_catalog(source, history)
+    vue = next(venue for venue in catalog["venues"] if venue["id"] == "tft-vue")
+
+    assert vue["name"] == "VUE"
+    assert {pattern["meal"] for pattern in vue["release_patterns"]} == {
+        "Lunch",
+        "Dinner",
+    }
+    dinner = next(
+        pattern for pattern in vue["release_patterns"] if pattern["meal"] == "Dinner"
+    )
+    assert dinner["latest_observation_at"] == "2026-08-29T18:52:06Z"

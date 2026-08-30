@@ -100,17 +100,21 @@ disabling owner alerts; public guide and email reminders remain independent.
 
 ## Public Telegram guide
 
-The guide bot is a separate, disabled-by-default Telegram identity. Its v1
-surface is private chats only: `/start`, `/help`, `/venues`, and exact venue/menu
-lookup. It uses a generated source catalogue with official Amex menu links and
+The guide bot is a separate, disabled-by-default Telegram identity. Its current
+surface is private chats only: `/start`, `/help`, `/venues`, exact venue/menu
+lookup, and `/release <venue> [lunch|dinner]` observed release-pattern answers.
+It uses a generated source catalogue with official Amex menu links and
 never invokes an LLM, follows a user URL, joins groups, or reads owner-channel
 configuration. The catalogue is bundled with the Railway revision; the TFT
 refresh rebuilds it, but a normal reviewed Railway deployment is required to
 serve that newer revision. Substantive venue and menu answers expose the source check time and warn
-when the bundled roster or menu index is stale.
+when the bundled roster or menu index is stale. Release answers expose exact
+observation counts, median and range, tracker confidence, latest detection, and
+history freshness. They explicitly describe scheduled AMEXPlatSG cache
+detection—not an official release policy or current availability.
 
-The current v1 does not yet answer T&C, release-pattern, or slot questions and
-does not create Telegram reminders; those remain #38–#40.
+The current guide does not yet answer T&C or current-slot questions and does not
+create Telegram reminders; those remain #38–#40.
 
 Spam controls are intentionally quiet: Telegram's webhook secret is checked
 before JSON parsing, update IDs are durably deduplicated, identities are stored
@@ -166,7 +170,8 @@ unset TELEGRAM_GUIDE_BOT_TOKEN TELEGRAM_GUIDE_WEBHOOK_SECRET GUIDE_WEBHOOK_URL
 Monitor Railway health and error rates, Telegram `pending_update_count` and
 `last_error_message`, SQLite volume use, and the age/manual-review fields in the
 bundled TFT catalogue. A healthy HTTP endpoint is not proof of a working bot;
-send `/venues`, both VUE menu variants, an unknown venue, and a group message
+send `/venues`, both VUE menu variants, `/release VUE dinner`, an unknown venue,
+and a group message
 from real Telegram clients after each activation.
 
 For token rotation, disable `TELEGRAM_GUIDE_ENABLED`, delete the webhook, rotate

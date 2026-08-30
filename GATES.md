@@ -34,7 +34,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [ ] G5: the Telegram self-help bot answers TFT program, venue, menu, T&C, and release-pattern questions and can find currently observed slots from curated current sources with citations and freshness dates
   CHECK: node scripts/verify-telegram-guide.mjs
   EXPECT: Telegram guide verification passed
-  EVIDENCE: venue/menu tracer implemented and passing locally; T&C, release-pattern, and observed-slot slices remain pending, so this gate stays open.
+  EVIDENCE: venue/menu and observed release-pattern tracers pass locally. `/release VUE dinner` reports the exact count, median/range, confidence, supported SGT detection bucket, latest observation, snapshot age, official source, and venue handoff while denying official-policy/current-availability status. T&C and observed-slot slices remain pending, so this gate stays open.
 
 - [ ] G6: unsupported, stale, ambiguous, adversarial, and prompt-injection questions fail safely without inventing eligibility, availability, booking rules, or menu facts
   CHECK: node scripts/verify-telegram-safety.mjs
@@ -54,7 +54,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
-  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 133 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
+  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 147 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
 
 - [ ] G9: a real before-and-after test alert is delivered to the private owner channel and no unintended chat receives it
   EVIDENCE: pending

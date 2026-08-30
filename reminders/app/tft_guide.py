@@ -10,11 +10,14 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo
 
 
 CATALOG_PATH = Path(__file__).with_name("tft_guide_catalog.json")
 MENU_STALE_AFTER = timedelta(hours=36)
+RELEASE_STALE_AFTER = timedelta(hours=36)
 MAX_REPLY_LENGTH = 3900
+SGT = ZoneInfo("Asia/Singapore")
 
 
 @lru_cache(maxsize=1)
@@ -52,6 +55,16 @@ def _date(value: str | None) -> str:
     except ValueError:
         return "unknown"
     return moment.astimezone(timezone.utc).strftime("%d %b %Y, %H:%M UTC")
+
+
+def _date_sgt(value: str | None) -> str:
+    if not value:
+        return "unknown"
+    try:
+        moment = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return "unknown"
+    return moment.astimezone(SGT).strftime("%d %b %Y, %H:%M SGT")
 
 
 def _valid_published_menu(menu: dict, now: datetime) -> tuple[bool, bool]:
@@ -99,10 +112,118 @@ def _help() -> str:
         "/venues — list bundled roster snapshot\n"
         "/menu VUE platinum — official Amex menu\n"
         "/menu VUE centurion — Centurion variant\n"
+        "/release VUE dinner — observed first-detection pattern\n"
         "/help — show these commands\n\n"
         "I use a generated source catalogue and do not guess. Confirm offers and bookings "
         "in the Amex Experiences App."
     )
+
+
+def _release_time(value: str | None, now: datetime) -> datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except (AttributeError, ValueError):
+        return None
+    if parsed.tzinfo is None or parsed > now + timedelta(minutes=5):
+        return None
+    return parsed.astimezone(timezone.utc)
+
+
+def _valid_release_pattern(pattern: dict, now: datetime) -> bool:
+    try:
+        count = int(pattern["observation_count"])
+        median = float(pattern["median_lead_days"])
+        minimum = int(pattern["lead_days_min"])
+        maximum = int(pattern["lead_days_max"])
+        share = float(pattern.get("typical_time_observation_share") or 0)
+    except (KeyError, TypeError, ValueError):
+        return False
+    typical = pattern.get("typical_first_seen_sgt")
+    return (
+        count >= 3
+        and 0 <= minimum <= median <= maximum
+        and 0 <= share <= 1
+        and pattern.get("meal") in {"Lunch", "Dinner"}
+        and pattern.get("confidence") in {"early", "medium", "high"}
+        and (
+            typical is None
+            or re.fullmatch(r"(?:[01]\d|2[0-3]):(?:00|30)", str(typical))
+            is not None
+        )
+        and _release_time(pattern.get("latest_observation_at"), now) is not None
+    )
+
+
+def _release_pattern_line(pattern: dict, now: datetime) -> str:
+    count = int(pattern["observation_count"])
+    median = float(pattern["median_lead_days"])
+    minimum = int(pattern["lead_days_min"])
+    maximum = int(pattern["lead_days_max"])
+    median_label = f"{median:g}"
+    line = (
+        f"{pattern['meal']}: median first-detected lead {median_label} days "
+        f"(range {minimum}–{maximum}); {count} observations; "
+        f"tracker confidence: {pattern['confidence']}."
+    )
+    typical = pattern.get("typical_first_seen_sgt")
+    share = float(pattern.get("typical_time_observation_share") or 0)
+    if typical and share >= 0.6:
+        line += (
+            f" First detected around {typical} SGT in about {share:.0%} of observations; "
+            "scheduled polling can make detection later than the actual release."
+        )
+    line += f" Latest included detection: {_date_sgt(pattern['latest_observation_at'])}."
+    return line
+
+
+def _release_answer(venue: dict, meal: str | None, catalog: dict, now: datetime) -> str:
+    source = catalog.get("release_source") or {}
+    snapshot = _release_time(source.get("updated_at"), now)
+    explorer = f"https://amex-explorer.kooexperience.com/{venue['explorer_route']}"
+    if source.get("project") != "AMEXPlatSG" or snapshot is None:
+        return (
+            f"{venue['name']} — observed release pattern\n\n"
+            "The bundled history timestamp could not be verified safely, so I will not "
+            "report a timing pattern.\n"
+            f"Official TFT page: {catalog['official_url']}\nOpen venue: {explorer}"
+        )[:MAX_REPLY_LENGTH]
+    patterns = [
+        pattern
+        for pattern in venue.get("release_patterns") or []
+        if _valid_release_pattern(pattern, now)
+    ]
+    if meal:
+        patterns = [
+            pattern for pattern in patterns if str(pattern.get("meal")).casefold() == meal
+        ]
+    if not patterns:
+        meal_label = f" {meal.title()}" if meal else ""
+        return (
+            f"{venue['name']} — observed release pattern\n\n"
+            f"There are not enough valid repeated{meal_label} observations to report a pattern. "
+            "I will not extrapolate a release schedule.\n"
+            f"History snapshot: {_date(source.get('updated_at'))}\n"
+            f"Official TFT page: {catalog['official_url']}\nOpen venue: {explorer}"
+        )[:MAX_REPLY_LENGTH]
+    lines = "\n\n".join(_release_pattern_line(pattern, now) for pattern in patterns)
+    if now - snapshot > RELEASE_STALE_AFTER:
+        freshness = "History snapshot is older than 36 hours; treat the pattern as stale."
+    else:
+        freshness = "History snapshot is within 36 hours."
+    review = (
+        " The wider TFT source snapshot is awaiting manual review."
+        if catalog.get("manual_review_required")
+        else ""
+    )
+    return (
+        f"{venue['name']} — observed first-detection pattern\n\n{lines}\n\n"
+        "Observed by scheduled AMEXPlatSG cache checks—not an Amex or restaurant release policy. "
+        "Polling cadence can delay detection. This does not show current seat availability.\n"
+        f"History snapshot: {_date(source.get('updated_at'))}. {freshness}{review}\n"
+        f"Official TFT page: {catalog['official_url']}\nOpen venue: {explorer}"
+    )[:MAX_REPLY_LENGTH]
 
 
 def _venues(catalog: dict, now: datetime) -> str:
@@ -227,6 +348,29 @@ def handle_message(text: str, catalog: dict, now: datetime | None = None) -> str
         return _help()
     if lowered == "/venues":
         return _venues(catalog, now or datetime.now(timezone.utc))
+
+    if lowered == "/release" or lowered.startswith("/release "):
+        query = message[len("/release") :].strip()
+        if not query:
+            return "Which venue? Try /release VUE dinner or use /venues."
+        meal = None
+        for candidate in ("lunch", "dinner"):
+            if re.search(rf"\b{candidate}\b", query, flags=re.IGNORECASE):
+                meal = candidate
+                query = re.sub(
+                    rf"\b{candidate}\b", " ", query, flags=re.IGNORECASE
+                )
+                break
+        query = " ".join(query.split())
+        matches = resolve_venue(query, catalog)
+        if len(matches) != 1:
+            return (
+                "I could not match that to one exact Table for Two venue. "
+                "Use /venues, then send /release <exact venue> lunch or dinner."
+            )
+        return _release_answer(
+            matches[0], meal, catalog, now or datetime.now(timezone.utc)
+        )
 
     is_menu_command = lowered.startswith("/menu")
     wants_menu = is_menu_command or "menu" in lowered

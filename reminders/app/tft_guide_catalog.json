@@ -1,11 +1,17 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "source": "data/table-for-two.json",
   "program": "American Express Table for Two by Platinum",
   "official_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
   "roster_checked_at": "2026-08-29T23:50:31Z",
   "menu_source": {
     "checked_at": "2026-08-29T23:52:17Z"
+  },
+  "release_source": {
+    "source": "data/table-for-two-release-history.json",
+    "project": "AMEXPlatSG",
+    "updated_at": "2026-08-30T02:22:35+00:00",
+    "observation_count": 2643
   },
   "manual_review_required": true,
   "venues": [
@@ -40,6 +46,30 @@
           "sha256": "b2458951e5aa7168adf37d215482a0bd32a68916eedf1b8724dd57a874efa4bc"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 11,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.55,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 10,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.5,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-15-stamford-restaurant"
     },
     {
@@ -71,6 +101,19 @@
           "sha256": "84893b90ec4f378f71bb9a44058d3c65b9071c2f1d7e1cec7c0f9b31da22015a"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 8,
+          "median_lead_days": 29.0,
+          "lead_days_min": 28,
+          "lead_days_max": 29,
+          "typical_first_seen_sgt": "00:30",
+          "typical_time_observation_share": 0.88,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-28T00:03:07Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-baes-cocktail-club"
     },
     {
@@ -92,6 +135,7 @@
           "sha256": "0e8a5ed10351cdf27b0af344698c3a963c6ba86fd499b37ea61d283021d8e759"
         }
       },
+      "release_patterns": [],
       "explorer_route": "#/table-for-two?venue=tft-capitol-bistro-bar-patisserie"
     },
     {
@@ -110,6 +154,30 @@
           "checked_at": "2026-08-29T23:52:17Z"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 24,
+          "median_lead_days": 37.5,
+          "lead_days_min": 3,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.25,
+          "confidence": "high",
+          "latest_observation_at": "2026-08-29T10:25:57Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 15,
+          "median_lead_days": 61.0,
+          "lead_days_min": 7,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.4,
+          "confidence": "high",
+          "latest_observation_at": "2026-08-29T10:25:57Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-colony"
     },
     {
@@ -143,6 +211,30 @@
           "sha256": "84b2392cd088b51b1cec840bc96f204ea468150fb712041efdffd271b293b8a6"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 12,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.58,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 12,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.58,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-cultivate"
     },
     {
@@ -158,6 +250,41 @@
           "checked_at": "2026-08-29T23:52:17Z"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Afternoon Tea",
+          "observation_count": 9,
+          "median_lead_days": 61.0,
+          "lead_days_min": 61,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.44,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T10:25:57Z"
+        },
+        {
+          "meal": "Dinner",
+          "observation_count": 11,
+          "median_lead_days": 61.0,
+          "lead_days_min": 7,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": "18:30",
+          "typical_time_observation_share": 0.64,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T10:25:57Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 9,
+          "median_lead_days": 61.0,
+          "lead_days_min": 61,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.33,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T10:25:57Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-estate"
     },
     {
@@ -175,6 +302,30 @@
           "checked_at": "2026-08-29T23:52:17Z"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 8,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 91,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.5,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-28T00:03:07Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 8,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 91,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.5,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-28T00:03:07Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-ginger"
     },
     {
@@ -206,6 +357,19 @@
           "sha256": "e4b9865c94f3fa05fe893465a756cabd8c28b7a5e42b60bf4cf676d933e8b794"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 9,
+          "median_lead_days": 29.0,
+          "lead_days_min": 10,
+          "lead_days_max": 29,
+          "typical_first_seen_sgt": "00:30",
+          "typical_time_observation_share": 0.67,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-highhouse"
     },
     {
@@ -237,6 +401,30 @@
           "sha256": "a2b447bf6a3d8c82fb7175ec7ad1d28744cbae4a0fd73482b959ac7ebfb320fc"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 12,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.58,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 9,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.56,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-28T21:31:39Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-kaya-at-the-standard"
     },
     {
@@ -260,6 +448,41 @@
           "sha256": "b23f3d03b26133c35e5c5722051cdcd968fc87b7426a9f6a2be1df51dbd7f03f"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Afternoon Tea",
+          "observation_count": 12,
+          "median_lead_days": 61.0,
+          "lead_days_min": 61,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.42,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T10:25:57Z"
+        },
+        {
+          "meal": "Dinner",
+          "observation_count": 13,
+          "median_lead_days": 61.0,
+          "lead_days_min": 5,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.38,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T10:25:57Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 11,
+          "median_lead_days": 61.0,
+          "lead_days_min": 61,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.36,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T10:25:57Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-kees"
     },
     {
@@ -291,6 +514,30 @@
           "sha256": "724283b946af4a4f4d7d83cea4d36e0bd8211fe9802771a482d16450d28a79f7"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 12,
+          "median_lead_days": 60.0,
+          "lead_days_min": 60,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.58,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 9,
+          "median_lead_days": 60.0,
+          "lead_days_min": 60,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.56,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-la-brasserie"
     },
     {
@@ -322,6 +569,30 @@
           "sha256": "e71475b254c01b21f3d6371d55c9765f5c1b032d2f9ea351ea7a541ce63cf541"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 11,
+          "median_lead_days": 61.0,
+          "lead_days_min": 4,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.36,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T15:20:01Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 8,
+          "median_lead_days": 61.0,
+          "lead_days_min": 61,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.38,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T15:20:01Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-latido"
     },
     {
@@ -340,6 +611,19 @@
           "checked_at": "2026-08-29T23:52:17Z"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Lunch",
+          "observation_count": 3,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "00:30",
+          "typical_time_observation_share": 0.67,
+          "confidence": "early",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-one-ninety"
     },
     {
@@ -371,6 +655,7 @@
           "sha256": "3347607d410858391fc27cd26bed019c981fdca45b1fe50f8666a5d08eeb22d9"
         }
       },
+      "release_patterns": [],
       "explorer_route": "#/table-for-two?venue=tft-osteria-mozza"
     },
     {
@@ -386,6 +671,30 @@
           "checked_at": "2026-08-29T23:52:17Z"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 7,
+          "median_lead_days": 90.0,
+          "lead_days_min": 73,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.43,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-27T14:46:30Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 13,
+          "median_lead_days": 90.0,
+          "lead_days_min": 50,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.46,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-peppermint"
     },
     {
@@ -417,6 +726,19 @@
           "sha256": "e1d25e056435f37135bc82e2e2ec1570d3f0b54399b0d86625ef548fbf5af4af"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 11,
+          "median_lead_days": 90.0,
+          "lead_days_min": 8,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.45,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-polo-bar-steakhouse"
     },
     {
@@ -448,6 +770,30 @@
           "sha256": "0e19116a5e3cf529b63beb1e7b9924a3765a7ed0aab030f103a1d915f5398e96"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 13,
+          "median_lead_days": 90.0,
+          "lead_days_min": 3,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "00:30",
+          "typical_time_observation_share": 0.62,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 11,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "00:30",
+          "typical_time_observation_share": 0.64,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-rappu"
     },
     {
@@ -479,6 +825,30 @@
           "sha256": "5857fdba14b0a4f28d30dbb0ea38b228c10198d6824285cadcf9e5dc726b1506"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 12,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 91,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.5,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 12,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 91,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.5,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-sarai"
     },
     {
@@ -510,6 +880,30 @@
           "sha256": "5534395e0358365f5380e822013cff7100fd20bcc312e347859fbfd07d43da27"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 12,
+          "median_lead_days": 60.0,
+          "lead_days_min": 60,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.58,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 12,
+          "median_lead_days": 60.0,
+          "lead_days_min": 60,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.58,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-tanoke"
     },
     {
@@ -531,6 +925,30 @@
           "sha256": "0f1a63a10718e0fdedc345f4cd9c1ae9569e1428665adaebba16c04f267fb23f"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 12,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.58,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 9,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.56,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-the-feather-blade"
     },
     {
@@ -552,6 +970,30 @@
           "sha256": "58babbd93831e14c3deb27cac1c1b9e1ba499aa0df587fc8903c7ba300e6b0dc"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 12,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 91,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.5,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 12,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 91,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.5,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-the-plump-frenchman"
     },
     {
@@ -585,6 +1027,30 @@
           "sha256": "195c43a9657a987f0416383887c9492b2eb72e407848d85fec1dd1a1348c3920"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 12,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.58,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 12,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.58,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-vineyard"
     },
     {
@@ -616,6 +1082,30 @@
           "sha256": "af9a1807f718b52711a8dbf27388e5f3a0c5e4a1a108d432c21ca36112b1b868"
         }
       },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 8,
+          "median_lead_days": 60.0,
+          "lead_days_min": 18,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": "00:30",
+          "typical_time_observation_share": 0.62,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-29T18:52:06Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 9,
+          "median_lead_days": 60.0,
+          "lead_days_min": 10,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": "00:30",
+          "typical_time_observation_share": 0.67,
+          "confidence": "medium",
+          "latest_observation_at": "2026-08-28T00:03:07Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-vue"
     }
   ]

@@ -232,6 +232,17 @@ historical baseline from recent Git snapshots with:
 python3 scripts/track_table_for_two_releases.py --from-git --history-limit 300
 ```
 
+The disabled-by-default Telegram guide bundles the reviewed aggregate projection
+and answers `/release <exact venue> [lunch|dinner]`. It reports first-detected
+lead time, observation count, confidence, latest detection, and snapshot age;
+it never presents these observations as a restaurant schedule or current seats.
+Rebuild or verify the bundled projection with:
+
+```bash
+python3 scripts/build_tft_guide_catalog.py
+python3 scripts/build_tft_guide_catalog.py --check
+```
+
 Security notes:
 
 - Keep subscriber exports, Resend credentials, tokens, and service admin URLs in

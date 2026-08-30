@@ -14,6 +14,74 @@ SPEC.loader.exec_module(MODULE)
 
 
 class ReleasePatternTest(unittest.TestCase):
+    def test_only_amex_platinum_project_is_recorded(self):
+        payload = {
+            "availability_source": {"project": "AMEXPlatSG"},
+            "availability_last_checked_at": "2026-08-30T01:00:00Z",
+            "venues": [
+                {
+                    "id": "venue-1",
+                    "name": "Venue",
+                    "availability": {
+                        "project": "GenericDiningCity",
+                        "meals": [{"meal": "Dinner", "dates": ["2026-09-30"]}],
+                    },
+                },
+                {
+                    "id": "venue-2",
+                    "name": "Venue 2",
+                    "availability": {
+                        "project": "AMEXPlatSG",
+                        "meals": [{"meal": "Dinner", "dates": ["2026-09-30"]}],
+                    },
+                },
+            ],
+        }
+        history = {"schema_version": 1, "observations": []}
+
+        self.assertEqual(MODULE.append_current(payload, history), 1)
+        self.assertEqual(history["source_project"], "AMEXPlatSG")
+        self.assertEqual(history["observations"][0]["venue_id"], "venue-2")
+
+    def test_generic_top_level_project_is_rejected(self):
+        payload = {
+            "availability_source": {"project": "GenericDiningCity"},
+            "availability_last_checked_at": "2026-08-30T01:00:00Z",
+            "venues": [],
+        }
+
+        with self.assertRaisesRegex(ValueError, "AMEXPlatSG"):
+            MODULE.append_current(payload, {"observations": []})
+
+    def test_nonempty_history_without_provenance_cannot_be_relabelled(self):
+        payload = {
+            "availability_source": {"project": "AMEXPlatSG"},
+            "availability_last_checked_at": "2026-08-30T01:00:00Z",
+            "venues": [],
+        }
+        history = {"observations": [{"id": "untrusted-old-row"}]}
+
+        with self.assertRaisesRegex(ValueError, "existing release history"):
+            MODULE.append_current(payload, history)
+
+        self.assertNotIn("source_project", history)
+
+    def test_nonempty_history_with_wrong_provenance_cannot_be_relabelled(self):
+        payload = {
+            "availability_source": {"project": "AMEXPlatSG"},
+            "availability_last_checked_at": "2026-08-30T01:00:00Z",
+            "venues": [],
+        }
+        history = {
+            "source_project": "GenericDiningCity",
+            "observations": [{"id": "untrusted-old-row"}],
+        }
+
+        with self.assertRaisesRegex(ValueError, "existing release history"):
+            MODULE.append_current(payload, history)
+
+        self.assertEqual(history["source_project"], "GenericDiningCity")
+
     def test_observation_records_lead_time(self):
         item = MODULE.build_observation(
             ("venue-1", "Venue", "Dinner", "2026-09-30"),

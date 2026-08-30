@@ -126,7 +126,11 @@ async def telegram_guide_webhook(
 
     started = time.monotonic()
     first_word = message.text.strip().split(maxsplit=1)[0].lower()
-    command_class = first_word if first_word in {"/start", "/help", "/venues", "/menu"} else "query"
+    command_class = (
+        first_word
+        if first_word in {"/start", "/help", "/venues", "/menu", "/release"}
+        else "query"
+    )
 
     user_key = telegram_bot_store.identity_key(
         "user", message.sender.id, settings.telegram_identity_hash_salt

@@ -5,9 +5,13 @@ import fs from "node:fs";
 
 const root = process.cwd();
 const catalog = JSON.parse(fs.readFileSync("reminders/app/tft_guide_catalog.json", "utf8"));
-assert.equal(catalog.schema_version, 1);
+assert.equal(catalog.schema_version, 2);
 assert.equal(catalog.venues.length, 23);
-assert.ok(catalog.venues.some((venue) => venue.id === "tft-vue"));
+const vue = catalog.venues.find((venue) => venue.id === "tft-vue");
+assert.ok(vue);
+assert.ok(vue.release_patterns.some((pattern) => pattern.meal === "Dinner"));
+assert.equal(catalog.release_source.source, "data/table-for-two-release-history.json");
+assert.equal(catalog.release_source.project, "AMEXPlatSG");
 
 execFileSync("python3", ["scripts/build_tft_guide_catalog.py", "--check"], {
   cwd: root,

@@ -16,6 +16,7 @@ from zoneinfo import ZoneInfo
 
 
 SGT = ZoneInfo("Asia/Singapore")
+SOURCE_PROJECT = "AMEXPlatSG"
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -40,13 +41,34 @@ def snapshot_time(payload: dict[str, Any]) -> datetime | None:
     return max(parsed) if parsed else None
 
 
+def require_source_project(payload: dict[str, Any]) -> None:
+    project = (payload.get("availability_source") or {}).get("project")
+    if project != SOURCE_PROJECT:
+        raise ValueError(f"release history requires {SOURCE_PROJECT} availability")
+
+
+def require_history_project(history: dict[str, Any]) -> None:
+    declared = history.get("source_project")
+    has_observations = bool(history.get("observations"))
+    if (declared is not None and declared != SOURCE_PROJECT) or (
+        has_observations and declared is None
+    ):
+        raise ValueError(
+            f"existing release history must declare source_project={SOURCE_PROJECT}"
+        )
+    history["source_project"] = SOURCE_PROJECT
+
+
 def availability_keys(payload: dict[str, Any]) -> Iterable[tuple[str, str, str, str]]:
     for venue in payload.get("venues") or []:
         venue_id = str(venue.get("id") or "")
         venue_name = str(venue.get("app_name") or venue.get("name") or venue_id)
         if not venue_id:
             continue
-        for meal in (venue.get("availability") or {}).get("meals") or []:
+        availability = venue.get("availability") or {}
+        if availability.get("project") != SOURCE_PROJECT:
+            continue
+        for meal in availability.get("meals") or []:
             meal_name = str(meal.get("meal") or "Any session")
             dates = set(meal.get("dates") or [])
             dates.update(slot.get("date") for slot in meal.get("slots") or [] if slot.get("date"))
@@ -117,6 +139,8 @@ def build_patterns(observations: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def append_current(payload: dict[str, Any], history: dict[str, Any]) -> int:
+    require_source_project(payload)
+    require_history_project(history)
     observed_at = snapshot_time(payload)
     if not observed_at:
         return 0
@@ -135,18 +159,27 @@ def rebuild_from_git(path: str, limit: int) -> dict[str, Any]:
     commits = subprocess.check_output(
         ["git", "log", f"-n{limit}", "--format=%H", "--reverse", "--", path], text=True
     ).splitlines()
-    history: dict[str, Any] = {"schema_version": 1, "observations": []}
-    for index, commit in enumerate(commits):
+    history: dict[str, Any] = {
+        "schema_version": 1,
+        "source_project": SOURCE_PROJECT,
+        "observations": [],
+    }
+    accepted_snapshots = 0
+    for commit in commits:
         try:
             raw = subprocess.check_output(["git", "show", f"{commit}:{path}"], text=True, stderr=subprocess.DEVNULL)
             payload = json.loads(raw)
         except (subprocess.CalledProcessError, json.JSONDecodeError):
             continue
         before = len(history["observations"])
-        append_current(payload, history)
-        if index == 0:
+        try:
+            append_current(payload, history)
+        except ValueError:
+            continue
+        if accepted_snapshots == 0:
             for observation in history["observations"][before:]:
                 observation["baseline"] = True
+        accepted_snapshots += 1
     return history
 
 
