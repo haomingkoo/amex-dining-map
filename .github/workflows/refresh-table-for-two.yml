@@ -11,8 +11,8 @@ permissions:
   issues: write
 
 concurrency:
-  group: table-for-two-refresh
-  cancel-in-progress: true
+  group: source-ledger-refresh
+  cancel-in-progress: false
 
 jobs:
   refresh:
@@ -68,8 +68,14 @@ jobs:
           done
           exit 1
 
+      - name: Dispatch published owner updates
+        env:
+          OWNER_ALERT_INGEST_URL: ${{ secrets.OWNER_ALERT_INGEST_URL }}
+          OWNER_ALERT_INGEST_TOKEN: ${{ secrets.OWNER_ALERT_INGEST_TOKEN }}
+        run: python3 scripts/dispatch_owner_updates.py
+
       - name: Open Table for Two alert issue
-        if: steps.table_for_two_alert.outputs.alert_required == 'true'
+        if: always() && steps.table_for_two_alert.outputs.alert_required == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

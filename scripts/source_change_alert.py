@@ -202,7 +202,14 @@ def record_source_url(record: dict[str, Any] | None, meta: dict[str, Any]) -> st
         value = nested_get(record, path)
         if value:
             return str(value)
-    for key in ("official_url", "canonical_url", "resolved_url"):
+    for key in (
+        "source_url",
+        "official_url",
+        "canonical_url",
+        "resolved_url",
+        "terms_url",
+        "faq_url",
+    ):
         if meta.get(key):
             return str(meta[key])
     official_pages = meta.get("official_pages")

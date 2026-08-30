@@ -16,8 +16,8 @@ on:
           - terms
 
 concurrency:
-  group: global-dining-refresh
-  cancel-in-progress: true
+  group: source-ledger-refresh
+  cancel-in-progress: false
 
 jobs:
   scrape:
@@ -97,8 +97,14 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           bash scripts/commit_and_push.sh
 
+      - name: Dispatch published owner updates
+        env:
+          OWNER_ALERT_INGEST_URL: ${{ secrets.OWNER_ALERT_INGEST_URL }}
+          OWNER_ALERT_INGEST_TOKEN: ${{ secrets.OWNER_ALERT_INGEST_TOKEN }}
+        run: python3 scripts/dispatch_owner_updates.py
+
       - name: Open Global Dining alert issue
-        if: steps.global_alert.outputs.alert_required == 'true'
+        if: always() && steps.global_alert.outputs.alert_required == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

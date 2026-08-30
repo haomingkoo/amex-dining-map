@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 
@@ -22,6 +24,47 @@ class Settings:
     subscribe_ip_limit: int = 5
     subscribe_email_limit: int = 5
     subscribe_global_limit: int = 200
+    owner_alerts_enabled: bool = False
+    owner_alert_ingest_token: str = ""
+    telegram_bot_token: str = ""
+    telegram_owner_chat_id: int = 0
+    explorer_base_url: str = "https://amex-explorer.kooexperience.com"
+    owner_alert_not_before: datetime | None = None
+
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    normalized = value.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    raise RuntimeError(f"{name} must be true or false")
+
+
+def _env_int(name: str, default: int = 0) -> int:
+    value = os.getenv(name)
+    if value is None or not value.strip():
+        return default
+    try:
+        return int(value)
+    except ValueError as exc:
+        raise RuntimeError(f"{name} must be an integer") from exc
+
+
+def _env_datetime(name: str) -> datetime | None:
+    value = os.getenv(name, "").strip()
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise RuntimeError(f"{name} must be an ISO-8601 timestamp") from exc
+    if parsed.tzinfo is None:
+        raise RuntimeError(f"{name} must include a timezone")
+    return parsed
 
 
 def load_settings() -> Settings:
@@ -44,6 +87,14 @@ def load_settings() -> Settings:
         subscribe_ip_limit=int(os.getenv("SUBSCRIBE_IP_LIMIT", "5")),
         subscribe_email_limit=int(os.getenv("SUBSCRIBE_EMAIL_LIMIT", "5")),
         subscribe_global_limit=int(os.getenv("SUBSCRIBE_GLOBAL_LIMIT", "200")),
+        owner_alerts_enabled=_env_bool("OWNER_ALERTS_ENABLED"),
+        owner_alert_ingest_token=os.getenv("OWNER_ALERT_INGEST_TOKEN", "").strip(),
+        telegram_bot_token=os.getenv("TELEGRAM_BOT_TOKEN", "").strip(),
+        telegram_owner_chat_id=_env_int("TELEGRAM_OWNER_CHAT_ID"),
+        explorer_base_url=os.getenv(
+            "EXPLORER_BASE_URL", "https://amex-explorer.kooexperience.com"
+        ).rstrip("/"),
+        owner_alert_not_before=_env_datetime("OWNER_ALERT_NOT_BEFORE"),
     )
     if settings.public_base_url.startswith("https://"):
         missing = []
@@ -67,4 +118,31 @@ def load_settings() -> Settings:
         settings.subscribe_global_limit,
     ) < 1:
         raise RuntimeError("Subscribe rate limits must be positive")
+    if settings.owner_alerts_enabled:
+        missing = []
+        if (
+            re.fullmatch(r"[A-Za-z0-9_-]{43,}", settings.owner_alert_ingest_token)
+            is None
+            or settings.owner_alert_ingest_token.startswith(
+                ("YOUR_", "REPLACE_", "CHANGE_ME")
+            )
+        ):
+            missing.append("OWNER_ALERT_INGEST_TOKEN (43+ random URL-safe characters)")
+        token_parts = settings.telegram_bot_token.split(":", 1)
+        if (
+            len(token_parts) != 2
+            or not token_parts[0].isdigit()
+            or len(token_parts[1]) < 20
+        ):
+            missing.append("TELEGRAM_BOT_TOKEN")
+        if not str(settings.telegram_owner_chat_id).startswith("-100"):
+            missing.append("TELEGRAM_OWNER_CHAT_ID (private channel ID)")
+        if not settings.explorer_base_url.startswith("https://"):
+            missing.append("EXPLORER_BASE_URL (HTTPS)")
+        if settings.owner_alert_not_before is None:
+            missing.append("OWNER_ALERT_NOT_BEFORE (timezone-aware ISO-8601)")
+        if missing:
+            raise RuntimeError(
+                "Owner alert configuration is incomplete: " + ", ".join(missing)
+            )
     return settings

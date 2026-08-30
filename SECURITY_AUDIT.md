@@ -6,12 +6,15 @@ Scope: the public static explorer, data-driven rendering, GitHub Actions, the Ra
 
 No secret was detected across 1,854 commits and approximately 738 MB of Git history. The live subscriber export rejected unauthenticated access, production CORS accepted only the Explorer origin, SQL statements use bound parameters, and confirmation tokens use cryptographically secure randomness.
 
-Two high-risk paths were found and remediated in the pending code:
+Two high-risk paths were found, remediated, deployed, and rechecked in production:
 
 1. Manual GitHub Action inputs could reach shell execution through direct interpolation and `eval` in a job with repository write access and a Groq secret.
 2. A spoofable forwarded-IP-only limit allowed repeated confirmation email abuse, while re-subscribing a known active address replaced its preferences and disabled alerts until reconfirmation.
 
-The security gate is not production-complete until this revision is deployed and the live checks below are repeated.
+The hardened static revision was deployed through GitHub Pages and the reminder
+service was deployed to Railway on 30 August 2026. Production probes confirmed
+the expected CORS boundary, security headers, disabled OpenAPI route, and
+unauthenticated export denial without creating a subscription or sending email.
 
 ## Findings and disposition
 
@@ -56,14 +59,29 @@ Before enabling the bot:
 - Frontend syntax and all JavaScript regression scripts pass, including unsafe-protocol negative controls.
 - Live pre-deployment evidence: static HTTPS/HSTS/nosniff present; reminder CORS restricted correctly; subscriber export returned 401 without credentials; reminder responses lacked security headers before this change.
 
-## Required production recheck
+## Production recheck
 
-After deployment, repeat:
+Completed after deployment:
 
-1. valid and hostile-origin CORS requests;
-2. spoofed forwarded-chain and repeated-email rate tests with non-delivery fixtures;
-3. active-user re-subscribe preservation;
-4. GET versus POST confirmation/unsubscribe behavior;
-5. cache, referrer, CSP, HSTS, frame, and content-type headers;
-6. mobile TFT signup, VUE detail, menus, T&Cs, release qualification, and observed-slot wording;
-7. resolved dependency and GitHub security-setting inspection.
+1. Production CORS returned `200` and the allow-origin header only for
+   `https://amex-explorer.kooexperience.com`; a hostile origin returned `400`
+   without an allow-origin header.
+2. The Railway health endpoint returned `200`; token-bearing error pages use
+   `Cache-Control: no-store`, CSP, HSTS, no-referrer, nosniff, frame denial, and
+   a restrictive permissions policy.
+3. `/openapi.json` returned `404` and the subscriber export continued to reject
+   unauthenticated access.
+4. Spoofed forwarded-chain quotas, repeated-email quotas, active-user
+   re-subscribe preservation, and GET-versus-POST state changes passed the
+   non-delivery regression suite.
+5. The deployed mobile TFT route rendered VUE details, official menu and T&C
+   links, qualified release-pattern wording, and observed availability without
+   browser-visible application errors.
+6. A resolved dependency audit reported no known vulnerabilities; GitHub
+   Dependabot had no open alerts, security updates were enabled, repository
+   Actions were restricted to GitHub-owned actions, and repository workflow
+   actions remained pinned to reviewed commits.
+
+Residual items remain documented above: scheduled refreshes still require a
+branch-protection design, GitHub Pages cannot set every desired edge header,
+and legacy reminder links retain their original shared capability until rotated.

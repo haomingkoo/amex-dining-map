@@ -11,8 +11,8 @@ permissions:
   issues: write
 
 concurrency:
-  group: data-refresh
-  cancel-in-progress: true
+  group: source-ledger-refresh
+  cancel-in-progress: false
 
 jobs:
   refresh:
@@ -92,8 +92,14 @@ jobs:
           done
           exit 1
 
+      - name: Dispatch published owner updates
+        env:
+          OWNER_ALERT_INGEST_URL: ${{ secrets.OWNER_ALERT_INGEST_URL }}
+          OWNER_ALERT_INGEST_TOKEN: ${{ secrets.OWNER_ALERT_INGEST_TOKEN }}
+        run: python3 scripts/dispatch_owner_updates.py
+
       - name: Open Plat Stay alert issue
-        if: steps.plat_stay_alert.outputs.alert_required == 'true'
+        if: always() && steps.plat_stay_alert.outputs.alert_required == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -103,7 +109,7 @@ jobs:
             plat-stay
 
       - name: Open Japan Dining alert issue
-        if: steps.japan_alert.outputs.alert_required == 'true'
+        if: always() && steps.japan_alert.outputs.alert_required == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

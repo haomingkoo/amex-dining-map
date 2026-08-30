@@ -6,25 +6,25 @@ Scope: Audit and harden Amex Explorer, verify the live mobile TFT journey, and d
 
 Tracker: parent #34; vertical slices #35 through #42.
 
-- [ ] G0: the completion ledger has valid, reviewable acceptance oracles
+- [x] G0: the completion ledger has valid, reviewable acceptance oracles
   CHECK: node /Users/koohaoming/.codex/skills/unlazy/scripts/gate-lint.mjs GATES.md
   EXPECT: LINT OK
-  EVIDENCE: pending
+  EVIDENCE: 2026-08-30 gate-lint returned LINT OK; only G9 and G10 are intentionally manual production gates.
 
-- [ ] G1: the security audit covers the static site, reminder API, automation workflows, dependencies, live headers, secrets, abuse paths, and Telegram threat model with no unresolved critical finding
+- [x] G1: the security audit covers the static site, reminder API, automation workflows, dependencies, live headers, secrets, abuse paths, and Telegram threat model with no unresolved critical finding
   CHECK: node scripts/verify-security-audit.mjs
   EXPECT: security audit verification passed
-  EVIDENCE: pending
+  EVIDENCE: 2026-08-30 verifier passed; Pages run 33283464189 succeeded; Railway health, CORS, headers, and disabled OpenAPI were production-probed; Dependabot reported no open alerts.
 
 - [ ] G2: the deployed mobile Table for Two journey exposes venue details, current menu and official-source links, T&Cs context, release-pattern qualifications, and working reminder signup without browser-visible failures
   CHECK: node scripts/verify-tft-browser-evidence.mjs
   EXPECT: TFT browser evidence verification passed
   EVIDENCE: pending
 
-- [ ] G3: owner updates are formatted as concise before-and-after alerts and can only be delivered to the configured private Telegram channel
+- [x] G3: owner updates are formatted as concise before-and-after alerts and can only be delivered to the configured private Telegram channel
   CHECK: node scripts/verify-telegram-owner-alerts.mjs
   EXPECT: Telegram owner alert verification passed
-  EVIDENCE: pending
+  EVIDENCE: 2026-08-30 verifier passed. Tests prove plain-text before/after rendering, config-only destination selection, published-only delivery, replay deduplication, digest conflict rejection, and no blind retry after ambiguous transport outcomes. Real-channel delivery remains G9.
 
 - [ ] G4: menu, venue, T&C, source, and release-pattern changes can trigger owner-channel alerts without leaking bot tokens, subscriber records, or internal diagnostics
   CHECK: node scripts/verify-telegram-change-dispatch.mjs
@@ -51,10 +51,10 @@ Tracker: parent #34; vertical slices #35 through #42.
   EXPECT: Telegram reminder verification passed
   EVIDENCE: pending
 
-- [ ] G8: the complete existing and new automated test suites pass from a production-supported Python version and the frontend remains syntactically valid
+- [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
-  EVIDENCE: pending
+  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12. Re-run after each Telegram slice before retaining this approval.
 
 - [ ] G9: a real before-and-after test alert is delivered to the private owner channel and no unintended chat receives it
   EVIDENCE: pending

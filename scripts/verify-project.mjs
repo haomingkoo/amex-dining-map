@@ -4,10 +4,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const run = (command, args) => execFileSync(command, args, {
+const run = (command, args, options = {}) => execFileSync(command, args, {
   cwd: root,
   encoding: "utf8",
   stdio: "pipe",
+  ...options,
 });
 
 run("node", ["--check", "web/app.js"]);
@@ -19,8 +20,8 @@ run("uv", [
   "--python", "3.12",
   "--with-requirements", "reminders/requirements.txt",
   "--with-requirements", "reminders/requirements-dev.txt",
-  "pytest", "reminders/tests", "-q",
-]);
+  "pytest", "reminders/tests", "scripts/tests", "-q",
+], { env: { ...process.env, PYTHONPATH: root } });
 run("python3", ["-m", "compileall", "-q", "reminders/app", "scripts"]);
 
 console.log("project verification passed");
