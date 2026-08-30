@@ -60,6 +60,15 @@ def ingest_owner_events(
             detail=f"Event {event.id} conflicts with its recorded digest.",
         )
     if not claimed.should_send:
+        if claimed.state == "unknown":
+            log_event(
+                logger,
+                "owner_alert_delivery",
+                state="unknown",
+                error_code="stale_sending",
+                attempt=claimed.attempt_count,
+                duration_ms=0,
+            )
         return {
             "ok": True,
             "id": event.id,

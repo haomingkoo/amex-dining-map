@@ -113,6 +113,15 @@ async def telegram_guide_webhook(
     finally:
         conn.close()
     if not claimed.should_process:
+        if claimed.state == "unknown":
+            log_event(
+                logger,
+                "telegram_guide_delivery",
+                command_class="replay",
+                state="unknown",
+                error_code="stale_processing",
+                duration_ms=0,
+            )
         return {"ok": True}
 
     started = time.monotonic()

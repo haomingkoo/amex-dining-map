@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import logging
 
 import pytest
 from fastapi.testclient import TestClient
@@ -78,8 +79,9 @@ def _post(client: TestClient, event: dict, token: str = TOKEN):
 
 
 def test_published_event_sends_once_and_replay_is_deduplicated(
-    owner_client, monkeypatch
+    owner_client, monkeypatch, caplog
 ):
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
     client, settings = owner_client
     calls = []
 
@@ -102,6 +104,15 @@ def test_published_event_sends_once_and_replay_is_deduplicated(
     assert "Before: Not listed" in calls[0][2]
     assert "After: Listed" in calls[0][2]
     assert str(settings.telegram_owner_chat_id) not in first.text
+    log_text = "\n".join(record.getMessage() for record in caplog.records)
+    assert '"state":"sent"' in log_text
+    for secret in (
+        settings.telegram_bot_token,
+        str(settings.telegram_owner_chat_id),
+        "event-12345678",
+        "Mandai Rainforest Resort by Banyan Tree",
+    ):
+        assert secret not in log_text
 
 
 def test_review_required_does_not_send_or_consume_event_id(owner_client, monkeypatch):
@@ -167,7 +178,8 @@ def test_same_id_with_changed_payload_fails_closed(owner_client, monkeypatch):
     assert len(calls) == 1
 
 
-def test_ambiguous_transport_is_not_blindly_retried(owner_client, monkeypatch):
+def test_ambiguous_transport_is_not_blindly_retried(owner_client, monkeypatch, caplog):
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
     client, settings = owner_client
     calls = []
 
@@ -184,6 +196,9 @@ def test_ambiguous_transport_is_not_blindly_retried(owner_client, monkeypatch):
     assert replay.json()["state"] == "unknown"
     assert len(calls) == 1
     assert settings.telegram_bot_token not in first.text
+    log_text = "\n".join(record.getMessage() for record in caplog.records)
+    assert '"state":"unknown"' in log_text
+    assert "event-12345678" not in log_text
 
 
 def test_validation_rejects_unsafe_source_and_extra_destination(owner_client):
@@ -301,3 +316,41 @@ def test_stale_sending_lease_becomes_unknown_without_restart(tmp_path: Path):
         conn.close()
     assert claim.state == "unknown"
     assert claim.should_send is False
+
+
+def test_stale_sending_replay_emits_privacy_safe_unknown_log(
+    owner_client, monkeypatch, caplog
+):
+    client, settings = owner_client
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
+    event = _event(event_id="event-stale-route-1234")
+    parsed = OwnerAlertEvent.model_validate(event)
+    conn = db.connect(settings.db_path)
+    try:
+        owner_alert_store.claim(
+            conn,
+            parsed.id,
+            settings.telegram_owner_chat_id,
+            parsed.digest(),
+        )
+        old = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat()
+        conn.execute(
+            "UPDATE owner_alert_deliveries SET updated_ts = ? WHERE event_id = ?",
+            (old, parsed.id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    calls = []
+    monkeypatch.setattr(
+        "app.owner_alert_routes.telegram.send_message",
+        lambda *args: calls.append(args) or 1,
+    )
+
+    response = _post(client, event)
+    assert response.json()["state"] == "unknown"
+    assert calls == []
+    log_text = "\n".join(record.getMessage() for record in caplog.records)
+    assert '"error_code":"stale_sending"' in log_text
+    assert parsed.id not in log_text
+    assert str(settings.telegram_owner_chat_id) not in log_text

@@ -4,6 +4,7 @@ from dataclasses import replace
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import logging
 
 import pytest
 from fastapi.testclient import TestClient
@@ -137,8 +138,9 @@ def test_webhook_body_limit_applies_before_side_effect(guide_client):
 
 
 def test_private_menu_query_sends_once_and_replay_is_deduplicated(
-    guide_client, monkeypatch
+    guide_client, monkeypatch, caplog
 ):
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
     client, settings = guide_client
     calls = []
     monkeypatch.setattr(
@@ -156,6 +158,14 @@ def test_private_menu_query_sends_once_and_replay_is_deduplicated(
     assert calls[0][1] == 4444
     assert "VUE — Platinum menu" in calls[0][2]
     assert settings.telegram_guide_webhook_secret not in first.text
+    log_text = "\n".join(
+        record.getMessage()
+        for record in caplog.records
+        if record.name == "amex_reminders.delivery"
+    )
+    assert '"state":"done"' in log_text
+    for secret in ("/menu VUE platinum", settings.telegram_guide_bot_token, WEBHOOK_SECRET, "4444", "1001"):
+        assert secret not in log_text
 
 
 @pytest.mark.parametrize("chat_type", ["group", "supergroup", "channel"])
@@ -298,10 +308,11 @@ def test_old_message_is_ignored_without_send(guide_client, monkeypatch):
     assert calls == []
 
 
-def test_transport_unknown_is_not_blindly_retried(guide_client, monkeypatch):
+def test_transport_unknown_is_not_blindly_retried(guide_client, monkeypatch, caplog):
     from app.telegram import TelegramDeliveryError
 
     client, _settings_value = guide_client
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
     calls = []
 
     def unknown(*args):
@@ -313,11 +324,15 @@ def test_transport_unknown_is_not_blindly_retried(guide_client, monkeypatch):
     assert _post(client, _update()).json() == {"ok": True}
     assert _post(client, _update()).json() == {"ok": True}
     assert len(calls) == 1
+    log_text = "\n".join(record.getMessage() for record in caplog.records)
+    assert '"state":"unknown"' in log_text
+    assert "/menu VUE platinum" not in log_text
 
 
 def test_invalid_bundled_catalog_is_quarantined_without_500(
-    guide_client, monkeypatch
+    guide_client, monkeypatch, caplog
 ):
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
     client, settings = guide_client
     calls = []
     monkeypatch.setattr(
@@ -344,6 +359,9 @@ def test_invalid_bundled_catalog_is_quarantined_without_500(
         assert dict(row) == {"state": "dead", "outcome_code": "catalog_invalid"}
     finally:
         conn.close()
+    log_text = "\n".join(record.getMessage() for record in caplog.records)
+    assert '"error_code":"catalog_invalid"' in log_text
+    assert "/menu VUE platinum" not in log_text
 
 
 def test_stale_processing_claim_becomes_unknown_without_resend(tmp_path: Path):
@@ -364,6 +382,37 @@ def test_stale_processing_claim_becomes_unknown_without_resend(tmp_path: Path):
         conn.close()
     assert replay.should_process is False
     assert replay.state == "unknown"
+
+
+def test_stale_processing_replay_emits_privacy_safe_unknown_log(
+    guide_client, monkeypatch, caplog
+):
+    client, settings = guide_client
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
+    conn = db.connect(settings.db_path)
+    try:
+        telegram_bot_store.claim_update(conn, BOT_SCOPE, 9002)
+        old = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat()
+        conn.execute(
+            "UPDATE telegram_webhook_updates SET updated_ts = ? "
+            "WHERE bot_scope = ? AND update_id = ?",
+            (old, BOT_SCOPE, 9002),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    calls = []
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.telegram.send_message",
+        lambda *args: calls.append(args) or 1,
+    )
+
+    assert _post(client, _update(update_id=9002)).json() == {"ok": True}
+    assert calls == []
+    log_text = "\n".join(record.getMessage() for record in caplog.records)
+    assert '"error_code":"stale_processing"' in log_text
+    assert "9002" not in log_text
+    assert "/menu VUE platinum" not in log_text
 
 
 def test_concurrent_duplicate_claim_has_one_winner(tmp_path: Path):

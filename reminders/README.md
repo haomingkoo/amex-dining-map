@@ -139,15 +139,26 @@ read -rs TELEGRAM_GUIDE_BOT_TOKEN; export TELEGRAM_GUIDE_BOT_TOKEN
 read -rs TELEGRAM_GUIDE_WEBHOOK_SECRET; export TELEGRAM_GUIDE_WEBHOOK_SECRET
 export GUIDE_WEBHOOK_URL='https://<service-host>/api/telegram/guide/webhook'
 
-curl --fail --silent --show-error \
-  "https://api.telegram.org/bot${TELEGRAM_GUIDE_BOT_TOKEN}/setWebhook" \
-  --data-urlencode "url=${GUIDE_WEBHOOK_URL}" \
-  --data-urlencode "secret_token=${TELEGRAM_GUIDE_WEBHOOK_SECRET}" \
-  --data-urlencode 'allowed_updates=["message"]' \
-  --data-urlencode 'drop_pending_updates=true'
+python3 - <<'PY'
+import json
+import os
+import urllib.parse
+import urllib.request
 
-curl --fail --silent --show-error \
-  "https://api.telegram.org/bot${TELEGRAM_GUIDE_BOT_TOKEN}/getWebhookInfo"
+base = f"https://api.telegram.org/bot{os.environ['TELEGRAM_GUIDE_BOT_TOKEN']}"
+payload = urllib.parse.urlencode({
+    "url": os.environ["GUIDE_WEBHOOK_URL"],
+    "secret_token": os.environ["TELEGRAM_GUIDE_WEBHOOK_SECRET"],
+    "allowed_updates": json.dumps(["message"]),
+    "drop_pending_updates": "true",
+}).encode()
+with urllib.request.urlopen(base + "/setWebhook", data=payload, timeout=30) as response:
+    assert json.load(response).get("ok") is True
+with urllib.request.urlopen(base + "/getWebhookInfo", timeout=30) as response:
+    info = json.load(response)
+    assert info.get("ok") is True
+    print(json.dumps(info["result"], indent=2))
+PY
 
 unset TELEGRAM_GUIDE_BOT_TOKEN TELEGRAM_GUIDE_WEBHOOK_SECRET GUIDE_WEBHOOK_URL
 ```
@@ -164,9 +175,19 @@ new webhook without dropping pending updates, repeat acceptance, then re-enable.
 Rotate owner-alert and guide-bot credentials separately.
 
 ```bash
-curl --fail --silent --show-error \
-  "https://api.telegram.org/bot${TELEGRAM_GUIDE_BOT_TOKEN}/deleteWebhook" \
-  --data-urlencode 'drop_pending_updates=false'
+read -rs TELEGRAM_GUIDE_BOT_TOKEN; export TELEGRAM_GUIDE_BOT_TOKEN
+python3 - <<'PY'
+import json
+import os
+import urllib.parse
+import urllib.request
+
+url = f"https://api.telegram.org/bot{os.environ['TELEGRAM_GUIDE_BOT_TOKEN']}/deleteWebhook"
+payload = urllib.parse.urlencode({"drop_pending_updates": "false"}).encode()
+with urllib.request.urlopen(url, data=payload, timeout=30) as response:
+    assert json.load(response).get("ok") is True
+PY
+unset TELEGRAM_GUIDE_BOT_TOKEN
 ```
 
 Rollback by disabling the guide flag and deleting its webhook; owner alerts and
