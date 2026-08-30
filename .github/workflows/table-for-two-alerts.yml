@@ -56,6 +56,9 @@ jobs:
       - name: Track first-seen release patterns
         run: python3 scripts/track_table_for_two_releases.py
 
+      - name: Rebuild Telegram release catalogue
+        run: python3 scripts/build_tft_guide_catalog.py
+
       - name: Send matching alert emails
         id: alerts
         if: steps.config.outputs.enabled == 'true'
@@ -79,11 +82,13 @@ jobs:
             data/table-for-two-slots.json
             data/table-for-two-release-history.json
             data/table-for-two-alert-sent.json
+            reminders/app/tft_guide_catalog.json
           KEEP_LOCAL_ON_CONFLICT: |
             data/table-for-two.json
             data/table-for-two-slots.json
             data/table-for-two-release-history.json
             data/table-for-two-alert-sent.json
+            reminders/app/tft_guide_catalog.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

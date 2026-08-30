@@ -276,6 +276,9 @@ The disabled-by-default Telegram guide bundles the reviewed aggregate projection
 and answers `/release <exact venue> [lunch|dinner]`. It reports first-detected
 lead time, observation count, confidence, latest detection, and snapshot age;
 it never presents these observations as a restaurant schedule or current seats.
+The half-hour availability workflow rebuilds and commits this projection after
+tracking new observations, so the deployed catalogue cannot drift behind its
+release-history source.
 Rebuild or verify the bundled projection with:
 
 ```bash

@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import copy
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 import pytest
 
 from app import tft_guide
 
 
-NOW = datetime(2026, 8, 30, 8, 0, tzinfo=timezone.utc)
+NOW = datetime.fromisoformat(
+    tft_guide.load_catalog()["release_source"]["updated_at"].replace("Z", "+00:00")
+) + timedelta(hours=1)
 
 
 def _catalog() -> dict:

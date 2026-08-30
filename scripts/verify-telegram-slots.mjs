@@ -12,7 +12,9 @@ assert.ok(fs.statSync("data/table-for-two-slots.json").size < 1_000_000);
 
 const alerts = fs.readFileSync(".github/workflows/table-for-two-alerts.yml", "utf8");
 assert.match(alerts, /scripts\/build_tft_slot_snapshot\.py/);
+assert.match(alerts, /scripts\/track_table_for_two_releases\.py[\s\S]*scripts\/build_tft_guide_catalog\.py/);
 assert.match(alerts, /data\/table-for-two-slots\.json/);
+assert.match(alerts, /reminders\/app\/tft_guide_catalog\.json/);
 const pages = fs.readFileSync(".github/workflows/deploy-pages.yml", "utf8");
 assert.match(pages, /table-for-two-slots\.json/);
 const route = fs.readFileSync("reminders/app/telegram_bot_routes.py", "utf8");
