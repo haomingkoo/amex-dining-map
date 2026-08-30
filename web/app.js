@@ -11,6 +11,7 @@ const TABLE_FOR_TWO_DATA_URL = "../data/table-for-two.json";
 const TABLE_FOR_TWO_RELEASE_HISTORY_URL = "../data/table-for-two-release-history.json";
 const TELEGRAM_GUIDE_CONFIG_URL = "../data/telegram-guide.json";
 const UPDATES_DATA_URL = "../data/updates.json";
+const SOURCE_HEALTH_DATA_URL = "../data/source-health.json";
 const GOOGLE_RATINGS_URL = "../data/google-maps-ratings.json";
 const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
@@ -549,6 +550,7 @@ const state = {
   googleRatingsLoaded: false,
   updates: [],
   updatesReadAt: null,
+  sourceHealth: [],
   dataLoaded: {
     dining: false,
     stays: false,
@@ -792,8 +794,12 @@ const updatesTrigger = document.getElementById("updates-trigger");
 const updatesPanel = document.getElementById("updates-panel");
 const updatesHeadline = document.getElementById("updates-headline");
 const updatesCount = document.getElementById("updates-count");
+const updatesHistory = document.getElementById("updates-history");
 const updatesList = document.getElementById("updates-list");
 const updatesMarkReadButton = document.getElementById("updates-mark-read");
+const sourceHealth = document.getElementById("source-health");
+const sourceHealthSummary = document.getElementById("source-health-summary");
+const sourceHealthGroups = document.getElementById("source-health-groups");
 const programTitle = document.getElementById("program-title");
 const programDescription = document.getElementById("program-description");
 const journeyNav = document.getElementById("journey-nav");
@@ -2475,6 +2481,204 @@ function updateValueLabel(value) {
   return String(value);
 }
 
+function sourceHealthDisplayState(source, now = Date.now()) {
+  const status = String(source?.status || source?.state || source?.freshness_state || "").trim().toLowerCase();
+  const outcome = String(source?.last_attempt_outcome || "").trim().toLowerCase();
+  const lastSuccess = new Date(source?.last_success_at || source?.checked_at || "").getTime();
+  const staleAfterMinutes = Number(source?.stale_after_minutes ?? Number(source?.stale_after_hours) * 60);
+  const staleAtRuntime = Number.isFinite(lastSuccess)
+    && Number.isFinite(staleAfterMinutes)
+    && staleAfterMinutes > 0
+    && now - lastSuccess > staleAfterMinutes * 60_000;
+  const failedAttempt = outcome && !["ok", "success", "succeeded", "current", "completed"].includes(outcome);
+
+  if (source?.review_required || source?.review_state === "required" || status === "review_required" || status === "review") {
+    return { key: "review", label: "Review needed" };
+  }
+  if (failedAttempt || ["failed", "failure", "partial_failure", "error"].includes(status)) {
+    return { key: "failed", label: "Refresh failed" };
+  }
+  if (staleAtRuntime || ["stale", "mixed_age"].includes(status)) {
+    return { key: "stale", label: status === "mixed_age" ? "Mixed age" : "Stale" };
+  }
+  if (["missing", "unavailable", "unknown"].includes(status) || !Number.isFinite(lastSuccess)) {
+    return { key: "unavailable", label: "Unavailable" };
+  }
+  return { key: "current", label: "Current" };
+}
+
+function sourceHealthCoverageLabel(coverage) {
+  if (!coverage || typeof coverage !== "object") return "Coverage not reported";
+  const total = Number(coverage.total);
+  const current = Number(coverage.current);
+  const covered = Number(coverage.covered);
+  const parts = [];
+  if (Number.isFinite(current) && Number.isFinite(total)) {
+    parts.push(`${current.toLocaleString("en-SG")} of ${total.toLocaleString("en-SG")} current`);
+  } else if (Number.isFinite(covered) && Number.isFinite(total)) {
+    parts.push(`${covered.toLocaleString("en-SG")} of ${total.toLocaleString("en-SG")} covered`);
+  } else if (Number.isFinite(total)) {
+    parts.push(`${total.toLocaleString("en-SG")} records checked`);
+  }
+  [
+    ["stale", "stale"],
+    ["missing", "missing"],
+    ["unavailable", "unavailable"],
+    ["failed", "failed"],
+  ].forEach(([key, label]) => {
+    const count = Number(coverage[key]);
+    if (Number.isFinite(count) && count > 0) parts.push(`${count.toLocaleString("en-SG")} ${label}`);
+  });
+  return parts.join(" · ") || "Coverage not reported";
+}
+
+function sourceHealthCoverage(source) {
+  if (source?.coverage && typeof source.coverage === "object") return source.coverage;
+  const total = Number(source?.record_count);
+  const stale = Number(source?.stale_record_count);
+  const failed = Number(source?.error_count);
+  if (![total, stale, failed].some(Number.isFinite)) return null;
+  const safeTotal = Number.isFinite(total) ? Math.max(0, total) : 0;
+  const safeStale = Number.isFinite(stale) ? Math.max(0, stale) : 0;
+  const safeFailed = Number.isFinite(failed) ? Math.max(0, failed) : 0;
+  return {
+    total: safeTotal,
+    current: Math.max(0, safeTotal - safeStale - safeFailed),
+    stale: safeStale,
+    failed: safeFailed,
+  };
+}
+
+function sourceHealthTimestampLabel(source) {
+  const success = source?.last_success_at || source?.checked_at;
+  const attempt = source?.last_attempt_at;
+  if (success) return `Last successful check ${formatTimestamp(success)}`;
+  if (attempt) return `Last attempted ${formatTimestamp(attempt)}`;
+  return "No successful check recorded";
+}
+
+function sourceHealthUpstreamLabel(source) {
+  if (source?.upstream_date) return `Upstream dated ${formatSourceDate(source.upstream_date)}`;
+  if (source?.upstream_year) return `Upstream year ${source.upstream_year}`;
+  return "";
+}
+
+function safeSourceHealthRoute(value) {
+  const route = String(value || "");
+  return route.startsWith("#/") ? route : "";
+}
+
+function safeSourceHealthUrl(value) {
+  try {
+    const url = new URL(String(value || ""));
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function renderSourceHealthRow(source) {
+  const row = document.createElement("article");
+  row.className = "source-health-row";
+  const displayState = sourceHealthDisplayState(source);
+  row.dataset.state = displayState.key;
+  const reviewCount = Number(source?.review_count);
+  const flags = [];
+  if (source?.retained_snapshot || source?.snapshot_state === "retained") flags.push("Last verified snapshot retained");
+  if (source?.review_required || source?.review_state === "required") {
+    flags.push(Number.isFinite(reviewCount) && reviewCount > 0
+      ? `${reviewCount.toLocaleString("en-SG")} item${reviewCount === 1 ? "" : "s"} awaiting review`
+      : "Manual review required");
+  }
+  const detail = String(source?.detail || "").trim();
+  const outcome = String(source?.last_attempt_outcome || "").toLowerCase();
+  if (outcome && !["ok", "success", "succeeded", "current", "completed"].includes(outcome)) {
+    flags.push("Latest refresh attempt failed");
+  }
+  if (detail) flags.push(detail);
+  const route = safeSourceHealthRoute(source?.route);
+  const sourceUrl = safeSourceHealthUrl(source?.source_url);
+  const links = [
+    route ? `<a href="${escapeHtml(route)}">Open section</a>` : "",
+    sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">Official source ↗</a>` : "",
+  ].filter(Boolean).join("");
+  const upstream = sourceHealthUpstreamLabel(source);
+
+  row.innerHTML = `
+    <div class="source-health-row-head">
+      <h4>${escapeHtml(source?.label || source?.id || "Unnamed source")}</h4>
+      <span class="source-health-state" data-state="${escapeHtml(displayState.key)}">${escapeHtml(displayState.label)}</span>
+    </div>
+    <p class="source-health-checked">${escapeHtml(sourceHealthTimestampLabel(source))}</p>
+    <p class="source-health-coverage">${escapeHtml(sourceHealthCoverageLabel(sourceHealthCoverage(source)))}</p>
+    ${upstream ? `<p class="source-health-upstream">${escapeHtml(upstream)}</p>` : ""}
+    ${flags.length ? `<ul class="source-health-flags">${flags.map((flag) => `<li>${escapeHtml(flag)}</li>`).join("")}</ul>` : ""}
+    ${links ? `<div class="source-health-links">${links}</div>` : ""}`;
+  return row;
+}
+
+function renderSourceHealth() {
+  if (!sourceHealth || !sourceHealthGroups || !sourceHealthSummary) return;
+  const sources = Array.isArray(state.sourceHealth) ? state.sourceHealth.filter(Boolean) : [];
+  sourceHealth.hidden = sources.length === 0;
+  sourceHealthGroups.innerHTML = "";
+  if (!sources.length) {
+    renderUpdatesShell();
+    return;
+  }
+
+  const states = sources.map((source) => sourceHealthDisplayState(source));
+  const attentionCount = states.filter(({ key }) => key !== "current").length;
+  sourceHealthSummary.textContent = attentionCount
+    ? `${attentionCount} of ${sources.length} sources need attention.`
+    : `${sources.length} sources are current.`;
+
+  [
+    ["primary", "Primary sources", "Defines venue, menu, and benefit data."],
+    ["enrichment", "Enrichment sources", "Adds availability, ratings, and context without replacing official data."],
+  ].forEach(([tier, label, description]) => {
+    const tierSources = sources.filter((source) => (source.tier || source.kind || "primary") === tier);
+    if (!tierSources.length) return;
+    const group = document.createElement("section");
+    group.className = "source-health-group";
+    group.setAttribute("aria-labelledby", `source-health-${tier}-title`);
+    group.innerHTML = `
+      <div class="source-health-group-head">
+        <h3 id="source-health-${tier}-title">${label}</h3>
+        <p>${description}</p>
+      </div>
+      <div class="source-health-list"></div>`;
+    const list = group.querySelector(".source-health-list");
+    tierSources.forEach((source) => list.appendChild(renderSourceHealthRow(source)));
+    sourceHealthGroups.appendChild(group);
+  });
+  renderUpdatesShell();
+}
+
+function renderUpdatesShell() {
+  if (!updatesShell || !updatesHeadline || !updatesCount) return;
+  const hasUpdates = state.updates.length > 0;
+  const healthSources = Array.isArray(state.sourceHealth) ? state.sourceHealth : [];
+  const hasHealth = healthSources.length > 0;
+  updatesShell.hidden = !hasUpdates && !hasHealth;
+  if (!hasUpdates && !hasHealth) return;
+
+  const unread = unreadUpdates();
+  const healthAttention = healthSources.filter((source) => sourceHealthDisplayState(source).key !== "current").length;
+  if (healthAttention) {
+    updatesHeadline.textContent = `${healthAttention} source${healthAttention === 1 ? "" : "s"} need attention`;
+  } else if (hasUpdates) {
+    const latest = state.updates[0];
+    updatesHeadline.textContent = `Latest: ${updateKindLabel(latest.kind).toLowerCase()} · ${latest.subject}`;
+  } else {
+    updatesHeadline.textContent = `${healthSources.length} sources checked`;
+  }
+  updatesCount.textContent = String(unread.length);
+  updatesCount.setAttribute("aria-label", `${unread.length} unread update${unread.length === 1 ? "" : "s"}`);
+  updatesCount.classList.toggle("is-read", unread.length === 0);
+  if (updatesHistory) updatesHistory.hidden = !hasUpdates;
+}
+
 function readUpdatesTimestamp() {
   try {
     return window.localStorage.getItem(UPDATES_READ_STORAGE_KEY);
@@ -2537,20 +2741,9 @@ function renderUpdates() {
     .filter((update) => update && update.status === "published")
     .sort((a, b) => String(b.reviewed_at || b.detected_at || "").localeCompare(String(a.reviewed_at || a.detected_at || "")));
   state.updates = published;
-  if (!published.length) {
-    updatesShell.hidden = true;
-    return;
-  }
-
-  const unread = unreadUpdates();
-  const latest = published[0];
-  updatesShell.hidden = false;
-  updatesHeadline.textContent = `Latest: ${updateKindLabel(latest.kind).toLowerCase()} · ${latest.subject}`;
-  updatesCount.textContent = String(unread.length);
-  updatesCount.setAttribute("aria-label", `${unread.length} unread update${unread.length === 1 ? "" : "s"}`);
-  updatesCount.classList.toggle("is-read", unread.length === 0);
   updatesList.innerHTML = "";
   published.slice(0, 30).forEach((update) => updatesList.appendChild(renderUpdateRow(update)));
+  renderUpdatesShell();
 }
 
 async function loadUpdates() {
@@ -2558,6 +2751,14 @@ async function loadUpdates() {
   state.updates = Array.isArray(payload?.updates) ? payload.updates : [];
   state.updatesReadAt = readUpdatesTimestamp();
   renderUpdates();
+}
+
+async function loadSourceHealth() {
+  const payload = await fetchJson(SOURCE_HEALTH_DATA_URL);
+  state.sourceHealth = payload?.schema_version === 1 && Array.isArray(payload.sources)
+    ? payload.sources
+    : [];
+  renderSourceHealth();
 }
 
 function setUpdatesOpen(open) {
@@ -7399,7 +7600,7 @@ function navigateToRouteHash(routeHash) {
 
 async function init() {
   initTheme();
-  await loadUpdates();
+  await Promise.all([loadUpdates(), loadSourceHealth()]);
 
   // Set min date on stays date inputs to today
   const today = new Date().toISOString().split("T")[0];

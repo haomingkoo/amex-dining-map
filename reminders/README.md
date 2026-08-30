@@ -354,6 +354,24 @@ newer matches cannot be stranded behind an unbounded nonmatching queue.
 
 ## Operational logs
 
+Start with the narrowest public signal before opening provider logs:
+
+| Symptom | First check | Correlation evidence |
+|---|---|---|
+| Map watermark or blank tiles | Open the actual tile response and inspect its image content and response headers | Pages run and deployed app revision |
+| Old, failed, or review-held programme data | Open **Updates & source health**, then the named refresh workflow | Source ID, last attempt, last success, and workflow run |
+| Site still shows an older build | Compare the Pages run commit with the deployed asset revision | Git commit and Pages deployment run |
+| Reminder API request fails | Capture the response `X-Request-ID` and status | Matching Railway `http_request` JSON event |
+| Email alert does not arrive | Check the Table for Two Alerts workflow before the provider dashboard | Workflow run, bounded provider error code, and sent-key receipt |
+| Telegram action does not work | Run the readiness checker for the affected phase, then inspect `/healthz` | Readiness phase, feature flag, UTC window, and bounded delivery outcome |
+
+The source-health artifact is public operational metadata, not a raw error log.
+It contains only bounded states and counts. Raw exception text stays in GitHub
+Actions, while the public surface records values such as
+`workflow_step_failed`, `review_required`, `stale`, or `partial`. Never paste
+tokens, chat IDs, subscriber rows, Telegram updates, or provider response bodies
+into an issue when troubleshooting.
+
 Railway emits one JSON line per HTTP request with a generated request ID, method,
 path, status, and latency. Subscription events record only a short keyed recipient
 fingerprint and the state transition; emails, names, tokens, query strings,
@@ -382,9 +400,7 @@ For aggregate diagnosis in an authorized Railway shell, query counts and oldest
 state timestamps only—never dump rows. Owner delivery rows include a configured
 destination required for durable deduplication and are not covered by the
 subscriber retention statement above:
-the matching successful Pages run and its `generated_at`; `409` means the public
-projection did not match the deployed generation, while `503` means the feature
-or fixed source was unavailable. Do not manually resend `unknown` rows.
+
 ```sql
 SELECT state, COUNT(*) AS count, MIN(updated_ts) AS oldest
 FROM telegram_reminders GROUP BY state ORDER BY state;

@@ -210,9 +210,35 @@ rollback, privacy, and freshness procedures are in
 program, detection time, official source, and explicit before-and-after values.
 The site-wide Updates strip shows only entries with `status: published`.
 
+`data/source-health.json` is the public troubleshooting summary for Global
+Dining, Japan Dining, Plat Stay, Love Dining, TFT roster, TFT menus, TFT
+availability, Google Maps, and Tabelog. The Updates panel keeps official program
+sources separate from optional availability and rating enrichment, shows exact
+upstream check times and coverage, and recomputes staleness in the browser so a
+frozen deployment cannot continue to look current. Scheduled refreshes record
+bounded success/failure state, while a separate monitor emits owner events when
+a source becomes stale, fails, recovers, or enters/leaves review.
+
 TFT menu candidates use a stricter PDF- and snapshot-bound publish path. See
 the [TFT menu review runbook](docs/tft-menu-review-runbook.md); do not publish a
 menu candidate with the generic update-review command below.
+
+The TFT participating-roster image is also review-gated. A new image hash keeps
+the last approved 23-venue snapshot public and records one source-scoped review
+item; it does not silently turn the hardcoded roster into a claimed official
+addition or removal. After reviewing the complete image, add a hash-addressed
+manifest under `data/reviews/table-for-two-roster/` with predecessor lineage,
+then apply it with:
+
+```bash
+python3 scripts/apply_tft_roster_review.py \
+  --manifest data/reviews/table-for-two-roster/<observed-image-sha256>.json
+```
+
+The resumable apply path preserves existing menu and availability state and
+publishes exact reviewed per-venue additions/removals. Re-run with `--check`
+before committing; an interrupted ledger append is recovered from bounded
+pending events on the next run.
 
 Love Dining and Table for Two source changes are written as
 `status: review_required`. After checking the official source, publish or reject

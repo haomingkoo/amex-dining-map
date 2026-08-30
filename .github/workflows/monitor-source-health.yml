@@ -1,0 +1,59 @@
+name: Monitor Source Health
+
+on:
+  schedule:
+    # Five minutes after each TFT availability refresh window.
+    - cron: "22,52 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: source-ledger-refresh
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Recompute source health
+        run: python3 scripts/build_source_health.py
+
+      - name: Commit source-health transitions
+        env:
+          COMMIT_MESSAGE: "chore: update source health"
+          MUST_STAGE: |
+            data/source-health.json
+            data/updates.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash scripts/commit_and_push.sh
+
+      - name: Dispatch published owner updates
+        id: owner_dispatch
+        env:
+          OWNER_ALERT_INGEST_URL: ${{ secrets.OWNER_ALERT_INGEST_URL }}
+          OWNER_ALERT_INGEST_TOKEN: ${{ secrets.OWNER_ALERT_INGEST_TOKEN }}
+        run: python3 scripts/dispatch_owner_updates.py
+
+      - name: Commit owner delivery receipts
+        if: always() && steps.owner_dispatch.outcome != 'skipped'
+        env:
+          COMMIT_MESSAGE: "chore: record owner alert delivery"
+          MUST_STAGE: data/updates.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash scripts/commit_and_push.sh

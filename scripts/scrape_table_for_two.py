@@ -26,6 +26,11 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    from scripts import tft_roster_reviews
+except ModuleNotFoundError:
+    import tft_roster_reviews
+
 
 OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/"
 TERMS_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf"
@@ -829,12 +834,13 @@ def normalized_venues(
     existing_by_id: dict[str, dict] | None = None,
     live_availability_by_id: dict[str, dict] | None = None,
     live_profiles_by_id: dict[str, dict] | None = None,
+    roster: list[dict] | None = None,
 ) -> list[dict]:
     existing_by_id = existing_by_id or {}
     live_availability_by_id = live_availability_by_id or {}
     live_profiles_by_id = live_profiles_by_id or {}
     records = []
-    for venue in VENUES:
+    for venue in roster or VENUES:
         curated_availability = venue.get("availability")
         existing_record = existing_by_id.get(venue["id"])
         live_availability = live_availability_by_id.get(venue["id"])
@@ -881,15 +887,18 @@ def build_payload(existing_payload: dict | None = None) -> dict:
     cycles_hash = hashlib.sha256(fetch_bytes(cycles_url)).hexdigest()
     terms_hash = hashlib.sha256(fetch_bytes(TERMS_URL)).hexdigest()
     faq_hash = hashlib.sha256(fetch_bytes(FAQ_URL)).hexdigest()
+    checked_at = iso_now()
+    roster, roster_source = tft_roster_reviews.review_state(
+        participating_hash, participating_url, checked_at, existing_payload
+    )
     manual_review_required = (
-        participating_hash != KNOWN_PARTICIPATING_SHA256
+        roster_source["review_required"]
         or cycles_hash != KNOWN_CYCLES_SHA256
         or terms_hash != KNOWN_TERMS_SHA256
         or faq_hash != KNOWN_FAQ_SHA256
     )
-    checked_at = iso_now()
-    live_availability_by_id, availability_errors = fetch_live_availability(VENUES, checked_at)
-    live_profiles_by_id, profile_errors = fetch_diningcity_profiles(VENUES, checked_at)
+    live_availability_by_id, availability_errors = fetch_live_availability(roster, checked_at)
+    live_profiles_by_id, profile_errors = fetch_diningcity_profiles(roster, checked_at)
     availability_last_checked_at = (
         checked_at
         if live_availability_by_id
@@ -916,6 +925,7 @@ def build_payload(existing_payload: dict | None = None) -> dict:
             "faq_sha256": faq_hash,
         },
         "manual_review_required": manual_review_required,
+        "roster_source": roster_source,
         "voucher_cycles_2026": [
             "Jan - Feb",
             "Mar - Apr",
@@ -963,7 +973,9 @@ def build_payload(existing_payload: dict | None = None) -> dict:
             "Generic public DiningCity restaurant availability is not treated as Table for Two inventory; only the AMEXPlatSG project endpoint is used.",
             "Do not commit user/session-specific app handoff values from app URLs or screenshots.",
         ],
-        "venues": normalized_venues(existing_by_id, live_availability_by_id, live_profiles_by_id),
+        "venues": normalized_venues(
+            existing_by_id, live_availability_by_id, live_profiles_by_id, roster
+        ),
     }
 
 

@@ -57,6 +57,10 @@ META_FIELD_LABELS = {
     "menu_source.review_queue_count": "Menu review queue count",
     "menu_source.review_queue_sha256": "Menu review queue fingerprint",
     "source_images.participating_merchants_sha256": "Participating merchants image hash",
+    "roster_source.status": "Roster review status",
+    "roster_source.observed_participating_sha256": "Observed roster image hash",
+    "roster_source.approved_participating_sha256": "Approved roster image hash",
+    "roster_source.review_item.kind": "Roster review item",
     "source_images.voucher_cycles_sha256": "Voucher cycles image hash",
     "source_documents.terms_sha256": "Table for Two T&C PDF hash",
     "source_documents.faq_sha256": "Table for Two FAQ PDF hash",
@@ -440,6 +444,7 @@ def build_meta_update_event(
             "review_required"
             if new_meta.get("manual_review_required")
             or (new_meta.get("menu_source") or {}).get("review_required")
+            or (new_meta.get("roster_source") or {}).get("review_required")
             else "published"
         ),
         "before": {"state": "available", "fields": {item["field"]: item["before"] for item in changes}},

@@ -191,17 +191,32 @@
         </button>
 
         <div class="updates-panel" id="updates-panel" hidden>
-          <div class="updates-panel-head">
-            <div>
-              <h2>What changed</h2>
-              <p>Before and after, checked against the published source.</p>
+          <section class="source-health" id="source-health" aria-labelledby="source-health-title" hidden>
+            <div class="source-health-head">
+              <div>
+                <h2 id="source-health-title">Source health</h2>
+                <p id="source-health-summary">Checking source freshness...</p>
+              </div>
+              <span class="source-health-legend">Source status</span>
             </div>
-            <button class="updates-mark-read" id="updates-mark-read" type="button">Mark all read</button>
-          </div>
-          <div class="updates-list" id="updates-list" aria-live="polite"></div>
-          <p class="updates-footnote">
-            A missing listing means it was not present in the latest checked source. It does not explain why it changed.
-          </p>
+            <div class="source-health-groups" id="source-health-groups"></div>
+            <p class="source-health-note">
+              Primary sources define the explorer. Enrichment sources add context and never replace the official source.
+            </p>
+          </section>
+          <section class="updates-history" id="updates-history" aria-labelledby="updates-history-title">
+            <div class="updates-panel-head">
+              <div>
+                <h2 id="updates-history-title">What changed</h2>
+                <p>Before and after, checked against the published source.</p>
+              </div>
+              <button class="updates-mark-read" id="updates-mark-read" type="button">Mark all read</button>
+            </div>
+            <div class="updates-list" id="updates-list" aria-live="polite"></div>
+            <p class="updates-footnote">
+              A missing listing means it was not present in the latest checked source. It does not explain why it changed.
+            </p>
+          </section>
         </div>
       </section>
 

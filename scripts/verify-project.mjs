@@ -24,5 +24,6 @@ run("uv", [
 ], { env: { ...process.env, PYTHONPATH: root } });
 run("python3", ["-m", "compileall", "-q", "reminders/app", "scripts"]);
 run("node", ["scripts/verify-operations-docs.mjs"]);
+run("node", ["scripts/verify-source-health.mjs"]);
 
 console.log("project verification passed");

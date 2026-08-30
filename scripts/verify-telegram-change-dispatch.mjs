@@ -7,7 +7,10 @@ const workflows = [
   "refresh-data.yml",
   "refresh-global-dining.yml",
   "refresh-love-dining.yml",
+  "refresh-ratings.yml",
   "refresh-table-for-two.yml",
+  "table-for-two-alerts.yml",
+  "monitor-source-health.yml",
 ];
 for (const name of workflows) {
   const contents = fs.readFileSync(`.github/workflows/${name}`, "utf8");
@@ -36,6 +39,8 @@ execFileSync("uv", [
   "scripts/tests/test_owner_alert_event_contract.py",
   "scripts/tests/test_source_change_updates.py",
   "scripts/tests/test_tft_menu_reviews.py",
+  "scripts/tests/test_tft_roster_reviews.py",
+  "scripts/tests/test_source_health.py",
   "scripts/tests/test_tft_official_documents.py",
   "scripts/tests/test_apply_love_dining_document_review.py",
   "scripts/tests/test_apply_love_dining_review.py",

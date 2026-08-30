@@ -34,6 +34,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
 
       - name: Sync Japan dining
+        id: japan_refresh
         env:
           PYTHONUNBUFFERED: "1"
         run: /usr/bin/time -p python3 scripts/sync_japan_mvp.py
@@ -55,6 +56,7 @@ jobs:
             --updates data/updates.json
 
       - name: Sync Plat Stay
+        id: plat_stay_refresh
         env:
           PYTHONUNBUFFERED: "1"
           GEOAPIFY_API_KEY: ${{ secrets.GEOAPIFY_API_KEY }}
@@ -92,7 +94,36 @@ jobs:
           done
           exit 1
 
+      - name: Finalize source health
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            japan_outcome=success
+          else
+            japan_outcome=failure
+          fi
+          if [ "${{ job.status }}" = "success" ]; then
+            stay_outcome=success
+          else
+            stay_outcome=failure
+          fi
+          python3 scripts/build_source_health.py --source japan-dining --attempt-outcome "$japan_outcome"
+          python3 scripts/build_source_health.py --source plat-stay --attempt-outcome "$stay_outcome"
+
+      - name: Commit source health
+        if: always()
+        env:
+          COMMIT_MESSAGE: "chore: record explorer source health"
+          MUST_STAGE: |
+            data/source-health.json
+            data/updates.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash scripts/commit_and_push.sh
+
       - name: Dispatch published owner updates
+        if: always()
         id: owner_dispatch
         env:
           OWNER_ALERT_INGEST_URL: ${{ secrets.OWNER_ALERT_INGEST_URL }}

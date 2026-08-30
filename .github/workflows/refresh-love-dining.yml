@@ -34,6 +34,7 @@ jobs:
           playwright install --with-deps chromium
 
       - name: Refresh official Love Dining snapshot
+        id: source_refresh
         run: python3 scripts/scrape_love_dining.py
 
       - name: Audit content provenance
@@ -79,7 +80,30 @@ jobs:
           done
           exit 1
 
+      - name: Finalize source health
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            outcome=success
+          else
+            outcome=failure
+          fi
+          python3 scripts/build_source_health.py --source love-dining --attempt-outcome "$outcome"
+
+      - name: Commit source health
+        if: always()
+        env:
+          COMMIT_MESSAGE: "chore: record love dining source health"
+          MUST_STAGE: |
+            data/source-health.json
+            data/updates.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash scripts/commit_and_push.sh
+
       - name: Dispatch published owner updates
+        if: always()
         id: owner_dispatch
         env:
           OWNER_ALERT_INGEST_URL: ${{ secrets.OWNER_ALERT_INGEST_URL }}

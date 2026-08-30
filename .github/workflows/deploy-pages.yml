@@ -12,6 +12,7 @@ on:
       - Refresh Love Dining
       - Refresh Table for Two
       - Table for Two Alerts
+      - Monitor Source Health
     types:
       - completed
 
@@ -77,6 +78,7 @@ jobs:
             table-for-two-slots.json \
             table-for-two-release-history.json \
             updates.json \
+            source-health.json \
             google-maps-ratings.json \
             telegram-guide.json
           do

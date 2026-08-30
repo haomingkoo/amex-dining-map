@@ -9,7 +9,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G0: the completion ledger has valid, reviewable acceptance oracles
   CHECK: node /Users/koohaoming/.codex/skills/unlazy/scripts/gate-lint.mjs GATES.md
   EXPECT: LINT OK
-  EVIDENCE: 2026-08-30 gate-lint returned LINT OK; only G9 and G10 are intentionally manual production gates.
+  EVIDENCE: 2026-08-30 gate-lint returned LINT OK; G9, G10, and the remaining document portion of G12 are intentionally manual production/review gates.
 
 - [x] G1: the security audit covers the static site, reminder API, automation workflows, dependencies, live headers, secrets, abuse paths, and Telegram threat model with no unresolved critical finding
   CHECK: node scripts/verify-security-audit.mjs
@@ -29,7 +29,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G4: menu, venue, T&C, source, and release-pattern changes can trigger owner-channel alerts without leaking bot tokens, subscriber records, or internal diagnostics
   CHECK: node scripts/verify-telegram-change-dispatch.mjs
   EXPECT: Telegram change dispatch verification passed
-  EVIDENCE: 2026-08-30 expanded verifier passes the source-change, TFT menu-review, official-document, Love Dining review, release-pattern, owner-ingress, and delivery suites. Stream-scoped occurrence IDs deduplicate direct retries but preserve A→B→A→B recurrences. Synthetic next-version transitions prove exact before/after clause events and layout-only suppression; concrete menu candidates remain review-gated. Real delivery remains G9 and future human review remains #51.
+  EVIDENCE: 2026-08-30 expanded verifier passes source health, source-change, TFT roster/menu review, official-document, Love Dining review, release-pattern, owner-ingress, and delivery suites. Reviewed TFT roster changes now retain the prior public snapshot until applied, recover interrupted ledger writes, and preserve A→B→A→B occurrences. Synthetic document transitions prove exact before/after clause events and layout-only suppression; real TFT successor-document application remains #51. Real delivery remains G9.
 
 - [x] G5: the Telegram self-help bot answers TFT program, venue, menu, T&C, and release-pattern questions and can find currently observed slots from curated current sources with citations and freshness dates
   CHECK: node scripts/verify-telegram-guide.mjs
@@ -51,15 +51,15 @@ Tracker: parent #34; vertical slices #35 through #42.
   EXPECT: Telegram reminder verification passed
   EVIDENCE: 2026-08-30 deterministic one-shot lifecycle, bounded and expiring setup, HMAC ownership, non-enumerating cancellation, two-step deletion, fresh AMEXPlatSG matching, transactional claims, terminal delivery receipts, post-Pages generation gating, and privacy-safe dispatch logs pass locally. Real private-Telegram mobile acceptance remains G10.
 
-- [ ] G7B: configuration-gated mobile Telegram actions preserve the exact TFT venue and supported slot filters, and BotFather start payloads resolve only reviewed venues
+- [x] G7B: configuration-gated mobile Telegram actions preserve the exact TFT venue and supported slot filters, and BotFather start payloads resolve only reviewed venues
   CHECK: node scripts/verify-telegram-deep-links.mjs
   EXPECT: Telegram deep-link verification passed
-  EVIDENCE: pending deployment and mobile acceptance.
+  EVIDENCE: 2026-08-30 verifier passed; Pages run 33301216271 deployed c3fada7. Production mobile acceptance at 390x844 proved the exact VUE venue, party 2, dinner, 2026-10-29, 19:00, and weekday filters survive a direct link with no console error or horizontal overflow. Telegram actions correctly remain hidden while the public Bot username is disabled; visible real-bot acceptance remains G10.
 
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
-  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 367 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
+  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 406 Python tests and 23 subtests, plus all JavaScript regression files, source-health workflow/schema checks, and frontend syntax validation.
 
 - [ ] G9: a real before-and-after test alert is delivered once to the private owner channel, Telegram confirms the configured destination ID, and no unintended chat receives it
   EVIDENCE: pending
@@ -73,7 +73,9 @@ Tracker: parent #34; vertical slices #35 through #42.
   EVIDENCE: 2026-08-30 executable operations verifier passes config/example parity, disabled defaults, non-secret health state, Railway and Pages acceptance, feature activation order, safe rollback order, workflow credential seams, 36-hour catalogue and 30-minute slot thresholds, aggregate-safe diagnostics, and honest correlation limits. Real bot/channel acceptance remains G9/G10.
 
 - [ ] G12: primary venue, hotel, menu, T&C, release, stale, recovery, and review-state transitions have review-safe before-and-after owner events, including additions and removals
-  EVIDENCE: current dispatch covers normalized reviewed events, but complete source-transition coverage remains under #51 and #53.
+  EVIDENCE: TFT venue additions/removals now use a hash-bound complete reviewed roster, source-scoped quarantine, resumable occurrence-safe ledger application, and exact before/after events. Menu, release, source-health, and existing normalized venue/hotel events are covered. Operational wiring for reviewed successor TFT T&C/FAQ clause transitions remains under #51.
 
 - [ ] G13: mobile users and the owner can see source-specific freshness, retained-snapshot, failure, and review-required state without mistaking optional enrichment age for official fact age
-  EVIDENCE: pending #53.
+  CHECK: node scripts/verify-source-health.mjs
+  EXPECT: source health verification passed
+  EVIDENCE: local verifier and 390x844 browser acceptance passed for all nine sources with primary/enrichment separation, exact dates, coverage, runtime staleness, review state, and zero horizontal overflow. Pending exact production deployment acceptance.

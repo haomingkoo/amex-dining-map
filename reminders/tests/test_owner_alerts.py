@@ -213,6 +213,24 @@ def test_validation_rejects_unsafe_source_and_extra_destination(owner_client):
 
 
 @pytest.mark.parametrize(
+    "source_url",
+    [
+        "https://www.google.com/maps/place/example",
+        "https://tabelog.com/tokyo/A1301/A130101/12345678/",
+    ],
+)
+def test_source_health_accepts_reviewed_rating_hosts(source_url):
+    event = _event()
+    event.update(
+        kind="source_health",
+        subject="Ratings source health",
+        source_url=source_url,
+    )
+
+    assert OwnerAlertEvent.model_validate(event).source_url == source_url
+
+
+@pytest.mark.parametrize(
     "mutate",
     [
         lambda event: event.__setitem__(

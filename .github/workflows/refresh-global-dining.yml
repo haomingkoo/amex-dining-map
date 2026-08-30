@@ -39,6 +39,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
 
       - name: Run scraper
+        id: source_refresh
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.mode }}" == "terms" ]]; then
             python3 scripts/scrape_global_dining.py --terms-only
@@ -97,7 +98,30 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           bash scripts/commit_and_push.sh
 
+      - name: Finalize source health
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            outcome=success
+          else
+            outcome=failure
+          fi
+          python3 scripts/build_source_health.py --source global-dining --attempt-outcome "$outcome"
+
+      - name: Commit source health
+        if: always()
+        env:
+          COMMIT_MESSAGE: "chore: record global dining source health"
+          MUST_STAGE: |
+            data/source-health.json
+            data/updates.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash scripts/commit_and_push.sh
+
       - name: Dispatch published owner updates
+        if: always()
         id: owner_dispatch
         env:
           OWNER_ALERT_INGEST_URL: ${{ secrets.OWNER_ALERT_INGEST_URL }}

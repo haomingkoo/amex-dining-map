@@ -22,6 +22,8 @@ ALLOWED_SOURCE_HOSTS = (
     "pocket-concierge.jp",
     "diningcity.asia",
     "go.amex",
+    "google.com",
+    "tabelog.com",
 )
 
 

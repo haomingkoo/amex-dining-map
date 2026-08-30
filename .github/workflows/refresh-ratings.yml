@@ -20,8 +20,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: ratings-refresh
-  cancel-in-progress: true
+  group: source-ledger-refresh
+  cancel-in-progress: false
 
 jobs:
   refresh-ratings:
@@ -46,6 +46,7 @@ jobs:
           playwright install-deps chromium
 
       - name: Scrape ratings (bounded freshness rotation)
+        id: source_refresh
         env:
           PYTHONUNBUFFERED: "1"
           INPUT_DATASETS: ${{ github.event.inputs.datasets || 'global japan love tft stays' }}
@@ -68,6 +69,46 @@ jobs:
           COMMIT_MESSAGE: "chore: refresh google maps ratings"
           MUST_STAGE: data/google-maps-ratings.json
           KEEP_LOCAL_ON_CONFLICT: data/google-maps-ratings.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash scripts/commit_and_push.sh
+
+      - name: Finalize source health
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            outcome=success
+          else
+            outcome=failure
+          fi
+          python3 scripts/build_source_health.py --source google-maps-ratings --attempt-outcome "$outcome"
+
+      - name: Commit source health
+        if: always()
+        env:
+          COMMIT_MESSAGE: "chore: record ratings source health"
+          MUST_STAGE: |
+            data/source-health.json
+            data/updates.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash scripts/commit_and_push.sh
+
+      - name: Dispatch published owner updates
+        if: always()
+        id: owner_dispatch
+        env:
+          OWNER_ALERT_INGEST_URL: ${{ secrets.OWNER_ALERT_INGEST_URL }}
+          OWNER_ALERT_INGEST_TOKEN: ${{ secrets.OWNER_ALERT_INGEST_TOKEN }}
+        run: python3 scripts/dispatch_owner_updates.py
+
+      - name: Commit owner delivery receipts
+        if: always() && steps.owner_dispatch.outcome != 'skipped'
+        env:
+          COMMIT_MESSAGE: "chore: record owner alert delivery"
+          MUST_STAGE: data/updates.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
