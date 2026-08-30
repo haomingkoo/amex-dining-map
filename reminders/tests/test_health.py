@@ -1,23 +1,37 @@
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
+import re
 
 from fastapi.testclient import TestClient
 import pytest
 
 from app.config import load_settings
-from app.main import app
+from app import tft_guide
+from app.main import app, bundle_revision
 
 
-def test_healthz_ok():
+def test_healthz_ok(monkeypatch):
+    monkeypatch.delenv("RAILWAY_DEPLOYMENT_ID", raising=False)
+    monkeypatch.delenv("RAILWAY_GIT_COMMIT_SHA", raising=False)
     response = TestClient(app).get("/healthz")
 
     assert response.status_code == 200
-    assert response.json() == {
-        "ok": True,
-        "deployment_id": "local",
-        "revision": "local",
-    }
+    payload = response.json()
+    assert payload["ok"] is True
+    assert payload["deployment_id"] == "local"
+    assert re.fullmatch(r"bundle:[0-9a-f]{12}", payload["revision"])
+    assert payload["revision"] == bundle_revision()
+    assert payload["catalog_ok"] is True
+    assert payload["catalog_sha256"] == hashlib.sha256(
+        tft_guide.CATALOG_PATH.read_bytes()
+    ).hexdigest()
+    assert payload["catalog_schema_version"] == 2
+    assert payload["catalog_release_project"] == "AMEXPlatSG"
+    assert payload["catalog_release_updated_at"]
+    assert payload["catalog_roster_checked_at"]
+    assert payload["catalog_menu_checked_at"]
 
 
 def test_production_server_disables_query_string_access_logs():

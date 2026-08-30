@@ -47,7 +47,12 @@ railway up reminders --path-as-root --detach --service amex-reminders --json
 Capture the returned deployment ID, poll `railway deployment list --json` until
 that exact deployment is `SUCCESS`, then require `/healthz` to return `200` with
 the same `deployment_id`. A health response from the previous instance is not
-acceptance. Finally probe the intended disabled/enabled feature state.
+acceptance. Record `revision` (Railway Git SHA when supplied, otherwise the
+deterministic guide/app bundle fingerprint) and verify
+`catalog_ok`, `catalog_sha256`, schema, roster/menu check times, release snapshot
+time, and exact `AMEXPlatSG` release provenance. These fields contain no
+credentials or subscriber data and identify the source bundle actually serving.
+Finally probe the intended disabled/enabled feature state.
 
 Security controls include explicit double opt-in actions, separate manage and
 unsubscribe capabilities, atomic keyed-hash IP/email/global quotas, 16 KiB API
