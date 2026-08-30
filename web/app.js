@@ -667,21 +667,9 @@ function openMarkerPopupAfterMove(mapInstance, marker) {
   });
 }
 
-function focusClusteredMarkerOnMap(mapInstance, clusterGroup, marker, fallbackLatLng) {
+function focusClusteredMarkerOnMap(mapInstance, _clusterGroup, marker, fallbackLatLng) {
   const latLng = marker?.getLatLng?.() || fallbackLatLng;
   if (!mapInstance || !latLng) return;
-  if (
-    clusterGroup &&
-    marker &&
-    typeof clusterGroup.zoomToShowLayer === "function" &&
-    clusterGroup.hasLayer(marker)
-  ) {
-    clusterGroup.zoomToShowLayer(marker, () => {
-      openMarkerPopupAfterMove(mapInstance, marker);
-      smartZoomToMarker(mapInstance, latLng);
-    });
-    return;
-  }
   openMarkerPopupAfterMove(mapInstance, marker);
   smartZoomToMarker(mapInstance, latLng);
 }
