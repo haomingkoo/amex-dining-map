@@ -62,7 +62,10 @@ class OwnerAlertEvent(BaseModel):
     corrects: Annotated[list[str], Field(max_length=20)] = Field(default_factory=list)
     program: Annotated[str, Field(min_length=1, max_length=80)]
     program_id: Annotated[str, Field(pattern=r"^[a-z0-9-]{1,80}$")]
-    route: Annotated[str, Field(pattern=r"^#/[a-z0-9/_-]{1,160}$")]
+    route: Annotated[
+        str,
+        Field(pattern=r"^#/[a-z0-9/_-]{1,160}(?:\?venue=[a-z0-9-]{1,80})?$"),
+    ]
     kind: Annotated[str, Field(pattern=r"^[a-z][a-z0-9_]{0,63}$")]
     subject: SafeText
     detected_at: datetime

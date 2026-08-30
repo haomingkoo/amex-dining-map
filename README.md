@@ -210,6 +210,10 @@ rollback, privacy, and freshness procedures are in
 program, detection time, official source, and explicit before-and-after values.
 The site-wide Updates strip shows only entries with `status: published`.
 
+TFT menu candidates use a stricter PDF- and snapshot-bound publish path. See
+the [TFT menu review runbook](docs/tft-menu-review-runbook.md); do not publish a
+menu candidate with the generic update-review command below.
+
 Love Dining and Table for Two source changes are written as
 `status: review_required`. After checking the official source, publish or reject
 one with:

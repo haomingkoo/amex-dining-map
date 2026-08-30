@@ -68,15 +68,69 @@ def test_cross_venue_collision_is_order_independent():
 def test_review_queue_fingerprint_ignores_time_and_order():
     first = [
         {"kind": "missing_venue_menu", "venue_id": "a", "detected_at": "one"},
-        {"kind": "ambiguous_exact_match", "venue_id": "b", "detected_at": "one"},
+        {"kind": "ambiguous_exact_match", "venue_id": "b", "detected_at": "one", "previous": {"checked_at": "one", "last_seen_at": "one"}},
     ]
     second = [
-        {"kind": "ambiguous_exact_match", "venue_id": "b", "detected_at": "two"},
+        {"kind": "ambiguous_exact_match", "venue_id": "b", "detected_at": "two", "previous": {"checked_at": "two", "last_seen_at": "two"}},
         {"kind": "missing_venue_menu", "venue_id": "a", "detected_at": "two"},
     ]
 
     assert menus.review_queue_sha256(first) == menus.review_queue_sha256(second)
     assert menus.review_queue_sha256(first) != menus.review_queue_sha256(first[:1])
+
+
+def test_candidate_identity_ignores_observation_timestamp_noise():
+    first = {
+        "kind": "ambiguous_exact_match",
+        "filename": "Place-Menu.pdf",
+        "sha256": "a" * 64,
+        "aem_created": "one",
+        "detected_at": "one",
+        "previous": {"sha256": "b" * 64, "checked_at": "one", "last_seen_at": "one"},
+    }
+    second = {
+        **first,
+        "aem_created": "two",
+        "detected_at": "two",
+        "previous": {"sha256": "b" * 64, "checked_at": "two", "last_seen_at": "two"},
+    }
+
+    assert menus.review_item_sha256(first) == menus.review_item_sha256(second)
+
+
+def test_identical_candidate_preserves_first_detection_chronology():
+    prior = {
+        "kind": "ambiguous_exact_match",
+        "filename": "Place-Menu.pdf",
+        "sha256": "a" * 64,
+        "detected_at": "2026-08-30T01:00:00Z",
+    }
+    prior["candidate_id"] = menus.review_item_sha256(prior)
+    refreshed = {
+        **prior,
+        "detected_at": "2026-08-30T08:00:00Z",
+    }
+
+    menus.preserve_detection_times([refreshed], [prior])
+
+    assert refreshed["first_detected_at"] == "2026-08-30T01:00:00Z"
+    assert refreshed["detected_at"] == "2026-08-30T01:00:00Z"
+
+
+def test_first_detection_is_bound_into_candidate_and_queue_hashes():
+    early = {
+        "kind": "ambiguous_exact_match",
+        "filename": "Place-Menu.pdf",
+        "sha256": "a" * 64,
+        "first_detected_at": "2026-08-30T01:00:00Z",
+    }
+    backdated = {
+        **early,
+        "first_detected_at": "1900-01-01T00:00:00Z",
+    }
+
+    assert menus.review_item_sha256(early) != menus.review_item_sha256(backdated)
+    assert menus.review_queue_sha256([early]) != menus.review_queue_sha256([backdated])
 
 
 def test_http_get_rejects_untrusted_url_and_oversized_response(monkeypatch):
@@ -125,6 +179,13 @@ def test_new_or_changed_menu_requires_review():
     assert changed["status"] == "review_required"
     assert changed["url"] is None
     assert changed["previous_sha256"] == "a" * 64
+    assert menus.active_menu_after_observation(changed, previous) == previous
+
+
+def test_new_menu_without_previous_is_not_published():
+    candidate = {"status": "review_required", "sha256": "b" * 64}
+
+    assert menus.active_menu_after_observation(candidate, {}) is None
 
 
 def test_failed_observation_does_not_advance_previous_freshness():

@@ -8,7 +8,7 @@ import pytest
 from app import tft_guide
 
 
-NOW = datetime(2026, 8, 30, 7, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 8, 30, 8, 0, tzinfo=timezone.utc)
 
 
 def _catalog() -> dict:

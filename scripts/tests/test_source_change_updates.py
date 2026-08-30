@@ -136,7 +136,7 @@ class SourceChangeUpdatesTest(unittest.TestCase):
         self.assertEqual(events[0]["changes"][0]["before"], "aaaaaaaaaaaa")
         self.assertEqual(events[0]["changes"][0]["after"], "bbbbbbbbbbbb")
 
-    def test_menu_review_queue_change_creates_review_event(self):
+    def test_menu_review_queue_change_is_not_a_public_meta_event(self):
         old = {"menu_source": {"review_required": False, "review_queue_count": 0}}
         new = {"menu_source": {"review_required": True, "review_queue_count": 2}}
 
@@ -144,12 +144,7 @@ class SourceChangeUpdatesTest(unittest.TestCase):
             "Table for Two", old, new, "2026-08-30T00:00:00Z"
         )
 
-        self.assertIsNotNone(event)
-        self.assertEqual(event["status"], "review_required")
-        self.assertEqual(
-            [change["field"] for change in event["changes"]],
-            ["Menu review flag", "Menu review queue count"],
-        )
+        self.assertIsNone(event)
 
     def test_same_count_menu_review_replacement_creates_review_event(self):
         old = {
@@ -171,14 +166,29 @@ class SourceChangeUpdatesTest(unittest.TestCase):
             "Table for Two", old, new, "2026-08-30T00:00:00Z"
         )
 
-        self.assertIsNotNone(event)
-        self.assertEqual(event["status"], "review_required")
-        self.assertEqual(
-            [change["field"] for change in event["changes"]],
-            ["Menu review queue fingerprint"],
+        self.assertIsNone(event)
+
+    def test_cleared_menu_review_queue_is_not_a_public_meta_event(self):
+        old = {
+            "menu_source": {
+                "review_required": True,
+                "review_queue_count": 1,
+                "review_queue_sha256": "a" * 64,
+            }
+        }
+        new = {
+            "menu_source": {
+                "review_required": False,
+                "review_queue_count": 0,
+                "review_queue_sha256": "b" * 64,
+            }
+        }
+
+        self.assertIsNone(
+            MODULE.build_meta_update_event(
+                "Table for Two", old, new, "2026-08-30T00:00:00Z"
+            )
         )
-        self.assertEqual(event["changes"][0]["before"], "aaaaaaaaaaaa")
-        self.assertEqual(event["changes"][0]["after"], "bbbbbbbbbbbb")
 
     def test_append_updates_deduplicates_stable_events(self):
         event = {

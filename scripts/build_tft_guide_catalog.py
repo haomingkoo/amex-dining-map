@@ -10,6 +10,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+try:
+    from scripts import tft_menu_reviews
+except ModuleNotFoundError:
+    import tft_menu_reviews
+
 
 DEFAULT_SOURCE = Path("data/table-for-two.json")
 DEFAULT_RELEASE_HISTORY = Path("data/table-for-two-release-history.json")
@@ -214,6 +219,7 @@ def build_catalog(
     release_history: dict | None = None,
     review_root: Path = DEFAULT_REVIEW_ROOT,
 ) -> dict:
+    tft_menu_reviews.verify_decision_receipts(source)
     if release_history is None:
         release_history = json.loads(DEFAULT_RELEASE_HISTORY.read_text())
     venue_ids = {str(venue["id"]) for venue in source.get("venues") or []}

@@ -27,6 +27,21 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    from scripts import source_change_alert, tft_menu_reviews
+    from scripts.tft_menu_reviews import (
+        review_item_sha256,
+        review_observation_sha256,
+        review_queue_sha256,
+    )
+except ModuleNotFoundError:
+    import source_change_alert, tft_menu_reviews
+    from tft_menu_reviews import (
+        review_item_sha256,
+        review_observation_sha256,
+        review_queue_sha256,
+    )
+
 
 AEM_MENU_SOURCES = {
     "platinum": {
@@ -54,17 +69,121 @@ def iso_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def review_queue_sha256(queue: list[dict]) -> str:
-    """Fingerprint review content without scrape-time noise or insertion order."""
-    stable_items = [
-        {key: value for key, value in item.items() if key != "detected_at"}
-        for item in queue
+def matching_terminal_decision(item: dict, decisions: list[dict]) -> dict | None:
+    candidate_id = review_item_sha256(item)
+    matches = [
+        decision
+        for decision in decisions
+        if decision.get("candidate_id") == candidate_id
+        and decision.get("decision") in {"approved", "rejected"}
     ]
+    if len(matches) > 1:
+        raise ValueError("menu candidate has conflicting terminal decisions")
+    return matches[0] if matches else None
+
+
+def enqueue_review(
+    queue: list[dict],
+    item: dict,
+    decisions: list[dict] | None = None,
+    prior_queue: list[dict] | None = None,
+) -> dict | None:
+    queued = {"status": "review_required", **item}
+    observed = review_observation_sha256(queued)
+    prior_matches = [
+        prior
+        for prior in prior_queue or []
+        if review_observation_sha256(prior) == observed
+    ]
+    queued["first_detected_at"] = (
+        prior_matches[0].get("first_detected_at")
+        or prior_matches[0].get("detected_at")
+        if len(prior_matches) == 1
+        else queued.get("detected_at")
+    )
+    queued["detected_at"] = queued["first_detected_at"]
+    queued["candidate_id"] = review_item_sha256(queued)
+    if matching_terminal_decision(queued, decisions or []) is not None:
+        return None
+    queue.append(queued)
+    return queued
+
+
+def preserve_detection_times(queue: list[dict], prior_queue: list[dict]) -> None:
+    prior_by_candidate = {
+        item.get("candidate_id"): item
+        for item in prior_queue
+        if item.get("candidate_id")
+    }
+    for item in queue:
+        prior = prior_by_candidate.get(item.get("candidate_id"))
+        first_detected_at = (
+            (prior or {}).get("first_detected_at")
+            or (prior or {}).get("detected_at")
+            or item.get("detected_at")
+        )
+        item["first_detected_at"] = first_detected_at
+        item["detected_at"] = first_detected_at
+        item["candidate_id"] = review_item_sha256(item)
+
+
+def approved_candidate_filename(
+    decisions: list[dict],
+    venue_id: str,
+    card: str,
+    candidates: list[str],
+    roster_digest: str | None,
+    listing_digest: str,
+) -> str | None:
+    matches = []
+    for decision in decisions:
+        candidate = decision.get("candidate") or {}
+        if (
+            decision.get("decision") == "approved"
+            and candidate.get("venue_id") == venue_id
+            and candidate.get("card") == card
+            and candidate.get("filename") in candidates
+            and candidate.get("roster_sha256") == roster_digest
+            and candidate.get("listing_sha256") == listing_digest
+        ):
+            matches.append(candidate["filename"])
+    return matches[0] if len(set(matches)) == 1 else None
+
+
+def superseding_decision(
+    decisions: list[dict], asset: dict, venue_id: str | None
+) -> dict | None:
+    matches = []
+    for decision in decisions:
+        candidate = decision.get("candidate") or {}
+        previous = candidate.get("previous") or {}
+        if (
+            decision.get("decision") == "approved"
+            and venue_id
+            and candidate.get("venue_id") == venue_id
+            and candidate.get("card") == asset.get("card")
+            and candidate.get("roster_sha256") == asset.get("roster_sha256")
+            and candidate.get("listing_sha256") == asset.get("listing_sha256")
+            and previous.get("filename") == asset.get("filename")
+            and previous.get("sha256") == asset.get("sha256")
+        ):
+            matches.append(decision)
+    return matches[0] if len(matches) == 1 else None
+
+
+def listing_sha256(listings: dict[str, dict[str, dict]]) -> str:
+    projection = {
+        card: [
+            {
+                "filename": filename,
+                "aem_uuid": entry.get("aem_uuid"),
+            }
+            for filename, entry in sorted(listing.items())
+        ]
+        for card, listing in sorted(listings.items())
+    }
     canonical = json.dumps(
-        sorted(stable_items, key=lambda item: json.dumps(item, sort_keys=True)),
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
+        projection, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     ).encode("utf-8")
     return hashlib.sha256(canonical).hexdigest()
 
@@ -314,6 +433,14 @@ def venue_menu_info(
     }
 
 
+def active_menu_after_observation(info: dict, previous: dict) -> dict | None:
+    if info.get("status") == "published":
+        return info
+    if info.get("status") == "review_required" and previous.get("status") == "published":
+        return dict(previous)
+    return None
+
+
 def maybe_save_pdf(pdf_bytes: bytes, filename: str, cache_dir: Path) -> None:
     if (
         not pdf_bytes.startswith(b"%PDF")
@@ -349,7 +476,8 @@ def main() -> int:
     output_path = Path(args.output)
     cache_dir = Path(args.cache_dir) if args.cache_dir else None
 
-    payload = json.loads(input_path.read_text(encoding="utf-8"))
+    input_text = input_path.read_text(encoding="utf-8")
+    payload = json.loads(input_text)
     venues = payload.get("venues") or []
     if not venues:
         print("No venues in input file.", file=sys.stderr)
@@ -357,6 +485,15 @@ def main() -> int:
 
     checked_at = iso_now()
     listings = {key: fetch_aem_menu_listing(key) for key in AEM_MENU_SOURCES}
+    listing_digest = listing_sha256(listings)
+    roster_digest = (payload.get("source_images") or {}).get(
+        "participating_merchants_sha256"
+    )
+    prior_review_queue = list(
+        (payload.get("menu_source") or {}).get("review_queue") or []
+    )
+    review_decisions = list((payload.get("menu_source") or {}).get("review_decisions") or [])
+    tft_menu_reviews.verify_decision_receipts(payload)
     for key, listing in listings.items():
         print(f"AEM {AEM_MENU_SOURCES[key]['label']} listing: {len(listing)} menu PDFs found", file=sys.stderr)
 
@@ -371,6 +508,7 @@ def main() -> int:
     candidate_claimants = strongest_asset_claimants(venues, listings)
 
     for venue in venues:
+        concrete_candidate_queued = False
         previous_menus = venue.get("menu_pdfs") or {}
         source_infos = {}
         listing_matches = {}
@@ -394,7 +532,17 @@ def main() -> int:
                 ambiguous_assets.update(
                     {(source_key, filename): venue["id"] for filename in candidates}
                 )
-                if previous.get("filename") in candidates:
+                preferred = approved_candidate_filename(
+                    review_decisions,
+                    venue["id"],
+                    source_key,
+                    candidates,
+                    roster_digest,
+                    listing_digest,
+                )
+                if preferred:
+                    selected = preferred
+                elif previous.get("filename") in candidates:
                     selected = previous["filename"]
             if selected:
                 asset_key = (source_key, selected)
@@ -429,36 +577,51 @@ def main() -> int:
             info = venue_menu_info(venue, entry, pdf_bytes, checked_at, previous)
             if entry:
                 observed_assets.add((source_key, entry["filename"]))
-            if info["status"] in {"published", "review_required"}:
-                source_infos[source_key] = info
+            active_info = active_menu_after_observation(info, previous)
+            if active_info is not None:
+                source_infos[source_key] = active_info
             if info["status"] == "review_required":
-                review_queue.append(
+                concrete_candidate_queued = enqueue_review(
+                    review_queue,
                     {
                         "kind": "changed_or_new_venue_menu",
-                        "status": "review_required",
                         "venue_id": venue["id"],
                         "venue_name": venue["name"],
                         "card": source_key,
                         "filename": info["filename"],
+                        "url": entry["url"],
                         "sha256": info["sha256"],
                         "bytes": info["bytes"],
                         "aem_uuid": info.get("aem_uuid"),
                         "previous_sha256": info.get("previous_sha256"),
+                        "previous": (
+                            dict(previous)
+                            if previous.get("status") == "published"
+                            else None
+                        ),
+                        "roster_sha256": roster_digest,
+                        "listing_sha256": listing_digest,
                         "detected_at": checked_at,
-                    }
-                )
+                    },
+                    review_decisions,
+                    prior_review_queue,
+                ) is not None or concrete_candidate_queued
             if observation_failed:
-                review_queue.append(
+                enqueue_review(
+                    review_queue,
                     {
                         "kind": "observation_failed",
-                        "status": "review_required",
                         "venue_id": venue["id"],
                         "venue_name": venue["name"],
                         "card": source_key,
                         "filename": entry["filename"],
                         "aem_uuid": entry.get("aem_uuid"),
+                        "roster_sha256": roster_digest,
+                        "listing_sha256": listing_digest,
                         "detected_at": checked_at,
-                    }
+                    },
+                    review_decisions,
+                    prior_review_queue,
                 )
 
         venue["menu_pdfs"] = source_infos
@@ -481,15 +644,20 @@ def main() -> int:
             print(f"  BUF {venue['name']:38s}  (buffet — no menu PDF expected)")
         else:
             review_count += 1
-            review_queue.append(
-                {
-                    "kind": "missing_venue_menu",
-                    "status": "review_required",
-                    "venue_id": venue["id"],
-                    "venue_name": venue["name"],
-                    "detected_at": checked_at,
-                }
-            )
+            if not concrete_candidate_queued:
+                enqueue_review(
+                    review_queue,
+                    {
+                        "kind": "missing_venue_menu",
+                        "venue_id": venue["id"],
+                        "venue_name": venue["name"],
+                        "roster_sha256": roster_digest,
+                        "listing_sha256": listing_digest,
+                        "detected_at": checked_at,
+                    },
+                    review_decisions,
+                    prior_review_queue,
+                )
             print(f"  ??  {venue['name']:38s}  NO PDF FOUND — review")
 
     all_assets = {
@@ -540,21 +708,40 @@ def main() -> int:
                 active = (candidate_venue.get("menu_pdfs") or {}).get(source_key) or {}
                 asset["active_filename"] = active.get("filename")
                 asset["active_sha256"] = active.get("sha256")
-            asset["roster_sha256"] = (
-                payload.get("source_images") or {}
-            ).get("participating_merchants_sha256")
-            review_queue.append(
-                {"kind": "ambiguous_exact_match", "status": "review_required", **asset}
+                asset["previous"] = (
+                    dict(active) if active.get("status") == "published" else None
+                )
+            asset["roster_sha256"] = roster_digest
+            asset["listing_sha256"] = listing_digest
+            queue_item = {"kind": "ambiguous_exact_match", **asset}
+            terminal = matching_terminal_decision(queue_item, review_decisions)
+            superseded = superseding_decision(
+                review_decisions, asset, candidate_venue_id
             )
+            if terminal is not None:
+                asset["review_status"] = terminal["decision"]
+                asset["review_manifest_sha256"] = terminal.get("manifest_sha256")
+            elif superseded is not None:
+                asset["review_status"] = "superseded"
+                asset["review_manifest_sha256"] = superseded.get(
+                    "manifest_sha256"
+                )
+            else:
+                enqueue_review(
+                    review_queue, queue_item, review_decisions, prior_review_queue
+                )
     unmatched = sorted(asset["filename"] for asset in unmatched_assets)
     if unmatched:
         print(f"\nWARNING: {len(unmatched)} PDFs in AEM listing did not match any venue:", file=sys.stderr)
         for f in unmatched:
             print(f"  - {f}", file=sys.stderr)
 
+    preserve_detection_times(review_queue, prior_review_queue)
+
     payload["menu_source"] = {
         "aem_listing_urls": {key: source["listing_url"] for key, source in AEM_MENU_SOURCES.items()},
         "checked_at": checked_at,
+        "listing_sha256": listing_digest,
         "pdfs_in_listing": sum(len(listing) for listing in listings.values()),
         "menus_matched": matched_menu_count,
         "venues_matched": matched_venue_count,
@@ -566,6 +753,7 @@ def main() -> int:
         "review_queue_count": len(review_queue),
         "review_queue_sha256": review_queue_sha256(review_queue),
         "review_required": bool(review_count or review_queue),
+        "review_decisions": review_decisions,
     }
 
     print(
@@ -578,7 +766,12 @@ def main() -> int:
         print("[dry-run] not writing output file", file=sys.stderr)
         return 0
 
-    output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    with source_change_alert._ledger_lock(output_path):
+        if input_path.resolve() == output_path.resolve() and input_path.read_text(
+            encoding="utf-8"
+        ) != input_text:
+            raise RuntimeError("TFT data changed during menu refresh; retry from fresh input")
+        source_change_alert._atomic_write_json(output_path, payload)
     print(f"Wrote {output_path}", file=sys.stderr)
     return 0
 

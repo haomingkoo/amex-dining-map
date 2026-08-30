@@ -107,7 +107,13 @@ PUBLIC_RECORD_FIELDS = {
 PUBLIC_META_FIELDS = {
     key: label
     for key, label in META_FIELD_LABELS.items()
-    if key != "manual_review_required"
+    if key
+    not in {
+        "manual_review_required",
+        "menu_source.review_required",
+        "menu_source.review_queue_count",
+        "menu_source.review_queue_sha256",
+    }
 }
 
 MAX_RETAINED_RESOLVED_UPDATES = 500
