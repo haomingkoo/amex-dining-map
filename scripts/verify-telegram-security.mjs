@@ -18,6 +18,7 @@ execFileSync("uv", [
   "--with-requirements", "reminders/requirements-dev.txt",
   "pytest",
   "reminders/tests/test_telegram_bot.py",
+  "reminders/tests/test_telegram_reminders.py",
   "reminders/tests/test_health.py",
   "-q",
 ], { cwd: root, stdio: "pipe", env: { ...process.env, PYTHONPATH: root } });

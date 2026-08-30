@@ -34,6 +34,12 @@ def test_healthz_ok(monkeypatch):
     assert payload["catalog_release_updated_at"]
     assert payload["catalog_roster_checked_at"]
     assert payload["catalog_menu_checked_at"]
+    assert payload["feature_state"] == {
+        "email_delivery_configured": False,
+        "owner_alerts_enabled": False,
+        "telegram_guide_enabled": False,
+        "telegram_reminders_enabled": False,
+    }
 
 
 def test_production_server_disables_query_string_access_logs():

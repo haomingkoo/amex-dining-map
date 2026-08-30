@@ -26,10 +26,10 @@ Tracker: parent #34; vertical slices #35 through #42.
   EXPECT: Telegram owner alert verification passed
   EVIDENCE: 2026-08-30 verifier passed. Tests prove plain-text before/after rendering, config-only destination selection, published-only delivery, replay deduplication, digest conflict rejection, and no blind retry after ambiguous transport outcomes. Real-channel delivery remains G9.
 
-- [ ] G4: menu, venue, T&C, source, and release-pattern changes can trigger owner-channel alerts without leaking bot tokens, subscriber records, or internal diagnostics
+- [x] G4: menu, venue, T&C, source, and release-pattern changes can trigger owner-channel alerts without leaking bot tokens, subscriber records, or internal diagnostics
   CHECK: node scripts/verify-telegram-change-dispatch.mjs
   EXPECT: Telegram change dispatch verification passed
-  EVIDENCE: 2026-08-30 verifier passes for reviewed-update dispatch. Stream-scoped occurrence IDs deduplicate direct retries but preserve A→B→A→B recurrences, including after retention and legacy migration. Atomic locked ledger writes, protected review/undelivered/retracted retention, persisted terminal delivery states, and no terminal replay pass regressions. Six reviewed Love Dining hotel-attribution corrections carry exact before/after values. Current restaurant and hotel T&C baselines bind 77 reviewed clauses to 44 exact page hashes; prior PDF content was unavailable, so the aggregate hash event is rejected without a retroactive clause claim. Synthetic next-version transitions prove exact clause events and layout-only suppression. Concrete TFT menu candidates now retain the prior published projection and use manifest-, roster-, listing-, URL-, and PDF-bound approve/reject application; rejection emits no public event and approval creates one card-specific reviewed before/after event. Live human decisions and future-transition acceptance remain tracked by #51, so this gate stays open.
+  EVIDENCE: 2026-08-30 expanded verifier passes the source-change, TFT menu-review, official-document, Love Dining review, release-pattern, owner-ingress, and delivery suites. Stream-scoped occurrence IDs deduplicate direct retries but preserve A→B→A→B recurrences. Synthetic next-version transitions prove exact before/after clause events and layout-only suppression; concrete menu candidates remain review-gated. Real delivery remains G9 and future human review remains #51.
 
 - [x] G5: the Telegram self-help bot answers TFT program, venue, menu, T&C, and release-pattern questions and can find currently observed slots from curated current sources with citations and freshness dates
   CHECK: node scripts/verify-telegram-guide.mjs
@@ -41,15 +41,15 @@ Tracker: parent #34; vertical slices #35 through #42.
   EXPECT: Telegram safety verification passed
   EVIDENCE: 2026-08-30 deterministic venue/menu/release/document surfaces reject unsupported, ambiguous, and prompt-injection-shaped questions; untrusted menu or document URLs, future review timestamps, wrong page hashes, invalid page references, and wrong release provenance fail closed. Eligibility output describes document scope without deciding that a user qualifies; merchant-specific fees, children policy, availability, and legal interpretation are not invented.
 
-- [ ] G7: Telegram webhook authentication, owner allowlists, public-user rate limits, payload limits, output escaping, reminder consent, retention limits, and secret isolation pass security regression tests
+- [x] G7: Telegram webhook authentication, owner/public-bot separation, public-user rate limits, payload limits, output escaping, reminder consent, retention limits, and secret isolation pass security regression tests
   CHECK: node scripts/verify-telegram-security.mjs
   EXPECT: Telegram security verification passed
-  EVIDENCE: 2026-08-30 guide webhook authentication, replay, private-chat, rate, payload, retention, escaping, and secret-isolation checks pass. Reminder setup repeats raw chat-ID storage and retention consent before activation; list, cancellation, deletion, and management quotas are principal-scoped. Real private-Telegram acceptance remains pending.
+  EVIDENCE: 2026-08-30 expanded verifier passes guide webhook authentication, replay, private-chat, rate, payload, retention, escaping, secret-isolation, and the reminder consent/retention lifecycle. Real private-Telegram acceptance remains G10.
 
-- [ ] G7A: a Telegram user can create, inspect, and cancel a TFT slot reminder with an explicit venue, party size, meal, and date range
+- [x] G7A: the tested Telegram lifecycle supports creating, inspecting, and cancelling a TFT slot reminder with an explicit venue, party size, meal, and date range
   CHECK: node scripts/verify-telegram-reminders.mjs
   EXPECT: Telegram reminder verification passed
-  EVIDENCE: deterministic one-shot lifecycle, bounded and expiring setup, HMAC ownership, non-enumerating cancellation, two-step deletion, fresh AMEXPlatSG matching, transactional claims, terminal delivery receipts, post-Pages generation gating, and privacy-safe dispatch logs pass locally. Real private-Telegram mobile acceptance remains pending, so this gate stays open.
+  EVIDENCE: 2026-08-30 deterministic one-shot lifecycle, bounded and expiring setup, HMAC ownership, non-enumerating cancellation, two-step deletion, fresh AMEXPlatSG matching, transactional claims, terminal delivery receipts, post-Pages generation gating, and privacy-safe dispatch logs pass locally. Real private-Telegram mobile acceptance remains G10.
 
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
@@ -62,7 +62,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [ ] G10: a real Telegram user can ask for a TFT menu or T&C, find an observed slot, and create then cancel a reminder, while an adversarial question receives the bounded fallback
   EVIDENCE: pending
 
-- [ ] G11: the deployed site, reminder service, owner channel, and self-help bot are documented with setup, rotation, monitoring, rollback, privacy, freshness, and known-limit procedures
+- [x] G11: the deployed site, reminder service, owner channel, and self-help bot are documented with setup, rotation, monitoring, rollback, privacy, freshness, and known-limit procedures
   CHECK: node scripts/verify-operations-docs.mjs
   EXPECT: operations documentation verification passed
-  EVIDENCE: Railway root deployment, health acceptance, Telegram activation, rotation, monitoring, rollback, privacy-safe logging, freshness, and disabled-state procedures are documented. A verifier and real bot/channel configuration remain pending.
+  EVIDENCE: 2026-08-30 executable operations verifier passes config/example parity, disabled defaults, non-secret health state, Railway and Pages acceptance, feature activation order, safe rollback order, workflow credential seams, 36-hour catalogue and 30-minute slot thresholds, aggregate-safe diagnostics, and honest correlation limits. Real bot/channel acceptance remains G9/G10.

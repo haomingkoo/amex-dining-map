@@ -2866,7 +2866,8 @@ tr {
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 8px;
-  flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* Google Maps rating badge */
@@ -2874,7 +2875,8 @@ tr {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
   padding: 8px 12px;
   border: 1px solid var(--google-border);
   border-radius: var(--radius-sm);
@@ -2904,6 +2906,13 @@ a.google-badge:hover {
   letter-spacing: 0.06em;
   color: var(--text-dim);
   white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+  .google-meta {
+    text-align: center;
+    white-space: normal;
+  }
 }
 
 /* Inline Google rating in mobile list cards */

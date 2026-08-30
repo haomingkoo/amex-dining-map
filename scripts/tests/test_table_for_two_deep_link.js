@@ -36,4 +36,28 @@ assert.match(
 assert.match(source, /payload\.menu_source\?\.review_required/);
 assert.match(source, /menu review item/);
 
+const reviewStart = source.indexOf("function tableForTwoVenueMenuReviewItems(");
+const reviewEnd = source.indexOf("\nfunction ", reviewStart + 10);
+assert.ok(reviewStart >= 0 && reviewEnd > reviewStart, "venue review helper not found");
+const reviewContext = {};
+vm.runInNewContext(
+  `${source.slice(reviewStart, reviewEnd)}\nthis.reviewItems = tableForTwoVenueMenuReviewItems;`,
+  reviewContext,
+);
+const reviewPayload = {
+  menu_source: {
+    review_queue: [
+      { venue_id: "tft-one-ninety" },
+      { candidate_venue_id: "tft-osteria-mozza" },
+      { candidate_venue_ids: ["tft-a", "tft-b"] },
+    ],
+  },
+};
+assert.equal(reviewContext.reviewItems(reviewPayload, { id: "tft-vue" }).length, 0);
+assert.equal(reviewContext.reviewItems(reviewPayload, { id: "tft-one-ninety" }).length, 1);
+assert.equal(reviewContext.reviewItems(reviewPayload, { id: "tft-osteria-mozza" }).length, 1);
+assert.equal(reviewContext.reviewItems(reviewPayload, { id: "tft-b" }).length, 1);
+assert.match(source, /An alternate menu candidate is under review/);
+assert.match(source, /No indexed official menu PDF was found for this venue/);
+
 console.log("Table for Two deep-link verification passed");

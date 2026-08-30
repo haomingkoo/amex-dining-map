@@ -54,9 +54,22 @@ time, and exact `AMEXPlatSG` release and slot provenance. These fields contain n
 credentials or subscriber data and identify the source bundle actually serving.
 Finally probe the intended disabled/enabled feature state.
 
+`feature_state.email_delivery_configured`, `owner_alerts_enabled`,
+`telegram_guide_enabled`, and `telegram_reminders_enabled` are non-secret
+troubleshooting fields. A disabled optional endpoint must return `503`; that is
+different from a stale deployment or a missing route.
+
+Pages production acceptance is separate: wait for the exact `Deploy Pages` run
+for the intended commit, open the deployed TFT route at 390x844 and 320x740,
+verify its revision-bound assets and source timestamps, and check console and
+failed-resource logs. If acceptance fails, revert the narrow change, push, wait
+for that exact replacement Pages run, and repeat the browser checks. Do not call
+a successful workflow run browser acceptance.
+
 Security controls include explicit double opt-in actions, separate manage and
 unsubscribe capabilities, atomic keyed-hash IP/email/global quotas, 16 KiB API
-body limits, owner-only SQLite permissions, bounded retention, restricted CORS,
+body limits, owner-only SQLite permissions, bounded subscriber and abuse-metadata
+retention, restricted CORS,
 no-store token pages, and browser security headers. Set a strong independent
 `ABUSE_HASH_SALT` in production and keep every token in deployment secrets.
 
@@ -106,13 +119,19 @@ historical ledger events on the first run.
 Create the owner-alert bot separately in BotFather, add it to a private channel
 with post-only permission, and obtain the numeric `-100...` channel ID from a
 trusted Telegram update/API inspection. Verify the ID against a test channel
-message before enabling. Enable in this order: deploy secrets and cutoff, test
-authenticated ingestion while disabled, enable the flag, send one reviewed test
-event, then verify its single `sent` row. On `unknown` or `dead`, inspect the
-owner delivery table and Railway `owner_alert_delivery` event; never blindly
-replay an ambiguous delivery. Rotate by disabling, replacing the bot token and
-ingestion token independently, redeploying, testing, then enabling. Roll back by
-disabling owner alerts; public guide and email reminders remain independent.
+message before enabling. Enable in this order: configure the bot, channel,
+cutoff, and ingestion token; set `OWNER_ALERTS_ENABLED=true`; deploy; verify
+`/healthz` reports `owner_alerts_enabled=true`; send one reviewed test event;
+then verify its single `sent` row. While disabled, probe only for the expected
+`503`; authenticated ingestion acceptance is possible only after the enabled
+deployment. On `unknown` or `dead`, inspect aggregate owner delivery state and
+the Railway `owner_alert_delivery` event; never blindly replay an ambiguous
+delivery. Rotate by disabling, replacing the bot token and ingestion token
+independently, redeploying, testing, then enabling. Roll back by setting
+`OWNER_ALERTS_ENABLED=false`, deploying, and removing both
+`OWNER_ALERT_INGEST_URL` and `OWNER_ALERT_INGEST_TOKEN` from GitHub Actions so
+refresh workflows safely skip dispatch. Public guide and email reminders remain
+independent.
 
 ## Public Telegram guide
 
@@ -194,7 +213,14 @@ Keep Railway on one persistent SQLite-backed
 replica. Register `/api/telegram/guide/webhook` with Telegram using the secret
 token, `allowed_updates=["message"]`, and `drop_pending_updates=true` only for
 the first activation. Real private-chat, replay, group-ignore, and rate-limit
-acceptance remains mandatory before calling the bot live.
+acceptance remains mandatory before calling the bot live. Enable in this order:
+configure the separate guide bot and independent secrets; set
+`TELEGRAM_GUIDE_ENABLED=true`; deploy; verify `/healthz` reports
+`telegram_guide_enabled=true`; then call `setWebhook` and run live chat
+acceptance. Enable reminders only after guide acceptance: configure the dispatch
+token on Railway and GitHub, set `TELEGRAM_REMINDERS_ENABLED=true`, deploy,
+verify health, create/list/cancel a real test reminder, and only then set
+`TELEGRAM_REMINDERS_EXPECTED_ENABLED=true` in GitHub Actions.
 
 ### Guide bot activation and operations
 
@@ -239,10 +265,24 @@ and conversational weekend queries, then create/list/cancel a test reminder and
 send a group message
 from real Telegram clients after each activation.
 
-For token rotation, disable `TELEGRAM_GUIDE_ENABLED`, delete the webhook, rotate
-the BotFather token and both independent random secrets, redeploy, register the
-new webhook without dropping pending updates, repeat acceptance, then re-enable.
+Treat a roster check, menu-index check, or release snapshot older than 36 hours
+as actionable catalogue staleness. Confirm the corresponding scheduled workflow
+ran, inspect its review queue and source response, rerun the exact refresh when
+safe, then deploy the resulting reviewed Railway bundle. Slot projections use a
+stricter per-venue 30-minute threshold: inspect the half-hour Table for Two
+availability workflow and the exact successful Pages deployment before calling
+any slot current.
+
+For ordinary token rotation, first set
+`TELEGRAM_REMINDERS_EXPECTED_ENABLED=false` and pause or remove the GitHub
+dispatch credentials. Then set `TELEGRAM_REMINDERS_ENABLED=false`, deploy, set
+`TELEGRAM_GUIDE_ENABLED=false`, deploy, and delete the webhook with
+`drop_pending_updates=false`. Rotate the BotFather token, webhook secret, and
+dispatch token, configure them, re-enable the guide, deploy, register the new
+webhook without dropping pending updates, repeat guide acceptance, then enable
+and accept reminders before restoring the GitHub expected-enabled variable.
 Rotate owner-alert and guide-bot credentials separately.
+Identity-salt migration is a separate operation, not routine token rotation.
 Before rotating `TELEGRAM_IDENTITY_HASH_SALT`, disable reminder creation and
 dispatch and verify SQLite has zero reminder rows in `active`, `claimed`, or
 `sending` state. Drain or cancel them first; startup deliberately fails if a new
@@ -265,8 +305,10 @@ PY
 unset TELEGRAM_GUIDE_BOT_TOKEN
 ```
 
-Rollback by disabling the guide flag and deleting its webhook; owner alerts and
-email reminders remain independent. If delivery is ambiguous, inspect the
+Rollback in this safe order: set the GitHub expected-enabled variable false and
+pause or remove reminder dispatch credentials; disable reminders and deploy;
+disable the guide and deploy; then delete its webhook without dropping pending
+updates. Owner alerts and email reminders remain independent. If delivery is ambiguous, inspect the
 stored terminal state and Telegram webhook information instead of resending.
 Restore only from the persistent SQLite volume or a verified backup, never from
 chat logs. The service stores no message text or usernames. Reminder delivery is
@@ -289,7 +331,7 @@ Railway emits one JSON line per HTTP request with a generated request ID, method
 path, status, and latency. Subscription events record only a short keyed recipient
 fingerprint and the state transition; emails, names, tokens, query strings,
 Telegram message text, and credentials are never logged. Use the `X-Request-ID`
-response header to correlate a browser failure with Railway logs.
+response header to correlate a direct browser or API failure with Railway logs.
 Confirmation-provider failures return a generic `502` and emit
 `confirmation_email_failed` with only a bounded `error_code` such as
 `provider_http_429`, `provider_unreachable`, or `unexpected_failure`. Provider
@@ -302,18 +344,27 @@ HTTP 200 can still contain a terminal Telegram outcome, so alert on `unknown`,
 Reminder dispatch emits `telegram_reminder_run` aggregate counts and
 `telegram_reminder_delivery` terminal outcomes. These logs never include chat
 IDs, principal hashes, reminder IDs, venue/date criteria, message text, provider
-responses, or tokens. Correlate the internal dispatch request in Railway with
+responses, or tokens. Telegram owner and guide calls have no shared request ID
+with Telegram; correlate those narrowly by UTC time, endpoint path, outcome
+state, and bounded error code. Correlate reminder dispatch with its random run
+ID and the matching successful Pages run and its `generated_at`; `409` means the
+public projection did not match the deployed generation, while `503` means the
+feature or fixed source was unavailable. Do not manually resend `unknown` rows.
+
+For aggregate diagnosis in an authorized Railway shell, query counts and oldest
+state timestamps only—never dump rows. Owner delivery rows include a configured
+destination required for durable deduplication and are not covered by the
+subscriber retention statement above:
 the matching successful Pages run and its `generated_at`; `409` means the public
 projection did not match the deployed generation, while `503` means the feature
 or fixed source was unavailable. Do not manually resend `unknown` rows.
-For aggregate diagnosis in an authorized Railway shell, query counts and oldest
-state timestamps only—never dump reminder rows:
-
 ```sql
 SELECT state, COUNT(*) AS count, MIN(updated_ts) AS oldest
 FROM telegram_reminders GROUP BY state ORDER BY state;
 SELECT state, COUNT(*) AS count, MIN(updated_ts) AS oldest
 FROM telegram_reminder_deliveries GROUP BY state ORDER BY state;
+SELECT state, COUNT(*) AS count, MIN(updated_ts) AS oldest
+FROM owner_alert_deliveries GROUP BY state ORDER BY state;
 ```
 
 Compare `claimed` older than five minutes with the next run's

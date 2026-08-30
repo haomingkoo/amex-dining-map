@@ -34,6 +34,13 @@ execFileSync("uv", [
   "pytest",
   "scripts/tests/test_dispatch_owner_updates.py",
   "scripts/tests/test_owner_alert_event_contract.py",
+  "scripts/tests/test_source_change_updates.py",
+  "scripts/tests/test_tft_menu_reviews.py",
+  "scripts/tests/test_tft_official_documents.py",
+  "scripts/tests/test_apply_love_dining_document_review.py",
+  "scripts/tests/test_apply_love_dining_review.py",
+  "scripts/tests/test_tft_release_patterns.py",
+  "reminders/tests/test_owner_alerts.py",
   "-q",
 ], { cwd: process.cwd(), stdio: "pipe", env: { ...process.env, PYTHONPATH: process.cwd() } });
 

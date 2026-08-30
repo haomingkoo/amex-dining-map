@@ -6282,6 +6282,24 @@ function tableForTwoProfileImageUrl(record) {
   return tableForTwoProfile(record).cover_url || tableForTwoProfile(record).image_url || "";
 }
 
+function tableForTwoVenueMenuReviewItems(payload, record) {
+  if (!record?.id) return [];
+  return (payload?.menu_source?.review_queue || []).filter((item) => {
+    if (item?.venue_id === record.id || item?.candidate_venue_id === record.id) return true;
+    return Array.isArray(item?.candidate_venue_ids) && item.candidate_venue_ids.includes(record.id);
+  });
+}
+
+function tableForTwoVenueMenuReviewWarning(items) {
+  if (items.some((item) => item?.kind === "missing_venue_menu")) {
+    return "No indexed official menu PDF was found for this venue. The missing-menu result is awaiting owner review.";
+  }
+  if (items.length) {
+    return "An alternate menu candidate is under review. Published menu links remain active until owner review is complete.";
+  }
+  return "";
+}
+
 function renderTableForTwoList() {
   if (!state.tableForTwoFiltered.length) {
     tableForTwoResultsList.innerHTML = '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
@@ -6379,10 +6397,14 @@ function renderTableForTwoCard() {
     .filter(Boolean)
     .sort()
     .at(-1) || payload.menu_source?.checked_at;
+  const venueMenuReviewItems = tableForTwoVenueMenuReviewItems(payload, record);
+  const venueMenuReviewWarning = tableForTwoVenueMenuReviewWarning(venueMenuReviewItems);
   const menuSourceNote = `<div class="focus-note">Official menu index checked ${escapeHtml(menuCheckedAt ? formatTimestamp(menuCheckedAt) : "time unavailable")}.${payload.menu_source?.review_required ? ` ${payload.menu_source.review_queue_count || 0} menu review item${payload.menu_source.review_queue_count === 1 ? " is" : "s are"} pending.` : payload.manual_review_required ? " Wider source review is required." : ""}</div>`;
-  const sourceReviewWarning = payload.manual_review_required || payload.menu_source?.review_required
-    ? `<div class="focus-note focus-note-warn">${payload.manual_review_required ? "Official roster or source files changed." : "A menu candidate or expected menu absence needs review."} Manual review is required before treating the venue and menu set as final.</div>`
-    : "";
+  const sourceReviewWarning = payload.manual_review_required
+    ? '<div class="focus-note focus-note-warn">Official roster or source files changed. Manual review is required before treating the venue list as final.</div>'
+    : venueMenuReviewWarning
+      ? `<div class="focus-note focus-note-warn">${escapeHtml(venueMenuReviewWarning)}</div>`
+      : "";
 
   tableForTwoFocusCard.innerHTML = `
     ${profileImageUrl ? `<img class="tft-venue-photo" src="${escapeHtml(profileImageUrl)}" alt="${escapeHtml(displayName)}">` : ""}

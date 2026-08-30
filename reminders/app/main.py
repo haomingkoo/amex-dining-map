@@ -108,6 +108,14 @@ def healthz() -> dict[str, Any]:
         "ok": True,
         "deployment_id": os.getenv("RAILWAY_DEPLOYMENT_ID", "local"),
         "revision": os.getenv("RAILWAY_GIT_COMMIT_SHA") or bundle_revision(),
+        "feature_state": {
+            "email_delivery_configured": bool(
+                settings.resend_api_key and settings.resend_from
+            ),
+            "owner_alerts_enabled": settings.owner_alerts_enabled,
+            "telegram_guide_enabled": settings.telegram_guide_enabled,
+            "telegram_reminders_enabled": settings.telegram_reminders_enabled,
+        },
     }
     response.update(catalog_health())
     return response
