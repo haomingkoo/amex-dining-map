@@ -6957,7 +6957,7 @@ function filterLoveDining() {
   loveSummaryStripText.textContent = n === total
     ? `${total} venues · ${reviewedBaseline} · cached ${cachedLabel}${reviewSuffix}`
     : `${n} of ${total} venues · cached ${cachedLabel}${reviewSuffix}`;
-  loveResultsText.textContent = `${n} venue${n === 1 ? "" : "s"} shown`;
+  loveResultsText.textContent = `${n} venue${n === 1 ? "" : "s"} shown · ${reviewedBaseline}`;
   loveMobileSummary.textContent = `${n} venue${n === 1 ? "" : "s"}`;
 
   // Active filters summary

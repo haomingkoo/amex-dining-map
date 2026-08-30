@@ -80,6 +80,7 @@ assert.strictEqual(
 );
 assert.match(source, /const markerLabel = isUnavailable \? "×" : ""/);
 assert.match(source, /const markerTitle = isUnavailable \? "Unavailable venue" : record\.name/);
+assert.match(source, /loveResultsText\.textContent = `\$\{n\} venue\$\{n === 1 \? "" : "s"\} shown · \$\{reviewedBaseline\}`/);
 
 const crossroadsBenefit = context.loveDiningBenefitProfile({
   id: "love-paradox-singapore-crossroads-bar",
