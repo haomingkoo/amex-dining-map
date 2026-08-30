@@ -92,10 +92,10 @@ def test_absent_requested_variant_shows_source_freshness_and_nonexistence_caveat
     assert "does not prove no such menu exists" in answer
     assert "Menu index checked:" in answer
     assert "older than 36 hours" in answer
-    assert "awaiting manual review" in answer
+    assert "awaiting manual review" not in answer
 
 
-def test_missing_and_buffet_states_show_stale_and_review_context():
+def test_missing_and_buffet_states_show_stale_and_specific_review_context():
     catalog = copy.deepcopy(_catalog())
     stale = (NOW - timedelta(hours=37)).isoformat()
     for venue_id in ("tft-one-ninety", "tft-colony"):
@@ -108,7 +108,9 @@ def test_missing_and_buffet_states_show_stale_and_review_context():
     for answer in (missing, buffet):
         assert "Menu index checked:" in answer
         assert "older than 36 hours" in answer
-        assert "awaiting manual review" in answer
+        assert "awaiting manual review" not in answer
+    assert "Manual review is pending" in missing
+    assert "Manual review is pending" not in buffet
 
 
 def test_exact_aliases_match_but_typo_does_not_guess():
@@ -154,14 +156,14 @@ def test_bad_menu_url_fails_safe_without_linking_it():
     assert "could not be verified safely" in answer
     assert "127.0.0.1" not in answer
     assert "Menu index checked:" in answer
-    assert "awaiting manual review" in answer
+    assert "awaiting manual review" not in answer
 
 
-def test_venues_lists_current_roster_and_review_caveat():
+def test_venues_lists_current_reviewed_roster_without_stale_caveat():
     answer = tft_guide.handle_message("/venues", _catalog(), NOW)
     assert "• VUE" in answer
     assert "• One-Ninety" in answer
-    assert "awaiting manual review" in answer
+    assert "awaiting manual review" not in answer
     assert _catalog()["official_url"] in answer
     assert len(answer) <= tft_guide.MAX_REPLY_LENGTH
 
@@ -273,12 +275,12 @@ def test_unknown_release_venue_and_meal_do_not_guess():
     assert "median first-detected lead" not in venue + meal
 
 
-def test_release_help_and_manual_review_context_are_visible():
+def test_release_help_uses_current_reviewed_source_context():
     help_text = tft_guide.handle_message("/help", _catalog(), NOW)
     answer = tft_guide.handle_message("/release VUE dinner", _catalog(), NOW)
 
     assert "/release VUE dinner" in help_text
-    assert "awaiting manual review" in answer
+    assert "awaiting manual review" not in answer
 
 
 def test_release_projection_joins_by_stable_venue_id_not_display_name():

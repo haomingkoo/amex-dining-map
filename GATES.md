@@ -54,7 +54,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
-  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 323 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
+  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 324 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
 
 - [ ] G9: a real before-and-after test alert is delivered to the private owner channel and no unintended chat receives it
   EVIDENCE: pending

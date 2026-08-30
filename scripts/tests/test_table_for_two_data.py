@@ -2,11 +2,22 @@ import json
 import unittest
 from pathlib import Path
 
+from scripts import scrape_table_for_two
+
 
 DATA_PATH = Path(__file__).resolve().parents[2] / "data" / "table-for-two.json"
 
 
 class TableForTwoDataTests(unittest.TestCase):
+    def test_current_reviewed_official_documents_clear_global_review_flag(self):
+        payload = json.loads(DATA_PATH.read_text(encoding="utf-8"))
+
+        self.assertFalse(payload["manual_review_required"])
+        self.assertEqual(
+            payload["source_documents"]["faq_sha256"],
+            scrape_table_for_two.KNOWN_FAQ_SHA256,
+        )
+
     def test_every_venue_has_menu_metadata(self):
         payload = json.loads(DATA_PATH.read_text(encoding="utf-8"))
         venues = payload.get("venues") or []
