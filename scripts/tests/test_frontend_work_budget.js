@@ -31,4 +31,18 @@ assert.match(
   "broad dining search must be debounced",
 );
 
+const filterRestaurants = app.slice(
+  app.indexOf("function filterRestaurants(options = {})"),
+  app.indexOf("function renderStats()"),
+);
+assert.ok(
+  filterRestaurants.indexOf("renderMobileCards();") < filterRestaurants.indexOf("scheduleDiningMarkerRender();"),
+  "mobile cards must be constructed before the large marker set is scheduled",
+);
+assert.match(
+  app,
+  /function scheduleDiningMarkerRender\(\)[\s\S]*window\.innerWidth <= MOBILE_BREAKPOINT[\s\S]*window\.setTimeout\(render, 75\)/,
+  "mobile marker construction must yield to the first useful render",
+);
+
 console.log("Frontend work-budget verification passed");

@@ -577,6 +577,7 @@ let routeApplyToken = 0;
 let isMobileViewport = window.innerWidth <= MOBILE_BREAKPOINT;
 let lastViewportWidth = window.innerWidth;
 let diningSearchTimer = null;
+let diningMarkerRenderTimer = null;
 
 const hasLeaflet = typeof window !== "undefined" && typeof window.L !== "undefined";
 const hasMarkerCluster = hasLeaflet && typeof L.markerClusterGroup === "function";
@@ -3506,11 +3507,25 @@ function filterRestaurants(options = {}) {
 
   ensureActiveRecord();
   renderStats();
-  renderMarkers();
-  fitDiningMapToVisibleMarkers();
   renderFocusCard();
   renderTable();
   renderMobileCards();
+  scheduleDiningMarkerRender();
+}
+
+function scheduleDiningMarkerRender() {
+  window.clearTimeout(diningMarkerRenderTimer);
+  const render = () => {
+    if (!isDiningRoute() || isJapanRankRoute()) return;
+    renderMarkers();
+    updateDiningMarkerStyles();
+    fitDiningMapToVisibleMarkers();
+  };
+  if (window.innerWidth <= MOBILE_BREAKPOINT) {
+    diningMarkerRenderTimer = window.setTimeout(render, 75);
+    return;
+  }
+  render();
 }
 
 function renderStats() {
