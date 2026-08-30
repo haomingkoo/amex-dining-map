@@ -210,9 +210,13 @@ def test_release_time_is_omitted_when_confidence_policy_suppresses_it():
 
 def test_release_snapshot_staleness_is_explicit_without_suppressing_history():
     catalog = copy.deepcopy(_catalog())
-    catalog["release_source"]["updated_at"] = (
-        NOW - timedelta(hours=37)
-    ).isoformat()
+    snapshot = NOW - timedelta(hours=37)
+    catalog["release_source"]["updated_at"] = snapshot.isoformat()
+    vue = next(venue for venue in catalog["venues"] if venue["id"] == "tft-vue")
+    dinner = next(
+        pattern for pattern in vue["release_patterns"] if pattern["meal"] == "Dinner"
+    )
+    dinner["latest_observation_at"] = (snapshot - timedelta(hours=1)).isoformat()
 
     answer = tft_guide.handle_message("/release VUE dinner", catalog, NOW)
 

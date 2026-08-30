@@ -39,7 +39,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [ ] G6: unsupported, stale, ambiguous, adversarial, and prompt-injection questions fail safely without inventing eligibility, availability, booking rules, or menu facts
   CHECK: node scripts/verify-telegram-safety.mjs
   EXPECT: Telegram safety verification passed
-  EVIDENCE: pending
+  EVIDENCE: deterministic venue/menu/release surfaces reject unsupported, ambiguous, and prompt-injection-shaped questions; untrusted menu URLs and wrong release provenance fail closed; stale menu/release answers remain explicitly aged. Official-document injection coverage remains pending with the T&C/FAQ slice, so this gate stays open.
 
 - [ ] G7: Telegram webhook authentication, owner allowlists, public-user rate limits, payload limits, output escaping, reminder consent, retention limits, and secret isolation pass security regression tests
   CHECK: node scripts/verify-telegram-security.mjs
@@ -54,7 +54,7 @@ Tracker: parent #34; vertical slices #35 through #42.
 - [x] G8: the complete existing automated test suite and current new security regressions pass from a production-supported Python version and the frontend remains syntactically valid
   CHECK: node scripts/verify-project.mjs
   EXPECT: project verification passed
-  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 162 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
+  EVIDENCE: 2026-08-30 project verifier passed on Python 3.12 with 177 Python tests and 23 subtests, plus all JavaScript regression files. Re-run after each Telegram slice before retaining this approval.
 
 - [ ] G9: a real before-and-after test alert is delivered to the private owner channel and no unintended chat receives it
   EVIDENCE: pending

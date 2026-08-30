@@ -32,6 +32,51 @@ def normalize_venue(value: str) -> str:
     return normalized.removeprefix("tft ").strip()
 
 
+def _trusted_https_url(value: Any, allowed_hosts: set[str]) -> str | None:
+    raw = str(value or "")
+    if "\\" in raw or any(
+        character.isspace() or unicodedata.category(character).startswith("C")
+        for character in raw
+    ):
+        return None
+    parsed = urlparse(raw)
+    host = (parsed.hostname or "").lower()
+    if (
+        parsed.scheme != "https"
+        or host not in allowed_hosts
+        or parsed.username is not None
+        or parsed.password is not None
+    ):
+        return None
+    return raw
+
+
+def _trusted_amex_url(value: Any) -> str | None:
+    raw = str(value or "")
+    parsed = urlparse(raw)
+    host = (parsed.hostname or "").lower()
+    if host != "americanexpress.com" and not host.endswith(".americanexpress.com"):
+        return None
+    return _trusted_https_url(raw, {host})
+
+
+def _official_source_line(catalog: dict, label: str = "Official TFT page") -> str:
+    url = _trusted_amex_url(catalog.get("official_url"))
+    if url is None:
+        return "Official TFT source metadata could not be verified safely."
+    return f"{label}: {url}"
+
+
+def _explorer_line(venue: dict) -> str:
+    venue_id = str(venue.get("id") or "")
+    if re.fullmatch(r"[a-z0-9-]{1,80}", venue_id) is None:
+        return "Explorer venue link could not be verified safely."
+    return (
+        "Open venue: https://amex-explorer.kooexperience.com/"
+        f"#/table-for-two?venue={venue_id}"
+    )
+
+
 def resolve_venue(query: str, catalog: dict) -> list[dict]:
     wanted = normalize_venue(query)
     matches = []
@@ -70,11 +115,7 @@ def _date_sgt(value: str | None) -> str:
 def _valid_published_menu(menu: dict, now: datetime) -> tuple[bool, bool]:
     if menu.get("status") != "published" or not menu.get("sha256"):
         return False, False
-    parsed = urlparse(str(menu.get("url") or ""))
-    host = (parsed.hostname or "").lower()
-    if parsed.scheme != "https" or not (
-        host == "americanexpress.com" or host.endswith(".americanexpress.com")
-    ):
+    if _trusted_amex_url(menu.get("url")) is None:
         return False, False
     try:
         checked = datetime.fromisoformat(str(menu["checked_at"]).replace("Z", "+00:00"))
@@ -131,7 +172,9 @@ def _release_time(value: str | None, now: datetime) -> datetime | None:
     return parsed.astimezone(timezone.utc)
 
 
-def _valid_release_pattern(pattern: dict, now: datetime) -> bool:
+def _valid_release_pattern(
+    pattern: dict, now: datetime, snapshot: datetime
+) -> bool:
     try:
         count = int(pattern["observation_count"])
         median = float(pattern["median_lead_days"])
@@ -141,6 +184,7 @@ def _valid_release_pattern(pattern: dict, now: datetime) -> bool:
     except (KeyError, TypeError, ValueError):
         return False
     typical = pattern.get("typical_first_seen_sgt")
+    latest = _release_time(pattern.get("latest_observation_at"), now)
     return (
         count >= 3
         and 0 <= minimum <= median <= maximum
@@ -152,7 +196,8 @@ def _valid_release_pattern(pattern: dict, now: datetime) -> bool:
             or re.fullmatch(r"(?:[01]\d|2[0-3]):(?:00|30)", str(typical))
             is not None
         )
-        and _release_time(pattern.get("latest_observation_at"), now) is not None
+        and latest is not None
+        and latest <= snapshot
     )
 
 
@@ -181,18 +226,17 @@ def _release_pattern_line(pattern: dict, now: datetime) -> str:
 def _release_answer(venue: dict, meal: str | None, catalog: dict, now: datetime) -> str:
     source = catalog.get("release_source") or {}
     snapshot = _release_time(source.get("updated_at"), now)
-    explorer = f"https://amex-explorer.kooexperience.com/{venue['explorer_route']}"
     if source.get("project") != "AMEXPlatSG" or snapshot is None:
         return (
             f"{venue['name']} — observed release pattern\n\n"
             "The bundled history timestamp could not be verified safely, so I will not "
             "report a timing pattern.\n"
-            f"Official TFT page: {catalog['official_url']}\nOpen venue: {explorer}"
+            f"{_official_source_line(catalog)}\n{_explorer_line(venue)}"
         )[:MAX_REPLY_LENGTH]
     patterns = [
         pattern
         for pattern in venue.get("release_patterns") or []
-        if _valid_release_pattern(pattern, now)
+        if _valid_release_pattern(pattern, now, snapshot)
     ]
     if meal:
         patterns = [
@@ -205,7 +249,7 @@ def _release_answer(venue: dict, meal: str | None, catalog: dict, now: datetime)
             f"There are not enough valid repeated{meal_label} observations to report a pattern. "
             "I will not extrapolate a release schedule.\n"
             f"History snapshot: {_date(source.get('updated_at'))}\n"
-            f"Official TFT page: {catalog['official_url']}\nOpen venue: {explorer}"
+            f"{_official_source_line(catalog)}\n{_explorer_line(venue)}"
         )[:MAX_REPLY_LENGTH]
     lines = "\n\n".join(_release_pattern_line(pattern, now) for pattern in patterns)
     if now - snapshot > RELEASE_STALE_AFTER:
@@ -222,7 +266,7 @@ def _release_answer(venue: dict, meal: str | None, catalog: dict, now: datetime)
         "Observed by scheduled AMEXPlatSG cache checks—not an Amex or restaurant release policy. "
         "Polling cadence can delay detection. This does not show current seat availability.\n"
         f"History snapshot: {_date(source.get('updated_at'))}. {freshness}{review}\n"
-        f"Official TFT page: {catalog['official_url']}\nOpen venue: {explorer}"
+        f"{_official_source_line(catalog)}\n{_explorer_line(venue)}"
     )[:MAX_REPLY_LENGTH]
 
 
@@ -248,14 +292,16 @@ def _venues(catalog: dict, now: datetime) -> str:
     return (
         f"Table for Two — cached roster\n\n{names}\n\n"
         f"Roster checked: {_date(catalog.get('roster_checked_at'))}{caveat}{freshness}\n"
-        f"Official source: {catalog['official_url']}\n\n"
+        f"{_official_source_line(catalog, 'Official source')}\n\n"
         "Try /menu VUE platinum"
     )[:MAX_REPLY_LENGTH]
 
 
 def _menu_answer(venue: dict, card: str | None, catalog: dict, now: datetime) -> str:
     menus = venue.get("menus") or {}
-    available = [key for key, menu in menus.items() if menu.get("status") == "published"]
+    available = [
+        key for key, menu in menus.items() if _valid_published_menu(menu, now)[0]
+    ]
     if card is None and len(available) > 1:
         lines = []
         for key in available:
@@ -269,7 +315,6 @@ def _menu_answer(venue: dict, card: str | None, catalog: dict, now: datetime) ->
                 )
             else:
                 lines.append(f"{label}: stored metadata could not be verified safely")
-        explorer = f"https://amex-explorer.kooexperience.com/{venue['explorer_route']}"
         review_note = (
             "\nThe wider program source snapshot is awaiting manual review."
             if catalog.get("manual_review_required")
@@ -280,11 +325,16 @@ def _menu_answer(venue: dict, card: str | None, catalog: dict, now: datetime) ->
             + "\n\n".join(lines)
             + review_note
             + "\n\nPlatinum and Centurion are separate files. Confirm the current offer in the Amex Experiences App."
-            + f"\nOpen venue: {explorer}"
+            + f"\n{_explorer_line(venue)}"
         )[:MAX_REPLY_LENGTH]
     selected = card or (available[0] if len(available) == 1 else None)
-    menu = menus.get(selected) or menus.get("default")
-    explorer = f"https://amex-explorer.kooexperience.com/{venue['explorer_route']}"
+    menu = menus.get(selected) if selected else menus.get("default")
+    if (
+        menu is None
+        and selected is not None
+        and (menus.get("default") or {}).get("status") != "published"
+    ):
+        menu = menus.get("default")
     if not menu:
         other = ", ".join((menus[key].get("label") or key.title()) for key in available)
         suffix = f" An indexed official {other} listing is available, but I will not substitute it." if other else ""
@@ -295,8 +345,8 @@ def _menu_answer(venue: dict, card: str | None, catalog: dict, now: datetime) ->
             f"No indexed official {missing_label} is in the current Amex index.{suffix}\n"
             f"This does not prove no such menu exists.\n"
             f"{_menu_source_context(catalog.get('menu_source') or {}, catalog, now)}\n"
-            f"Official TFT page: {catalog['official_url']}\n"
-            f"Open venue: {explorer}"
+            f"{_official_source_line(catalog)}\n"
+            f"{_explorer_line(venue)}"
         )
     status = menu.get("status")
     if status == "buffet_no_menu_expected":
@@ -304,8 +354,8 @@ def _menu_answer(venue: dict, card: str | None, catalog: dict, now: datetime) ->
             f"{venue['name']}\n\nThis is listed as a buffet venue, so a Table for Two "
             f"set-menu PDF is not expected in the current index.\n"
             f"{_menu_source_context(menu, catalog, now)}\n"
-            f"Official TFT page: {catalog['official_url']}\n"
-            f"Open venue: {explorer}"
+            f"{_official_source_line(catalog)}\n"
+            f"{_explorer_line(venue)}"
         )
     if status != "published":
         heading = f"{selected.title()} menu" if selected else "menu"
@@ -314,7 +364,7 @@ def _menu_answer(venue: dict, card: str | None, catalog: dict, now: datetime) ->
             f"No official PDF was matched in the stored Amex menu scan. "
             f"Manual review is pending; this does not prove no menu exists.\n"
             f"{_menu_source_context(menu, catalog, now)}\n"
-            f"Official TFT page: {catalog['official_url']}\nOpen venue: {explorer}"
+            f"{_official_source_line(catalog)}\n{_explorer_line(venue)}"
         )
     valid, stale = _valid_published_menu(menu, now)
     if not valid:
@@ -323,7 +373,7 @@ def _menu_answer(venue: dict, card: str | None, catalog: dict, now: datetime) ->
             f"{venue['name']} — {heading}\n\n"
             "The stored menu metadata could not be verified safely. Check the Amex app.\n"
             f"{_menu_source_context(menu, catalog, now)}\n"
-            f"Official TFT page: {catalog['official_url']}\nOpen venue: {explorer}"
+            f"{_official_source_line(catalog)}\n{_explorer_line(venue)}"
         )
     stale_note = " The index check is older than 36 hours; verify it is still current." if stale else ""
     review_note = (
@@ -337,7 +387,7 @@ def _menu_answer(venue: dict, card: str | None, catalog: dict, now: datetime) ->
         f"Official Amex PDF: {menu['url']}\n"
         f"Menu listing checked: {_date(menu.get('checked_at'))}.{stale_note}{review_note}\n\n"
         "Platinum and Centurion files are separate. Confirm the current offer and booking details in the Amex Experiences App.\n"
-        f"Open venue: {explorer}"
+        f"{_explorer_line(venue)}"
     )[:MAX_REPLY_LENGTH]
 
 
@@ -372,7 +422,7 @@ def handle_message(text: str, catalog: dict, now: datetime | None = None) -> str
             matches[0], meal, catalog, now or datetime.now(timezone.utc)
         )
 
-    is_menu_command = lowered.startswith("/menu")
+    is_menu_command = lowered == "/menu" or lowered.startswith("/menu ")
     wants_menu = is_menu_command or "menu" in lowered
     query = message[5:].strip() if is_menu_command else message
     card = None
