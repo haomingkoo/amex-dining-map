@@ -452,6 +452,16 @@ def build_meta_update_event(
     if not changes:
         return None
     config = PROGRAM_UPDATE_CONFIG.get(program, {"id": program.lower().replace(" ", "-"), "route": "#/alerts"})
+    booking_project_change = any(
+        change["field"].startswith("Booking-project")
+        or change["field"].startswith("Reviewed venues missing from booking project")
+        for change in changes
+    )
+    booking_project_url = (
+        (new_meta.get("booking_project_source") or {}).get("source_url")
+        if booking_project_change
+        else None
+    )
     event = {
         "program": program,
         "program_id": config["id"],
@@ -474,7 +484,7 @@ def build_meta_update_event(
         "before": {"state": "available", "fields": {item["field"]: item["before"] for item in changes}},
         "after": {"state": "available", "fields": {item["field"]: item["after"] for item in changes}},
         "changes": changes,
-        "source_url": record_source_url(None, new_meta),
+        "source_url": booking_project_url or record_source_url(None, new_meta),
     }
     assign_event_identity(event, "meta")
     return event
@@ -917,6 +927,14 @@ def main() -> int:
         source_links.append(("canonical source", current_meta["canonical_url"]))
     if current_meta.get("resolved_url"):
         source_links.append(("resolved source", current_meta["resolved_url"]))
+    booking_project_source = current_meta.get("booking_project_source") or {}
+    if booking_project_source.get("source_url"):
+        source_links.append(
+            (
+                "booking-project membership (early signal, not reviewed roster)",
+                booking_project_source["source_url"],
+            )
+        )
     if source_links:
         lines.extend(["## Source Links", ""])
         lines.extend(f"- {label}: {url}" for label, url in source_links)
@@ -936,10 +954,19 @@ def main() -> int:
                 lines.append("")
 
     if alert_required:
+        if booking_project_source.get("review_required"):
+            lines.extend(
+                [
+                    "## Evidence Boundary",
+                    "",
+                    "- Booking-project additions/removals are early DiningCity signals; they are not promoted into the reviewed Amex roster until corroborated and approved.",
+                    "",
+                ]
+            )
         lines.extend([
             "## Review Checklist",
             "",
-            "- Open the official source links in the metadata file.",
+            "- Open the relevant source links in the metadata file.",
             "- Re-check benefit wording, blackout notes, closed venues, and newly added/removed records.",
             "- If the displayed wording is still correct, update the reviewed baseline or close this issue.",
         ])

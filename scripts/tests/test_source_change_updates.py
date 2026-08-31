@@ -199,6 +199,7 @@ class SourceChangeUpdatesTest(unittest.TestCase):
     def test_booking_project_candidates_are_review_required(self):
         old = {
             "booking_project_source": {
+                "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
                 "observation_status": "success",
                 "observed_count": 23,
                 "observed_membership_sha256": "a" * 64,
@@ -209,6 +210,7 @@ class SourceChangeUpdatesTest(unittest.TestCase):
         }
         new = {
             "booking_project_source": {
+                "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
                 "observation_status": "success",
                 "observed_count": 24,
                 "observed_membership_sha256": "b" * 64,
@@ -227,6 +229,10 @@ class SourceChangeUpdatesTest(unittest.TestCase):
         self.assertIn(
             "Booking-project candidates added",
             [change["field"] for change in event["changes"]],
+        )
+        self.assertEqual(
+            event["source_url"],
+            new["booking_project_source"].get("source_url"),
         )
 
     def test_same_count_menu_review_replacement_creates_review_event(self):
