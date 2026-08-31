@@ -1,7 +1,94 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-31T07:43:35Z",
+  "updated_at": "2026-08-31T14:27:11Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_stale",
+      "subject": "Table for Two roster",
+      "detected_at": "2026-08-31T14:27:11Z",
+      "status": "published",
+      "before": {
+        "state": "failed",
+        "fields": {
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "after": {
+        "state": "failed",
+        "fields": {
+          "Freshness": "stale",
+          "Stale records": 1
+        }
+      },
+      "changes": [
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 1
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "0b5afd558ebf89b84ac5",
+      "stream_id": "66129efc1226a46f5069",
+      "occurrence": 1,
+      "id": "febecb3a1b28dfe86ebb"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-08-31T14:27:11Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 21
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 21,
+          "after": 0
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "f1df936d6ee3b6ab351e",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 4,
+      "id": "a3b4b7bd54f24c1f015a"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -2209,8 +2296,9 @@
         }
       },
       "66129efc1226a46f5069": {
-        "latest_transition_id": "1c5d2ed58c6c8667c40a",
+        "latest_transition_id": "0b5afd558ebf89b84ac5",
         "occurrences": {
+          "0b5afd558ebf89b84ac5": 1,
           "1c5d2ed58c6c8667c40a": 1
         }
       },
@@ -2305,14 +2393,14 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "5cd58468c50a86096186",
+        "latest_transition_id": "f1df936d6ee3b6ab351e",
         "occurrences": {
           "59682348ebf010d3ed44": 1,
           "5cd58468c50a86096186": 4,
           "6b0a8f0fbbc4c84ab912": 2,
           "a0e5d9c3222307d148c0": 1,
           "b9782e66dd081210376b": 1,
-          "f1df936d6ee3b6ab351e": 3
+          "f1df936d6ee3b6ab351e": 4
         }
       }
     }
