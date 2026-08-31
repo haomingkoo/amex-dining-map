@@ -71,6 +71,61 @@ class TableForTwoReliabilityTests(unittest.TestCase):
         self.assertEqual(result["observed_count"], 27)
         self.assertEqual(result["observed_membership_sha256"], "a" * 64)
 
+    def test_normalized_venues_marks_missing_project_member_not_listed(self):
+        venue = scrape_table_for_two.VENUES[0]
+        source = {
+            "observation_status": "success",
+            "checked_at": "2026-09-01T00:00:00Z",
+            "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+            "observed_venues": [],
+        }
+
+        record = scrape_table_for_two.normalized_venues(
+            roster=[venue], booking_project_source=source
+        )[0]
+
+        self.assertEqual(record["booking_project_status"], "not_listed")
+        self.assertEqual(record["slot_source_status"], "not_currently_in_project")
+        self.assertEqual(record["availability"]["status"], "not_currently_in_project")
+        self.assertIn("not currently listed", record["availability"]["summary"])
+
+    def test_normalized_venues_keeps_observed_project_member_active(self):
+        venue = scrape_table_for_two.VENUES[0]
+        source = {
+            "observation_status": "success",
+            "checked_at": "2026-09-01T00:00:00Z",
+            "observed_venues": [{"id": venue["dining_city_id"], "name": venue["name"]}],
+        }
+
+        record = scrape_table_for_two.normalized_venues(
+            roster=[venue], booking_project_source=source
+        )[0]
+
+        self.assertEqual(record["booking_project_status"], "active")
+        self.assertNotEqual(record["availability"]["status"], "not_currently_in_project")
+
+    def test_only_officially_sourced_capitol_closure_is_preserved(self):
+        venues = [
+            venue
+            for venue in scrape_table_for_two.VENUES
+            if venue["id"] in {"tft-capitol-bistro-bar-patisserie", "tft-osteria-mozza"}
+        ]
+        source = {
+            "observation_status": "success",
+            "checked_at": "2026-09-01T00:00:00Z",
+            "observed_venues": [],
+        }
+
+        records = {
+            record["id"]: record
+            for record in scrape_table_for_two.normalized_venues(
+                roster=venues, booking_project_source=source
+            )
+        }
+
+        assert records["tft-capitol-bistro-bar-patisserie"]["operational_status"] == "permanently_closed"
+        assert "operational_status" not in records["tft-osteria-mozza"]
+
     def test_fetch_json_retries_transient_network_error(self):
         with (
             mock.patch.object(

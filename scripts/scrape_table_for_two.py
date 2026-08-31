@@ -396,6 +396,11 @@ VENUES = [
         "coordinate_confidence": "diningcity_place_matched",
         "map_pin_source": "DiningCity public restaurant search",
         "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
+        "operational_status": "permanently_closed",
+        "operational_status_effective_at": "2026-08-10",
+        "operational_status_source": "Amex Love Dining",
+        "operational_status_source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+        "operational_status_note": "The official Amex Love Dining page says this venue is permanently closed from 10 August 2026.",
     },
     {
         "id": "tft-kees",
@@ -626,6 +631,43 @@ def fetch_booking_project_membership(
             "Booking-project membership is an early signal from DiningCity, not "
             "the reviewed Amex participating-merchant roster."
         ),
+    }
+
+
+def booking_project_membership_statuses(source: dict | None) -> tuple[str, set[str]]:
+    source = source or {}
+    if source.get("observation_status") != "success":
+        return "unknown", set()
+    observed = source.get("observed_venues")
+    if not isinstance(observed, list):
+        return "unknown", set()
+    return "success", {
+        str(record.get("id"))
+        for record in observed
+        if isinstance(record, dict) and record.get("id")
+    }
+
+
+def booking_project_not_listed_availability(venue: dict, source: dict) -> dict:
+    checked_at = source.get("checked_at") or source.get("last_attempt_at") or iso_now()
+    return {
+        "status": "not_currently_in_project",
+        "source": f"DiningCity booking project {DININGCITY_PROJECT}",
+        "source_url": source.get("source_url"),
+        "project": DININGCITY_PROJECT,
+        "project_title": DININGCITY_PROJECT_TITLE,
+        "captured_at": checked_at,
+        "checked_at": checked_at,
+        "confidence": "diningcity_project_membership_missing",
+        "visible_dates": [],
+        "summary": (
+            f"{venue.get('name') or 'This venue'} is not currently listed in the "
+            f"DiningCity {DININGCITY_PROJECT} booking project."
+        ),
+        "meals": [],
+        "notes": [
+            "This is a booking-project membership signal. The retained Amex roster record remains historical evidence until the official roster changes."
+        ],
     }
 
 
@@ -941,17 +983,33 @@ def normalized_venues(
     live_availability_by_id: dict[str, dict] | None = None,
     live_profiles_by_id: dict[str, dict] | None = None,
     roster: list[dict] | None = None,
+    booking_project_source: dict | None = None,
 ) -> list[dict]:
     existing_by_id = existing_by_id or {}
     live_availability_by_id = live_availability_by_id or {}
     live_profiles_by_id = live_profiles_by_id or {}
+    membership_status, active_diningcity_ids = booking_project_membership_statuses(
+        booking_project_source
+    )
     records = []
     for venue in roster or VENUES:
         curated_availability = venue.get("availability")
         existing_record = existing_by_id.get(venue["id"])
         live_availability = live_availability_by_id.get(venue["id"])
         live_profile = live_profiles_by_id.get(venue["id"])
-        if live_availability:
+        dining_city_id = str(venue.get("dining_city_id") or "")
+        booking_project_status = (
+            "active"
+            if membership_status == "success" and dining_city_id in active_diningcity_ids
+            else "not_listed"
+            if membership_status == "success" and dining_city_id
+            else "unknown"
+        )
+        if booking_project_status == "not_listed":
+            availability = booking_project_not_listed_availability(
+                venue, booking_project_source or {}
+            )
+        elif live_availability:
             availability = live_availability
         elif should_preserve_availability(existing_record, curated_availability):
             availability = existing_record["availability"]
@@ -960,7 +1018,14 @@ def normalized_venues(
         record = {
             **venue,
             "booking_channel": "Amex Experiences App",
+            "booking_project_status": booking_project_status,
+            "booking_project_checked_at": (booking_project_source or {}).get(
+                "checked_at"
+            ),
             "slot_source_status": (
+                "not_currently_in_project"
+                if booking_project_status == "not_listed"
+                else
                 "diningcity_amex_platinum_project"
                 if availability.get("confidence") == "diningcity_amex_platinum_project"
                 else "app_handoff_required"
@@ -1021,7 +1086,21 @@ def build_payload(
     booking_project_source = fetch_booking_project_membership(
         roster, checked_at, existing_payload
     )
-    live_availability_by_id, availability_errors = fetch_live_availability(roster, checked_at)
+    membership_status, active_diningcity_ids = booking_project_membership_statuses(
+        booking_project_source
+    )
+    availability_roster = (
+        [
+            venue
+            for venue in roster
+            if str(venue.get("dining_city_id") or "") in active_diningcity_ids
+        ]
+        if membership_status == "success"
+        else roster
+    )
+    live_availability_by_id, availability_errors = fetch_live_availability(
+        availability_roster, checked_at
+    )
     live_profiles_by_id, profile_errors = fetch_diningcity_profiles(roster, checked_at)
     availability_last_checked_at = (
         checked_at
@@ -1097,7 +1176,11 @@ def build_payload(
             "Do not commit user/session-specific app handoff values from app URLs or screenshots.",
         ],
         "venues": normalized_venues(
-            existing_by_id, live_availability_by_id, live_profiles_by_id, roster
+            existing_by_id,
+            live_availability_by_id,
+            live_profiles_by_id,
+            roster,
+            booking_project_source,
         ),
     }
 
@@ -1111,10 +1194,25 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
         raise RuntimeError("Cannot refresh Table for Two availability without existing venue records.")
 
     checked_at = iso_now()
+    curated_by_id = {venue["id"]: venue for venue in VENUES}
     booking_project_source = fetch_booking_project_membership(
         venues, checked_at, existing_payload
     )
-    live_availability_by_id, availability_errors = fetch_live_availability(venues, checked_at)
+    membership_status, active_diningcity_ids = booking_project_membership_statuses(
+        booking_project_source
+    )
+    availability_venues = (
+        [
+            venue
+            for venue in venues
+            if str(venue.get("dining_city_id") or "") in active_diningcity_ids
+        ]
+        if membership_status == "success"
+        else venues
+    )
+    live_availability_by_id, availability_errors = fetch_live_availability(
+        availability_venues, checked_at
+    )
     live_profiles_by_id: dict[str, dict] = {}
     profile_errors: dict[str, str] = {}
     if include_profiles:
@@ -1122,10 +1220,42 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
     records = []
     for venue in venues:
         venue_id = venue["id"]
-        availability = live_availability_by_id.get(venue_id) or venue.get("availability") or default_availability()
+        curated = curated_by_id.get(venue_id) or {}
+        operational_fields = {
+            key: curated[key]
+            for key in (
+                "operational_status",
+                "operational_status_effective_at",
+                "operational_status_source",
+                "operational_status_source_url",
+                "operational_status_note",
+            )
+            if key in curated
+        }
+        dining_city_id = str(venue.get("dining_city_id") or "")
+        booking_project_status = (
+            "active"
+            if membership_status == "success" and dining_city_id in active_diningcity_ids
+            else "not_listed"
+            if membership_status == "success" and dining_city_id
+            else "unknown"
+        )
+        availability = (
+            booking_project_not_listed_availability(venue, booking_project_source)
+            if booking_project_status == "not_listed"
+            else live_availability_by_id.get(venue_id)
+            or venue.get("availability")
+            or default_availability()
+        )
         record = {
             **venue,
+            **operational_fields,
+            "booking_project_status": booking_project_status,
+            "booking_project_checked_at": booking_project_source.get("checked_at"),
             "slot_source_status": (
+                "not_currently_in_project"
+                if booking_project_status == "not_listed"
+                else
                 "diningcity_amex_platinum_project"
                 if availability.get("confidence") == "diningcity_amex_platinum_project"
                 else "app_handoff_required"

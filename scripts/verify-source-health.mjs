@@ -54,7 +54,12 @@ for (const path of [
 ]) {
   const workflow = read(path);
   requireText(workflow.includes("group: source-ledger-refresh"), `${path} must serialize source ledger writes`);
-  requireText(workflow.includes("Finalize source health"), `${path} must finalize source health`);
+  const finalizesSourceHealth = workflow.includes("Finalize source health") || (
+    path === ".github/workflows/refresh-table-for-two.yml"
+    && workflow.includes("Finalize Table for Two roster health")
+    && workflow.includes("Finalize Table for Two menu health")
+  );
+  requireText(finalizesSourceHealth, `${path} must finalize source health`);
   requireText(workflow.includes("if: always()"), `${path} must record failure state on failed refreshes`);
   requireText(workflow.includes("data/source-health.json"), `${path} must commit source health`);
   requireText(workflow.includes("dispatch_owner_updates.py"), `${path} must dispatch health transitions`);

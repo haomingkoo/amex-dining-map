@@ -43,6 +43,8 @@ def build_snapshot(source: dict) -> dict:
     projected = []
     slot_count = 0
     for venue in venues:
+        if venue.get("booking_project_status") == "not_listed":
+            continue
         venue_id = str(venue.get("id") or "")
         if re.fullmatch(r"[a-z0-9-]{1,80}", venue_id) is None:
             raise ValueError("venue id is invalid")

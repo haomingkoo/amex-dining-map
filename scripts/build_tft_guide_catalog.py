@@ -241,10 +241,15 @@ def build_catalog(
     tft_menu_reviews.verify_decision_receipts(source)
     if release_history is None:
         release_history = json.loads(DEFAULT_RELEASE_HISTORY.read_text())
-    venue_ids = {str(venue["id"]) for venue in source.get("venues") or []}
+    active_venues = [
+        venue
+        for venue in source.get("venues") or []
+        if venue.get("booking_project_status") != "not_listed"
+    ]
+    venue_ids = {str(venue["id"]) for venue in active_venues}
     release_patterns = _release_projection(release_history, venue_ids)
     venues = []
-    for venue in source.get("venues") or []:
+    for venue in active_venues:
         menus = {
             card: projected
             for card, menu in sorted((venue.get("menu_pdfs") or {}).items())

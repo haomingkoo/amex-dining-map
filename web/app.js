@@ -5269,7 +5269,14 @@ function tableForTwoPayload() {
 
 function tableForTwoVenues() {
   const payload = tableForTwoPayload();
-  return Array.isArray(payload.venues) ? payload.venues : [];
+  const venues = Array.isArray(payload.venues) ? payload.venues : [];
+  return venues.filter((record) => record.booking_project_status !== "not_listed");
+}
+
+function tableForTwoNotListedVenues() {
+  const payload = tableForTwoPayload();
+  const venues = Array.isArray(payload.venues) ? payload.venues : [];
+  return venues.filter((record) => record.booking_project_status === "not_listed");
 }
 
 function tableForTwoLiveSourceUrl(record) {
@@ -5546,7 +5553,7 @@ function ensureTableForTwoLiveRefresh() {
 }
 
 function activeTableForTwoRecord() {
-  return tableForTwoVenues().find((record) => record.id === state.tableForTwoActiveId) || null;
+  return (tableForTwoPayload().venues || []).find((record) => record.id === state.tableForTwoActiveId) || null;
 }
 
 function tableForTwoCategoryLabel(category) {
@@ -5690,7 +5697,7 @@ function refreshTableForTwoDateOptions() {
 let tableForTwoAlertWired = false;
 
 function tableForTwoAlertVenueNames() {
-  return (tableForTwoPayload().venues || [])
+  return tableForTwoVenues()
     .map((venue) => venue && venue.name)
     .filter(Boolean)
     .sort((a, b) => a.localeCompare(b));
@@ -6071,7 +6078,7 @@ function filterTableForTwo() {
     return (a.app_name || a.name || "").localeCompare(b.app_name || b.name || "");
   });
 
-  if (state.tableForTwoActiveId && !venues.some((record) => record.id === state.tableForTwoActiveId)) {
+  if (state.tableForTwoActiveId && !(tableForTwoPayload().venues || []).some((record) => record.id === state.tableForTwoActiveId)) {
     state.tableForTwoActiveId = null;
   }
   syncTableForTwoSelectionState();
@@ -6079,6 +6086,8 @@ function filterTableForTwo() {
   const total = venues.length;
   const shown = state.tableForTwoFiltered.length;
   const payload = tableForTwoPayload();
+  const notListedVenues = tableForTwoNotListedVenues();
+  const bookingCandidates = payload.booking_project_source?.added_vs_reviewed_roster || [];
   const freshAvailableCount = venues.filter((record) => tableForTwoAvailabilityKey(record, filters) === "available").length;
   const freshNoSeatCount = venues.filter((record) => tableForTwoAvailabilityKey(record, filters) === "no_seats").length;
   const staleCaptureCount = venues.filter((record) => tableForTwoAvailabilityKey(record, filters) === "stale").length;
@@ -6110,12 +6119,20 @@ function filterTableForTwo() {
     payload.menu_source?.review_required
       ? "Some menu details are being verified"
       : "",
+    bookingCandidates.length
+      ? `${bookingCandidates.length} new booking-app venue${bookingCandidates.length === 1 ? "" : "s"} being verified`
+      : "",
+    notListedVenues.length
+      ? `${notListedVenues.length} official-roster venue${notListedVenues.length === 1 ? " is" : "s are"} not currently in the booking app`
+      : "",
   ].filter(Boolean);
   tableForTwoSummaryStripText.textContent = `${statusBits.join(" · ")}.`;
   tableForTwoListSummary.textContent =
     autoAvailabilityOnly
       ? "Bookable restaurants for the current filters."
-      : "Restaurants first. Pick a venue to see dates and times.";
+      : notListedVenues.length
+        ? `Active booking-app restaurants first. Not currently shown: ${notListedVenues.map((record) => record.name).join(", ")}.`
+        : "Restaurants first. Pick a venue to see dates and times.";
   if (tableForTwoMapSummary) {
     const mappedCount = venues.filter((record) => tableForTwoHasMapPin(record)).length;
     tableForTwoMapSummary.textContent =
@@ -6870,6 +6887,34 @@ function renderTableForTwoCard() {
   }
 
   const displayName = record.app_name || record.name;
+  if (record.booking_project_status === "not_listed") {
+    const permanentlyClosed = record.operational_status === "permanently_closed";
+    const statusTitle = permanentlyClosed ? "Permanently closed" : "Not currently in the TFT booking project";
+    const statusCopy = permanentlyClosed
+      ? `${record.operational_status_note || "An official Amex source marks this venue permanently closed."} It is also absent from the current DiningCity AMEXPlatSG booking project.`
+      : "This venue remains in the retained official-roster snapshot, but it is absent from the current DiningCity AMEXPlatSG booking project. That does not independently prove the restaurant itself has closed.";
+    const historicalMenus = tableForTwoPublishedMenus(record)
+      .map((menu) => `<a class="inline-link" href="${escapeHtml(menu.url)}" target="_blank" rel="noopener">${escapeHtml(`${menu.label || "Set"} historical menu (PDF)`)}</a>`)
+      .join("");
+    const googleMapsUrl = bestGoogleMapsUrl(record) || googleMapsSearchUrl([displayName, "Singapore"]);
+    tableForTwoFocusCard.innerHTML = `
+      <div class="focus-kicker">Historical roster record</div>
+      <h3 class="focus-title">${escapeHtml(displayName)}</h3>
+      <div class="focus-tags"><span class="badge amber">${escapeHtml(statusTitle)}</span></div>
+      ${record.address ? `<div class="focus-address">${escapeHtml(record.address)}</div>` : ""}
+      <div class="focus-note focus-note-warn">${escapeHtml(statusCopy)}</div>
+      <p class="focus-summary">Booking, availability alerts, and reminders are disabled for this record. The source links remain available so the change can be audited.</p>
+      <div class="focus-actions">
+        ${historicalMenus}
+        <a class="inline-link" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
+        ${record.venue_source_url ? `<a class="inline-link subtle" href="${escapeHtml(record.venue_source_url)}" target="_blank" rel="noopener">Venue source</a>` : ""}
+        ${record.operational_status_source_url ? `<a class="inline-link subtle" href="${escapeHtml(record.operational_status_source_url)}" target="_blank" rel="noopener">Closure source</a>` : ""}
+        <a class="inline-link subtle" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Retained official roster source</a>
+      </div>
+    `;
+    return;
+  }
+
   const filters = state.tableForTwoCurrentFilters || {};
   const profileDescription = tableForTwoProfileDescription(record);
   const profileImageUrl = tableForTwoProfileImageUrl(record);
@@ -7765,7 +7810,7 @@ async function applyRoute(routeId) {
     renderTableForTwoAlertSignup();
     filterTableForTwo();
     const linkedVenueId = tableForTwoVenueIdFromHash();
-    if (linkedVenueId && tableForTwoVenues().some((record) => record.id === linkedVenueId)) {
+    if (linkedVenueId && (tableForTwoPayload().venues || []).some((record) => record.id === linkedVenueId)) {
       setActiveTableForTwoRecord(linkedVenueId, { scrollDetails: true });
     }
     if (hasLeaflet && tableForTwoMap) {

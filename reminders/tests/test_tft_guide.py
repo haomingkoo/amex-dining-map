@@ -33,7 +33,11 @@ def test_generated_catalog_matches_current_tft_source():
         ("tft-terms", "current_baseline"),
         ("tft-faq", "current_baseline"),
     ]
-    assert len(_catalog()["venues"]) == 23
+    active_count = sum(
+        venue.get("booking_project_status") != "not_listed"
+        for venue in source["venues"]
+    )
+    assert len(_catalog()["venues"]) == active_count
 
 
 def test_vue_platinum_natural_query_is_exact_and_cited():
@@ -146,13 +150,13 @@ def test_vue_centurion_is_not_conflated_with_platinum():
     assert "VUE-Menu_Platinum.pdf" not in answer
 
 
-def test_retained_menu_discloses_pending_menu_review_queue():
+def test_not_listed_venue_is_absent_from_active_bot_catalog():
     answer = tft_guide.handle_message(
         "/menu Osteria Mozza platinum", _catalog(), NOW
     )
 
-    assert "Official Amex PDF" in answer
-    assert "items awaiting manual review" in answer
+    assert "could not match that to one exact Table for Two venue" in answer
+    assert "Official Amex PDF" not in answer
 
 
 def test_menu_without_card_shows_both_variants_without_conflating_them():

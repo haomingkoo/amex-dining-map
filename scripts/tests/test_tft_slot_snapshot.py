@@ -25,7 +25,11 @@ def test_projection_matches_current_source_and_is_bounded():
 
     assert projected == stored
     assert projected["source_project"] == "AMEXPlatSG"
-    assert len(projected["venues"]) == 23
+    active_count = sum(
+        venue.get("booking_project_status") != "not_listed"
+        for venue in _source()["venues"]
+    )
+    assert len(projected["venues"]) == active_count
     assert len(json.dumps(projected, separators=(",", ":")).encode()) < 1_000_000
 
 
@@ -74,3 +78,12 @@ def test_per_venue_project_is_not_laundered():
     stored = next(venue for venue in projected["venues"] if venue["id"] == "tft-vue")
 
     assert stored["project"] == "GenericDiningCity"
+
+
+def test_not_listed_venues_are_excluded_from_public_slots():
+    source = _source()
+    source["venues"][0]["booking_project_status"] = "not_listed"
+
+    projected = MODULE.build_snapshot(source)
+
+    assert source["venues"][0]["id"] not in {venue["id"] for venue in projected["venues"]}
