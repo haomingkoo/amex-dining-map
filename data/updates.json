@@ -1,7 +1,88 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-31T15:31:57Z",
+  "updated_at": "2026-08-31T15:41:34Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_updated",
+      "subject": "Table for Two source",
+      "detected_at": "2026-08-31T15:41:34Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Booking-project observation": null,
+          "Booking-project venue count": null,
+          "Booking-project membership fingerprint": null,
+          "Booking-project candidates added": null,
+          "Reviewed venues missing from booking project": null
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Booking-project observation": "success",
+          "Booking-project venue count": 27,
+          "Booking-project membership fingerprint": "43b42c913da0",
+          "Booking-project candidates added": [
+            "Forage",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "OSO Ristorante"
+          ],
+          "Reviewed venues missing from booking project": [
+            "Capitol Bistro. Bar. Patisserie",
+            "Osteria Mozza"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Booking-project observation",
+          "before": null,
+          "after": "success"
+        },
+        {
+          "field": "Booking-project venue count",
+          "before": null,
+          "after": 27
+        },
+        {
+          "field": "Booking-project membership fingerprint",
+          "before": null,
+          "after": "43b42c913da0"
+        },
+        {
+          "field": "Booking-project candidates added",
+          "before": null,
+          "after": [
+            "Forage",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "OSO Ristorante"
+          ]
+        },
+        {
+          "field": "Reviewed venues missing from booking project",
+          "before": null,
+          "after": [
+            "Capitol Bistro. Bar. Patisserie",
+            "Osteria Mozza"
+          ]
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "fc6f72b06e09c47f8ec1",
+      "stream_id": "5a285967ca2795c90124",
+      "occurrence": 1,
+      "id": "33a9eaba76b3e8cc2a3f"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -2330,10 +2411,11 @@
         }
       },
       "5a285967ca2795c90124": {
-        "latest_transition_id": "1fd9e02b2a3042318396",
+        "latest_transition_id": "fc6f72b06e09c47f8ec1",
         "occurrences": {
           "1fd9e02b2a3042318396": 1,
-          "9fe73cb5771943d571f0": 1
+          "9fe73cb5771943d571f0": 1,
+          "fc6f72b06e09c47f8ec1": 1
         }
       },
       "6035d6abc9408a6a28a7": {
