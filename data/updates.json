@@ -1,7 +1,196 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-30T23:56:13Z",
+  "updated_at": "2026-08-31T00:10:42Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_failed",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-08-31T00:10:42Z",
+      "status": "published",
+      "before": {
+        "state": "unavailable",
+        "fields": {
+          "Source state": "unavailable",
+          "Failures": "clear",
+          "Snapshot": "current",
+          "Refresh attempt": "success"
+        }
+      },
+      "after": {
+        "state": "failed",
+        "fields": {
+          "Source state": "failed",
+          "Failures": "failed",
+          "Snapshot": "unavailable",
+          "Refresh attempt": "failure"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "unavailable",
+          "after": "failed"
+        },
+        {
+          "field": "Failures",
+          "before": "clear",
+          "after": "failed"
+        },
+        {
+          "field": "Snapshot",
+          "before": "current",
+          "after": "unavailable"
+        },
+        {
+          "field": "Refresh attempt",
+          "before": "success",
+          "after": "failure"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "40e94b2b92f0f585356f",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "24f697d1593e8635bed5"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_stale",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-08-31T00:10:41Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Freshness": "current",
+          "Review": "required",
+          "Review items": 2,
+          "Coverage": {
+            "covered": 18,
+            "total": 23,
+            "unavailable": 5,
+            "percent": 78.3
+          }
+        }
+      },
+      "after": {
+        "state": "unavailable",
+        "fields": {
+          "Source state": "unavailable",
+          "Freshness": "unavailable",
+          "Review": "clear",
+          "Review items": 0,
+          "Coverage": {
+            "covered": 0,
+            "total": 23,
+            "unavailable": 23,
+            "percent": 0.0
+          }
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "review_required",
+          "after": "unavailable"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "unavailable"
+        },
+        {
+          "field": "Review",
+          "before": "required",
+          "after": "clear"
+        },
+        {
+          "field": "Review items",
+          "before": 2,
+          "after": 0
+        },
+        {
+          "field": "Coverage",
+          "before": {
+            "covered": 18,
+            "total": 23,
+            "unavailable": 5,
+            "percent": 78.3
+          },
+          "after": {
+            "covered": 0,
+            "total": 23,
+            "unavailable": 23,
+            "percent": 0.0
+          }
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "a0c395933ede11a9d792",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "35f0ece4d60eee736175"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_failed",
+      "subject": "Table for Two roster",
+      "detected_at": "2026-08-31T00:10:41Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Failures": "clear",
+          "Snapshot": "current",
+          "Refresh attempt": "success"
+        }
+      },
+      "after": {
+        "state": "failed",
+        "fields": {
+          "Source state": "failed",
+          "Failures": "failed",
+          "Snapshot": "retained",
+          "Refresh attempt": "failure"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "failed"
+        },
+        {
+          "field": "Failures",
+          "before": "clear",
+          "after": "failed"
+        },
+        {
+          "field": "Snapshot",
+          "before": "current",
+          "after": "retained"
+        },
+        {
+          "field": "Refresh attempt",
+          "before": "success",
+          "after": "failure"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "1c5d2ed58c6c8667c40a",
+      "stream_id": "66129efc1226a46f5069",
+      "occurrence": 1,
+      "id": "1b9283a7e11fbc4f15e0"
+    },
     {
       "program": "Love Dining",
       "program_id": "love-dining",
@@ -1712,6 +1901,13 @@
           "8fcd83d183a4d28493c3": 1
         }
       },
+      "1d6c201fff0933553df2": {
+        "latest_transition_id": "40e94b2b92f0f585356f",
+        "occurrences": {
+          "40e94b2b92f0f585356f": 1,
+          "a0c395933ede11a9d792": 1
+        }
+      },
       "1d932675e8369102e9a6": {
         "latest_transition_id": "14c3bf4c98f05e8f8948",
         "occurrences": {
@@ -1747,6 +1943,12 @@
         "latest_transition_id": "8a4e6049c67923b51bf3",
         "occurrences": {
           "8a4e6049c67923b51bf3": 1
+        }
+      },
+      "66129efc1226a46f5069": {
+        "latest_transition_id": "1c5d2ed58c6c8667c40a",
+        "occurrences": {
+          "1c5d2ed58c6c8667c40a": 1
         }
       },
       "6c34e993e7e1b73ad379": {
