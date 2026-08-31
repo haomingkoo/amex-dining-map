@@ -30,24 +30,35 @@ jobs:
 
       - name: Refresh public roster snapshot
         id: roster_refresh
+        continue-on-error: true
         run: python3 scripts/scrape_table_for_two.py
 
       - name: Verify reviewed official document pages
+        id: document_verify
+        if: always()
+        continue-on-error: true
         run: |
           python3 -m pip install --disable-pip-version-check pypdf==6.15.0
-          python3 scripts/verify_tft_official_documents.py
+          python3 -m scripts.verify_tft_official_documents
 
       - name: Refresh and retain official menu versions
         id: menu_refresh
+        if: always()
+        continue-on-error: true
         run: python3 scripts/fetch_tft_menus.py --cache-dir ""
 
       - name: Build Telegram guide catalogue
+        id: guide_catalogue
+        if: always()
+        continue-on-error: true
         run: |
           python3 scripts/build_tft_guide_catalog.py
           python3 scripts/build_tft_slot_snapshot.py
 
       - name: Build Table for Two source alert
         id: table_for_two_alert
+        if: always()
+        continue-on-error: true
         run: |
           python3 scripts/source_change_alert.py \
             --program "Table for Two" \
@@ -58,46 +69,56 @@ jobs:
             --updates data/updates.json
 
       - name: Commit refreshed Table for Two data
+        id: data_commit
+        if: always()
+        continue-on-error: true
+        env:
+          COMMIT_MESSAGE: "chore: refresh table for two data"
+          MUST_STAGE: |
+            data/table-for-two.json
+            data/table-for-two-slots.json
+            data/updates.json
+            data/changelog-table-for-two.md
+            reminders/app/tft_guide_catalog.json
+            data/reviews/official-document-pdfs
+            data/reviews/tft-menu-pdfs
+          KEEP_LOCAL_ON_CONFLICT: |
+            data/table-for-two.json
+            data/table-for-two-slots.json
+            data/updates.json
+            data/changelog-table-for-two.md
+            reminders/app/tft_guide_catalog.json
+            data/reviews/official-document-pdfs
+            data/reviews/tft-menu-pdfs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/table-for-two.json data/table-for-two-slots.json data/updates.json reminders/app/tft_guide_catalog.json data/reviews/official-document-pdfs data/reviews/tft-menu-pdfs
-          if [ -f data/changelog-table-for-two.md ]; then
-            git add data/changelog-table-for-two.md
-          fi
-          if git diff --cached --quiet; then
-            echo "No Table for Two changes detected."
-            exit 0
-          fi
-          git commit -m "chore: refresh table for two data"
-          for attempt in 1 2 3; do
-            git pull --rebase origin main
-            if git push origin HEAD:main; then
-              exit 0
-            fi
-            echo "Push failed on attempt ${attempt}; retrying after remote sync."
-            sleep $((attempt * 5))
-          done
-          exit 1
+          bash scripts/commit_and_push.sh
 
-      - name: Finalize source health
+      - name: Finalize Table for Two roster health
+        id: roster_health
         if: always()
+        continue-on-error: true
         run: |
-          if [ "${{ job.status }}" = "success" ]; then
+          if [ "${{ steps.roster_refresh.outcome }}" = "success" ] && [ "${{ steps.document_verify.outcome }}" = "success" ]; then
             roster_outcome=success
           else
             roster_outcome=failure
           fi
-          if [ "${{ job.status }}" = "success" ]; then
-            menu_outcome=success
-          else
-            menu_outcome=failure
-          fi
           python3 scripts/build_source_health.py --source table-for-two-roster --attempt-outcome "$roster_outcome"
+
+      - name: Finalize Table for Two menu health
+        id: menu_health
+        if: always()
+        continue-on-error: true
+        run: |
+          menu_outcome="${{ steps.menu_refresh.outcome }}"
           python3 scripts/build_source_health.py --source table-for-two-menus --attempt-outcome "$menu_outcome"
 
       - name: Commit source health
+        id: health_commit
         if: always()
+        continue-on-error: true
         env:
           COMMIT_MESSAGE: "chore: record Table for Two source health"
           MUST_STAGE: |
@@ -111,13 +132,16 @@ jobs:
       - name: Dispatch published owner updates
         if: always()
         id: owner_dispatch
+        continue-on-error: true
         env:
           OWNER_ALERT_INGEST_URL: ${{ secrets.OWNER_ALERT_INGEST_URL }}
           OWNER_ALERT_INGEST_TOKEN: ${{ secrets.OWNER_ALERT_INGEST_TOKEN }}
         run: python3 scripts/dispatch_owner_updates.py
 
       - name: Commit owner delivery receipts
-        if: always() && steps.owner_dispatch.outcome != 'skipped'
+        id: receipt_commit
+        if: always()
+        continue-on-error: true
         env:
           COMMIT_MESSAGE: "chore: record owner alert delivery"
           MUST_STAGE: data/updates.json
@@ -127,7 +151,9 @@ jobs:
           bash scripts/commit_and_push.sh
 
       - name: Open Table for Two alert issue
-        if: always() && steps.table_for_two_alert.outputs.alert_required == 'true'
+        id: source_issue
+        if: always() && steps.table_for_two_alert.outcome == 'success' && steps.table_for_two_alert.outputs.alert_required == 'true'
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -135,3 +161,39 @@ jobs:
             "Table for Two source changed: review required" \
             /tmp/table-for-two-alert.md \
             table-for-two
+
+      - name: Fail after preserving refresh evidence
+        if: always()
+        env:
+          ROSTER_OUTCOME: ${{ steps.roster_refresh.outcome }}
+          DOCUMENT_OUTCOME: ${{ steps.document_verify.outcome }}
+          MENU_OUTCOME: ${{ steps.menu_refresh.outcome }}
+          GUIDE_OUTCOME: ${{ steps.guide_catalogue.outcome }}
+          ALERT_OUTCOME: ${{ steps.table_for_two_alert.outcome }}
+          COMMIT_OUTCOME: ${{ steps.data_commit.outcome }}
+          ROSTER_HEALTH_OUTCOME: ${{ steps.roster_health.outcome }}
+          MENU_HEALTH_OUTCOME: ${{ steps.menu_health.outcome }}
+          HEALTH_COMMIT_OUTCOME: ${{ steps.health_commit.outcome }}
+          OWNER_DISPATCH_OUTCOME: ${{ steps.owner_dispatch.outcome }}
+          RECEIPT_COMMIT_OUTCOME: ${{ steps.receipt_commit.outcome }}
+          SOURCE_ISSUE_OUTCOME: ${{ steps.source_issue.outcome }}
+        run: |
+          failed=()
+          for stage in ROSTER DOCUMENT MENU GUIDE ALERT COMMIT ROSTER_HEALTH MENU_HEALTH HEALTH_COMMIT OWNER_DISPATCH RECEIPT_COMMIT; do
+            outcome_name="${stage}_OUTCOME"
+            outcome="${!outcome_name}"
+            if [ "$outcome" != "success" ]; then
+              failed+=("${stage,,}=${outcome:-missing}")
+            fi
+          done
+          if [ "$SOURCE_ISSUE_OUTCOME" = "failure" ]; then
+            failed+=("source_issue=failure")
+          fi
+          if [ "${#failed[@]}" -gt 0 ]; then
+            summary="Table for Two refresh completed with failures: ${failed[*]}"
+            echo "::error::$summary"
+            echo "### Table for Two refresh needs attention" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "$summary" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi

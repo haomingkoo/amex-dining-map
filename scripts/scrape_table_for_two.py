@@ -48,6 +48,7 @@ MAX_AVAILABILITY_TIMES = 12
 AVAILABILITY_WORKERS = 6
 DININGCITY_REQUEST_RETRIES = 2
 DININGCITY_REQUEST_TIMEOUT_SECONDS = 12
+DININGCITY_PROJECT_PAGE_SIZE = 100
 
 
 VENUES = [
@@ -524,6 +525,110 @@ def has_project(dining_city_id: str) -> bool:
     )
 
 
+def _booking_project_record(row: object) -> dict | None:
+    if not isinstance(row, dict):
+        return None
+    restaurant = row.get("restaurant")
+    if not isinstance(restaurant, dict):
+        return None
+    restaurant_id = restaurant.get("id") or row.get("restaurant_id")
+    name = str(restaurant.get("name") or "").strip()
+    if not restaurant_id or not name:
+        return None
+    return {
+        "id": str(restaurant_id),
+        "name": name,
+        "status": str(row.get("status") or "unknown"),
+        "availability_project": str(
+            row.get("availability_project") or DININGCITY_PROJECT
+        ),
+        "source_url": str(
+            restaurant.get("website_detail_url")
+            or f"https://www.diningcity.sg/singapore/{restaurant.get('dirname') or ''}"
+        ).rstrip("/"),
+    }
+
+
+def fetch_booking_project_membership(
+    reviewed_roster: list[dict],
+    checked_at: str,
+    existing_payload: dict | None = None,
+) -> dict:
+    previous = dict((existing_payload or {}).get("booking_project_source") or {})
+    source_url = f"{DININGCITY_API_BASE}/projects/{DININGCITY_PROJECT}/restaurants"
+    try:
+        payload = fetch_json(
+            f"/projects/{DININGCITY_PROJECT}/restaurants",
+            {"per_page": DININGCITY_PROJECT_PAGE_SIZE},
+        )
+        if not isinstance(payload, list):
+            raise ValueError("booking project membership is not a list")
+        records = [
+            record
+            for row in payload
+            if (record := _booking_project_record(row)) is not None
+        ]
+        records.sort(key=lambda record: (record["name"].casefold(), record["id"]))
+        observed_ids = [record["id"] for record in records]
+        if not records or len(observed_ids) != len(set(observed_ids)):
+            raise ValueError("booking project membership is empty or has duplicate IDs")
+    except Exception as exc:  # noqa: BLE001 - retain the last good membership evidence.
+        return {
+            **previous,
+            "type": "diningcity_booking_project_membership",
+            "source_url": source_url,
+            "project": DININGCITY_PROJECT,
+            "last_attempt_at": checked_at,
+            "observation_status": "error",
+            "observation_error": type(exc).__name__,
+        }
+
+    reviewed = {
+        str(record.get("dining_city_id")): str(record.get("name") or "Unknown")
+        for record in reviewed_roster
+        if record.get("dining_city_id")
+    }
+    observed = {record["id"]: record for record in records}
+    added = [observed[key] for key in sorted(set(observed) - set(reviewed))]
+    missing = [
+        {"id": key, "name": reviewed[key]}
+        for key in sorted(set(reviewed) - set(observed))
+    ]
+    fingerprint_payload = [
+        {
+            key: record[key]
+            for key in ("id", "name", "status", "availability_project")
+        }
+        for record in records
+    ]
+    fingerprint = hashlib.sha256(
+        json.dumps(
+            fingerprint_payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    return {
+        "type": "diningcity_booking_project_membership",
+        "source_url": source_url,
+        "project": DININGCITY_PROJECT,
+        "checked_at": checked_at,
+        "last_attempt_at": checked_at,
+        "observation_status": "success",
+        "observed_count": len(records),
+        "observed_membership_sha256": fingerprint,
+        "observed_venues": records,
+        "added_vs_reviewed_roster": [record["name"] for record in added],
+        "missing_vs_reviewed_roster": [record["name"] for record in missing],
+        "review_required": bool(added or missing),
+        "evidence_note": (
+            "Booking-project membership is an early signal from DiningCity, not "
+            "the reviewed Amex participating-merchant roster."
+        ),
+    }
+
+
 def rows_from_payload(payload: object) -> list[dict]:
     rows = payload.get("data", []) if isinstance(payload, dict) else []
     return rows if isinstance(rows, list) else []
@@ -913,6 +1018,9 @@ def build_payload(
         or cycles_hash != KNOWN_CYCLES_SHA256
         or any(state["review_required"] for state in document_reviews.values())
     )
+    booking_project_source = fetch_booking_project_membership(
+        roster, checked_at, existing_payload
+    )
     live_availability_by_id, availability_errors = fetch_live_availability(roster, checked_at)
     live_profiles_by_id, profile_errors = fetch_diningcity_profiles(roster, checked_at)
     availability_last_checked_at = (
@@ -940,6 +1048,7 @@ def build_payload(
         "document_reviews": document_reviews,
         "manual_review_required": manual_review_required,
         "roster_source": roster_source,
+        "booking_project_source": booking_project_source,
         "voucher_cycles_2026": [
             "Jan - Feb",
             "Mar - Apr",
@@ -1002,6 +1111,9 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
         raise RuntimeError("Cannot refresh Table for Two availability without existing venue records.")
 
     checked_at = iso_now()
+    booking_project_source = fetch_booking_project_membership(
+        venues, checked_at, existing_payload
+    )
     live_availability_by_id, availability_errors = fetch_live_availability(venues, checked_at)
     live_profiles_by_id: dict[str, dict] = {}
     profile_errors: dict[str, str] = {}
@@ -1036,6 +1148,7 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
             "error_count": len(availability_errors),
             "errors": availability_errors,
         },
+        "booking_project_source": booking_project_source,
         "venues": records,
     }
     if include_profiles:

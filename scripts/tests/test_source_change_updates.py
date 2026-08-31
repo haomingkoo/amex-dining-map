@@ -196,6 +196,39 @@ class SourceChangeUpdatesTest(unittest.TestCase):
 
         self.assertIsNone(event)
 
+    def test_booking_project_candidates_are_review_required(self):
+        old = {
+            "booking_project_source": {
+                "observation_status": "success",
+                "observed_count": 23,
+                "observed_membership_sha256": "a" * 64,
+                "added_vs_reviewed_roster": [],
+                "missing_vs_reviewed_roster": [],
+                "review_required": False,
+            }
+        }
+        new = {
+            "booking_project_source": {
+                "observation_status": "success",
+                "observed_count": 24,
+                "observed_membership_sha256": "b" * 64,
+                "added_vs_reviewed_roster": ["New Place"],
+                "missing_vs_reviewed_roster": [],
+                "review_required": True,
+            }
+        }
+
+        event = MODULE.build_meta_update_event(
+            "Table for Two", old, new, "2026-08-31T10:00:00Z"
+        )
+
+        self.assertIsNotNone(event)
+        self.assertEqual(event["status"], "review_required")
+        self.assertIn(
+            "Booking-project candidates added",
+            [change["field"] for change in event["changes"]],
+        )
+
     def test_same_count_menu_review_replacement_creates_review_event(self):
         old = {
             "menu_source": {

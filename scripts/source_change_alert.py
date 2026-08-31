@@ -61,6 +61,11 @@ META_FIELD_LABELS = {
     "roster_source.observed_participating_sha256": "Observed roster image hash",
     "roster_source.approved_participating_sha256": "Approved roster image hash",
     "roster_source.review_item.kind": "Roster review item",
+    "booking_project_source.observation_status": "Booking-project observation",
+    "booking_project_source.observed_count": "Booking-project venue count",
+    "booking_project_source.observed_membership_sha256": "Booking-project membership fingerprint",
+    "booking_project_source.added_vs_reviewed_roster": "Booking-project candidates added",
+    "booking_project_source.missing_vs_reviewed_roster": "Reviewed venues missing from booking project",
     "source_images.voucher_cycles_sha256": "Voucher cycles image hash",
     "source_documents.terms_sha256": "Table for Two T&C PDF hash",
     "source_documents.faq_sha256": "Table for Two FAQ PDF hash",
@@ -459,6 +464,7 @@ def build_meta_update_event(
             if new_meta.get("manual_review_required")
             or (new_meta.get("menu_source") or {}).get("review_required")
             or (new_meta.get("roster_source") or {}).get("review_required")
+            or (new_meta.get("booking_project_source") or {}).get("review_required")
             or any(
                 isinstance(review, dict) and review.get("review_required")
                 for review in (new_meta.get("document_reviews") or {}).values()

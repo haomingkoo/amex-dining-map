@@ -18,6 +18,59 @@ class FakeResponse:
 
 
 class TableForTwoReliabilityTests(unittest.TestCase):
+    def test_booking_project_membership_exposes_early_candidates(self):
+        reviewed = [
+            {"name": "Known Place", "dining_city_id": "10"},
+            {"name": "Dropped Place", "dining_city_id": "20"},
+        ]
+        payload = [
+            {
+                "status": "online",
+                "availability_project": "AMEXPlatSG",
+                "restaurant": {"id": 10, "name": "Known Place", "dirname": "known"},
+            },
+            {
+                "status": "online",
+                "availability_project": "AMEXPlatSG",
+                "restaurant": {"id": 30, "name": "New Place", "dirname": "new"},
+            },
+        ]
+        with mock.patch.object(scrape_table_for_two, "fetch_json", return_value=payload):
+            result = scrape_table_for_two.fetch_booking_project_membership(
+                reviewed,
+                "2026-08-31T10:00:00Z",
+            )
+
+        self.assertEqual(result["observation_status"], "success")
+        self.assertEqual(result["observed_count"], 2)
+        self.assertEqual(result["added_vs_reviewed_roster"], ["New Place"])
+        self.assertEqual(result["missing_vs_reviewed_roster"], ["Dropped Place"])
+        self.assertTrue(result["review_required"])
+
+    def test_booking_project_membership_retains_last_good_snapshot_on_error(self):
+        previous = {
+            "booking_project_source": {
+                "observed_count": 27,
+                "observed_membership_sha256": "a" * 64,
+                "observed_venues": [{"id": "10", "name": "Known Place"}],
+            }
+        }
+        with mock.patch.object(
+            scrape_table_for_two,
+            "fetch_json",
+            side_effect=urllib.error.URLError("temporary"),
+        ):
+            result = scrape_table_for_two.fetch_booking_project_membership(
+                [],
+                "2026-08-31T10:00:00Z",
+                previous,
+            )
+
+        self.assertEqual(result["observation_status"], "error")
+        self.assertEqual(result["observation_error"], "URLError")
+        self.assertEqual(result["observed_count"], 27)
+        self.assertEqual(result["observed_membership_sha256"], "a" * 64)
+
     def test_fetch_json_retries_transient_network_error(self):
         with (
             mock.patch.object(
