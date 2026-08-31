@@ -1,7 +1,60 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-31T15:47:33Z",
+  "updated_at": "2026-08-31T16:30:05Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-08-31T16:30:05Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": {
+            "covered": 18,
+            "total": 23,
+            "unavailable": 5,
+            "percent": 78.3
+          }
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": {
+            "covered": 21,
+            "total": 23,
+            "unavailable": 2,
+            "percent": 91.3
+          }
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": {
+            "covered": 18,
+            "total": 23,
+            "unavailable": 5,
+            "percent": 78.3
+          },
+          "after": {
+            "covered": 21,
+            "total": 23,
+            "unavailable": 2,
+            "percent": 91.3
+          }
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "73f1934e9c3fa739f5ff",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "0baa780ba50fd138815a"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -2746,11 +2799,12 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "a35a007cefa6ec723d14",
+        "latest_transition_id": "73f1934e9c3fa739f5ff",
         "occurrences": {
           "59682348ebf010d3ed44": 1,
           "5cd58468c50a86096186": 5,
           "6b0a8f0fbbc4c84ab912": 2,
+          "73f1934e9c3fa739f5ff": 1,
           "a0e5d9c3222307d148c0": 1,
           "a35a007cefa6ec723d14": 1,
           "b9782e66dd081210376b": 1,
