@@ -1,7 +1,60 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-01T00:58:46Z",
+  "updated_at": "2026-09-01T03:47:33Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-01T03:47:33Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": {
+            "covered": 21,
+            "total": 21,
+            "unavailable": 0,
+            "percent": 100.0
+          }
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": {
+            "covered": 20,
+            "total": 21,
+            "unavailable": 1,
+            "percent": 95.2
+          }
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": {
+            "covered": 21,
+            "total": 21,
+            "unavailable": 0,
+            "percent": 100.0
+          },
+          "after": {
+            "covered": 20,
+            "total": 21,
+            "unavailable": 1,
+            "percent": 95.2
+          }
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "c6e1d48a099113033211",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "dfd9a0380b73108b0f26"
+    },
     {
       "program": "Love Dining",
       "program_id": "love-dining",
@@ -3473,7 +3526,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "f1df936d6ee3b6ab351e",
+        "latest_transition_id": "c6e1d48a099113033211",
         "occurrences": {
           "0486ed88fd4f242b58f7": 1,
           "23f1bba4701f42a76948": 1,
@@ -3484,6 +3537,7 @@
           "a0e5d9c3222307d148c0": 1,
           "a35a007cefa6ec723d14": 1,
           "b9782e66dd081210376b": 1,
+          "c6e1d48a099113033211": 1,
           "f1df936d6ee3b6ab351e": 6
         }
       }
