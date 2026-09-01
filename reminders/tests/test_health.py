@@ -39,6 +39,13 @@ def test_healthz_ok(monkeypatch):
         "owner_alerts_enabled": False,
         "telegram_guide_enabled": False,
         "telegram_reminders_enabled": False,
+        "tft_live_refresh_enabled": False,
+    }
+    assert payload["tft_live"] == {
+        "status": "unavailable",
+        "generated_at": None,
+        "age_seconds": None,
+        "counts": None,
     }
 
 

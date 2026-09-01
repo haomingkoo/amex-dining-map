@@ -172,26 +172,37 @@ are retained by hash. Earlier FAQ bytes were not available when the baseline
 was established, so no retroactive clause-level before-and-after claim is made.
 Future successors require complete predecessor-to-successor clause accounting
 through the TFT official-document review runbook. This is independent of the
-unchanged 23-venue roster.
+reviewed roster, which currently has 21 active and two historical venues.
 
-Slot lookup reads only the fixed
-`https://amex-explorer.kooexperience.com/data/table-for-two-slots.json`
-projection. The half-hour availability workflow rebuilds the sub-1 MiB file
-after each AMEXPlatSG refresh and Pages publishes it. Railway rejects redirects,
-non-JSON or oversized bodies, malformed schemas, and wrong source provenance;
-it caches a valid projection for 60 seconds and a failed load for 15 seconds.
+Public slot lookup reads one bounded Railway snapshot from `/api/tft/slots`.
+The single-replica reminders service checks the AMEXPlatSG project immediately
+after startup and then ten minutes after each completed check. It fetches project
+membership once, checks only approved active catalogue venues with bounded
+concurrency, atomically replaces `/data/tft-live-slots.json`, and retains each
+venue's last good observation when an individual request fails. A missing
+project member is explicit `not_in_project` evidence; it is not a claim that the
+physical restaurant closed. The endpoint rejects malformed, oversized, or
+wrong-project snapshots, returns `Cache-Control: no-store`, and is compressed.
 Matching uses each venue's own `checked_at`, never the top-level generation time.
 Anything older than 30 minutes is labelled stale and cannot be described as
 current availability. An empty fresh match means only that no matching slot was
 observed in the cached check—not that the Amex Experiences App is sold out.
+
+The committed `data/table-for-two-slots.json` and manual GitHub workflow remain
+rollback and history inputs during the live-path observation period; they are no
+longer the browser's primary freshness path. Enable Railway with
+`TFT_LIVE_REFRESH_ENABLED=true` and
+`TFT_LIVE_SINGLE_REPLICA_CONFIRMED=true`. The interval defaults to 600 seconds;
+keep the snapshot beside `DB_PATH` on the mounted `/data` volume.
 
 The guide also contains a disabled-by-default, one-shot reminder lifecycle:
 `/remind`, `/reminders`, `/cancel [reminder ID]`, and `/delete_me`. Setup collects
 one exact venue, party size, lunch or dinner, and an absolute SGT date, range,
 or up to ten specific dates. A confirmed reminder sends at most one notification
 after the first fresh cached AMEXPlatSG match, then closes. It is separate from
-email subscribers. Real slot freshness still depends on the half-hour workflow
-and Pages deployment completing inside the 30-minute window.
+email subscribers. Telegram reminder dispatch still consumes the committed
+projection until that delivery path is migrated and separately accepted; do not
+claim it has the same freshness as the public Railway endpoint yet.
 
 Spam controls are intentionally quiet: Telegram's webhook secret is checked
 before JSON parsing, update IDs are durably deduplicated, and guide-only
@@ -364,14 +375,12 @@ Railway does not classify normal `INFO` startup lines as errors. Application
 events are structured fields: filter by `event`, `status`, `path`, or
 `request_id` rather than searching message bodies.
 
-Daily source-writing GitHub workflows share `source-ledger-refresh`. The
-high-frequency availability workflow has a dedicated concurrency group so
-unrelated daily jobs cannot replace its pending refresh. GitHub concurrency
-does not provide a durable FIFO; `commit_and_push.sh` reconciles pushes after
-concurrent writers update `main`. This prevents normal commit collisions but
-does not make scheduled triggers reliable. If TFT availability is stale,
-inspect the queued and completed `Table for Two Alerts` runs before debugging
-DiningCity or the reminder matcher.
+Daily source-writing GitHub workflows share `source-ledger-refresh`.
+`commit_and_push.sh` reconciles pushes after concurrent writers update `main`,
+but GitHub scheduling is best-effort and is not the live public freshness
+boundary. For a TFT availability incident, inspect Railway `/healthz` field
+`tft_live`, then `/api/tft/slots`, then the bounded `tft_live_refresh` log. Use
+the manual `Table for Two Alerts` workflow only as rollback/history evidence.
 
 Start with the narrowest public signal before opening provider logs:
 
@@ -381,6 +390,7 @@ Start with the narrowest public signal before opening provider logs:
 | Old, failed, or review-held programme data | Open **Updates & source health**, then the named refresh workflow | Source ID, last attempt, last success, and workflow run |
 | Site still shows an older build | Compare the Pages run commit with the deployed asset revision | Git commit and Pages deployment run |
 | Reminder API request fails | Capture the response `X-Request-ID` and status | Matching Railway `http_request` JSON event |
+| TFT availability is old | Check `/healthz` `tft_live.age_seconds`, then `/api/tft/slots` | Railway deployment ID, generated time, refresh status, and aggregate counts |
 | Email alert does not arrive | Check the Table for Two Alerts workflow before the provider dashboard | Workflow run, bounded provider error code, and sent-key receipt |
 | Telegram action does not work | Run the readiness checker for the affected phase, then inspect `/healthz` | Readiness phase, feature flag, UTC window, and bounded delivery outcome |
 

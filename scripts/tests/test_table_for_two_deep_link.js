@@ -55,7 +55,8 @@ assert.match(
   "intro gate does not preserve a matching deep-link route and its parameters",
 );
 assert.match(source, /payload\.menu_source\?\.review_required/);
-assert.match(source, /Some possible menu changes are being verified/);
+assert.match(source, /Some menu details are being verified/);
+assert.match(source, /A possible menu change is being verified/);
 assert.match(source, /applyTableForTwoFiltersFromHash\(\);[\s\S]*refreshTableForTwoDateOptions\(\);/);
 
 const reviewStart = source.indexOf("function tableForTwoVenueMenuReviewItems(");

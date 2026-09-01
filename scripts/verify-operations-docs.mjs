@@ -40,7 +40,7 @@ const configKeys = new Set(
     .map((match) => match[1]),
 );
 for (const key of configKeys) assert.ok(envEntries.has(key), `.env.example omits ${key}`);
-for (const key of ["OWNER_ALERTS_ENABLED", "TELEGRAM_GUIDE_ENABLED", "TELEGRAM_REMINDERS_ENABLED"]) {
+for (const key of ["OWNER_ALERTS_ENABLED", "TELEGRAM_GUIDE_ENABLED", "TELEGRAM_REMINDERS_ENABLED", "TFT_LIVE_REFRESH_ENABLED"]) {
   assert.equal(envEntries.get(key), "false", `${key} must default to false`);
 }
 const secretKeys = [
@@ -59,6 +59,7 @@ for (const field of [
   "owner_alerts_enabled",
   "telegram_guide_enabled",
   "telegram_reminders_enabled",
+  "tft_live_refresh_enabled",
 ]) assert.ok(main.includes(`\"${field}\"`), `health omits ${field}`);
 for (const source of [ownerRoutes, telegramRoutes]) assert.match(source, /status_code=503/);
 
@@ -84,8 +85,9 @@ for (const phrase of [
   "never dump rows",
   "FROM owner_alert_deliveries",
   "Do not manually resend `unknown` rows",
-  "high-frequency availability workflow has a dedicated concurrency group",
-  "inspect the queued and completed `Table for Two Alerts` runs",
+  "GitHub scheduling is best-effort and is not the live public freshness boundary",
+  "inspect Railway `/healthz` field `tft_live`",
+  "`TFT_LIVE_SINGLE_REPLICA_CONFIRMED=true`",
 ]) assert.ok(docs.includes(phrase), `missing operations contract: ${phrase}`);
 for (const phrase of [
   "data/reviews/tft-menu-pdfs/",

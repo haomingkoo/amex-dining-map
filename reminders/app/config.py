@@ -40,6 +40,10 @@ class Settings:
     telegram_global_limit_per_day: int = 5_000
     telegram_reminders_enabled: bool = False
     telegram_reminder_dispatch_token: str = ""
+    tft_live_refresh_enabled: bool = False
+    tft_live_refresh_interval_seconds: int = 600
+    tft_live_snapshot_path: Path = Path("tft-live-slots.json")
+    tft_live_single_replica_confirmed: bool = False
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -78,8 +82,10 @@ def _env_datetime(name: str) -> datetime | None:
 
 
 def load_settings() -> Settings:
+    db_path = Path(os.getenv("DB_PATH", "reminders.db"))
+    snapshot_path = os.getenv("TFT_LIVE_SNAPSHOT_PATH", "").strip()
     settings = Settings(
-        db_path=Path(os.getenv("DB_PATH", "reminders.db")),
+        db_path=db_path,
         resend_api_key=os.getenv("RESEND_API_KEY", "").strip(),
         resend_from=os.getenv("RESEND_FROM", "dinnertime@kooexperience.com").strip(),
         alert_export_token=os.getenv("ALERT_EXPORT_TOKEN", "").strip(),
@@ -127,6 +133,18 @@ def load_settings() -> Settings:
         telegram_reminder_dispatch_token=os.getenv(
             "TELEGRAM_REMINDER_DISPATCH_TOKEN", ""
         ).strip(),
+        tft_live_refresh_enabled=_env_bool("TFT_LIVE_REFRESH_ENABLED"),
+        tft_live_refresh_interval_seconds=_env_int(
+            "TFT_LIVE_REFRESH_INTERVAL_SECONDS", 600
+        ),
+        tft_live_snapshot_path=(
+            Path(snapshot_path)
+            if snapshot_path
+            else db_path.parent / "tft-live-slots.json"
+        ),
+        tft_live_single_replica_confirmed=_env_bool(
+            "TFT_LIVE_SINGLE_REPLICA_CONFIRMED"
+        ),
     )
     if settings.public_base_url.startswith("https://"):
         missing = []
@@ -150,6 +168,17 @@ def load_settings() -> Settings:
         settings.subscribe_global_limit,
     ) < 1:
         raise RuntimeError("Subscribe rate limits must be positive")
+    if not 60 <= settings.tft_live_refresh_interval_seconds <= 1_800:
+        raise RuntimeError(
+            "TFT_LIVE_REFRESH_INTERVAL_SECONDS must be between 60 and 1800"
+        )
+    if (
+        settings.tft_live_refresh_enabled
+        and not settings.tft_live_single_replica_confirmed
+    ):
+        raise RuntimeError(
+            "TFT_LIVE_SINGLE_REPLICA_CONFIRMED must be true when live refresh is enabled"
+        )
     if settings.owner_alerts_enabled:
         missing = []
         if (

@@ -41,7 +41,7 @@ jobs:
         run: python3 scripts/audit_content_provenance.py
 
       - name: Verify reviewed Love Dining documents
-        run: python3 scripts/verify_love_dining_documents.py
+        run: python3 -m scripts.verify_love_dining_documents
 
       - name: Verify Love Dining map pins
         run: python3 scripts/tests/test_love_dining_map_pins.py

@@ -1567,6 +1567,52 @@ input,
   color: var(--text-secondary);
 }
 
+.tft-freshness-details {
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.tft-freshness-details > summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.tft-freshness-details > summary:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: var(--radius-xs);
+}
+
+.tft-freshness-content {
+  display: grid;
+  gap: 10px;
+  padding: 2px 0 8px;
+}
+
+.tft-freshness-row {
+  display: grid;
+  grid-template-columns: minmax(96px, auto) minmax(0, 1fr);
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.tft-freshness-row strong {
+  color: var(--text);
+  font-weight: 650;
+}
+
+.tft-freshness-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 
 /* ═══════════════════════════════════════════════════════════
    EXPLORER GRID (map + detail panel)
@@ -2050,7 +2096,15 @@ input,
 }
 
 .tft-card.active {
-  border-left: 3px solid var(--teal);
+  background: var(--gold-muted);
+  box-shadow: inset 0 0 0 2px var(--teal);
+}
+
+.tft-card:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--gold);
+  outline-offset: -3px;
 }
 
 .tft-status-grid {
@@ -4308,6 +4362,11 @@ h1, h2, h3 {
 
   .tft-results-list {
     max-height: none;
+  }
+
+  .tft-freshness-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
   }
 
   .table-shell {

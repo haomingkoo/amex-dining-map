@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
+from collections.abc import Awaitable, Callable
+from contextlib import asynccontextmanager, suppress
 import os
 import hashlib
 from functools import lru_cache
@@ -10,12 +13,21 @@ from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
-from app import db, owner_alert_store, telegram_bot_store, telegram_reminders, tft_guide
+from app import (
+    db,
+    owner_alert_store,
+    telegram_bot_store,
+    telegram_reminders,
+    tft_guide,
+    tft_live_api,
+)
 from app.config import load_settings
 from app.owner_alert_routes import router as owner_alert_router
 from app.observability import configure_logging
 from app.telegram_bot_routes import router as telegram_bot_router
+from app.tft_live_refresh import TFTLiveRefresher
 from app.routes import router
 from app.security import (
     RequestBodyLimitMiddleware,
@@ -26,11 +38,60 @@ from app.security import (
 settings = load_settings()
 configure_logging()
 
+
+live_refresher = TFTLiveRefresher(
+    tft_guide.CATALOG_PATH,
+    settings.tft_live_snapshot_path,
+)
+
+
+async def run_live_refresh_loop(
+    refresher: TFTLiveRefresher,
+    interval_seconds: int,
+    *,
+    to_thread: Callable[..., Awaitable[Any]] = asyncio.to_thread,
+    sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+) -> None:
+    """Refresh immediately, then wait one fixed delay after each completion."""
+
+    while True:
+        try:
+            await to_thread(refresher.refresh)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            # Upstream details stay inside the bounded producer snapshot/log boundary.
+            pass
+        await sleep(interval_seconds)
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    task: asyncio.Task[None] | None = None
+    if settings.tft_live_refresh_enabled:
+        task = asyncio.create_task(
+            run_live_refresh_loop(
+                live_refresher,
+                settings.tft_live_refresh_interval_seconds,
+            )
+        )
+        # Start the immediate refresh before application startup completes.
+        await asyncio.sleep(0)
+    try:
+        yield
+    finally:
+        if task is not None:
+            task.cancel()
+            with suppress(asyncio.CancelledError):
+                await task
+
+
 app = FastAPI(
     title="Table for Two Reminders",
     docs_url=None,
     redoc_url=None,
     openapi_url=None,
+    lifespan=lifespan,
 )
 app.add_middleware(
     CORSMiddleware,
@@ -38,6 +99,7 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
+app.add_middleware(GZipMiddleware, minimum_size=100)
 app.add_middleware(RequestBodyLimitMiddleware, max_bytes=16_384)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
@@ -55,6 +117,7 @@ finally:
 app.include_router(router)
 app.include_router(owner_alert_router)
 app.include_router(telegram_bot_router)
+app.include_router(tft_live_api.router)
 
 
 APP_DIR = Path(__file__).resolve().parent
@@ -115,7 +178,11 @@ def healthz() -> dict[str, Any]:
             "owner_alerts_enabled": settings.owner_alerts_enabled,
             "telegram_guide_enabled": settings.telegram_guide_enabled,
             "telegram_reminders_enabled": settings.telegram_reminders_enabled,
+            "tft_live_refresh_enabled": settings.tft_live_refresh_enabled,
         },
     }
     response.update(catalog_health())
+    response["tft_live"] = tft_live_api.snapshot_health(
+        settings.tft_live_snapshot_path
+    )
     return response

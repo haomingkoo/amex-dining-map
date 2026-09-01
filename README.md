@@ -227,7 +227,7 @@ the [TFT menu review runbook](docs/tft-menu-review-runbook.md); do not publish a
 menu candidate with the generic update-review command below.
 
 The TFT participating-roster image is also review-gated. A new image hash keeps
-the last approved 23-venue snapshot public and records one source-scoped review
+the last approved snapshot (currently 21 active and two historical venues) public and records one source-scoped review
 item; it does not silently turn the hardcoded roster into a claimed official
 addition or removal. After reviewing the complete image, add a hash-addressed
 manifest under `data/reviews/table-for-two-roster/` with predecessor lineage,
@@ -279,9 +279,10 @@ The disabled-by-default Telegram guide bundles the reviewed aggregate projection
 and answers `/release <exact venue> [lunch|dinner]`. It reports first-detected
 lead time, observation count, confidence, latest detection, and snapshot age;
 it never presents these observations as a restaurant schedule or current seats.
-The half-hour availability workflow rebuilds and commits this projection after
-tracking new observations, so the deployed catalogue cannot drift behind its
-release-history source.
+The archival availability workflow rebuilds and commits this release-history
+projection after tracking new observations. The public web app gets current
+availability from the bounded Railway live snapshot instead; release-pattern
+history remains a separate, slower evidence surface.
 Rebuild or verify the bundled projection with:
 
 ```bash

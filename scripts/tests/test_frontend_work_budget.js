@@ -8,11 +8,18 @@ const applyRoute = app.slice(
   app.indexOf("async function applyRoute(routeId)"),
   app.indexOf("function handleHashRoute()"),
 );
-assert.doesNotMatch(
+assert.match(
   applyRoute,
   /ensureTableForTwoLiveRefresh\(/,
-  "opening TFT must not fan out a whole-roster browser scrape",
+  "opening TFT must request the single Railway live snapshot",
 );
+const liveRefresh = app.slice(
+  app.indexOf("function tableForTwoLiveSnapshotIsValid("),
+  app.indexOf("function activeTableForTwoRecord("),
+);
+assert.match(liveRefresh, /fetch\(TABLE_FOR_TWO_LIVE_SNAPSHOT_URL/);
+assert.doesNotMatch(liveRefresh, /api\.diningcity\.asia|Promise\.allSettled|\/restaurants\//);
+assert.doesNotMatch(app, /const TABLE_FOR_TWO_DININGCITY_API_BASE/);
 
 const auxiliaryRerender = app.slice(
   app.indexOf("function rerenderCurrentRouteAfterAuxiliaryData()"),
