@@ -38,7 +38,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          python3 -m pip install --disable-pip-version-check pypdf==6.15.0
+          python3 -m pip install --disable-pip-version-check pypdf==6.16.2
           python3 -m scripts.verify_tft_official_documents
 
       - name: Refresh and retain official menu versions

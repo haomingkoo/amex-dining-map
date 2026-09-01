@@ -25,6 +25,18 @@ def test_document_verifier_runs_as_a_module() -> None:
     assert "python3 scripts/verify_tft_official_documents.py" not in block
 
 
+def test_document_verifier_installs_the_patched_pypdf_version() -> None:
+    text = workflow_text()
+    block = step_block(
+        text,
+        "Verify reviewed official document pages",
+        "Refresh and retain official menu versions",
+    )
+
+    assert "pypdf==6.16.2" in block
+    assert "pypdf==6.15.0" not in block
+
+
 def test_independent_observations_continue_after_a_failure() -> None:
     text = workflow_text()
     stages = (
