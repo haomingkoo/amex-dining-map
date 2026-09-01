@@ -5365,7 +5365,7 @@ async function refreshTableForTwoLiveAvailability({ force = false } = {}) {
     const payload = await response.json();
     if (!applyTableForTwoLiveSnapshot(payload)) return;
     state.tableForTwoLiveRefreshAt = now;
-    if (isTableForTwoRoute(resolveRouteFromHash())) {
+    if (isTableForTwoRoute()) {
       refreshTableForTwoDateOptions();
       filterTableForTwo();
     }
@@ -5380,7 +5380,7 @@ async function refreshTableForTwoLiveAvailability({ force = false } = {}) {
 function ensureTableForTwoLiveRefresh() {
   if (!state.tableForTwoLiveRefreshTimer) {
     state.tableForTwoLiveRefreshTimer = window.setInterval(() => {
-      if (isTableForTwoRoute(resolveRouteFromHash())) {
+      if (isTableForTwoRoute()) {
         refreshTableForTwoLiveAvailability();
       }
     }, TABLE_FOR_TWO_LIVE_REFRESH_INTERVAL_MS);

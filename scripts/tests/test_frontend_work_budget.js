@@ -24,6 +24,16 @@ const liveRefresh = app.slice(
 );
 assert.match(liveRefresh, /fetch\(TABLE_FOR_TWO_LIVE_SNAPSHOT_URL/);
 assert.doesNotMatch(liveRefresh, /api\.diningcity\.asia|Promise\.allSettled|\/restaurants\//);
+assert.doesNotMatch(
+  liveRefresh,
+  /isTableForTwoRoute\(resolveRouteFromHash\(\)\)/,
+  "the live rerender guard must use the current route object, not a route-id string",
+);
+assert.match(
+  liveRefresh,
+  /if \(isTableForTwoRoute\(\)\) \{[\s\S]*filterTableForTwo\(\)/,
+  "a successful live overlay must rerender TFT cards on the active route",
+);
 assert.doesNotMatch(app, /const TABLE_FOR_TWO_DININGCITY_API_BASE/);
 
 const auxiliaryRerender = app.slice(
