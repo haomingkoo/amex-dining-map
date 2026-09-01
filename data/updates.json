@@ -1,7 +1,47 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-01T00:40:31Z",
+  "updated_at": "2026-09-01T00:49:13Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_recovered",
+      "subject": "Love Dining",
+      "detected_at": "2026-09-01T00:49:13Z",
+      "status": "published",
+      "before": {
+        "state": "failed",
+        "fields": {
+          "Freshness": "stale",
+          "Stale records": 1
+        }
+      },
+      "after": {
+        "state": "failed",
+        "fields": {
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 1,
+          "after": 0
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "fd87ceca56069730718d",
+      "stream_id": "325506f85300a0ec65a3",
+      "occurrence": 1,
+      "id": "fdb7f338cd9108321320"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -3202,10 +3242,11 @@
         }
       },
       "325506f85300a0ec65a3": {
-        "latest_transition_id": "cea2d37ee2da89ff16c6",
+        "latest_transition_id": "fd87ceca56069730718d",
         "occurrences": {
           "cea2d37ee2da89ff16c6": 1,
-          "f07cb3104e4317089870": 1
+          "f07cb3104e4317089870": 1,
+          "fd87ceca56069730718d": 1
         }
       },
       "3da2da7369597146b234": {
