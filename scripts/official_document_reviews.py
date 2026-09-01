@@ -17,7 +17,11 @@ from pypdf import PdfReader
 from scripts import source_change_alert
 
 
-EXTRACTOR = "pypdf 6.15.0 extract_text normalized-whitespace-v1"
+EXTRACTOR = "pypdf 6.16.2 extract_text normalized-whitespace-v1"
+SUPPORTED_EXTRACTORS = {
+    EXTRACTOR,
+    "pypdf 6.15.0 extract_text normalized-whitespace-v1",
+}
 MAX_PDF_BYTES = 5 * 1024 * 1024
 MAX_PAGES = 100
 MAX_PAGE_CHARACTERS = 50_000
@@ -69,8 +73,8 @@ def _official_url(value: Any, expected: str) -> str:
 
 
 def pdf_page_hashes(pdf_bytes: bytes) -> list[str]:
-    if pypdf.__version__ != "6.15.0":
-        raise ValueError(f"expected pypdf 6.15.0, found {pypdf.__version__}")
+    if pypdf.__version__ != "6.16.2":
+        raise ValueError(f"expected pypdf 6.16.2, found {pypdf.__version__}")
     if len(pdf_bytes) > MAX_PDF_BYTES or not pdf_bytes.startswith(b"%PDF"):
         raise ValueError("official document is not a bounded PDF")
     reader = PdfReader(io.BytesIO(pdf_bytes), strict=True)
@@ -139,7 +143,7 @@ def verify_version(spec: DocumentSpec, pdf_bytes: bytes, manifest: dict) -> dict
         or manifest.get("kind") != spec.kind
         or manifest.get("title") != spec.title
         or manifest.get("raw_sha256") != raw_sha256
-        or manifest.get("extractor") != EXTRACTOR
+        or manifest.get("extractor") not in SUPPORTED_EXTRACTORS
         or manifest.get("page_count") != len(page_hashes)
         or manifest.get("page_text_sha256") != page_hashes
         or manifest.get("review_status") not in {"current_baseline", "approved"}

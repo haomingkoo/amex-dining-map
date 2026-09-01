@@ -24,7 +24,6 @@ REVIEW_ROOT = Path("data/reviews/official-documents")
 MAX_PDF_BYTES = 5 * 1024 * 1024
 MAX_PAGES = 20
 MAX_PAGE_CHARACTERS = 50_000
-EXTRACTOR = "pypdf 6.15.0 extract_text normalized-whitespace-v1"
 DOCUMENTS = {
     document_id: (config["url_key"], config["hash_key"])
     for document_id, config in tft_document_reviews.DOCUMENTS.items()
@@ -81,8 +80,8 @@ def verify(
     pdf_dir: Path | None,
     approved_pdf_root: Path = tft_document_reviews.PDF_ROOT,
 ) -> int:
-    if pypdf.__version__ != "6.15.0":
-        raise ValueError(f"expected pypdf 6.15.0, found {pypdf.__version__}")
+    if pypdf.__version__ != "6.16.2":
+        raise ValueError(f"expected pypdf 6.16.2, found {pypdf.__version__}")
     source = json.loads(source_path.read_text())
     source_hashes = source.get("source_documents") or {}
     pending = 0
