@@ -96,6 +96,7 @@ const TABLE_FOR_TWO_TNC_URL = "https://www.americanexpress.com/content/dam/amex/
 const TABLE_FOR_TWO_FAQ_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TableforTwo_FAQ.pdf";
 const TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES = 30;
 const GOOGLE_RATING_STALE_DAYS = 90;
+const REMINDERS_API_BASE = "https://amex-reminders-production.up.railway.app";
 const TABLE_FOR_TWO_LIVE_SNAPSHOT_URL = `${REMINDERS_API_BASE}/api/tft/slots`;
 const TABLE_FOR_TWO_LIVE_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 const TABLE_FOR_TWO_FETCH_TIMEOUT_MS = 12 * 1000;
@@ -949,9 +950,6 @@ const tableForTwoResultsList = document.getElementById("tft-results-list");
 const tableForTwoResultsText = document.getElementById("tft-results-text");
 const tableForTwoFocusCard = document.getElementById("tft-focus-card");
 const tableForTwoAlertSignupPanel = document.getElementById("tft-alert-signup-panel");
-// Reminders signup service (Railway).
-const REMINDERS_API_BASE = "https://amex-reminders-production.up.railway.app";
-
 function updateThemeToggle(theme) {
   if (!themeToggleButton) return;
 

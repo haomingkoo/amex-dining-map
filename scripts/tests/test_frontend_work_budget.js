@@ -4,6 +4,11 @@ const fs = require("node:fs");
 
 const app = fs.readFileSync("web/app.js", "utf8");
 
+assert.ok(
+  app.indexOf("const REMINDERS_API_BASE") < app.indexOf("const TABLE_FOR_TWO_LIVE_SNAPSHOT_URL"),
+  "the live snapshot URL must not access the reminders base before initialization",
+);
+
 const applyRoute = app.slice(
   app.indexOf("async function applyRoute(routeId)"),
   app.indexOf("function handleHashRoute()"),
