@@ -29,6 +29,7 @@ const context = {
       venues: [
         { id: "tft-vue", name: "VUE", booking_project_status: "active" },
         { id: "tft-sarai", name: "Sarai", booking_project_status: "active" },
+        { id: "tft-vineyard", name: "Vineyard", booking_project_status: "active" },
       ],
     },
   },
@@ -46,7 +47,7 @@ const payload = {
   source_project: "AMEXPlatSG",
   generated_at: generatedAt,
   refresh_status: "partial",
-  counts: { eligible: 2, succeeded: 1, failed: 1, retained: 0 },
+  counts: { eligible: 3, succeeded: 2, failed: 1, retained: 0 },
   venues: [
     {
       id: "tft-vue",
@@ -68,6 +69,16 @@ const payload = {
       error_code: "not_in_project",
       meals: [],
     },
+    {
+      id: "tft-vineyard",
+      project: "AMEXPlatSG",
+      status: "live_no_seats",
+      checked_at: generatedAt,
+      attempted_at: generatedAt,
+      result: "fresh",
+      error_code: null,
+      meals: [],
+    },
   ],
 };
 
@@ -76,6 +87,7 @@ assert.equal(context.applyTableForTwoLiveSnapshot(payload), true);
 assert.equal(context.state.tableForTwo.venues[0].availability.status, "live_available");
 assert.equal(context.state.tableForTwo.venues[0].availability.live_result, "fresh");
 assert.equal(context.state.tableForTwo.venues[1].booking_project_status, "not_listed");
+assert.equal(context.state.tableForTwo.venues[2].availability.status, "live_no_seats");
 assert.equal(context.state.tableForTwo.availability_source.refresh_status, "partial");
 assert.equal(context.tableForTwoLiveSnapshotIsValid({ ...payload, source_project: "other" }), false);
 assert.equal(context.tableForTwoLiveSnapshotIsValid({ ...payload, venues: [payload.venues[0], payload.venues[0]] }), false);
