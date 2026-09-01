@@ -327,3 +327,10 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - LES SOUVENIRS / Osaka
+
+## 2026-09-01 00:22 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Oryouri Fujii / Toyama

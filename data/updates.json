@@ -1,7 +1,93 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-08-31T23:55:08Z",
+  "updated_at": "2026-09-01T00:22:13Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-01T00:22:13Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 839,
+          "Mapped count": 839,
+          "Official records SHA-256": "c4ba538b295b"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 838,
+          "Mapped count": 838,
+          "Official records SHA-256": "e87de1bae110"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 839,
+          "after": 838
+        },
+        {
+          "field": "Mapped count",
+          "before": 839,
+          "after": 838
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "c4ba538b295b",
+          "after": "e87de1bae110"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "827885cc967f7e007f12",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "6f32b4d96959e2253cad"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": "Oryouri Fujii / Toyama",
+      "detected_at": "2026-09-01T00:22:13Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Oryouri Fujii",
+          "Country": "Japan",
+          "Region": "Kanazawa/Toyama/Hokuriku",
+          "City": "Toyama",
+          "District": "Higashiiwasemachi",
+          "Address": "93, Higashiiwasemachi, Toyama-shi, Toyama",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/244609/",
+      "transition_id": "a5282678855dd936799f",
+      "stream_id": "fb1a582bd933bb7bddbb",
+      "occurrence": 1,
+      "id": "486b84b9488c28291b7d"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -2850,8 +2936,9 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "b9acef5ccde9cc17c509",
+        "latest_transition_id": "827885cc967f7e007f12",
         "occurrences": {
+          "827885cc967f7e007f12": 1,
           "b9acef5ccde9cc17c509": 1
         }
       },
@@ -3011,6 +3098,12 @@
         "latest_transition_id": "d90ad45dbd488f7ba721",
         "occurrences": {
           "d90ad45dbd488f7ba721": 1
+        }
+      },
+      "fb1a582bd933bb7bddbb": {
+        "latest_transition_id": "a5282678855dd936799f",
+        "occurrences": {
+          "a5282678855dd936799f": 1
         }
       },
       "fc99e227ed6c0a00a6cd": {
