@@ -1,7 +1,94 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-01T00:49:13Z",
+  "updated_at": "2026-09-01T00:58:46Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_stale",
+      "subject": "Love Dining",
+      "detected_at": "2026-09-01T00:58:46Z",
+      "status": "published",
+      "before": {
+        "state": "failed",
+        "fields": {
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "after": {
+        "state": "failed",
+        "fields": {
+          "Freshness": "stale",
+          "Stale records": 1
+        }
+      },
+      "changes": [
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 1
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "cea2d37ee2da89ff16c6",
+      "stream_id": "325506f85300a0ec65a3",
+      "occurrence": 2,
+      "id": "939843aaa2aaf2a20ce6"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-01T00:58:46Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 21
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 21,
+          "after": 0
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "f1df936d6ee3b6ab351e",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 6,
+      "id": "2f7cb9340b4ecdd7b80d"
+    },
     {
       "program": "Love Dining",
       "program_id": "love-dining",
@@ -3242,9 +3329,9 @@
         }
       },
       "325506f85300a0ec65a3": {
-        "latest_transition_id": "fd87ceca56069730718d",
+        "latest_transition_id": "cea2d37ee2da89ff16c6",
         "occurrences": {
-          "cea2d37ee2da89ff16c6": 1,
+          "cea2d37ee2da89ff16c6": 2,
           "f07cb3104e4317089870": 1,
           "fd87ceca56069730718d": 1
         }
@@ -3386,7 +3473,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "5cd58468c50a86096186",
+        "latest_transition_id": "f1df936d6ee3b6ab351e",
         "occurrences": {
           "0486ed88fd4f242b58f7": 1,
           "23f1bba4701f42a76948": 1,
@@ -3397,7 +3484,7 @@
           "a0e5d9c3222307d148c0": 1,
           "a35a007cefa6ec723d14": 1,
           "b9782e66dd081210376b": 1,
-          "f1df936d6ee3b6ab351e": 5
+          "f1df936d6ee3b6ab351e": 6
         }
       }
     }
