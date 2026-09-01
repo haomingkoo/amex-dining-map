@@ -1,7 +1,61 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-01T22:07:19Z",
+  "updated_at": "2026-09-01T22:10:32Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_recovered",
+      "subject": "Love Dining",
+      "detected_at": "2026-09-01T22:10:32Z",
+      "status": "published",
+      "before": {
+        "state": "failed",
+        "fields": {
+          "Source state": "failed",
+          "Failures": "failed",
+          "Snapshot": "retained",
+          "Refresh attempt": "failure"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Failures": "clear",
+          "Snapshot": "current",
+          "Refresh attempt": "success"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "failed",
+          "after": "current"
+        },
+        {
+          "field": "Failures",
+          "before": "failed",
+          "after": "clear"
+        },
+        {
+          "field": "Snapshot",
+          "before": "retained",
+          "after": "current"
+        },
+        {
+          "field": "Refresh attempt",
+          "before": "failure",
+          "after": "success"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "6d25cfe12d49db98b041",
+      "stream_id": "325506f85300a0ec65a3",
+      "occurrence": 1,
+      "id": "454484ab03d86bee147d"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -3993,8 +4047,9 @@
         }
       },
       "325506f85300a0ec65a3": {
-        "latest_transition_id": "fd87ceca56069730718d",
+        "latest_transition_id": "6d25cfe12d49db98b041",
         "occurrences": {
+          "6d25cfe12d49db98b041": 1,
           "cea2d37ee2da89ff16c6": 2,
           "f07cb3104e4317089870": 1,
           "fd87ceca56069730718d": 2
