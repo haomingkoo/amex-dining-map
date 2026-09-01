@@ -57,3 +57,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           bash scripts/commit_and_push.sh
+
+      - name: Check live Table for Two freshness
+        if: always()
+        run: python3 scripts/check_tft_live_health.py

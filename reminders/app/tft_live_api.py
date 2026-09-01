@@ -14,6 +14,7 @@ from app.tft_live_refresh import load_snapshot
 
 
 router = APIRouter()
+TFT_LIVE_STALE_AFTER_SECONDS = 30 * 60
 
 
 def get_settings() -> Settings:
@@ -72,8 +73,13 @@ def snapshot_health(path: Path, *, now: datetime | None = None) -> dict[str, Any
         0,
         int((current.astimezone(timezone.utc) - generated).total_seconds()),
     )
+    status = (
+        "stale"
+        if age_seconds > TFT_LIVE_STALE_AFTER_SECONDS
+        else snapshot["refresh_status"]
+    )
     return {
-        "status": snapshot["refresh_status"],
+        "status": status,
         "generated_at": snapshot["generated_at"],
         "age_seconds": age_seconds,
         "counts": snapshot["counts"],

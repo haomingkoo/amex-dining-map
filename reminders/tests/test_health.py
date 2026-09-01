@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import hashlib
 from pathlib import Path
 import re
@@ -8,7 +9,7 @@ from fastapi.testclient import TestClient
 import pytest
 
 from app.config import load_settings
-from app import tft_guide
+from app import main, tft_guide
 from app.main import app, bundle_revision
 
 
@@ -53,6 +54,29 @@ def test_production_server_disables_query_string_access_logs():
     railway_config = (Path(__file__).parents[1] / "railway.toml").read_text()
 
     assert "--no-access-log" in railway_config
+
+
+def test_healthz_fails_closed_when_live_refresh_is_stale(monkeypatch):
+    monkeypatch.setattr(
+        main,
+        "settings",
+        replace(main.settings, tft_live_refresh_enabled=True),
+    )
+    monkeypatch.setattr(
+        main.tft_live_api,
+        "snapshot_health",
+        lambda _path: {
+            "status": "stale",
+            "generated_at": "2026-09-01T00:00:00Z",
+            "age_seconds": 1_801,
+            "counts": {"eligible": 21, "succeeded": 21, "failed": 0, "retained": 0},
+        },
+    )
+
+    payload = TestClient(app).get("/healthz").json()
+
+    assert payload["ok"] is False
+    assert payload["tft_live"]["status"] == "stale"
 
 
 def test_owner_alert_config_can_be_disabled(monkeypatch):

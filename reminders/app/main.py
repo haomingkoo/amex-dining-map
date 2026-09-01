@@ -185,4 +185,6 @@ def healthz() -> dict[str, Any]:
     response["tft_live"] = tft_live_api.snapshot_health(
         settings.tft_live_snapshot_path
     )
+    if settings.tft_live_refresh_enabled:
+        response["ok"] = response["tft_live"]["status"] == "success"
     return response

@@ -378,7 +378,11 @@ events are structured fields: filter by `event`, `status`, `path`, or
 Daily source-writing GitHub workflows share `source-ledger-refresh`.
 `commit_and_push.sh` reconciles pushes after concurrent writers update `main`,
 but GitHub scheduling is best-effort and is not the live public freshness
-boundary. For a TFT availability incident, inspect Railway `/healthz` field
+boundary. The source-health monitor also checks the Railway TFT contract twice
+per hour and fails visibly if the snapshot is older than 30 minutes, incomplete,
+partial, or inconsistent with its generated time. `/healthz` reports `ok=false`
+and `tft_live.status=stale` when an enabled live snapshot crosses that boundary.
+For a TFT availability incident, inspect Railway `/healthz` field
 `tft_live`, then `/api/tft/slots`, then the bounded `tft_live_refresh` log. Use
 the manual `Table for Two Alerts` workflow only as rollback/history evidence.
 

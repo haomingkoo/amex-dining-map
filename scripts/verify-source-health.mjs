@@ -80,6 +80,8 @@ requireText(availability.includes("dispatch_owner_updates.py"), "availability re
 
 const monitor = read(".github/workflows/monitor-source-health.yml");
 requireText(monitor.includes("22,52 * * * *"), "health monitor must age sources independently of refresh success");
+requireText(monitor.includes("check_tft_live_health.py"), "health monitor must check Railway TFT freshness");
+requireText(monitor.includes("if: always()"), "Railway TFT health must be checked after other monitor outcomes");
 requireText(read(".github/workflows/deploy-pages.yml").includes("source-health.json"), "Pages must deploy source health");
 
 console.log("source health verification passed");

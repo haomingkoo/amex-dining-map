@@ -157,6 +157,24 @@ def test_snapshot_health_is_bounded_and_omits_venue_errors(tmp_path):
     assert "error_code" not in json.dumps(health)
 
 
+def test_snapshot_health_marks_an_old_success_stale(tmp_path):
+    path = tmp_path / "slots.json"
+    write_snapshot(path)
+
+    health = tft_live_api.snapshot_health(
+        path, now=datetime(2026, 9, 2, 0, 30, 1, tzinfo=timezone.utc)
+    )
+
+    assert health["status"] == "stale"
+    assert health["age_seconds"] == 1_801
+    assert health["counts"] == {
+        "eligible": 1,
+        "succeeded": 1,
+        "failed": 0,
+        "retained": 0,
+    }
+
+
 def test_refresh_loop_runs_immediately_then_uses_fixed_delay():
     events: list[object] = []
 
