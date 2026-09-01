@@ -1,7 +1,81 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-01T23:08:32Z",
+  "updated_at": "2026-09-01T23:46:12Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-01T23:46:12Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 21,
+          "Coverage": {
+            "covered": 21,
+            "total": 21,
+            "unavailable": 0,
+            "percent": 100.0
+          }
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0,
+          "Coverage": {
+            "covered": 20,
+            "total": 21,
+            "unavailable": 1,
+            "percent": 95.2
+          }
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 21,
+          "after": 0
+        },
+        {
+          "field": "Coverage",
+          "before": {
+            "covered": 21,
+            "total": 21,
+            "unavailable": 0,
+            "percent": 100.0
+          },
+          "after": {
+            "covered": 20,
+            "total": 21,
+            "unavailable": 1,
+            "percent": 95.2
+          }
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "689f87123d635d8652da",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 2,
+      "id": "5d7e0d8dedc8eba250e0"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -4347,13 +4421,13 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "5cd58468c50a86096186",
+        "latest_transition_id": "689f87123d635d8652da",
         "occurrences": {
           "0486ed88fd4f242b58f7": 1,
           "23f1bba4701f42a76948": 3,
           "59682348ebf010d3ed44": 1,
           "5cd58468c50a86096186": 9,
-          "689f87123d635d8652da": 1,
+          "689f87123d635d8652da": 2,
           "6b0a8f0fbbc4c84ab912": 7,
           "73f1934e9c3fa739f5ff": 1,
           "a0e5d9c3222307d148c0": 1,
