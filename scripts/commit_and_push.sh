@@ -57,6 +57,17 @@ if git diff --cached --quiet; then
   exit 0
 fi
 
+# Never turn an interrupted merge/rebase worktree into a normal commit. This
+# also catches conflict markers left in a file after an earlier stage failed.
+if [[ -n "$(git ls-files -u)" ]]; then
+  echo "commit_and_push: unresolved index conflicts; refusing to commit." >&2
+  exit 1
+fi
+if ! git diff --cached --check; then
+  echo "commit_and_push: staged content failed conflict-marker/whitespace checks." >&2
+  exit 1
+fi
+
 git commit -m "$COMMIT_MESSAGE"
 
 is_keep_local() {

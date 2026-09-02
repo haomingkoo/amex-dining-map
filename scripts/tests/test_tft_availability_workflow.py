@@ -43,6 +43,8 @@ def test_shared_update_ledger_never_overwrites_remote_events_on_conflict() -> No
     helper = Path("scripts/commit_and_push.sh").read_text(encoding="utf-8")
     assert '[[ "$f" == "data/updates.json" ]]' in helper
     assert "scripts/merge_update_ledgers.py" in helper
+    assert "git ls-files -u" in helper
+    assert "git diff --cached --check" in helper
 
 
 def test_independent_availability_evidence_survives_partial_failure() -> None:
