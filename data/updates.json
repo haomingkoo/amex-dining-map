@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-02T22:03:33Z",
+  "updated_at": "2026-09-02T22:15:00Z",
   "updates": [
     {
       "program": "Table for Two",
@@ -213,6 +213,48 @@
       "stream_id": "c696d469b4fc6c601973",
       "occurrence": 1,
       "id": "18fb86685f6b8786b880"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two?venue=tft-forage",
+      "kind": "menu_added",
+      "subject": "Forage · Centurion menu",
+      "detected_at": "2026-09-02T22:00:42Z",
+      "status": "published",
+      "before": {
+        "state": "not_published",
+        "fields": {
+          "Menu file": "Not published",
+          "Menu version": "Not published"
+        }
+      },
+      "after": {
+        "state": "published",
+        "fields": {
+          "Menu file": "Forage-Menu_Centurion.pdf",
+          "Menu version": "cf8f3c26ca57"
+        }
+      },
+      "changes": [
+        {
+          "field": "Menu file",
+          "before": "Not published",
+          "after": "Forage-Menu_Centurion.pdf"
+        },
+        {
+          "field": "Menu version",
+          "before": "Not published",
+          "after": "cf8f3c26ca57"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Forage-Menu_Centurion.pdf",
+      "reviewed_at": "2026-09-02T22:15:00Z",
+      "review_note": "Verified exact Amex-hosted PDF text identifies Forage as a Table for Two by Centurion menu.",
+      "transition_id": "8cfd283dd40f2203c621",
+      "stream_id": "e8cc2990793c11c75a3c",
+      "occurrence": 1,
+      "id": "a96a1d94c741f0f9faf3"
     },
     {
       "program": "Table for Two",
@@ -5397,6 +5439,12 @@
         "latest_transition_id": "b6c7b06ec3f61777993e",
         "occurrences": {
           "b6c7b06ec3f61777993e": 1
+        }
+      },
+      "e8cc2990793c11c75a3c": {
+        "latest_transition_id": "8cfd283dd40f2203c621",
+        "occurrences": {
+          "8cfd283dd40f2203c621": 1
         }
       },
       "ecb70c7bec7eb7600d08": {
