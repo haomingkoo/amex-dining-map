@@ -27,12 +27,21 @@ def test_baseline_manifest_is_content_addressed_complete_and_chronological():
     assert MANIFEST_PATH.stem == MANIFEST["source"]["participating_image_sha256"]
     assert len(MANIFEST["venues"]) == 23
     assert {venue["id"] for venue in MANIFEST["venues"]} == {
-        venue["id"] for venue in DATA["venues"]
+        venue["id"]
+        for venue in DATA["venues"]
+        if venue.get("roster_basis") != "diningcity_booking_project_confirmed"
     }
     assert all(
         not (tft_roster_reviews.RUNTIME_FIELDS & venue.keys())
         for venue in MANIFEST["venues"]
     )
+
+
+def test_applied_manifest_accepts_confirmed_booking_project_supplements():
+    updated, events = tft_roster_reviews.apply_manifest(MANIFEST, DATA)
+
+    assert updated == DATA
+    assert events == (DATA.get("roster_source") or {}).get("pending_events", [])
 
 
 def test_unknown_image_retains_approved_roster_and_creates_source_review_item():
@@ -176,6 +185,20 @@ def test_manifest_rejects_runtime_fields_and_tampering():
     manifest = copy.deepcopy(MANIFEST)
     manifest["venues"][0]["name"] = "Tampered"
     with pytest.raises(ValueError, match="manifest_sha256"):
+        tft_roster_reviews.validate_manifest(manifest)
+
+
+def test_manifest_rejects_duplicate_diningcity_id_and_normalized_name():
+    manifest = copy.deepcopy(MANIFEST)
+    manifest["venues"][1]["dining_city_id"] = manifest["venues"][0]["dining_city_id"]
+    manifest["manifest_sha256"] = tft_roster_reviews.manifest_sha256(manifest)
+    with pytest.raises(ValueError, match="DiningCity"):
+        tft_roster_reviews.validate_manifest(manifest)
+
+    manifest = copy.deepcopy(MANIFEST)
+    manifest["venues"][1]["name"] = f"  {manifest['venues'][0]['name'].upper()}  "
+    manifest["manifest_sha256"] = tft_roster_reviews.manifest_sha256(manifest)
+    with pytest.raises(ValueError, match="names"):
         tft_roster_reviews.validate_manifest(manifest)
 
 

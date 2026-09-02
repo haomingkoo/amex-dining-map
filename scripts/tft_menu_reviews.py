@@ -297,7 +297,29 @@ def apply_review(
     existing = [entry for entry in prior_decisions if entry.get("candidate_id") == manifest.get("candidate_id")]
     if existing:
         if len(existing) == 1 and existing[0].get("manifest_sha256") == digest:
-            return copy.deepcopy(payload), None
+            updated = copy.deepcopy(payload)
+            receipt = existing[0]
+            if receipt.get("decision") == "approved":
+                candidate = receipt.get("candidate") or {}
+                venues = [
+                    venue
+                    for venue in updated.get("venues") or []
+                    if venue.get("id") == candidate.get("venue_id")
+                ]
+                if len(venues) != 1:
+                    raise ValueError("reviewed venue is missing or duplicated")
+                active = (venues[0].get("menu_pdfs") or {}).get(candidate.get("card")) or {}
+                if (
+                    active.get("status") == "published"
+                    and active.get("filename") == candidate.get("filename")
+                    and active.get("url") == candidate.get("source_url")
+                    and active.get("sha256") == candidate.get("asset_sha256")
+                ):
+                    active["review_manifest_sha256"] = digest
+                    active["reviewed_at"] = receipt.get("reviewed_at")
+                    if candidate.get("card") == "platinum":
+                        venues[0]["menu_pdf"] = active
+            return updated, None
         raise ValueError("candidate already has a different terminal decision")
     item, digest = verify_review(payload, manifest, pdf_bytes, now)
     updated = copy.deepcopy(payload)

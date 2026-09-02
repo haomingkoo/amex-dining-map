@@ -17,13 +17,21 @@ except ModuleNotFoundError:
 
 
 PROGRAM_ID = "table-for-two"
+BOOKING_PROJECT_ROSTER_BASIS = "diningcity_booking_project_confirmed"
 OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/"
 REVIEW_ROOT = Path(__file__).resolve().parents[1] / "data/reviews/table-for-two-roster"
 RUNTIME_FIELDS = {
     "availability",
+    "booking_project_checked_at",
+    "booking_project_status",
     "dining_city_profile",
     "menu_pdf",
     "menu_pdfs",
+    "operational_status",
+    "operational_status_effective_at",
+    "operational_status_note",
+    "operational_status_source",
+    "operational_status_source_url",
     "slot_source_status",
 }
 REQUIRED_VENUE_FIELDS = {
@@ -52,6 +60,14 @@ def stable_venue(record: dict[str, Any]) -> dict[str, Any]:
     return copy.deepcopy(
         {key: value for key, value in record.items() if key not in RUNTIME_FIELDS}
     )
+
+
+def manifest_owned_venues(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        stable_venue(record)
+        for record in records
+        if record.get("roster_basis") != BOOKING_PROJECT_ROSTER_BASIS
+    ]
 
 
 def _parse_timestamp(value: Any, field: str) -> datetime:
@@ -108,6 +124,8 @@ def validate_manifest(manifest: dict[str, Any], path: Path | None = None) -> Non
     if review.get("venue_count") != len(venues):
         raise ValueError("review venue_count does not match the roster")
     identifiers: set[str] = set()
+    diningcity_ids: set[str] = set()
+    names: set[str] = set()
     for venue in venues:
         if not isinstance(venue, dict) or not REQUIRED_VENUE_FIELDS <= venue.keys():
             raise ValueError("every reviewed venue must be a complete stable record")
@@ -117,6 +135,14 @@ def validate_manifest(manifest: dict[str, Any], path: Path | None = None) -> Non
         if not isinstance(venue_id, str) or not venue_id.startswith("tft-") or venue_id in identifiers:
             raise ValueError("reviewed venue IDs must be unique stable tft-* IDs")
         identifiers.add(venue_id)
+        diningcity_id = str(venue.get("dining_city_id") or "")
+        if not diningcity_id or diningcity_id in diningcity_ids:
+            raise ValueError("reviewed DiningCity IDs must be present and unique")
+        diningcity_ids.add(diningcity_id)
+        normalized_name = " ".join(str(venue.get("name") or "").casefold().split())
+        if not normalized_name or normalized_name in names:
+            raise ValueError("reviewed venue names must be present and unique")
+        names.add(normalized_name)
     expected = manifest_sha256(manifest)
     if manifest.get("manifest_sha256") != expected:
         raise ValueError("manifest_sha256 does not match the canonical manifest")
@@ -215,7 +241,7 @@ def apply_manifest(
             current_source.get("status") != "approved"
             or current_source.get("approved_participating_sha256")
             != source["participating_image_sha256"]
-            or [stable_venue(record) for record in data.get("venues", [])]
+            or manifest_owned_venues(data.get("venues", []))
             != manifest["venues"]
         ):
             raise ValueError("applied roster does not match its approved manifest")
@@ -251,6 +277,19 @@ def apply_manifest(
         else:
             record = copy.deepcopy(reviewed)
         new_venues.append(record)
+    official_ids = {record["id"] for record in new_venues}
+    official_diningcity_ids = {
+        str(record.get("dining_city_id"))
+        for record in new_venues
+        if record.get("dining_city_id")
+    }
+    new_venues.extend(
+        copy.deepcopy(record)
+        for record in old_venues
+        if record.get("roster_basis") == BOOKING_PROJECT_ROSTER_BASIS
+        and record.get("id") not in official_ids
+        and str(record.get("dining_city_id") or "") not in official_diningcity_ids
+    )
 
     reviewed_at = manifest["review"]["reviewed_at"]
     review_note = manifest["review"]["note"]

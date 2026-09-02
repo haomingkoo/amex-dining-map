@@ -44,24 +44,60 @@ class PublicDataProjectionTests(unittest.TestCase):
         self.assertEqual(list(result), list(projections.RELEASE_SUMMARY_KEYS))
         self.assertNotIn("observations", result)
 
+    def test_tft_catalog_moves_availability_out_of_venue_records(self):
+        source = {
+            "dataset": "table_for_two",
+            "venues": [
+                {
+                    "id": "tft-a",
+                    "name": "A",
+                    "dining_city_id": "1",
+                    "menu_pdfs": {"platinum": {"status": "published"}},
+                    "availability": {"meals": [{"slots": [{"date": "2026-09-03"}]}]},
+                }
+            ],
+        }
+
+        result = projections.tft_catalog_projection(source)
+
+        self.assertEqual(result["dataset"], "table_for_two")
+        self.assertEqual(result["venues"][0]["menu_pdfs"], source["venues"][0]["menu_pdfs"])
+        self.assertNotIn("availability", result["venues"][0])
+        self.assertIn("availability", source["venues"][0])
+
+    def test_tft_catalog_rejects_duplicate_diningcity_ids(self):
+        with self.assertRaisesRegex(ValueError, "DiningCity"):
+            projections.tft_catalog_projection({
+                "venues": [
+                    {"id": "tft-a", "dining_city_id": "1"},
+                    {"id": "tft-b", "dining_city_id": "1"},
+                ]
+            })
+
     def test_current_data_builds_expected_bounded_outputs(self):
         table_for_two = projections.load_json(ROOT / "data/table-for-two.json")
         ratings = projections.load_json(ROOT / "data/google-maps-ratings.json")
         history = projections.load_json(ROOT / "data/table-for-two-release-history.json")
 
         tft_ratings = projections.tft_ratings_projection(table_for_two, ratings)
+        catalog = projections.tft_catalog_projection(table_for_two)
         summary = projections.release_history_summary(history)
 
-        self.assertEqual(len(tft_ratings), 23)
+        self.assertEqual(len(tft_ratings), len(table_for_two["venues"]))
         self.assertEqual(set(tft_ratings), {venue["id"] for venue in table_for_two["venues"]})
         self.assertEqual(len(summary["patterns"]), len(history["patterns"]))
         self.assertNotIn("observations", summary)
+        self.assertTrue(all("availability" not in venue for venue in catalog["venues"]))
+        self.assertLess(
+            len(json.dumps(catalog, separators=(",", ":")).encode()),
+            250_000,
+        )
 
     def test_cli_writes_both_outputs(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             inputs = {
-                "tft.json": {"venues": [{"id": "tft-a"}]},
+                "tft.json": {"venues": [{"id": "tft-a", "dining_city_id": "1"}]},
                 "ratings.json": {"tft-a": {"rating": 4.5}},
                 "history.json": {
                     "schema_version": 1,
@@ -75,6 +111,7 @@ class PublicDataProjectionTests(unittest.TestCase):
                 (root / name).write_text(json.dumps(payload), encoding="utf-8")
 
             ratings_output = root / "site/data/tft-ratings.json"
+            catalog_output = root / "site/data/tft-catalog.json"
             summary_output = root / "site/data/release-summary.json"
             original_argv = __import__("sys").argv
             try:
@@ -83,6 +120,7 @@ class PublicDataProjectionTests(unittest.TestCase):
                     "--table-for-two", str(root / "tft.json"),
                     "--ratings", str(root / "ratings.json"),
                     "--release-history", str(root / "history.json"),
+                    "--tft-catalog-output", str(catalog_output),
                     "--tft-ratings-output", str(ratings_output),
                     "--release-summary-output", str(summary_output),
                 ]
@@ -91,6 +129,7 @@ class PublicDataProjectionTests(unittest.TestCase):
                 __import__("sys").argv = original_argv
 
             self.assertEqual(json.loads(ratings_output.read_text()), {"tft-a": {"rating": 4.5}})
+            self.assertNotIn("availability", json.loads(catalog_output.read_text())["venues"][0])
             self.assertNotIn("observations", json.loads(summary_output.read_text()))
 
 

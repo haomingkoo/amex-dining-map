@@ -19,8 +19,12 @@ function extractFunction(name) {
 }
 
 const names = [
+  "tableForTwoSlotSnapshotIsValid",
   "tableForTwoLiveSnapshotIsValid",
+  "tableForTwoAvailabilityFromSlotVenue",
   "tableForTwoAvailabilityFromLiveVenue",
+  "applyTableForTwoSlotSnapshot",
+  "applyTableForTwoStaticSnapshot",
   "applyTableForTwoLiveSnapshot",
 ];
 const context = {
@@ -42,6 +46,24 @@ vm.runInNewContext(
 );
 
 const generatedAt = new Date().toISOString();
+const staticPayload = {
+  schema_version: 1,
+  source_project: "AMEXPlatSG",
+  generated_at: generatedAt,
+  venues: [
+    {
+      id: "tft-vue",
+      project: "AMEXPlatSG",
+      status: "live_available",
+      checked_at: generatedAt,
+      meals: [{ meal: "Dinner", status: "available", slots: [{ date: "2026-09-03", time: "18:30", max_seats: 2 }] }],
+    },
+  ],
+};
+assert.equal(context.applyTableForTwoStaticSnapshot(staticPayload), true);
+assert.equal(context.state.tableForTwo.venues[0].availability.source, "Published DiningCity AMEXPlatSG fallback");
+assert.equal(context.state.tableForTwo.venues[0].availability.meals[0].slots[0].time, "18:30");
+
 const payload = {
   schema_version: 1,
   source_project: "AMEXPlatSG",

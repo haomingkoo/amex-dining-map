@@ -91,6 +91,7 @@ jobs:
             --table-for-two data/table-for-two.json \
             --ratings data/google-maps-ratings.json \
             --release-history data/table-for-two-release-history.json \
+            --tft-catalog-output site/data/table-for-two-catalog.json \
             --tft-ratings-output site/data/google-maps-ratings-table-for-two.json \
             --release-summary-output site/data/table-for-two-release-history-summary.json
           cp .nojekyll site/

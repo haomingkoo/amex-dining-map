@@ -13,6 +13,12 @@ menus = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(menus)
 
 
+def test_accepts_upstream_platinium_filename_typo():
+    filename = "Forage-Menu_Platinium.pdf"
+    assert menus.MENU_FILENAME_RE.fullmatch(filename)
+    assert menus.filename_stem(filename) == "Forage"
+
+
 def main() -> None:
     assert menus.MENU_FILENAME_RE.match("HighHouse-Menu_Platinum.pdf")
     assert menus.MENU_FILENAME_RE.match("HighHouse-Menu_Centurion.pdf")
@@ -186,6 +192,33 @@ def test_new_menu_without_previous_is_not_published():
     candidate = {"status": "review_required", "sha256": "b" * 64}
 
     assert menus.active_menu_after_observation(candidate, {}) is None
+    assert menus.active_menu_after_observation(candidate, None) is None
+
+
+def test_unchanged_approved_menu_preserves_review_receipt():
+    pdf = b"%PDF approved"
+    entry = {
+        "filename": "Forage-Menu_Platinium.pdf",
+        "url": "https://www.americanexpress.com/menu/Forage-Menu_Platinium.pdf",
+        "card_key": "platinum",
+        "card_label": "Platinum",
+    }
+    previous = {
+        "status": "published",
+        "filename": entry["filename"],
+        "url": entry["url"],
+        "card": "platinum",
+        "sha256": menus.hashlib.sha256(pdf).hexdigest(),
+        "review_manifest_sha256": "a" * 64,
+        "reviewed_at": "2026-09-03T00:00:00Z",
+    }
+
+    result = menus.venue_menu_info(
+        {"name": "Forage"}, entry, pdf, "2026-09-03T01:00:00Z", previous
+    )
+
+    assert result["review_manifest_sha256"] == "a" * 64
+    assert result["reviewed_at"] == "2026-09-03T00:00:00Z"
 
 
 def test_failed_observation_does_not_advance_previous_freshness():

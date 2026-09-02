@@ -805,8 +805,15 @@ def append_changelog(
     if not has_changes:
         return
 
+    change_fingerprint = hashlib.sha256(
+        json.dumps(record_diffs, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    ).hexdigest()
+    marker = f"<!-- source-change:{change_fingerprint} -->"
+    if changelog_path.exists() and marker in changelog_path.read_text(encoding="utf-8"):
+        return
+
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    lines: list[str] = [f"## {timestamp} — {program}", ""]
+    lines: list[str] = [marker, f"## {timestamp} — {program}", ""]
     for data_path, diff in record_diffs:
         if not (diff["added"] or diff["removed"]):
             continue
@@ -931,7 +938,7 @@ def main() -> int:
     if booking_project_source.get("source_url"):
         source_links.append(
             (
-                "booking-project membership (early signal, not reviewed roster)",
+                "current booking-project membership",
                 booking_project_source["source_url"],
             )
         )
@@ -955,11 +962,30 @@ def main() -> int:
 
     if alert_required:
         if booking_project_source.get("review_required"):
+            published_additions = booking_project_source.get(
+                "published_booking_project_additions"
+            ) or []
+            unconfirmed_additions = booking_project_source.get(
+                "unconfirmed_added_vs_reviewed_roster"
+            ) or []
+            boundary_notes = []
+            if published_additions:
+                boundary_notes.append(
+                    f"{len(published_additions)} explicitly confirmed booking-project additions are published as current venues; they are not represented in the retained Amex roster image."
+                )
+            if unconfirmed_additions:
+                boundary_notes.append(
+                    f"{len(unconfirmed_additions)} other booking-project addition remains review-gated."
+                )
+            if not boundary_notes:
+                boundary_notes.append(
+                    "Booking-project additions/removals remain review signals until corroborated."
+                )
             lines.extend(
                 [
                     "## Evidence Boundary",
                     "",
-                    "- Booking-project additions/removals are early DiningCity signals; they are not promoted into the reviewed Amex roster until corroborated and approved.",
+                    *(f"- {note}" for note in boundary_notes),
                     "",
                 ]
             )

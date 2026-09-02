@@ -580,6 +580,17 @@ class SourceChangeUpdatesTest(unittest.TestCase):
             {event["transition_id"] for event in events},
         )
 
+    def test_changelog_deduplicates_the_same_record_transition(self):
+        diffs = [("data/table-for-two.json", {"added": ["Forage"], "removed": [], "changed": []})]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "changelog.md"
+            MODULE.append_changelog(path, "Table for Two", diffs)
+            first = path.read_text(encoding="utf-8")
+            MODULE.append_changelog(path, "Table for Two", diffs)
+
+            self.assertEqual(path.read_text(encoding="utf-8"), first)
+            self.assertEqual(first.count("Forage"), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

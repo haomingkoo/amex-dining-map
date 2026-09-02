@@ -7,7 +7,9 @@ const STAYS_DATA_URL = "../data/plat-stays.json";
 const STAYS_META_URL = "../data/plat-stay-source.json";
 const LOVE_DINING_DATA_URL = "../data/love-dining.json";
 const LOVE_DINING_META_URL = "../data/love-dining-source.json";
-const TABLE_FOR_TWO_DATA_URL = "../data/table-for-two.json";
+const TABLE_FOR_TWO_DATA_URL = "../data/table-for-two-catalog.json";
+const TABLE_FOR_TWO_DATA_FALLBACK_URL = "../data/table-for-two.json";
+const TABLE_FOR_TWO_STATIC_SNAPSHOT_URL = "../data/table-for-two-slots.json";
 const TABLE_FOR_TWO_RELEASE_HISTORY_URL = "../data/table-for-two-release-history-summary.json";
 const TABLE_FOR_TWO_RELEASE_HISTORY_FALLBACK_URL = "../data/table-for-two-release-history.json";
 const TELEGRAM_GUIDE_CONFIG_URL = "../data/telegram-guide.json";
@@ -2417,8 +2419,10 @@ async function ensureTableForTwoDataLoaded() {
   if (state.dataLoaded.tableForTwo) return;
   if (!dataLoadPromises.tableForTwo) {
     dataLoadPromises.tableForTwo = (async () => {
-      const [tableForTwo, releaseHistory, telegramGuideConfig] = await Promise.all([
-        fetchJson(TABLE_FOR_TWO_DATA_URL),
+      const [tableForTwo, staticSlots, releaseHistory, telegramGuideConfig] = await Promise.all([
+        fetchJson(TABLE_FOR_TWO_DATA_URL)
+          .then((payload) => payload || fetchJson(TABLE_FOR_TWO_DATA_FALLBACK_URL)),
+        fetchJson(TABLE_FOR_TWO_STATIC_SNAPSHOT_URL),
         fetchJson(TABLE_FOR_TWO_RELEASE_HISTORY_URL)
           .then((payload) => payload || fetchJson(TABLE_FOR_TWO_RELEASE_HISTORY_FALLBACK_URL)),
         fetchJson(TELEGRAM_GUIDE_CONFIG_URL).catch(() => ({
@@ -2428,6 +2432,7 @@ async function ensureTableForTwoDataLoaded() {
         })),
       ]);
       state.tableForTwo = tableForTwo;
+      applyTableForTwoStaticSnapshot(staticSlots);
       state.tableForTwoReleaseHistory = releaseHistory;
       state.telegramGuideConfig = telegramGuideConfig;
       tableForTwoVenues().forEach((record) => {
@@ -5273,12 +5278,12 @@ function tableForTwoNotListedVenues() {
   return venues.filter((record) => record.booking_project_status === "not_listed");
 }
 
-function tableForTwoLiveSnapshotIsValid(payload) {
+function tableForTwoSlotSnapshotIsValid(payload, live = false) {
   if (
     !payload
     || payload.schema_version !== 1
     || payload.source_project !== "AMEXPlatSG"
-    || !["success", "partial", "error"].includes(payload.refresh_status)
+    || (live && !["success", "partial", "error"].includes(payload.refresh_status))
     || !Array.isArray(payload.venues)
     || payload.venues.length > 50
     || !Number.isFinite(new Date(payload.generated_at).getTime())
@@ -5289,29 +5294,35 @@ function tableForTwoLiveSnapshotIsValid(payload) {
       && /^tft-[a-z0-9-]{1,76}$/.test(venue.id || "")
       && venue.project === "AMEXPlatSG"
       && ["live_available", "live_no_seats", "unknown"].includes(venue.status)
-      && ["fresh", "retained", "error"].includes(venue.result)
       && Array.isArray(venue.meals)
-      && venue.meals.length <= 2
+      && venue.meals.length <= 4
+      && (!live || ["fresh", "retained", "error"].includes(venue.result))
       && !ids.has(venue.id);
     ids.add(venue?.id);
     return valid;
   });
 }
 
-function tableForTwoAvailabilityFromLiveVenue(venue) {
+function tableForTwoLiveSnapshotIsValid(payload) {
+  return tableForTwoSlotSnapshotIsValid(payload, true);
+}
+
+function tableForTwoAvailabilityFromSlotVenue(venue, live = false) {
   return {
     status: venue.status,
-    source: "Railway cached DiningCity AMEXPlatSG",
+    source: live
+      ? "Railway cached DiningCity AMEXPlatSG"
+      : "Published DiningCity AMEXPlatSG fallback",
     project: "AMEXPlatSG",
     project_title: "AMEX Platinum SG",
     captured_at: venue.checked_at,
     checked_at: venue.checked_at,
-    attempted_at: venue.attempted_at,
-    live_result: venue.result,
-    error_code: venue.error_code,
+    attempted_at: live ? venue.attempted_at : undefined,
+    live_result: live ? venue.result : undefined,
+    error_code: live ? venue.error_code : undefined,
     confidence: "diningcity_amex_platinum_project",
     summary: venue.status === "live_available"
-      ? "Bookable slots returned in the latest live check."
+      ? `Bookable slots returned in the latest ${live ? "live" : "published fallback"} check.`
       : venue.status === "live_no_seats"
         ? "Not bookable in the latest live check."
         : "The latest live check was unavailable.",
@@ -5320,17 +5331,21 @@ function tableForTwoAvailabilityFromLiveVenue(venue) {
   };
 }
 
-function applyTableForTwoLiveSnapshot(payload) {
-  if (!state.tableForTwo || !tableForTwoLiveSnapshotIsValid(payload)) return false;
+function tableForTwoAvailabilityFromLiveVenue(venue) {
+  return tableForTwoAvailabilityFromSlotVenue(venue, true);
+}
+
+function applyTableForTwoSlotSnapshot(payload, live = false) {
+  if (!state.tableForTwo || !tableForTwoSlotSnapshotIsValid(payload, live)) return false;
   const venuesById = new Map(payload.venues.map((venue) => [venue.id, venue]));
   (state.tableForTwo.venues || []).forEach((record) => {
     const liveVenue = venuesById.get(record.id);
     if (!liveVenue) return;
-    record.availability = tableForTwoAvailabilityFromLiveVenue(liveVenue);
-    if (liveVenue.error_code === "not_in_project") {
+    record.availability = tableForTwoAvailabilityFromSlotVenue(liveVenue, live);
+    if (live && liveVenue.error_code === "not_in_project") {
       record.booking_project_status = "not_listed";
       record.slot_source_status = "not_currently_in_project";
-    } else if (liveVenue.error_code !== "membership_error") {
+    } else if (!live || liveVenue.error_code !== "membership_error") {
       record.booking_project_status = "active";
       record.slot_source_status = "diningcity_amex_platinum_project";
     }
@@ -5338,13 +5353,21 @@ function applyTableForTwoLiveSnapshot(payload) {
   });
   state.tableForTwo.availability_last_checked_at = payload.generated_at;
   state.tableForTwo.availability_source = {
-    type: "railway_live_snapshot",
+    type: live ? "railway_live_snapshot" : "static_slot_snapshot",
     project: payload.source_project,
-    checked_venues: payload.counts?.succeeded || 0,
-    error_count: payload.counts?.failed || 0,
-    refresh_status: payload.refresh_status,
+    checked_venues: live ? payload.counts?.succeeded || 0 : payload.venues.length,
+    error_count: live ? payload.counts?.failed || 0 : 0,
+    refresh_status: live ? payload.refresh_status : "published",
   };
   return true;
+}
+
+function applyTableForTwoStaticSnapshot(payload) {
+  return applyTableForTwoSlotSnapshot(payload);
+}
+
+function applyTableForTwoLiveSnapshot(payload) {
+  return applyTableForTwoSlotSnapshot(payload, true);
 }
 
 async function refreshTableForTwoLiveAvailability({ force = false } = {}) {
@@ -5886,7 +5909,9 @@ function setActiveTableForTwoRecord(id, options = {}) {
 function renderTableForTwoFreshnessDetails(payload, venues, selectedRecord = null) {
   if (!tableForTwoFreshnessContent) return;
   const notListedVenues = tableForTwoNotListedVenues();
-  const bookingCandidates = payload.booking_project_source?.added_vs_reviewed_roster || [];
+  const bookingCandidates = payload.booking_project_source?.unconfirmed_added_vs_reviewed_roster
+    || payload.booking_project_source?.added_vs_reviewed_roster
+    || [];
   const availabilityCheckedAt = selectedRecord
     ? selectedRecord.availability?.checked_at || selectedRecord.availability?.captured_at
     : tableForTwoLatestAvailabilityCheckedAt(venues) || payload.availability_last_checked_at;

@@ -12,8 +12,14 @@ from app import tft_documents, tft_guide
 
 
 ROOT = Path(__file__).resolve().parents[2]
-NOW = datetime.fromisoformat(
-    tft_guide.load_catalog()["release_source"]["updated_at"].replace("Z", "+00:00")
+_CATALOG = tft_guide.load_catalog()
+NOW = max(
+    datetime.fromisoformat(value.replace("Z", "+00:00"))
+    for value in (
+        _CATALOG["release_source"]["updated_at"],
+        _CATALOG["menu_source"]["checked_at"],
+        _CATALOG["roster_checked_at"],
+    )
 ) + timedelta(hours=1)
 
 

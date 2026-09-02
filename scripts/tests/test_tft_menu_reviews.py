@@ -162,6 +162,22 @@ def test_exact_reapply_is_noop_and_conflict_fails():
         tft_menu_reviews.apply_review(applied, conflicting, now=NOW)
 
 
+def test_exact_reapply_repairs_missing_active_review_receipt_metadata():
+    payload, manifest, _item, _previous = fixture("approved")
+    applied, _event = tft_menu_reviews.apply_review(payload, manifest, PDF, now=NOW)
+    active = applied["venues"][0]["menu_pdfs"]["platinum"]
+    active.pop("review_manifest_sha256")
+    active.pop("reviewed_at")
+    applied["venues"][0]["menu_pdf"] = copy.deepcopy(active)
+
+    repaired, event = tft_menu_reviews.apply_review(applied, manifest, now=NOW)
+
+    expected_digest = tft_menu_reviews.manifest_sha256(manifest)
+    assert repaired["venues"][0]["menu_pdf"]["review_manifest_sha256"] == expected_digest
+    assert repaired["venues"][0]["menu_pdfs"]["platinum"]["reviewed_at"] == manifest["reviewed_at"]
+    assert event is None
+
+
 @pytest.mark.parametrize(
     "mutation,error",
     [

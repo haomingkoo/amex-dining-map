@@ -10,8 +10,14 @@ from app import tft_guide
 
 
 ROOT = Path(__file__).resolve().parents[2]
-NOW = datetime.fromisoformat(
-    tft_guide.load_catalog()["release_source"]["updated_at"].replace("Z", "+00:00")
+_CATALOG = tft_guide.load_catalog()
+NOW = max(
+    datetime.fromisoformat(value.replace("Z", "+00:00"))
+    for value in (
+        _CATALOG["release_source"]["updated_at"],
+        _CATALOG["menu_source"]["checked_at"],
+        _CATALOG["roster_checked_at"],
+    )
 ) + timedelta(hours=1)
 
 
@@ -140,7 +146,7 @@ def test_venue_details_disclose_stale_roster_and_menu_review_state():
     answer = tft_guide.handle_message("/venue VUE", catalog, NOW)
 
     assert "Roster snapshot is older than 36 hours" in answer
-    assert "2 items awaiting manual review" in answer
+    assert f"{catalog['menu_source']['review_queue_count']} items awaiting manual review" in answer
 
 
 def test_vue_centurion_is_not_conflated_with_platinum():
@@ -198,7 +204,7 @@ def test_absent_requested_variant_shows_source_freshness_and_nonexistence_caveat
     assert "does not prove no such menu exists" in answer
     assert "Menu index checked:" in answer
     assert "older than 36 hours" in answer
-    assert "2 items awaiting manual review" in answer
+    assert f"{catalog['menu_source']['review_queue_count']} items awaiting manual review" in answer
 
 
 def test_missing_and_buffet_states_show_stale_and_specific_review_context():
@@ -214,7 +220,7 @@ def test_missing_and_buffet_states_show_stale_and_specific_review_context():
     for answer in (missing, buffet):
         assert "Menu index checked:" in answer
         assert "older than 36 hours" in answer
-        assert "2 items awaiting manual review" in answer
+        assert f"{catalog['menu_source']['review_queue_count']} items awaiting manual review" in answer
     assert "Manual review is pending" in missing
     assert "Manual review is pending" not in buffet
 
@@ -262,7 +268,7 @@ def test_bad_menu_url_fails_safe_without_linking_it():
     assert "could not be verified safely" in answer
     assert "127.0.0.1" not in answer
     assert "Menu index checked:" in answer
-    assert "2 items awaiting manual review" in answer
+    assert f"{catalog['menu_source']['review_queue_count']} items awaiting manual review" in answer
 
 
 def test_venues_lists_current_reviewed_roster_without_stale_caveat():

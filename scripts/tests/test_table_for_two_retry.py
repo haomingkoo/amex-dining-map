@@ -18,6 +18,37 @@ class FakeResponse:
 
 
 class TableForTwoReliabilityTests(unittest.TestCase):
+    def test_confirmed_booking_project_additions_publish_once_and_exclude_unknowns(self):
+        reviewed = [scrape_table_for_two.VENUES[0]]
+        observed = [
+            {"id": venue["dining_city_id"], "name": venue["name"]}
+            for venue in scrape_table_for_two.VENUES
+            if venue.get("roster_basis") == "diningcity_booking_project_confirmed"
+        ]
+        observed.append({"id": "999", "name": "Unreviewed Place"})
+        source = {
+            "observed_venues": observed,
+            "missing_vs_reviewed_roster": [],
+        }
+
+        roster, annotated = scrape_table_for_two.current_published_roster(reviewed, source)
+
+        self.assertEqual(len(roster), 7)
+        self.assertEqual(len({venue["id"] for venue in roster}), 7)
+        self.assertEqual(len({venue["dining_city_id"] for venue in roster}), 7)
+        self.assertEqual(len(annotated["published_booking_project_additions"]), 6)
+        self.assertEqual(annotated["unconfirmed_added_vs_reviewed_roster"], ["Unreviewed Place"])
+
+    def test_confirmed_booking_project_merge_rejects_duplicate_diningcity_identity(self):
+        reviewed = [
+            {**scrape_table_for_two.VENUES[0], "dining_city_id": "205193590"},
+        ]
+        source = {"observed_venues": [{"id": "205193590", "name": "Forage"}]}
+
+        roster, _ = scrape_table_for_two.current_published_roster(reviewed, source)
+
+        self.assertEqual(len(roster), 1)
+
     def test_booking_project_membership_exposes_early_candidates(self):
         reviewed = [
             {"name": "Known Place", "dining_city_id": "10"},

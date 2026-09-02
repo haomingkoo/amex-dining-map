@@ -63,7 +63,7 @@ MAX_LISTING_BYTES = 2 * 1024 * 1024
 MAX_PDF_BYTES = 20 * 1024 * 1024
 REVIEW_PDF_ROOT = Path("data/reviews/tft-menu-pdfs")
 MENU_FILENAME_RE = re.compile(
-    r"^[A-Za-z0-9][A-Za-z0-9._ -]{0,180}[-_]?Menu(?:[-_](?:Platinum|Centurion))?\.pdf$",
+    r"^[A-Za-z0-9][A-Za-z0-9._ -]{0,180}[-_]?Menu(?:[-_](?:Platinum|Platinium|Centurion))?\.pdf$",
     re.IGNORECASE,
 )
 
@@ -248,7 +248,7 @@ def normalize_for_match(value: str) -> str:
 
 
 def filename_stem(filename: str) -> str:
-    return re.sub(r"[-_]?Menu(?:[-_](?:Platinum|Centurion))?\.pdf$", "", filename, flags=re.IGNORECASE)
+    return re.sub(r"[-_]?Menu(?:[-_](?:Platinum|Platinium|Centurion))?\.pdf$", "", filename, flags=re.IGNORECASE)
 
 
 def direct_menu_candidate_filenames(stem: str, source_key: str) -> list[str]:
@@ -420,7 +420,7 @@ def venue_menu_info(
     changed_at = checked_at if (prev_sha and sha256 and prev_sha != sha256) else previous.get("changed_at")
     first_seen = previous.get("first_seen_at") or checked_at
 
-    return {
+    result = {
         "status": "published",
         "url": listing_entry["url"],
         "filename": listing_entry["filename"],
@@ -434,9 +434,14 @@ def venue_menu_info(
         "aem_created": listing_entry.get("aem_created"),
         "changed_at": changed_at,
     }
+    for key in ("review_manifest_sha256", "reviewed_at"):
+        if previous.get(key) is not None:
+            result[key] = previous[key]
+    return result
 
 
-def active_menu_after_observation(info: dict, previous: dict) -> dict | None:
+def active_menu_after_observation(info: dict, previous: dict | None) -> dict | None:
+    previous = previous or {}
     if info.get("status") == "published":
         return info
     if info.get("status") == "review_required" and previous.get("status") == "published":
@@ -569,8 +574,8 @@ def main() -> int:
                     {(source_key, filename): venue["id"] for filename in contested}
                 )
                 candidates = []
-            previous = previous_menus.get(source_key)
-            if previous is None and source_key == "platinum":
+            previous = previous_menus.get(source_key) or {}
+            if not previous and source_key == "platinum":
                 previous = venue.get("menu_pdf") or {}
             selected = candidates[0] if len(candidates) == 1 else None
             if len(candidates) > 1:
@@ -619,8 +624,8 @@ def main() -> int:
             if pdf_bytes is not None and not args.dry_run:
                 retain_review_pdf(pdf_bytes, args.review_pdf_root)
 
-            previous = previous_menus.get(source_key)
-            if previous is None and source_key == "platinum":
+            previous = previous_menus.get(source_key) or {}
+            if not previous and source_key == "platinum":
                 previous = venue.get("menu_pdf") or {}
             info = venue_menu_info(venue, entry, pdf_bytes, checked_at, previous)
             if entry:

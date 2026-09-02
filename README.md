@@ -152,7 +152,7 @@ Current coordinate audit notes:
 - Japan Dining: 839 mapped records, no missing coordinates.
 - Plat Stay: 76 mapped records, no missing coordinates.
 - Love Dining: 77 mapped records, 6 intentionally bundled/unmapped records.
-- Table for Two: 23 mapped records, no missing coordinates.
+- Table for Two: 29 mapped records (27 current booking-project venues and 2 retained historical records), no missing coordinates.
 - The bounds audit catches impossible country-level pins; it does not prove
   every pin is within 20m of a restaurant entrance.
 

@@ -432,7 +432,103 @@ VENUES = [
         "map_pin_source": "DiningCity public restaurant search",
         "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name.",
     },
+    {
+        "id": "tft-forage",
+        "name": "Forage",
+        "category": "restaurant",
+        "dining_city_id": "205193590",
+        "dining_city_name": "Forage",
+        "dining_city_public_url": "https://www.diningcity.sg/singapore/foragebanyantree",
+        "address": "60 Mandai Lake Road, Singapore 729979",
+        "lat": 1.4067736,
+        "lng": 103.7901586,
+        "coordinate_confidence": "diningcity_place_matched",
+        "map_pin_source": "DiningCity public restaurant detail",
+        "map_pin_note": "Pin is from the current DiningCity booking-project venue profile.",
+        "roster_basis": "diningcity_booking_project_confirmed",
+    },
+    {
+        "id": "tft-sarnies",
+        "name": "Sarnies",
+        "category": "cafe",
+        "dining_city_id": "205195658",
+        "dining_city_name": "Sarnies",
+        "dining_city_public_url": "https://www.diningcity.sg/singapore/Sarnies",
+        "address": "136 Telok Ayer Street, Singapore 068601",
+        "lat": 1.2816613,
+        "lng": 103.8479413,
+        "coordinate_confidence": "diningcity_place_matched",
+        "map_pin_source": "DiningCity public restaurant detail",
+        "map_pin_note": "Pin is from the current DiningCity booking-project venue profile.",
+        "roster_basis": "diningcity_booking_project_confirmed",
+    },
+    {
+        "id": "tft-grand-cru-wine-bar",
+        "name": "Grand Cru Wine Bar",
+        "category": "restaurant",
+        "dining_city_id": "205195660",
+        "dining_city_name": "Grand Cru Wine Bar",
+        "dining_city_public_url": "https://www.diningcity.sg/singapore/VivinoWineShop",
+        "address": "252 North Bridge Road, #01-44B Raffles City Shopping Centre, Singapore 179103",
+        "lat": 1.2931055,
+        "lng": 103.8512667,
+        "coordinate_confidence": "diningcity_place_matched",
+        "map_pin_source": "DiningCity public restaurant detail",
+        "map_pin_note": "Pin is from the current DiningCity booking-project venue profile.",
+        "roster_basis": "diningcity_booking_project_confirmed",
+    },
+    {
+        "id": "tft-brewerkz-east-coast-park",
+        "name": "Brewerkz East Coast Park",
+        "category": "restaurant",
+        "dining_city_id": "205196412",
+        "dining_city_name": "Brewerkz East Coast Park",
+        "dining_city_public_url": "https://www.diningcity.sg/singapore/brewerkz_eastcoast",
+        "address": "920 East Coast Parkway, #01-20/24, Singapore 449875",
+        "lat": 1.2995599,
+        "lng": 103.9067864,
+        "coordinate_confidence": "diningcity_place_matched",
+        "map_pin_source": "DiningCity public restaurant detail",
+        "map_pin_note": "Pin is from the current DiningCity booking-project venue profile.",
+        "roster_basis": "diningcity_booking_project_confirmed",
+    },
+    {
+        "id": "tft-brewerkz-riverside-point",
+        "name": "Brewerkz Riverside Point",
+        "category": "restaurant",
+        "dining_city_id": "205196414",
+        "dining_city_name": "Brewerkz Riverside Point",
+        "dining_city_public_url": "https://www.diningcity.sg/singapore/brewerkz_riversidepoint",
+        "address": "30 Merchant Road, #01-07 Riverside Point, Singapore 058282",
+        "lat": 1.28927,
+        "lng": 103.8442246,
+        "coordinate_confidence": "diningcity_place_matched",
+        "map_pin_source": "DiningCity public restaurant detail",
+        "map_pin_note": "Pin is from the current DiningCity booking-project venue profile.",
+        "roster_basis": "diningcity_booking_project_confirmed",
+    },
+    {
+        "id": "tft-oso-ristorante",
+        "name": "OSO Ristorante",
+        "category": "restaurant",
+        "dining_city_id": "2056126",
+        "dining_city_name": "OSO Ristorante",
+        "dining_city_public_url": "https://www.diningcity.sg/singapore/oso_ristorante",
+        "address": "100 Peck Seah Street, Level 27 Oasia Hotel Downtown, Singapore 079333",
+        "lat": 1.2758528,
+        "lng": 103.8443611,
+        "coordinate_confidence": "diningcity_place_matched",
+        "map_pin_source": "DiningCity public restaurant detail",
+        "map_pin_note": "Pin is from the current DiningCity booking-project venue profile.",
+        "roster_basis": "diningcity_booking_project_confirmed",
+    },
 ]
+
+CONFIRMED_BOOKING_PROJECT_IDS = frozenset(
+    venue["dining_city_id"]
+    for venue in VENUES
+    if venue.get("roster_basis") == "diningcity_booking_project_confirmed"
+)
 
 
 def fetch_bytes(url: str) -> bytes:
@@ -632,6 +728,63 @@ def fetch_booking_project_membership(
             "the reviewed Amex participating-merchant roster."
         ),
     }
+
+
+def current_published_roster(
+    reviewed_roster: list[dict], booking_project_source: dict
+) -> tuple[list[dict], dict]:
+    """Merge explicitly confirmed booking-project additions without rewriting official-image history."""
+    observed = {
+        str(record.get("id")): record
+        for record in booking_project_source.get("observed_venues") or []
+        if isinstance(record, dict) and record.get("id")
+    }
+    existing_diningcity_ids = {
+        str(record.get("dining_city_id"))
+        for record in reviewed_roster
+        if record.get("dining_city_id")
+    }
+    additions = [
+        dict(venue)
+        for venue in VENUES
+        if str(venue.get("dining_city_id")) in CONFIRMED_BOOKING_PROJECT_IDS
+        and str(venue.get("dining_city_id")) in observed
+        and str(venue.get("dining_city_id")) not in existing_diningcity_ids
+    ]
+    combined = [*reviewed_roster, *additions]
+
+    venue_ids = [str(venue.get("id") or "") for venue in combined]
+    diningcity_ids = [
+        str(venue.get("dining_city_id") or "") for venue in combined
+    ]
+    if len(venue_ids) != len(set(venue_ids)):
+        raise ValueError("published Table for Two roster has duplicate venue IDs")
+    if "" in diningcity_ids or len(diningcity_ids) != len(set(diningcity_ids)):
+        raise ValueError("published Table for Two roster has missing or duplicate DiningCity IDs")
+
+    published_ids = {str(venue["dining_city_id"]) for venue in additions}
+    unconfirmed = [
+        record["name"]
+        for record in booking_project_source.get("observed_venues") or []
+        if str(record.get("id")) not in existing_diningcity_ids | published_ids
+    ]
+    annotated_source = {
+        **booking_project_source,
+        "published_booking_project_additions": [
+            {"id": venue["dining_city_id"], "name": venue["name"]}
+            for venue in additions
+        ],
+        "unconfirmed_added_vs_reviewed_roster": unconfirmed,
+        "review_required": bool(
+            unconfirmed
+            or booking_project_source.get("missing_vs_reviewed_roster")
+        ),
+        "evidence_note": (
+            "Current venues combine the retained reviewed Amex image roster with "
+            "explicitly confirmed DiningCity AMEXPlatSG booking-project additions."
+        ),
+    }
+    return combined, annotated_source
 
 
 def booking_project_membership_statuses(source: dict | None) -> tuple[str, set[str]]:
@@ -1085,6 +1238,9 @@ def build_payload(
     )
     booking_project_source = fetch_booking_project_membership(
         roster, checked_at, existing_payload
+    )
+    roster, booking_project_source = current_published_roster(
+        roster, booking_project_source
     )
     membership_status, active_diningcity_ids = booking_project_membership_statuses(
         booking_project_source

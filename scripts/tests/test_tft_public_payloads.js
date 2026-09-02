@@ -6,6 +6,18 @@ const app = fs.readFileSync("web/app.js", "utf8");
 
 assert.match(
   app,
+  /TABLE_FOR_TWO_DATA_URL = "\.\.\/data\/table-for-two-catalog\.json"/,
+);
+assert.match(
+  app,
+  /TABLE_FOR_TWO_DATA_FALLBACK_URL = "\.\.\/data\/table-for-two\.json"/,
+);
+assert.match(
+  app,
+  /TABLE_FOR_TWO_STATIC_SNAPSHOT_URL = "\.\.\/data\/table-for-two-slots\.json"/,
+);
+assert.match(
+  app,
   /TABLE_FOR_TWO_RELEASE_HISTORY_URL = "\.\.\/data\/table-for-two-release-history-summary\.json"/,
 );
 assert.match(
