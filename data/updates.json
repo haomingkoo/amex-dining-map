@@ -1,7 +1,253 @@
 {
   "schema_version": 1,
+<<<<<<< HEAD
   "updated_at": "2026-09-02T22:48:34Z",
+=======
+  "updated_at": "2026-09-02T23:07:04Z",
+>>>>>>> db11ef2 (chore: refresh explorer data)
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Vivacchus / Osaka",
+      "detected_at": "2026-09-02T23:07:04Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Vivacchus",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Osaka",
+          "District": "Awazityou",
+          "Address": "B1, 3-2-8, Awazityou, Chuo-ku, Osaka-shi, Osaka",
+          "Cuisine": [
+            "Italian"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245653/",
+      "transition_id": "89f6a36215c7b52b08cf",
+      "stream_id": "60cefba6d097eb03abf0",
+      "occurrence": 1,
+      "id": "bfbfcc895df4b89e7186"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Chuugokuhanten Kohakukyu / Tokyo",
+      "detected_at": "2026-09-02T23:07:04Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Chuugokuhanten Kohakukyu",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Marunochi",
+          "Address": "5F, 1-1-1, Marunochi, Chiyoda-ku, Tokyo",
+          "Cuisine": [
+            "Chinese"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245641/",
+      "transition_id": "1030de14de27a21dceaf",
+      "stream_id": "5a5c0fbc65aa656e71df",
+      "occurrence": 1,
+      "id": "b822a8cca5b7813bc2da"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-02T23:07:04Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 838,
+          "Mapped count": 838,
+          "Official records SHA-256": "65ee84207e68"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 843,
+          "Mapped count": 843,
+          "Official records SHA-256": "5d5958a502da"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 838,
+          "after": 843
+        },
+        {
+          "field": "Mapped count",
+          "before": 838,
+          "after": 843
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "65ee84207e68",
+          "after": "5d5958a502da"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "3bda87f3d7165ef0aed7",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "7a3f7142532ebb6bcbb6"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Sushi Tenkawa / Tokyo",
+      "detected_at": "2026-09-02T23:07:04Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sushi Tenkawa",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Ebisu",
+          "Address": "1F, 1-25-7, Ebisu, Shibuya-ku, Tokyo",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245665/",
+      "transition_id": "b248987329f31a6acb42",
+      "stream_id": "01df6706bcc8d5b6caa6",
+      "occurrence": 1,
+      "id": "75d2fab33a522ec068b5"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Chugokuhanten Ichigaya / Tokyo",
+      "detected_at": "2026-09-02T23:07:04Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Chugokuhanten Ichigaya",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Kudankita",
+          "Address": "B1, 4-1-7, Kudankita, Chiyoda-ku, Tokyo",
+          "Cuisine": [
+            "Chinese"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245642/",
+      "transition_id": "a570e4b840eba6b363ca",
+      "stream_id": "65d363713c3518f2f606",
+      "occurrence": 1,
+      "id": "2a586ee559e288a005e0"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Chuugokuhanten Reiho / Nagoya",
+      "detected_at": "2026-09-02T23:07:04Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Chuugokuhanten Reiho",
+          "Country": "Japan",
+          "Region": "Chubu/Tokai/Karuizawa",
+          "City": "Nagoya",
+          "District": "Meieki",
+          "Address": "41F, 4-7-1, Meieki, Nakamura-ku, Nagoya-shi, Aichi",
+          "Cuisine": [
+            "Chinese"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245640/",
+      "transition_id": "0570debb3ba7c4e31617",
+      "stream_id": "321c224714c64cb3f4ab",
+      "occurrence": 1,
+      "id": "203041d6f8d9712d81f4"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -5742,6 +5988,12 @@
           "2682d57e72c8da09c65e": 1
         }
       },
+      "01df6706bcc8d5b6caa6": {
+        "latest_transition_id": "b248987329f31a6acb42",
+        "occurrences": {
+          "b248987329f31a6acb42": 1
+        }
+      },
       "01fd7b24b113008c8f9b": {
         "latest_transition_id": "867f4d8f71b96b22bc42",
         "occurrences": {
@@ -5779,9 +6031,10 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "38187411348a7313bb86",
+        "latest_transition_id": "3bda87f3d7165ef0aed7",
         "occurrences": {
           "38187411348a7313bb86": 1,
+          "3bda87f3d7165ef0aed7": 1,
           "827885cc967f7e007f12": 1,
           "b9acef5ccde9cc17c509": 1
         }
@@ -5834,6 +6087,12 @@
           "ecee01e4770cfc076669": 1
         }
       },
+      "321c224714c64cb3f4ab": {
+        "latest_transition_id": "0570debb3ba7c4e31617",
+        "occurrences": {
+          "0570debb3ba7c4e31617": 1
+        }
+      },
       "325506f85300a0ec65a3": {
         "latest_transition_id": "6d25cfe12d49db98b041",
         "occurrences": {
@@ -5864,10 +6123,28 @@
           "fc6f72b06e09c47f8ec1": 1
         }
       },
+      "5a5c0fbc65aa656e71df": {
+        "latest_transition_id": "1030de14de27a21dceaf",
+        "occurrences": {
+          "1030de14de27a21dceaf": 1
+        }
+      },
       "6035d6abc9408a6a28a7": {
         "latest_transition_id": "8a4e6049c67923b51bf3",
         "occurrences": {
           "8a4e6049c67923b51bf3": 1
+        }
+      },
+      "60cefba6d097eb03abf0": {
+        "latest_transition_id": "89f6a36215c7b52b08cf",
+        "occurrences": {
+          "89f6a36215c7b52b08cf": 1
+        }
+      },
+      "65d363713c3518f2f606": {
+        "latest_transition_id": "a570e4b840eba6b363ca",
+        "occurrences": {
+          "a570e4b840eba6b363ca": 1
         }
       },
       "66129efc1226a46f5069": {

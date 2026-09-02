@@ -334,3 +334,15 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Oryouri Fujii / Toyama
+
+<!-- source-change:ffda6495280088938effe38dcbccd312f5f1eb12dcb10e456ee43a1839c4ff8c -->
+## 2026-09-02 23:07 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (5)**
+  - Chugokuhanten Ichigaya / Tokyo
+  - Chuugokuhanten Kohakukyu / Tokyo
+  - Chuugokuhanten Reiho / Nagoya
+  - Sushi Tenkawa / Tokyo
+  - Vivacchus / Osaka
