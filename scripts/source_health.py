@@ -183,6 +183,14 @@ def build_source_health(data_dir: Path, now: datetime) -> dict[str, Any]:
         and isinstance((item.get("external_signals") or {}).get("tabelog"), dict)
     ] if isinstance(japan_records, list) else []
 
+    booking_review_items = (
+        (tft.get("booking_project_source") or {}).get("booking_project_review_items")
+        or []
+    )
+    roster_review_required = bool(
+        (tft.get("roster_source") or {}).get("review_required")
+        or booking_review_items
+    )
     sources = [
         _source(
             source_id="global-dining",
@@ -253,12 +261,16 @@ def build_source_health(data_dir: Path, now: datetime) -> dict[str, Any]:
             timestamps=[tft.get("last_verified_at")],
             now=now,
             stale_after_hours=PRIMARY_STALE_HOURS,
-            review_required=bool((tft.get("roster_source") or {}).get("review_required")),
+            review_required=roster_review_required,
             review_count=(
                 1 if (tft.get("roster_source") or {}).get("review_item") else 0
-            ),
+            ) + len(booking_review_items),
             record_count=len(tft.get("venues") or []),
-            source_url=tft.get("official_url"),
+            source_url=(
+                (tft.get("booking_project_source") or {}).get("source_url")
+                if booking_review_items
+                else tft.get("official_url")
+            ),
         ),
         _source(
             source_id="table-for-two-menus",
@@ -348,6 +360,7 @@ TRANSITION_FIELDS = {
     "coverage": "Coverage",
     "snapshot_state": "Snapshot",
     "last_attempt_outcome": "Refresh attempt",
+    "consecutive_failures": "Consecutive failures",
 }
 
 OPERATION_FIELDS = (
@@ -358,6 +371,16 @@ OPERATION_FIELDS = (
     "snapshot_state",
     "retained_snapshot",
 )
+
+
+def transition_value(field: str, value: Any) -> Any:
+    if field != "coverage" or not isinstance(value, dict):
+        return value
+    covered = max(0, int(value.get("covered") or 0))
+    total = max(0, int(value.get("total") or 0))
+    unavailable = max(0, int(value.get("unavailable") or 0))
+    percent = float(value.get("percent") or 0)
+    return f"{covered}/{total} ({percent:g}%), {unavailable} unavailable"
 
 
 def build_transition_events(
@@ -373,7 +396,11 @@ def build_transition_events(
         if not isinstance(new, dict) or not (old := old_sources.get(new.get("id"))):
             continue
         changes = [
-            {"field": label, "before": old.get(field), "after": new.get(field)}
+            {
+                "field": label,
+                "before": transition_value(field, old.get(field)),
+                "after": transition_value(field, new.get(field)),
+            }
             for field, label in TRANSITION_FIELDS.items()
             if old.get(field) != new.get(field)
         ]
@@ -383,7 +410,12 @@ def build_transition_events(
         new_fresh = new.get("freshness_state")
         old_failure = old.get("failure_state")
         new_failure = new.get("failure_state")
-        if old_failure == "clear" and new_failure != "clear":
+        old_failure_count = max(0, int(old.get("consecutive_failures") or 0))
+        new_failure_count = max(0, int(new.get("consecutive_failures") or 0))
+        if (
+            new_failure != "clear"
+            and old_failure_count < 2 <= new_failure_count
+        ):
             kind = "source_failed"
         elif old_failure != "clear" and new_failure == "clear":
             kind = "source_recovered"
@@ -408,7 +440,7 @@ def build_transition_events(
             "before": {"state": old.get("state"), "fields": {c["field"]: c["before"] for c in changes}},
             "after": {"state": new.get("state"), "fields": {c["field"]: c["after"] for c in changes}},
             "changes": changes,
-            "source_url": new.get("source_url"),
+            "source_url": new.get("source_url") or old.get("source_url"),
         }
         assign_event_identity(event, f"source-health:{new['id']}")
         events.append(event)

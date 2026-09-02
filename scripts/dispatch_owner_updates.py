@@ -20,6 +20,29 @@ except ModuleNotFoundError:  # Direct `python scripts/dispatch_owner_updates.py`
 
 
 DEFAULT_UPDATES = Path("data/updates.json")
+OWNER_ACTIONABLE_KINDS = {
+    "added",
+    "removed",
+    "menu_added",
+    "menu_updated",
+    "details_updated",
+    "correction",
+    "source_failed",
+    "source_review_required",
+    "source_updated",
+    "terms_clause_added",
+    "terms_clause_removed",
+    "terms_clause_modified",
+    "faq_clause_added",
+    "faq_clause_removed",
+    "faq_clause_modified",
+}
+OWNER_NOISE_KINDS = {
+    "source_stale",
+    "source_recovered",
+    "source_health_changed",
+    "source_review_cleared",
+}
 
 
 def published_events(
@@ -46,6 +69,23 @@ def published_events(
         if effective_at >= cutoff:
             eligible.append(event)
     return eligible
+
+
+def select_owner_notifications(events: list[dict]) -> tuple[list[dict], dict[str, str]]:
+    """Keep owner Telegram focused on actionable content and persistent failures."""
+    selected = []
+    withheld = {}
+    for event in events:
+        event_id = str(event.get("id") or "")
+        if event.get("kind") in OWNER_ACTIONABLE_KINDS:
+            selected.append(event)
+        elif event.get("kind") in OWNER_NOISE_KINDS and event_id:
+            withheld[event_id] = "withheld"
+        else:
+            raise RuntimeError(
+                f"Unknown published owner event kind: {event.get('kind') or 'missing'}"
+            )
+    return selected, withheld
 
 
 def dispatch(
@@ -121,8 +161,9 @@ def main() -> int:
         raise RuntimeError("Owner alert ingress configuration is incomplete")
     if not 1 <= args.days <= 365:
         raise RuntimeError("Owner alert replay window must be between 1 and 365 days")
-    events = published_events(args.updates, args.days)
-    terminal_outcomes: dict[str, str] = {}
+    events, terminal_outcomes = select_owner_notifications(
+        published_events(args.updates, args.days)
+    )
     try:
         count = dispatch(url, token, events, terminal_outcomes)
     finally:

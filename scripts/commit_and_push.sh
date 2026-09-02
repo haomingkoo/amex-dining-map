@@ -82,7 +82,19 @@ resolve_rebase_conflicts() {
       break
     fi
     for f in "${conflicts[@]}"; do
-      if is_keep_local "$f"; then
+      if [[ "$f" == "data/updates.json" ]]; then
+        left=$(mktemp)
+        right=$(mktemp)
+        git show ":2:$f" > "$left"
+        git show ":3:$f" > "$right"
+        if ! python3 scripts/merge_update_ledgers.py "$left" "$right" "$f"; then
+          rm -f "$left" "$right"
+          git rebase --abort || true
+          return 1
+        fi
+        rm -f "$left" "$right"
+        git add -- "$f"
+      elif is_keep_local "$f"; then
         # During a rebase, --theirs is the branch being rebased (our local
         # commit, i.e. the workflow's freshly-generated content). --ours
         # would pick upstream, which is the opposite of what we want.

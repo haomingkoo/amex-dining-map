@@ -49,6 +49,9 @@ AVAILABILITY_WORKERS = 6
 DININGCITY_REQUEST_RETRIES = 2
 DININGCITY_REQUEST_TIMEOUT_SECONDS = 12
 DININGCITY_PROJECT_PAGE_SIZE = 100
+AUTO_MEMBERSHIP_CONFIRMATIONS = 2
+SINGAPORE_LAT_RANGE = (1.15, 1.50)
+SINGAPORE_LNG_RANGE = (103.60, 104.10)
 
 
 VENUES = [
@@ -524,13 +527,6 @@ VENUES = [
     },
 ]
 
-CONFIRMED_BOOKING_PROJECT_IDS = frozenset(
-    venue["dining_city_id"]
-    for venue in VENUES
-    if venue.get("roster_basis") == "diningcity_booking_project_confirmed"
-)
-
-
 def fetch_bytes(url: str) -> bytes:
     request = urllib.request.Request(
         url,
@@ -626,17 +622,17 @@ def has_project(dining_city_id: str) -> bool:
     )
 
 
-def _booking_project_record(row: object) -> dict | None:
+def _booking_project_record(row: object) -> dict:
     if not isinstance(row, dict):
-        return None
+        raise ValueError("booking project row is not an object")
     restaurant = row.get("restaurant")
     if not isinstance(restaurant, dict):
-        return None
+        raise ValueError("booking project row has no restaurant object")
     restaurant_id = restaurant.get("id") or row.get("restaurant_id")
     name = str(restaurant.get("name") or "").strip()
     if not restaurant_id or not name:
-        return None
-    return {
+        raise ValueError("booking project row has no restaurant ID or name")
+    record = {
         "id": str(restaurant_id),
         "name": name,
         "status": str(row.get("status") or "unknown"),
@@ -647,7 +643,232 @@ def _booking_project_record(row: object) -> dict | None:
             restaurant.get("website_detail_url")
             or f"https://www.diningcity.sg/singapore/{restaurant.get('dirname') or ''}"
         ).rstrip("/"),
+        "address": str(restaurant.get("address") or "").strip(),
+        "lat": restaurant.get("lat"),
+        "lng": restaurant.get("lng"),
     }
+    return record
+
+
+def _normalized_name(value: object) -> str:
+    return " ".join(str(value or "").casefold().split())
+
+
+def _membership_record_sha256(record: dict) -> str:
+    stable = {
+        key: record.get(key)
+        for key in (
+            "id",
+            "name",
+            "status",
+            "availability_project",
+            "source_url",
+            "address",
+            "lat",
+            "lng",
+        )
+    }
+    return hashlib.sha256(
+        json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
+            "utf-8"
+        )
+    ).hexdigest()
+
+
+def _same_membership_identity(left: dict, right: dict) -> bool:
+    return all(
+        str(left.get(key) or "") == str(right.get(key) or "")
+        for key in ("id", "name", "status", "availability_project")
+    )
+
+
+def _eligible_membership_record(record: dict) -> bool:
+    return (
+        record.get("status") in (None, "", "online")
+        and record.get("availability_project") in (None, "", DININGCITY_PROJECT)
+    )
+
+
+def _membership_streaks(
+    records: list[dict], reviewed_roster: list[dict], previous: dict, checked_at: str
+) -> list[dict]:
+    current = {
+        record["id"]: record for record in records if _eligible_membership_record(record)
+    }
+    previous_streaks = {
+        str(item.get("id")): item
+        for item in previous.get("membership_streaks") or []
+        if isinstance(item, dict) and item.get("id")
+    }
+    previous_records = {
+        str(item.get("id")): item
+        for item in previous.get("observed_venues") or []
+        if isinstance(item, dict) and item.get("id")
+    }
+    tracked_ids = {
+        str(record.get("dining_city_id"))
+        for record in reviewed_roster
+        if record.get("dining_city_id")
+    }
+    tracked_ids.update(previous_streaks)
+    tracked_ids.update(current)
+    streaks = []
+    for diningcity_id in sorted(tracked_ids):
+        observed = current.get(diningcity_id)
+        prior = previous_streaks.get(diningcity_id) or {}
+        if observed is not None:
+            signature = _membership_record_sha256(observed)
+            prior_signature = prior.get("record_sha256")
+            prior_present = int(prior.get("consecutive_present") or 0)
+            if not prior_present and diningcity_id in previous_records:
+                prior_record = previous_records[diningcity_id]
+                if _membership_record_sha256(prior_record) == signature or (
+                    not prior_record.get("address")
+                    and _same_membership_identity(prior_record, observed)
+                ):
+                    prior_present = 1
+                    prior_signature = signature
+            consecutive_present = prior_present + 1 if prior_signature == signature else 1
+            streaks.append(
+                {
+                    "id": diningcity_id,
+                    "name": observed["name"],
+                    "record_sha256": signature,
+                    "state": "present",
+                    "consecutive_present": consecutive_present,
+                    "consecutive_absent": 0,
+                    "first_seen_at": prior.get("first_seen_at") or checked_at,
+                    "last_seen_at": checked_at,
+                }
+            )
+            continue
+        prior_absent = int(prior.get("consecutive_absent") or 0)
+        if (
+            not prior_absent
+            and previous.get("observation_status") == "success"
+            and diningcity_id not in previous_records
+        ):
+            prior_absent = 1
+        name = prior.get("name") or next(
+            (
+                str(record.get("name") or diningcity_id)
+                for record in reviewed_roster
+                if str(record.get("dining_city_id") or "") == diningcity_id
+            ),
+            diningcity_id,
+        )
+        streaks.append(
+            {
+                "id": diningcity_id,
+                "name": name,
+                "record_sha256": prior.get("record_sha256"),
+                "state": "absent",
+                "consecutive_present": 0,
+                "consecutive_absent": prior_absent + 1,
+                "first_seen_at": prior.get("first_seen_at"),
+                "last_seen_at": prior.get("last_seen_at"),
+            }
+        )
+    return streaks
+
+
+def _auto_candidate_reasons(
+    record: dict, published_roster: list[dict]
+) -> list[str]:
+    reasons = []
+    if record.get("status") != "online":
+        reasons.append("not_online")
+    if record.get("availability_project") != DININGCITY_PROJECT:
+        reasons.append("wrong_availability_project")
+    if not record.get("address"):
+        reasons.append("missing_address")
+    try:
+        lat = float(record.get("lat"))
+        lng = float(record.get("lng"))
+    except (TypeError, ValueError):
+        reasons.append("missing_coordinates")
+    else:
+        if not (SINGAPORE_LAT_RANGE[0] <= lat <= SINGAPORE_LAT_RANGE[1]) or not (
+            SINGAPORE_LNG_RANGE[0] <= lng <= SINGAPORE_LNG_RANGE[1]
+        ):
+            reasons.append("coordinates_outside_singapore")
+    parsed = urllib.parse.urlparse(str(record.get("source_url") or ""))
+    if parsed.scheme != "https" or parsed.hostname not in {
+        "diningcity.sg",
+        "www.diningcity.sg",
+    }:
+        reasons.append("untrusted_source_url")
+    diningcity_id = str(record.get("id") or "")
+    normalized_name = _normalized_name(record.get("name"))
+    for published in published_roster:
+        if str(published.get("dining_city_id") or "") == diningcity_id:
+            reasons.append("duplicate_diningcity_id")
+        elif _normalized_name(published.get("name")) == normalized_name:
+            reasons.append("duplicate_normalized_name")
+    return sorted(set(reasons))
+
+
+def _venue_id_for_membership_record(record: dict) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", _normalized_name(record.get("name"))).strip("-")
+    return f"tft-{slug or record['id']}"
+
+
+def _empty_menu_state() -> dict:
+    return {
+        "status": "no_pdf_found",
+        "url": None,
+        "filename": None,
+        "card": None,
+        "label": None,
+        "checked_at": None,
+        "first_seen_at": None,
+        "last_seen_at": None,
+        "sha256": None,
+        "bytes": None,
+        "aem_created": None,
+        "changed_at": None,
+    }
+
+
+def _auto_venue_from_membership(record: dict, streak: dict, checked_at: str) -> dict:
+    return {
+        "id": _venue_id_for_membership_record(record),
+        "name": record["name"],
+        "category": "restaurant",
+        "booking_channel": "Amex Experiences App",
+        "dining_city_id": record["id"],
+        "dining_city_name": record["name"],
+        "dining_city_public_url": record["source_url"],
+        "address": record["address"],
+        "lat": float(record["lat"]),
+        "lng": float(record["lng"]),
+        "coordinate_confidence": "diningcity_place_matched",
+        "map_pin_source": "DiningCity AMEXPlatSG booking-project membership",
+        "map_pin_note": "Pin is from the current DiningCity AMEXPlatSG booking-project record.",
+        "menu_pdfs": {},
+        "menu_pdf": _empty_menu_state(),
+        "roster_basis": "diningcity_booking_project_confirmed",
+        "roster_evidence": {
+            "source": "DiningCity AMEXPlatSG booking-project membership",
+            "source_url": record["source_url"],
+            "first_seen_at": streak.get("first_seen_at") or checked_at,
+            "confirmed_at": checked_at,
+            "confirmation_count": int(streak.get("consecutive_present") or 0),
+            "record_sha256": streak.get("record_sha256"),
+        },
+    }
+
+
+def _validate_published_roster(records: list[dict]) -> None:
+    venue_ids = [str(venue.get("id") or "") for venue in records]
+    diningcity_ids = [str(venue.get("dining_city_id") or "") for venue in records]
+    normalized_names = [_normalized_name(venue.get("name")) for venue in records]
+    if "" in venue_ids or len(venue_ids) != len(set(venue_ids)):
+        raise ValueError("published Table for Two roster has missing or duplicate venue IDs")
+    if "" in diningcity_ids or len(diningcity_ids) != len(set(diningcity_ids)):
+        raise ValueError("published Table for Two roster has missing or duplicate DiningCity IDs")
+    if "" in normalized_names or len(normalized_names) != len(set(normalized_names)):
+        raise ValueError("published Table for Two roster has missing or duplicate normalized names")
 
 
 def fetch_booking_project_membership(
@@ -664,11 +885,7 @@ def fetch_booking_project_membership(
         )
         if not isinstance(payload, list):
             raise ValueError("booking project membership is not a list")
-        records = [
-            record
-            for row in payload
-            if (record := _booking_project_record(row)) is not None
-        ]
+        records = [_booking_project_record(row) for row in payload]
         records.sort(key=lambda record: (record["name"].casefold(), record["id"]))
         observed_ids = [record["id"] for record in records]
         if not records or len(observed_ids) != len(set(observed_ids)):
@@ -710,6 +927,7 @@ def fetch_booking_project_membership(
             separators=(",", ":"),
         ).encode("utf-8")
     ).hexdigest()
+    streaks = _membership_streaks(records, reviewed_roster, previous, checked_at)
     return {
         "type": "diningcity_booking_project_membership",
         "source_url": source_url,
@@ -720,6 +938,7 @@ def fetch_booking_project_membership(
         "observed_count": len(records),
         "observed_membership_sha256": fingerprint,
         "observed_venues": records,
+        "membership_streaks": streaks,
         "added_vs_reviewed_roster": [record["name"] for record in added],
         "missing_vs_reviewed_roster": [record["name"] for record in missing],
         "review_required": bool(added or missing),
@@ -731,43 +950,206 @@ def fetch_booking_project_membership(
 
 
 def current_published_roster(
-    reviewed_roster: list[dict], booking_project_source: dict
+    reviewed_roster: list[dict],
+    booking_project_source: dict,
+    existing_payload: dict | None = None,
 ) -> tuple[list[dict], dict]:
-    """Merge explicitly confirmed booking-project additions without rewriting official-image history."""
-    observed = {
-        str(record.get("id")): record
+    """Conservatively merge source-backed booking-project additions.
+
+    Official-image records are never removed here. Booking-project-only records
+    require repeated complete observations both to appear and to disappear.
+    """
+    raw_observed = [
+        record
         for record in booking_project_source.get("observed_venues") or []
         if isinstance(record, dict) and record.get("id")
-    }
+    ]
+    raw_observed_ids = [str(record["id"]) for record in raw_observed]
+    if len(raw_observed_ids) != len(set(raw_observed_ids)):
+        raise ValueError("booking project membership has duplicate DiningCity IDs")
+    existing_supplement_records = [
+        record
+        for record in (existing_payload or {}).get("venues") or []
+        if isinstance(record, dict)
+        and record.get("roster_basis") == "diningcity_booking_project_confirmed"
+    ]
+    supplement_ids = [str(record.get("id") or "") for record in existing_supplement_records]
+    supplement_diningcity_ids = [
+        str(record.get("dining_city_id") or "") for record in existing_supplement_records
+    ]
+    if len(supplement_ids) != len(set(supplement_ids)) or len(
+        supplement_diningcity_ids
+    ) != len(set(supplement_diningcity_ids)):
+        raise ValueError("existing booking-project supplements contain duplicate identities")
+    if booking_project_source.get("observation_status") != "success":
+        retained = [dict(record) for record in reviewed_roster]
+        official_ids = {str(record.get("id") or "") for record in retained}
+        official_diningcity_ids = {
+            str(record.get("dining_city_id") or "") for record in retained
+        }
+        existing_supplements = [
+            tft_roster_reviews.stable_venue(record)
+            for record in existing_supplement_records
+            if str(record.get("id") or "") not in official_ids
+            and str(record.get("dining_city_id") or "") not in official_diningcity_ids
+        ]
+        retained.extend(existing_supplements)
+        _validate_published_roster(retained)
+        return retained, {
+            **booking_project_source,
+            "maintenance_summary": {
+                "outcome": "retained_after_source_error",
+                "published_count": len(existing_supplements),
+                "pending_addition_count": 0,
+                "pending_removal_count": 0,
+                "review_count": 0,
+            },
+        }
+    observed = {str(record["id"]): record for record in raw_observed}
     existing_diningcity_ids = {
         str(record.get("dining_city_id"))
         for record in reviewed_roster
         if record.get("dining_city_id")
     }
-    additions = [
-        dict(venue)
+    streaks = {
+        str(item.get("id")): item
+        for item in booking_project_source.get("membership_streaks") or []
+        if isinstance(item, dict) and item.get("id")
+    }
+    existing_supplements = {
+        str(record.get("dining_city_id")): tft_roster_reviews.stable_venue(record)
+        for record in existing_supplement_records
+        if record.get("dining_city_id")
+    }
+    configured_supplements = {
+        str(venue.get("dining_city_id")): dict(venue)
         for venue in VENUES
-        if str(venue.get("dining_city_id")) in CONFIRMED_BOOKING_PROJECT_IDS
-        and str(venue.get("dining_city_id")) in observed
-        and str(venue.get("dining_city_id")) not in existing_diningcity_ids
-    ]
+        if venue.get("roster_basis") == "diningcity_booking_project_confirmed"
+    }
+    supplement_pool = {**configured_supplements, **existing_supplements}
+    previous_observed = {
+        str(record.get("id")): record
+        for record in (
+            ((existing_payload or {}).get("booking_project_source") or {}).get(
+                "observed_venues"
+            )
+            or []
+        )
+        if isinstance(record, dict) and record.get("id")
+    }
+    additions = []
+    pending_additions = []
+    pending_removals = []
+    confirmed_removals = []
+    review_items = []
+    eligible_observed = {
+        diningcity_id: record
+        for diningcity_id, record in observed.items()
+        if _eligible_membership_record(record)
+    }
+    candidate_ids = sorted(
+        set(observed) - existing_diningcity_ids - set(existing_supplements)
+    )
+    for diningcity_id in candidate_ids:
+        record = observed[diningcity_id]
+        streak = streaks.get(diningcity_id) or {}
+        configured = configured_supplements.get(diningcity_id)
+        validation_record = dict(record)
+        if configured:
+            for field in ("address", "lat", "lng"):
+                validation_record[field] = configured.get(field)
+        reasons = _auto_candidate_reasons(
+            validation_record, [*reviewed_roster, *additions]
+        )
+        if configured and _normalized_name(configured.get("name")) != _normalized_name(
+            record.get("name")
+        ):
+            reasons.append("configured_name_changed")
+        candidate_id = _venue_id_for_membership_record(record)
+        if any(venue.get("id") == candidate_id for venue in [*reviewed_roster, *additions]):
+            reasons.append("duplicate_venue_id")
+        if reasons:
+            review_items.append({"id": diningcity_id, "name": record["name"], "reasons": sorted(set(reasons))})
+        elif int(streak.get("consecutive_present") or 0) >= AUTO_MEMBERSHIP_CONFIRMATIONS:
+            if configured:
+                configured = dict(configured)
+                configured["roster_evidence"] = {
+                    "source": "DiningCity AMEXPlatSG booking-project membership",
+                    "source_url": record["source_url"],
+                    "first_seen_at": streak.get("first_seen_at"),
+                    "confirmed_at": booking_project_source["checked_at"],
+                    "confirmation_count": int(streak.get("consecutive_present") or 0),
+                    "record_sha256": streak.get("record_sha256"),
+                }
+                additions.append(configured)
+            else:
+                additions.append(
+                    _auto_venue_from_membership(
+                        record, streak, booking_project_source["checked_at"]
+                    )
+                )
+        else:
+            pending_additions.append({"id": diningcity_id, "name": record["name"]})
+
+    for diningcity_id, venue in sorted(supplement_pool.items()):
+        if diningcity_id in existing_diningcity_ids:
+            continue
+        if diningcity_id not in existing_supplements:
+            continue
+        if diningcity_id in eligible_observed:
+            record = eligible_observed[diningcity_id]
+            evidence_hash = (venue.get("roster_evidence") or {}).get("record_sha256")
+            prior_record = previous_observed.get(diningcity_id)
+            if not evidence_hash and prior_record:
+                prior_hash = _membership_record_sha256(prior_record)
+                if prior_hash != _membership_record_sha256(record):
+                    review_items.append(
+                        {
+                            "id": diningcity_id,
+                            "name": record["name"],
+                            "reasons": ["legacy_source_record_changed"],
+                        }
+                    )
+                else:
+                    venue = dict(venue)
+                    venue["roster_evidence"] = {
+                        **(venue.get("roster_evidence") or {}),
+                        "source": "DiningCity AMEXPlatSG booking-project membership",
+                        "source_url": record["source_url"],
+                        "record_sha256": prior_hash,
+                    }
+                    evidence_hash = prior_hash
+            if evidence_hash and evidence_hash != _membership_record_sha256(record):
+                review_items.append(
+                    {
+                        "id": diningcity_id,
+                        "name": record["name"],
+                        "reasons": ["published_source_record_changed"],
+                    }
+                )
+            elif _normalized_name(venue.get("name")) != _normalized_name(
+                record.get("name")
+            ):
+                review_items.append(
+                    {
+                        "id": diningcity_id,
+                        "name": record["name"],
+                        "reasons": ["published_name_changed"],
+                    }
+                )
+            additions.append(venue)
+            continue
+        streak = streaks.get(diningcity_id) or {}
+        if int(streak.get("consecutive_absent") or 0) >= AUTO_MEMBERSHIP_CONFIRMATIONS:
+            confirmed_removals.append({"id": diningcity_id, "name": venue["name"]})
+        else:
+            additions.append(venue)
+            pending_removals.append({"id": diningcity_id, "name": venue["name"]})
     combined = [*reviewed_roster, *additions]
 
-    venue_ids = [str(venue.get("id") or "") for venue in combined]
-    diningcity_ids = [
-        str(venue.get("dining_city_id") or "") for venue in combined
-    ]
-    if len(venue_ids) != len(set(venue_ids)):
-        raise ValueError("published Table for Two roster has duplicate venue IDs")
-    if "" in diningcity_ids or len(diningcity_ids) != len(set(diningcity_ids)):
-        raise ValueError("published Table for Two roster has missing or duplicate DiningCity IDs")
+    _validate_published_roster(combined)
 
-    published_ids = {str(venue["dining_city_id"]) for venue in additions}
-    unconfirmed = [
-        record["name"]
-        for record in booking_project_source.get("observed_venues") or []
-        if str(record.get("id")) not in existing_diningcity_ids | published_ids
-    ]
+    unconfirmed = [item["name"] for item in review_items]
     annotated_source = {
         **booking_project_source,
         "published_booking_project_additions": [
@@ -775,14 +1157,29 @@ def current_published_roster(
             for venue in additions
         ],
         "unconfirmed_added_vs_reviewed_roster": unconfirmed,
+        "pending_booking_project_additions": pending_additions,
+        "pending_booking_project_removals": pending_removals,
+        "confirmed_booking_project_removals": confirmed_removals,
+        "booking_project_review_items": review_items,
+        **({"identity_mismatch_count": len(review_items)} if review_items else {}),
         "review_required": bool(
             unconfirmed
             or booking_project_source.get("missing_vs_reviewed_roster")
         ),
         "evidence_note": (
             "Current venues combine the retained reviewed Amex image roster with "
-            "explicitly confirmed DiningCity AMEXPlatSG booking-project additions."
+            "DiningCity AMEXPlatSG booking-project additions confirmed across "
+            f"{AUTO_MEMBERSHIP_CONFIRMATIONS} successful observations."
         ),
+        "maintenance_summary": {
+            "outcome": "success",
+            "observed_count": booking_project_source.get("observed_count", 0),
+            "published_count": len(additions),
+            "pending_addition_count": len(pending_additions),
+            "pending_removal_count": len(pending_removals),
+            "confirmed_removal_count": len(confirmed_removals),
+            "review_count": len(review_items),
+        },
     }
     return combined, annotated_source
 
@@ -797,8 +1194,39 @@ def booking_project_membership_statuses(source: dict | None) -> tuple[str, set[s
     return "success", {
         str(record.get("id"))
         for record in observed
-        if isinstance(record, dict) and record.get("id")
+        if isinstance(record, dict)
+        and record.get("id")
+        and _eligible_membership_record(record)
     }
+
+
+def booking_project_status_for_venue(
+    venue: dict, source: dict | None, existing_record: dict | None = None
+) -> str:
+    membership_status, active_ids = booking_project_membership_statuses(source)
+    previous_status = (existing_record or {}).get("booking_project_status")
+    if membership_status != "success":
+        return previous_status or "unknown"
+    diningcity_id = str(venue.get("dining_city_id") or "")
+    streak = next(
+        (
+            item
+            for item in (source or {}).get("membership_streaks") or []
+            if isinstance(item, dict) and str(item.get("id") or "") == diningcity_id
+        ),
+        {},
+    )
+    if diningcity_id in active_ids:
+        if (
+            previous_status == "not_listed"
+            and int(streak.get("consecutive_present") or 0)
+            < AUTO_MEMBERSHIP_CONFIRMATIONS
+        ):
+            return "not_listed"
+        return "active"
+    if previous_status == "active" and int(streak.get("consecutive_absent") or 0) < AUTO_MEMBERSHIP_CONFIRMATIONS:
+        return "active"
+    return "not_listed" if diningcity_id else "unknown"
 
 
 def booking_project_not_listed_availability(venue: dict, source: dict) -> dict:
@@ -1141,22 +1569,14 @@ def normalized_venues(
     existing_by_id = existing_by_id or {}
     live_availability_by_id = live_availability_by_id or {}
     live_profiles_by_id = live_profiles_by_id or {}
-    membership_status, active_diningcity_ids = booking_project_membership_statuses(
-        booking_project_source
-    )
     records = []
     for venue in roster or VENUES:
         curated_availability = venue.get("availability")
         existing_record = existing_by_id.get(venue["id"])
         live_availability = live_availability_by_id.get(venue["id"])
         live_profile = live_profiles_by_id.get(venue["id"])
-        dining_city_id = str(venue.get("dining_city_id") or "")
-        booking_project_status = (
-            "active"
-            if membership_status == "success" and dining_city_id in active_diningcity_ids
-            else "not_listed"
-            if membership_status == "success" and dining_city_id
-            else "unknown"
+        booking_project_status = booking_project_status_for_venue(
+            venue, booking_project_source, existing_record
         )
         if booking_project_status == "not_listed":
             availability = booking_project_not_listed_availability(
@@ -1194,6 +1614,8 @@ def normalized_venues(
             for key in ("menu_pdfs", "menu_pdf"):
                 if key in existing_record:
                     record[key] = existing_record[key]
+        record.setdefault("menu_pdfs", {})
+        record.setdefault("menu_pdf", _empty_menu_state())
         records.append(record)
     return records
 
@@ -1240,7 +1662,7 @@ def build_payload(
         roster, checked_at, existing_payload
     )
     roster, booking_project_source = current_published_roster(
-        roster, booking_project_source
+        roster, booking_project_source, existing_payload
     )
     membership_status, active_diningcity_ids = booking_project_membership_statuses(
         booking_project_source
@@ -1350,9 +1772,18 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
         raise RuntimeError("Cannot refresh Table for Two availability without existing venue records.")
 
     checked_at = iso_now()
+    existing_by_id = {record["id"]: record for record in venues}
     curated_by_id = {venue["id"]: venue for venue in VENUES}
+    reviewed_roster = [
+        record
+        for record in venues
+        if record.get("roster_basis") != "diningcity_booking_project_confirmed"
+    ]
     booking_project_source = fetch_booking_project_membership(
-        venues, checked_at, existing_payload
+        reviewed_roster, checked_at, existing_payload
+    )
+    venues, booking_project_source = current_published_roster(
+        reviewed_roster, booking_project_source, existing_payload
     )
     membership_status, active_diningcity_ids = booking_project_membership_statuses(
         booking_project_source
@@ -1376,9 +1807,10 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
     records = []
     for venue in venues:
         venue_id = venue["id"]
+        existing_record = existing_by_id.get(venue_id) or {}
         curated = curated_by_id.get(venue_id) or {}
         operational_fields = {
-            key: curated[key]
+            key: (curated if key in curated else existing_record)[key]
             for key in (
                 "operational_status",
                 "operational_status_effective_at",
@@ -1386,15 +1818,10 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
                 "operational_status_source_url",
                 "operational_status_note",
             )
-            if key in curated
+            if key in curated or key in existing_record
         }
-        dining_city_id = str(venue.get("dining_city_id") or "")
-        booking_project_status = (
-            "active"
-            if membership_status == "success" and dining_city_id in active_diningcity_ids
-            else "not_listed"
-            if membership_status == "success" and dining_city_id
-            else "unknown"
+        booking_project_status = booking_project_status_for_venue(
+            venue, booking_project_source, existing_record
         )
         availability = (
             booking_project_not_listed_availability(venue, booking_project_source)
@@ -1420,6 +1847,13 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
         }
         if venue_id in live_profiles_by_id:
             record["dining_city_profile"] = live_profiles_by_id[venue_id]
+        elif isinstance(existing_record.get("dining_city_profile"), dict):
+            record["dining_city_profile"] = existing_record["dining_city_profile"]
+        for key in ("menu_pdfs", "menu_pdf"):
+            if key in existing_record:
+                record[key] = existing_record[key]
+        record.setdefault("menu_pdfs", {})
+        record.setdefault("menu_pdf", _empty_menu_state())
         records.append(record)
 
     payload = {
@@ -1494,6 +1928,26 @@ def main() -> int:
 
     count = len(payload["venues"])
     if args.availability_only:
+        summary = payload.get("booking_project_source", {}).get(
+            "maintenance_summary", {}
+        )
+        print(
+            "TFT_MAINTENANCE "
+            + json.dumps(
+                {
+                    "outcome": summary.get("outcome", "unknown"),
+                    "observed_count": summary.get("observed_count", 0),
+                    "published_count": summary.get("published_count", 0),
+                    "pending_addition_count": summary.get("pending_addition_count", 0),
+                    "pending_removal_count": summary.get("pending_removal_count", 0),
+                    "confirmed_removal_count": summary.get("confirmed_removal_count", 0),
+                    "review_count": summary.get("review_count", 0),
+                    "venue_count": count,
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+        )
         print(f"Refreshed Table for Two availability for {count} venues in {output_path}.")
         return 0
     review = " manual review required" if payload.get("manual_review_required") else ""

@@ -9,8 +9,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "reminders"))
+sys.path.insert(0, str(ROOT / "scripts"))
 
 from app.owner_alerts import OwnerAlertEvent
+from scripts import source_health as SOURCE_HEALTH
 
 
 SOURCE_ALERT_PATH = ROOT / "scripts" / "source_change_alert.py"
@@ -18,7 +20,6 @@ SPEC = importlib.util.spec_from_file_location("source_change_alert", SOURCE_ALER
 SOURCE_ALERT = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader
 SPEC.loader.exec_module(SOURCE_ALERT)
-
 
 def _load(name: str):
     return json.loads((ROOT / "data" / name).read_text())
@@ -134,3 +135,33 @@ def test_current_list_valued_cuisines_are_preserved():
     validated = OwnerAlertEvent.model_validate(event)
 
     assert validated.after.fields["Cuisine"] == record["cuisines"]
+
+
+def test_coverage_health_transition_matches_owner_contract():
+    base = {
+        "id": "table-for-two-availability",
+        "label": "Table for Two availability",
+        "program": "Table for Two",
+        "program_id": "table-for-two",
+        "route": "#/table-for-two",
+        "state": "current",
+        "freshness_state": "current",
+        "review_state": "clear",
+        "failure_state": "clear",
+        "stale_record_count": 0,
+        "error_count": 0,
+        "review_count": 0,
+        "coverage": {"covered": 27, "total": 27, "unavailable": 0, "percent": 100.0},
+        "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+    }
+    changed = {
+        **base,
+        "coverage": {"covered": 26, "total": 27, "unavailable": 1, "percent": 96.3},
+        "source_url": None,
+    }
+
+    event = SOURCE_HEALTH.build_transition_events(
+        {"sources": [base]}, {"sources": [changed]}, "2026-09-03T00:00:00Z"
+    )[0]
+
+    OwnerAlertEvent.model_validate(event)

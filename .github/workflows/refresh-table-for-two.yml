@@ -85,7 +85,6 @@ jobs:
           KEEP_LOCAL_ON_CONFLICT: |
             data/table-for-two.json
             data/table-for-two-slots.json
-            data/updates.json
             data/changelog-table-for-two.md
             reminders/app/tft_guide_catalog.json
             data/reviews/official-document-pdfs
@@ -140,7 +139,7 @@ jobs:
 
       - name: Commit owner delivery receipts
         id: receipt_commit
-        if: always()
+        if: always() && steps.owner_dispatch.outcome != 'skipped'
         continue-on-error: true
         env:
           COMMIT_MESSAGE: "chore: record owner alert delivery"

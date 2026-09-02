@@ -43,6 +43,7 @@ async def ingest_owner_events(
     except (ValueError, TypeError, ValidationError):
         raise HTTPException(status_code=422, detail="Invalid owner alert payload.")
     event = payload.event
+    event_ref = event.digest()[:12]
     if event.status != "published":
         return {"ok": True, "id": event.id, "state": "withheld"}
     effective_at = event.reviewed_at or event.detected_at
@@ -60,20 +61,29 @@ async def ingest_owner_events(
     finally:
         conn.close()
     if claimed.state == "conflict":
+        log_event(
+            logger,
+            "owner_alert_delivery",
+            event_ref=event_ref,
+            state="conflict",
+            error_code="digest_conflict",
+            attempt=claimed.attempt_count,
+            duration_ms=0,
+        )
         raise HTTPException(
             status_code=409,
             detail=f"Event {event.id} conflicts with its recorded digest.",
         )
     if not claimed.should_send:
-        if claimed.state == "unknown":
-            log_event(
-                logger,
-                "owner_alert_delivery",
-                state="unknown",
-                error_code="stale_sending",
-                attempt=claimed.attempt_count,
-                duration_ms=0,
-            )
+        log_event(
+            logger,
+            "owner_alert_delivery",
+            event_ref=event_ref,
+            state=claimed.state,
+            error_code="stale_sending" if claimed.state == "unknown" else "deduplicated",
+            attempt=claimed.attempt_count,
+            duration_ms=0,
+        )
         return {
             "ok": True,
             "id": event.id,
@@ -110,6 +120,7 @@ async def ingest_owner_events(
     log_event(
         logger,
         "owner_alert_delivery",
+        event_ref=event_ref,
         state=state,
         error_code=error_code or "sent",
         attempt=claimed.attempt_count,

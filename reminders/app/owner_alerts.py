@@ -15,12 +15,24 @@ Scalar = str | int | float | bool | None
 SafeText = Annotated[str, Field(min_length=1, max_length=500)]
 ShortString = Annotated[str, Field(max_length=500)]
 StringList = Annotated[list[ShortString], Field(max_length=20)]
-PublicValue = Scalar | StringList
+
+
+class CoverageValue(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    covered: Annotated[int, Field(ge=0)]
+    total: Annotated[int, Field(ge=0)]
+    unavailable: Annotated[int, Field(ge=0)]
+    percent: Annotated[float, Field(ge=0, le=100)]
+
+
+PublicValue = Scalar | StringList | CoverageValue
 
 ALLOWED_SOURCE_HOSTS = (
     "americanexpress.com",
     "pocket-concierge.jp",
     "diningcity.asia",
+    "diningcity.sg",
     "go.amex",
     "google.com",
     "tabelog.com",
@@ -137,6 +149,11 @@ class OwnerAlertRequest(BaseModel):
 def _short(value: PublicValue, limit: int = 240) -> str:
     if value is None:
         rendered = "Not available"
+    elif isinstance(value, CoverageValue):
+        rendered = (
+            f"{value.covered}/{value.total} ({value.percent:g}%), "
+            f"{value.unavailable} unavailable"
+        )
     elif isinstance(value, bool):
         rendered = "Yes" if value else "No"
     elif isinstance(value, list):

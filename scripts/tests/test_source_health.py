@@ -126,6 +126,31 @@ class SourceHealthTest(unittest.TestCase):
         self.assertIn({"field": "Freshness", "before": "current", "after": "stale"}, events[0]["changes"])
         self.assertTrue(events[0]["stream_id"])
 
+    def test_coverage_transition_is_scalar_and_retains_previous_source_url(self):
+        base = {
+            "id": "table-for-two-availability", "label": "Table for Two availability",
+            "program": "Table for Two", "program_id": "table-for-two",
+            "route": "#/table-for-two", "state": "current", "freshness_state": "current",
+            "review_state": "clear", "failure_state": "clear", "stale_record_count": 0,
+            "error_count": 0, "review_count": 0,
+            "coverage": {"covered": 27, "total": 27, "unavailable": 0, "percent": 100.0},
+            "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+        }
+        changed = {
+            **base,
+            "coverage": {"covered": 26, "total": 27, "unavailable": 1, "percent": 96.3},
+            "source_url": None,
+        }
+
+        event = MODULE.build_transition_events(
+            {"sources": [base]}, {"sources": [changed]}, "2026-09-03T00:00:00Z"
+        )[0]
+
+        coverage = next(change for change in event["changes"] if change["field"] == "Coverage")
+        self.assertEqual(coverage["before"], "27/27 (100%), 0 unavailable")
+        self.assertEqual(coverage["after"], "26/27 (96.3%), 1 unavailable")
+        self.assertEqual(event["source_url"], base["source_url"])
+
     def test_review_transition_is_dispatchable_operational_fact(self):
         base = {
             "id": "table-for-two-menus", "label": "Table for Two menus",
@@ -172,6 +197,10 @@ class SourceHealthTest(unittest.TestCase):
             failed, failed_events = MODULE.update_source_health(
                 root, output, updates, later, {"global-dining": "failure"}
             )
+            failed_twice, second_failed_events = MODULE.update_source_health(
+                root, output, updates, datetime(2026, 8, 30, 13, 30, tzinfo=timezone.utc),
+                {"global-dining": "failure"},
+            )
             recovered, recovered_events = MODULE.update_source_health(
                 root, output, updates, datetime(2026, 8, 30, 14, tzinfo=timezone.utc),
                 {"global-dining": "success"},
@@ -182,11 +211,41 @@ class SourceHealthTest(unittest.TestCase):
         self.assertEqual(failure["last_success_at"], "2026-08-30T11:00:00Z")
         self.assertEqual(failure["snapshot_state"], "retained")
         self.assertEqual(failure["consecutive_failures"], 1)
-        self.assertEqual(failed_events[0]["kind"], "source_failed")
+        self.assertEqual(failed_events[0]["kind"], "source_health_changed")
+        second_failure = next(
+            item for item in failed_twice["sources"] if item["id"] == "global-dining"
+        )
+        self.assertEqual(second_failure["consecutive_failures"], 2)
+        self.assertEqual(second_failed_events[0]["kind"], "source_failed")
         self.assertEqual(recovery["last_success_at"], "2026-08-30T11:00:00Z")
         self.assertEqual(recovery["last_attempt_at"], "2026-08-30T14:00:00Z")
         self.assertEqual(recovery["consecutive_failures"], 0)
         self.assertEqual(recovered_events[0]["kind"], "source_recovered")
+
+    def test_booking_project_candidate_is_exposed_as_roster_review(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            self.fixture(root)
+            tft = json.loads((root / "table-for-two.json").read_text())
+            tft["booking_project_source"] = {
+                "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+                "booking_project_review_items": [
+                    {"id": "new", "name": "Needs review", "reasons": ["missing_address"]}
+                ],
+            }
+            self.write(root, "table-for-two.json", tft)
+
+            payload = MODULE.build_source_health(root, NOW)
+
+        roster = next(
+            item for item in payload["sources"] if item["id"] == "table-for-two-roster"
+        )
+        self.assertEqual(roster["review_state"], "required")
+        self.assertEqual(roster["review_count"], 1)
+        self.assertEqual(
+            roster["source_url"],
+            "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+        )
 
     def test_unknown_attempt_source_fails_closed(self):
         with tempfile.TemporaryDirectory() as temp:

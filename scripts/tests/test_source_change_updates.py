@@ -32,6 +32,62 @@ class SourceChangeUpdatesTest(unittest.TestCase):
         self.assertEqual(events[0]["after"]["fields"]["Name"], "New Place")
         self.assertEqual(events[0]["changes"][0], {"field": "Listing", "before": "Not listed", "after": "Listed"})
 
+    def test_tft_confirmed_membership_removal_has_before_and_after(self):
+        old = [{
+            "id": "tft-park90",
+            "name": "Park90",
+            "address": "10 Claymore Road",
+            "dining_city_public_url": "https://www.diningcity.sg/singapore/park90",
+            "booking_project_status": "active",
+        }]
+        new = [{**old[0], "booking_project_status": "not_listed"}]
+
+        events = MODULE.build_record_update_events(
+            "Table for Two", old, new, {
+                "roster_source": {"review_required": False},
+                "booking_project_source": {
+                    "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants"
+                },
+            }, "2026-09-03T00:30:00Z"
+        )
+
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["kind"], "removed")
+        self.assertEqual(events[0]["before"]["state"], "listed")
+        self.assertEqual(events[0]["after"]["state"], "not_listed")
+        self.assertEqual(events[0]["changes"], [{
+            "field": "AMEXPlatSG booking-project membership",
+            "before": "In project",
+            "after": "Not in project",
+        }])
+        self.assertEqual(
+            events[0]["source_url"],
+            "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+        )
+
+    def test_tft_confirmed_membership_reappearance_is_added_once(self):
+        old = [{
+            "id": "tft-park90",
+            "name": "Park90",
+            "dining_city_public_url": "https://www.diningcity.sg/singapore/park90",
+            "booking_project_status": "not_listed",
+        }]
+        new = [{**old[0], "booking_project_status": "active"}]
+        event = MODULE.build_record_update_events(
+            "Table for Two", old, new, {"roster_source": {"review_required": False}}, "2026-09-03T01:00:00Z"
+        )[0]
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "updates.json"
+            MODULE.append_updates(path, [event], event["detected_at"])
+            MODULE.append_updates(path, [event], event["detected_at"])
+            updates = json.loads(path.read_text())["updates"]
+
+        self.assertEqual(event["kind"], "added")
+        self.assertEqual(event["before"]["state"], "not_listed")
+        self.assertEqual(event["after"]["state"], "listed")
+        self.assertEqual(len(updates), 1)
+
     def test_changed_record_exposes_only_user_relevant_fields(self):
         old = [{"id": "venue-1", "name": "Place", "address": "Old address", "lat": 1.0}]
         new = [{"id": "venue-1", "name": "Place", "address": "New address", "lat": 2.0}]

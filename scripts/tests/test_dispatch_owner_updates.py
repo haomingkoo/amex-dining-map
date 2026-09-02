@@ -111,6 +111,43 @@ def test_review_timestamp_promotes_an_older_event_into_replay_window(tmp_path: P
     ]
 
 
+def test_owner_notification_policy_keeps_changes_and_suppresses_health_flapping():
+    events = [
+        {"id": "venue-added", "kind": "added"},
+        {"id": "menu-updated", "kind": "menu_updated"},
+        {"id": "source-failed", "kind": "source_failed"},
+        {"id": "review-required", "kind": "source_review_required"},
+        {"id": "source-updated", "kind": "source_updated"},
+        {"id": "terms", "kind": "terms_clause_modified"},
+        {"id": "faq", "kind": "faq_clause_added"},
+        {"id": "source-stale", "kind": "source_stale"},
+        {"id": "source-recovered", "kind": "source_recovered"},
+        {"id": "source-health", "kind": "source_health_changed"},
+    ]
+
+    selected, withheld = MODULE.select_owner_notifications(events)
+
+    assert [event["id"] for event in selected] == [
+        "venue-added",
+        "menu-updated",
+        "source-failed",
+        "review-required",
+        "source-updated",
+        "terms",
+        "faq",
+    ]
+    assert withheld == {
+        "source-stale": "withheld",
+        "source-recovered": "withheld",
+        "source-health": "withheld",
+    }
+
+
+def test_owner_notification_policy_fails_visible_for_unknown_kind():
+    with pytest.raises(RuntimeError, match="Unknown published owner event kind"):
+        MODULE.select_owner_notifications([{"id": "future", "kind": "new_kind"}])
+
+
 def test_invalid_published_timestamp_fails_closed(tmp_path: Path):
     path = tmp_path / "updates.json"
     path.write_text(

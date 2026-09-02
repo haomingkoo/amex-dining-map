@@ -94,3 +94,14 @@ def test_refresh_commit_uses_the_conflict_safe_helper() -> None:
     assert "data/table-for-two.json" in block
     assert "data/reviews/tft-menu-pdfs" in block
     assert "KEEP_LOCAL_ON_CONFLICT" in block
+
+
+def test_shared_update_ledger_is_staged_but_never_overwritten_on_conflict() -> None:
+    block = step_block(
+        workflow_text(),
+        "Commit refreshed Table for Two data",
+        "Finalize Table for Two roster health",
+    )
+    must_stage, keep_local = block.split("KEEP_LOCAL_ON_CONFLICT:", 1)
+    assert "data/updates.json" in must_stage
+    assert "data/updates.json" not in keep_local

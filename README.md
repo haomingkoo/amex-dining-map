@@ -152,7 +152,7 @@ Current coordinate audit notes:
 - Japan Dining: 839 mapped records, no missing coordinates.
 - Plat Stay: 76 mapped records, no missing coordinates.
 - Love Dining: 77 mapped records, 6 intentionally bundled/unmapped records.
-- Table for Two: 29 mapped records (27 current booking-project venues and 2 retained historical records), no missing coordinates.
+- Table for Two: 30 mapped records (28 current booking-project venues and 2 retained historical records), no missing coordinates.
 - The bounds audit catches impossible country-level pins; it does not prove
   every pin is within 20m of a restaurant entrance.
 
@@ -242,6 +242,17 @@ The resumable apply path preserves existing menu and availability state and
 publishes exact reviewed per-venue additions/removals. Re-run with `--check`
 before committing; an interrupted ledger append is recovered from bounded
 pending events on the next run.
+
+The structured DiningCity `AMEXPlatSG` membership feed is maintained separately
+from that official-image lineage. A new feed-only venue is published only after
+two successful observations agree on its identity and the record has an online
+AMEXPlatSG status, a DiningCity Singapore URL, an address, and Singapore-bounded
+coordinates. A feed-only venue is retired only after two successful absences;
+one missed or failed scan retains the last good listing. Official-image venues
+are never auto-deleted. Every confirmed transition is written as a deduplicated
+before-and-after update, while incomplete or conflicting records remain in the
+review queue. Scheduled runs emit one bounded `TFT_MAINTENANCE` JSON summary for
+diagnosis without logging response bodies or credentials.
 
 Table for Two T&C and FAQ successors follow the same retained-snapshot rule,
 but their review is bound to exact PDF bytes and page-level clause evidence.

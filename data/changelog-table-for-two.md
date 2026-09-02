@@ -12,3 +12,11 @@ Source: `data/table-for-two.json`
   - Grand Cru Wine Bar
   - OSO Ristorante
   - Sarnies
+
+<!-- source-change:1061dc3210d9aff352bad32b628e1105b95c77d05da7a60e7c21c9dc86288eda -->
+## 2026-09-02 22:41 UTC — Table for Two
+
+Source: `data/table-for-two.json`
+
+- **Added (1)**
+  - Park90

@@ -98,6 +98,12 @@ published-but-undelivered events are protected from the resolved-event cap;
 terminal ingestion outcomes are written back as non-secret states by a second,
 conflict-failing workflow commit and are not automatically posted again.
 
+Owner Telegram delivery is intentionally narrower than the public audit ledger.
+Restaurant additions/removals, menu changes, meaningful detail corrections,
+persistent source failures, and review-required source changes are actionable.
+Routine stale/recovered/coverage flapping remains recorded in source health but
+is marked `withheld` instead of producing repeated owner messages.
+
 Telegram has no idempotency key. A timeout can happen after Telegram accepted a
 message but before the service received proof, so ambiguous outcomes are stored
 as `unknown` and are not retried automatically. Definite retryable failures are

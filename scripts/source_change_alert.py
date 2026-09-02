@@ -66,6 +66,7 @@ META_FIELD_LABELS = {
     "booking_project_source.observed_membership_sha256": "Booking-project membership fingerprint",
     "booking_project_source.added_vs_reviewed_roster": "Booking-project candidates added",
     "booking_project_source.missing_vs_reviewed_roster": "Reviewed venues missing from booking project",
+    "booking_project_source.identity_mismatch_count": "Booking-project identity conflicts",
     "source_images.voucher_cycles_sha256": "Voucher cycles image hash",
     "source_documents.terms_sha256": "Table for Two T&C PDF hash",
     "source_documents.faq_sha256": "Table for Two FAQ PDF hash",
@@ -247,6 +248,7 @@ def record_source_url(record: dict[str, Any] | None, meta: dict[str, Any]) -> st
         "source_document_url",
         "terms_url",
         "website_url",
+        "dining_city_public_url",
     ):
         value = nested_get(record, path)
         if value:
@@ -405,6 +407,42 @@ def build_record_update_events(
         for old_key, new_key, identity in rekeyed
     )
     for key, old_record, new_record, entity_key, is_rekeyed in record_pairs:
+        old_listed = old_record.get("booking_project_status") != "not_listed"
+        new_listed = new_record.get("booking_project_status") != "not_listed"
+        if program == "Table for Two" and old_listed != new_listed:
+            kind = "added" if new_listed else "removed"
+            membership_source_url = (
+                (meta.get("booking_project_source") or {}).get("source_url")
+                or record_source_url(new_record, meta)
+            )
+            event = {
+                "program": program,
+                "program_id": config["id"],
+                "route": config["route"],
+                "kind": kind,
+                "subject": record_label(new_record if new_listed else old_record),
+                "detected_at": detected_at,
+                "status": status,
+                "before": {
+                    "state": "not_listed" if new_listed else "listed",
+                    "fields": {} if new_listed else public_record_fields(old_record),
+                },
+                "after": {
+                    "state": "listed" if new_listed else "not_listed",
+                    "fields": public_record_fields(new_record) if new_listed else {},
+                },
+                "changes": [
+                    {
+                        "field": "AMEXPlatSG booking-project membership",
+                        "before": "Not in project" if new_listed else "In project",
+                        "after": "In project" if new_listed else "Not in project",
+                    }
+                ],
+                "source_url": membership_source_url,
+            }
+            assign_event_identity(event, entity_key)
+            events.append(event)
+            continue
         if stable_record_hash(old_record) == stable_record_hash(new_record):
             continue
         changes = public_field_changes(old_record, new_record)

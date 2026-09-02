@@ -28,6 +28,23 @@ def test_membership_changes_are_checked_on_the_fast_cycle() -> None:
     assert "issues: write" in text
 
 
+def test_shared_update_ledger_never_overwrites_remote_events_on_conflict() -> None:
+    text = workflow_text()
+    assert "group: table-for-two-availability-refresh" in text
+    assert "cancel-in-progress: false" in text
+    block = step_block(
+        text,
+        "Commit refreshed availability and alert state",
+        "Finalize source health",
+    )
+    must_stage, keep_local = block.split("KEEP_LOCAL_ON_CONFLICT:", 1)
+    assert "data/updates.json" in must_stage
+    assert "data/updates.json" not in keep_local
+    helper = Path("scripts/commit_and_push.sh").read_text(encoding="utf-8")
+    assert '[[ "$f" == "data/updates.json" ]]' in helper
+    assert "scripts/merge_update_ledgers.py" in helper
+
+
 def test_independent_availability_evidence_survives_partial_failure() -> None:
     text = workflow_text()
     stages = (
