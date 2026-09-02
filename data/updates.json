@@ -1,7 +1,153 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-02T23:07:04Z",
+  "updated_at": "2026-09-02T23:27:53Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_stale",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-02T23:27:53Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "after": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 28
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 28
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "e80178cabd37915387ca",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "aeaca081f691a37c0592"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-09-02T23:27:53Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Coverage": "780/838 (93.1%), 58 unavailable"
+        }
+      },
+      "after": {
+        "state": "stale",
+        "fields": {
+          "Coverage": "780/843 (92.5%), 63 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "780/838 (93.1%), 58 unavailable",
+          "after": "780/843 (92.5%), 63 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "be8786bcd58599df6c59",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "6b04b35651a653d21399"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-09-02T23:27:53Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "838/838 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "843/843 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "838/838 (100%), 0 unavailable",
+          "after": "843/843 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "76df09d58e4670fbd1c9",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "5b5c875c152edd9b7be0"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-09-02T23:27:53Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2939/2953 (99.5%), 14 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2939/2958 (99.4%), 19 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "2939/2953 (99.5%), 14 unavailable",
+          "after": "2939/2958 (99.4%), 19 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "1c7f262ce9ab4a1ccc5f",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "11ef10750d9a17b81137"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -6021,9 +6167,10 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "865267d7376e2a047f1f",
+        "latest_transition_id": "be8786bcd58599df6c59",
         "occurrences": {
-          "865267d7376e2a047f1f": 1
+          "865267d7376e2a047f1f": 1,
+          "be8786bcd58599df6c59": 1
         }
       },
       "144a07273fbc23853124": {
@@ -6078,8 +6225,9 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "ecee01e4770cfc076669",
+        "latest_transition_id": "76df09d58e4670fbd1c9",
         "occurrences": {
+          "76df09d58e4670fbd1c9": 1,
           "ecee01e4770cfc076669": 1
         }
       },
@@ -6184,8 +6332,9 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "ecb804c7aa8649ff67ed",
+        "latest_transition_id": "1c7f262ce9ab4a1ccc5f",
         "occurrences": {
+          "1c7f262ce9ab4a1ccc5f": 1,
           "4258225d5117a5d79957": 1,
           "6788d36d5c8844e749a7": 1,
           "9b20e2012d24b98c912c": 1,
@@ -6301,7 +6450,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "581d8013f60982c250d6",
+        "latest_transition_id": "e80178cabd37915387ca",
         "occurrences": {
           "0486ed88fd4f242b58f7": 1,
           "23f1bba4701f42a76948": 3,
@@ -6316,6 +6465,7 @@
           "b65d58034636a5fc38a8": 1,
           "b9782e66dd081210376b": 3,
           "c6e1d48a099113033211": 1,
+          "e80178cabd37915387ca": 1,
           "e9e1f6d401dbe0b5a79c": 1,
           "f1df936d6ee3b6ab351e": 12
         }
