@@ -1,7 +1,60 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-02T22:15:00Z",
+  "updated_at": "2026-09-02T22:40:26Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_updated",
+      "subject": "Table for Two source",
+      "detected_at": "2026-09-02T22:40:26Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Booking-project candidates added": [
+            "Forage",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "Park90",
+            "OSO Ristorante"
+          ]
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Booking-project candidates added": [
+            "Park90"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Booking-project candidates added",
+          "before": [
+            "Forage",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "Park90",
+            "OSO Ristorante"
+          ],
+          "after": [
+            "Park90"
+          ]
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "8cab75cfec2f74ea1ec4",
+      "stream_id": "5a285967ca2795c90124",
+      "occurrence": 1,
+      "id": "596b0bd8b72d4e32b34b"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -5300,10 +5353,11 @@
         }
       },
       "5a285967ca2795c90124": {
-        "latest_transition_id": "70e4c572a36d9428cfc6",
+        "latest_transition_id": "8cab75cfec2f74ea1ec4",
         "occurrences": {
           "1fd9e02b2a3042318396": 1,
           "70e4c572a36d9428cfc6": 1,
+          "8cab75cfec2f74ea1ec4": 1,
           "fc6f72b06e09c47f8ec1": 1
         }
       },
