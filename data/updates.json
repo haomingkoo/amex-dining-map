@@ -1,7 +1,129 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-02T23:27:53Z",
+  "updated_at": "2026-09-02T23:47:46Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_stale",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-09-02T23:47:46Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Freshness": "current",
+          "Review": "required",
+          "Review items": 8,
+          "Coverage": "20/30 (66.7%), 10 unavailable"
+        }
+      },
+      "after": {
+        "state": "unavailable",
+        "fields": {
+          "Source state": "unavailable",
+          "Freshness": "unavailable",
+          "Review": "clear",
+          "Review items": 0,
+          "Coverage": "0/30 (0%), 30 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "review_required",
+          "after": "unavailable"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "unavailable"
+        },
+        {
+          "field": "Review",
+          "before": "required",
+          "after": "clear"
+        },
+        {
+          "field": "Review items",
+          "before": 8,
+          "after": 0
+        },
+        {
+          "field": "Coverage",
+          "before": "20/30 (66.7%), 10 unavailable",
+          "after": "0/30 (0%), 30 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "472d92dd815005a80185",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "9dc87b91824d5950fbc4"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-09-02T23:47:46Z",
+      "status": "published",
+      "before": {
+        "state": "unavailable",
+        "fields": {
+          "Source state": "unavailable",
+          "Failures": "clear",
+          "Snapshot": "current",
+          "Refresh attempt": "success",
+          "Consecutive failures": 0
+        }
+      },
+      "after": {
+        "state": "failed",
+        "fields": {
+          "Source state": "failed",
+          "Failures": "failed",
+          "Snapshot": "unavailable",
+          "Refresh attempt": "failure",
+          "Consecutive failures": 1
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "unavailable",
+          "after": "failed"
+        },
+        {
+          "field": "Failures",
+          "before": "clear",
+          "after": "failed"
+        },
+        {
+          "field": "Snapshot",
+          "before": "current",
+          "after": "unavailable"
+        },
+        {
+          "field": "Refresh attempt",
+          "before": "success",
+          "after": "failure"
+        },
+        {
+          "field": "Consecutive failures",
+          "before": 0,
+          "after": 1
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "b8f51ade08c9e7395ef0",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "55389fdec818618e1de3"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -6201,14 +6323,16 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "04d54fb5e6257f646c0f",
+        "latest_transition_id": "b8f51ade08c9e7395ef0",
         "occurrences": {
           "04d54fb5e6257f646c0f": 1,
           "40e94b2b92f0f585356f": 1,
+          "472d92dd815005a80185": 1,
           "665d959cd0704f2ddb99": 1,
           "a0c395933ede11a9d792": 1,
           "a5a3c3879b9a7443876f": 1,
           "a7f998e64b49e46f1a72": 1,
+          "b8f51ade08c9e7395ef0": 1,
           "e07e7a37b6c17e4c2b32": 1
         }
       },
