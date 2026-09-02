@@ -1,7 +1,84 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-02T15:21:47Z",
+  "updated_at": "2026-09-02T17:38:48Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_updated",
+      "subject": "Table for Two source",
+      "detected_at": "2026-09-02T17:38:48Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Booking-project venue count": 27,
+          "Booking-project membership fingerprint": "43b42c913da0",
+          "Booking-project candidates added": [
+            "Forage",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "OSO Ristorante"
+          ]
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Booking-project venue count": 28,
+          "Booking-project membership fingerprint": "bfd23a5b1c6f",
+          "Booking-project candidates added": [
+            "Forage",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "Park90",
+            "OSO Ristorante"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Booking-project venue count",
+          "before": 27,
+          "after": 28
+        },
+        {
+          "field": "Booking-project membership fingerprint",
+          "before": "43b42c913da0",
+          "after": "bfd23a5b1c6f"
+        },
+        {
+          "field": "Booking-project candidates added",
+          "before": [
+            "Forage",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "OSO Ristorante"
+          ],
+          "after": [
+            "Forage",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "Park90",
+            "OSO Ristorante"
+          ]
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "70e4c572a36d9428cfc6",
+      "stream_id": "5a285967ca2795c90124",
+      "occurrence": 1,
+      "id": "54d69bd4a20860dff95a"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -4679,9 +4756,10 @@
         }
       },
       "5a285967ca2795c90124": {
-        "latest_transition_id": "fc6f72b06e09c47f8ec1",
+        "latest_transition_id": "70e4c572a36d9428cfc6",
         "occurrences": {
           "1fd9e02b2a3042318396": 1,
+          "70e4c572a36d9428cfc6": 1,
           "9fe73cb5771943d571f0": 1,
           "fc6f72b06e09c47f8ec1": 1
         }
