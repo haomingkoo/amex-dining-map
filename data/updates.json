@@ -1,7 +1,60 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-01T23:46:12Z",
+  "updated_at": "2026-09-02T00:34:37Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-02T00:34:37Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": {
+            "covered": 20,
+            "total": 21,
+            "unavailable": 1,
+            "percent": 95.2
+          }
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": {
+            "covered": 21,
+            "total": 21,
+            "unavailable": 0,
+            "percent": 100.0
+          }
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": {
+            "covered": 20,
+            "total": 21,
+            "unavailable": 1,
+            "percent": 95.2
+          },
+          "after": {
+            "covered": 21,
+            "total": 21,
+            "unavailable": 0,
+            "percent": 100.0
+          }
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "e9e1f6d401dbe0b5a79c",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "a073c3d705bda787b1bb"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -4421,7 +4474,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "689f87123d635d8652da",
+        "latest_transition_id": "e9e1f6d401dbe0b5a79c",
         "occurrences": {
           "0486ed88fd4f242b58f7": 1,
           "23f1bba4701f42a76948": 3,
@@ -4434,6 +4487,7 @@
           "a35a007cefa6ec723d14": 1,
           "b9782e66dd081210376b": 3,
           "c6e1d48a099113033211": 1,
+          "e9e1f6d401dbe0b5a79c": 1,
           "f1df936d6ee3b6ab351e": 7
         }
       }
