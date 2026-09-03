@@ -20,3 +20,11 @@ Source: `data/table-for-two.json`
 
 - **Added (1)**
   - Park90
+
+<!-- source-change:76630a3d6adba15d83c8503cc85de941395687e62a994ee2f173b61d7e524ee5 -->
+## 2026-09-03 00:42 UTC — Table for Two
+
+Source: `data/table-for-two.json`
+
+- **Removed (1)**
+  - Forage
