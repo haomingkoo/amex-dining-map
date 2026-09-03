@@ -1,7 +1,108 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-03T11:45:32Z",
+  "updated_at": "2026-09-03T12:21:22Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-03T12:21:22Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 20
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 20,
+          "after": 0
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "b9782e66dd081210376b",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 4,
+      "id": "a65a19df497779b18fc1"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-09-03T12:21:22Z",
+      "status": "published",
+      "before": {
+        "state": "failed",
+        "fields": {
+          "Freshness": "unavailable",
+          "Review": "clear",
+          "Review items": 0,
+          "Coverage": "0/29 (0%), 29 unavailable"
+        }
+      },
+      "after": {
+        "state": "failed",
+        "fields": {
+          "Freshness": "current",
+          "Review": "required",
+          "Review items": 8,
+          "Coverage": "20/29 (69%), 9 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Freshness",
+          "before": "unavailable",
+          "after": "current"
+        },
+        {
+          "field": "Review",
+          "before": "clear",
+          "after": "required"
+        },
+        {
+          "field": "Review items",
+          "before": 0,
+          "after": 8
+        },
+        {
+          "field": "Coverage",
+          "before": "0/29 (0%), 29 unavailable",
+          "after": "20/29 (69%), 9 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "e6dfbd32b7d837b21146",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "732bf53caca248f7b818"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -7066,7 +7167,7 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "3ca8bc01ebe918e43e16",
+        "latest_transition_id": "e6dfbd32b7d837b21146",
         "occurrences": {
           "04d54fb5e6257f646c0f": 1,
           "3ca8bc01ebe918e43e16": 1,
@@ -7077,7 +7178,8 @@
           "a5a3c3879b9a7443876f": 1,
           "a7f998e64b49e46f1a72": 1,
           "b8f51ade08c9e7395ef0": 1,
-          "e07e7a37b6c17e4c2b32": 1
+          "e07e7a37b6c17e4c2b32": 1,
+          "e6dfbd32b7d837b21146": 1
         }
       },
       "1d932675e8369102e9a6": {
@@ -7360,7 +7462,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "6b0a8f0fbbc4c84ab912",
+        "latest_transition_id": "b9782e66dd081210376b",
         "occurrences": {
           "0486ed88fd4f242b58f7": 1,
           "23f1bba4701f42a76948": 3,
@@ -7373,7 +7475,7 @@
           "a0e5d9c3222307d148c0": 1,
           "a35a007cefa6ec723d14": 1,
           "b65d58034636a5fc38a8": 1,
-          "b9782e66dd081210376b": 3,
+          "b9782e66dd081210376b": 4,
           "c6e1d48a099113033211": 1,
           "d039f79dfa5142cf1cf1": 1,
           "e80178cabd37915387ca": 1,
