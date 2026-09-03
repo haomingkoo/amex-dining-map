@@ -8,6 +8,8 @@ on:
 
 permissions:
   contents: write
+  actions: write
+  issues: write
 
 concurrency:
   group: source-ledger-refresh
@@ -61,3 +63,9 @@ jobs:
       - name: Check live Table for Two freshness
         if: always()
         run: python3 scripts/check_tft_live_health.py
+
+      - name: Retry or escalate stale sources
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/watchdog_stale_sources.py
