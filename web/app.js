@@ -101,6 +101,7 @@ const GOOGLE_RATING_STALE_DAYS = 90;
 const REMINDERS_API_BASE = "https://amex-reminders-production.up.railway.app";
 const TABLE_FOR_TWO_LIVE_SNAPSHOT_URL = `${REMINDERS_API_BASE}/api/tft/slots`;
 const TABLE_FOR_TWO_LIVE_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+const TABLE_FOR_TWO_DATA_REVALIDATE_INTERVAL_MS = 5 * 60 * 1000;
 const TABLE_FOR_TWO_FETCH_TIMEOUT_MS = 12 * 1000;
 const TABLE_FOR_TWO_DEFAULT_PARTY_SIZE = 2;
 const TABLE_FOR_TWO_MAX_TIMES = 12;
@@ -108,6 +109,10 @@ const TABLE_FOR_TWO_TIME_WINDOW_MINUTES = 60;
 const TABLE_FOR_TWO_TIME_WINDOW_LABEL = "1 hour";
 const REVALIDATE_DATA_URLS = new Set([
   TABLE_FOR_TWO_DATA_URL,
+  TABLE_FOR_TWO_DATA_FALLBACK_URL,
+  TABLE_FOR_TWO_STATIC_SNAPSHOT_URL,
+  TABLE_FOR_TWO_RELEASE_HISTORY_URL,
+  TABLE_FOR_TWO_RELEASE_HISTORY_FALLBACK_URL,
   UPDATES_DATA_URL,
   SOURCE_HEALTH_DATA_URL,
 ]);
@@ -550,6 +555,9 @@ const state = {
   pocketCalendarMonths: {},
   pocketCalendarOpen: {},
   japanRankFiltersOpen: false,
+  tableForTwoVisibilityBound: false,
+  tableForTwoDataRevalidatedAt: null,
+  tableForTwoDataRevalidateInFlight: false,
   tableForTwoLiveRefreshInFlight: false,
   tableForTwoLiveRefreshAt: null,
   tableForTwoLiveRefreshTimer: null,
@@ -5400,13 +5408,64 @@ async function refreshTableForTwoLiveAvailability({ force = false } = {}) {
   }
 }
 
+async function revalidateTableForTwoData({ force = false } = {}) {
+  if (!state.dataLoaded.tableForTwo || state.tableForTwoDataRevalidateInFlight) return;
+  const now = Date.now();
+  if (
+    !force
+    && state.tableForTwoDataRevalidatedAt
+    && now - state.tableForTwoDataRevalidatedAt < TABLE_FOR_TWO_DATA_REVALIDATE_INTERVAL_MS
+  ) {
+    return;
+  }
+
+  state.tableForTwoDataRevalidateInFlight = true;
+  try {
+    const [tableForTwo, staticSlots, releaseHistory] = await Promise.all([
+      fetchJson(TABLE_FOR_TWO_DATA_URL)
+        .then((payload) => payload || fetchJson(TABLE_FOR_TWO_DATA_FALLBACK_URL)),
+      fetchJson(TABLE_FOR_TWO_STATIC_SNAPSHOT_URL),
+      fetchJson(TABLE_FOR_TWO_RELEASE_HISTORY_URL)
+        .then((payload) => payload || fetchJson(TABLE_FOR_TWO_RELEASE_HISTORY_FALLBACK_URL)),
+    ]);
+    state.tableForTwoDataRevalidatedAt = Date.now();
+    // Keep the loaded payload when a fetch fails; a stale roster beats an empty one.
+    if (!tableForTwo) return;
+    state.tableForTwo = tableForTwo;
+    applyTableForTwoStaticSnapshot(staticSlots);
+    if (releaseHistory) state.tableForTwoReleaseHistory = releaseHistory;
+    tableForTwoVenues().forEach((record) => {
+      record.search_text = tableForTwoSearchText(record);
+    });
+    refreshTableForTwoCategoryOptions();
+    // The replaced payload dropped the live overlay, so re-apply it now.
+    state.tableForTwoLiveRefreshAt = null;
+    if (isTableForTwoRoute()) {
+      refreshTableForTwoDateOptions();
+      filterTableForTwo();
+    }
+    await refreshTableForTwoLiveAvailability();
+  } finally {
+    state.tableForTwoDataRevalidateInFlight = false;
+  }
+}
+
 function ensureTableForTwoLiveRefresh() {
   if (!state.tableForTwoLiveRefreshTimer) {
     state.tableForTwoLiveRefreshTimer = window.setInterval(() => {
       if (isTableForTwoRoute()) {
+        void revalidateTableForTwoData();
         refreshTableForTwoLiveAvailability();
       }
     }, TABLE_FOR_TWO_LIVE_REFRESH_INTERVAL_MS);
+  }
+  if (!state.tableForTwoVisibilityBound) {
+    state.tableForTwoVisibilityBound = true;
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState !== "visible" || !isTableForTwoRoute()) return;
+      void revalidateTableForTwoData();
+      refreshTableForTwoLiveAvailability();
+    });
   }
   refreshTableForTwoLiveAvailability();
 }
