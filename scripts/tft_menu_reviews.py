@@ -452,17 +452,18 @@ def verify_decision_receipts(payload: dict) -> None:
             if entry.get("owner_event") is not None:
                 raise ValueError("rejected TFT menu decision cannot publish an event")
             continue
-        event = entry.get("owner_event") or {}
         venue = venues.get(candidate.get("venue_id"))
+        if not venue:
+            # The venue left the roster after this menu was approved. The receipt stays
+            # as history; it no longer authorizes a published menu.
+            continue
+        event = entry.get("owner_event") or {}
         expected_event = _owner_event(
             candidate_item,
             manifest,
-            str((venue or {}).get("name") or ""),
+            str(venue.get("name") or ""),
         )
-        if (
-            not venue
-            or event != expected_event
-        ):
+        if event != expected_event:
             raise ValueError("approved TFT menu decision has an invalid owner event")
         approved_by_manifest[entry["manifest_sha256"]] = entry
         key = (str(candidate.get("venue_id")), str(candidate.get("card")))

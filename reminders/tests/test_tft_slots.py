@@ -37,6 +37,17 @@ def snapshot() -> dict:
     return payload
 
 
+def other_venue(payload: dict) -> tuple[dict, str]:
+    # The booking project drops and re-adds venues, so take a second venue from the
+    # snapshot instead of naming one the roster may remove.
+    names = {venue["id"]: venue["name"] for venue in catalog()["venues"]}
+    return next(
+        (venue, names[venue["id"]])
+        for venue in payload["venues"]
+        if venue["id"] != "tft-vue" and venue["id"] in names
+    )
+
+
 def answer(command: str, payload: dict | None = None) -> str:
     return tft_guide.handle_message(
         command,
@@ -129,7 +140,7 @@ def test_per_venue_staleness_overrides_recent_top_level_generation_time():
 
 def test_weekend_any_uses_transparent_next_30_day_defaults():
     payload = snapshot()
-    venue = next(item for item in payload["venues"] if item["id"] == "tft-colony")
+    venue, venue_name = other_venue(payload)
     venue["checked_at"] = (NOW - timedelta(minutes=5)).isoformat()
     venue["project"] = "AMEXPlatSG"
     venue["status"] = "live_available"
@@ -146,7 +157,7 @@ def test_weekend_any_uses_transparent_next_30_day_defaults():
 
     result = answer("/slots any | 2 | dinner | weekend", payload)
 
-    assert "Colony — 2026-09-05 19:00" in result
+    assert f"{venue_name} — 2026-09-05 19:00" in result
     assert "2026-09-07" not in result
     assert "weekends in the next 30 days" in result
     assert (
@@ -158,9 +169,10 @@ def test_weekend_any_uses_transparent_next_30_day_defaults():
 
 def test_conversational_weekend_query_defaults_transparently_and_checks_both_meals():
     payload = snapshot()
+    lunch_venue, lunch_venue_name = other_venue(payload)
     for venue_id, meal, slot_date in (
         ("tft-vue", "Dinner", "2026-09-05"),
-        ("tft-colony", "Lunch", "2026-09-06"),
+        (lunch_venue["id"], "Lunch", "2026-09-06"),
     ):
         venue = next(item for item in payload["venues"] if item["id"] == venue_id)
         venue["checked_at"] = (NOW - timedelta(minutes=5)).isoformat()
@@ -185,7 +197,7 @@ def test_conversational_weekend_query_defaults_transparently_and_checks_both_mea
     )
 
     assert "VUE — 2026-09-05 19:00, dinner" in result
-    assert "Colony — 2026-09-06 19:00, lunch" in result
+    assert f"{lunch_venue_name} — 2026-09-06 19:00, lunch" in result
     assert "Filters: 2 pax, Lunch or Dinner, weekends in the next 30 days" in result
     assert calls == 1
 

@@ -3,7 +3,7 @@
   "source": "data/table-for-two.json",
   "program": "American Express Table for Two by Platinum",
   "official_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
-  "roster_checked_at": "2026-09-02T21:58:08Z",
+  "roster_checked_at": "2026-09-02T23:47:00Z",
   "menu_source": {
     "checked_at": "2026-09-02T22:48:18Z",
     "review_required": true,
@@ -12,7 +12,7 @@
   "release_source": {
     "source": "data/table-for-two-release-history.json",
     "project": "AMEXPlatSG",
-    "updated_at": "2026-09-02T22:44:10+00:00",
+    "updated_at": "2026-09-03T09:50:42+00:00",
     "observation_count": 3258
   },
   "slot_source": {
@@ -418,51 +418,6 @@
       "explorer_route": "#/table-for-two?venue=tft-15-stamford-restaurant"
     },
     {
-      "id": "tft-baes-cocktail-club",
-      "name": "Bae's Cocktail Club",
-      "dining_city_id": "205194844",
-      "dining_city_name": "Bae's Cocktail Club",
-      "category": "restaurant",
-      "address": "21 Tanjong Pagar Road, #01-04/05, Singapore 088444",
-      "aliases": [],
-      "menus": {
-        "centurion": {
-          "status": "published",
-          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Baes-Menu_Centurion.pdf",
-          "filename": "Baes-Menu_Centurion.pdf",
-          "card": "centurion",
-          "label": "Centurion",
-          "checked_at": "2026-09-02T22:48:18Z",
-          "last_seen_at": "2026-09-02T22:48:18Z",
-          "sha256": "890f1bcc888eb30792754d3c6dd8260a5cbd9ccf3509ee8632ce6b044dc7b8bc"
-        },
-        "platinum": {
-          "status": "published",
-          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Baes-Menu_Platinum.pdf",
-          "filename": "Baes-Menu_Platinum.pdf",
-          "card": "platinum",
-          "label": "Platinum",
-          "checked_at": "2026-09-02T22:48:18Z",
-          "last_seen_at": "2026-09-02T22:48:18Z",
-          "sha256": "84893b90ec4f378f71bb9a44058d3c65b9071c2f1d7e1cec7c0f9b31da22015a"
-        }
-      },
-      "release_patterns": [
-        {
-          "meal": "Dinner",
-          "observation_count": 12,
-          "median_lead_days": 29.0,
-          "lead_days_min": 28,
-          "lead_days_max": 29,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.58,
-          "confidence": "medium",
-          "latest_observation_at": "2026-09-02T17:37:37Z"
-        }
-      ],
-      "explorer_route": "#/table-for-two?venue=tft-baes-cocktail-club"
-    },
-    {
       "id": "tft-brewerkz-east-coast-park",
       "name": "Brewerkz East Coast Park",
       "dining_city_id": "205196412",
@@ -521,49 +476,6 @@
       "explorer_route": "#/table-for-two?venue=tft-brewerkz-riverside-point"
     },
     {
-      "id": "tft-colony",
-      "name": "Colony",
-      "dining_city_id": "205191500",
-      "dining_city_name": "Colony",
-      "category": "buffet",
-      "address": "The Ritz-Carlton, Millenia Singapore, 7 Raffles Avenue, Singapore 039799",
-      "aliases": [
-        "Colony at the Ritz Carlton",
-        "Colony Ritz Carlton"
-      ],
-      "menus": {
-        "default": {
-          "status": "buffet_no_menu_expected",
-          "checked_at": "2026-09-02T22:48:18Z"
-        }
-      },
-      "release_patterns": [
-        {
-          "meal": "Dinner",
-          "observation_count": 25,
-          "median_lead_days": 35.0,
-          "lead_days_min": 3,
-          "lead_days_max": 61,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.24,
-          "confidence": "high",
-          "latest_observation_at": "2026-08-31T00:47:42Z"
-        },
-        {
-          "meal": "Lunch",
-          "observation_count": 18,
-          "median_lead_days": 61.0,
-          "lead_days_min": 7,
-          "lead_days_max": 61,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.33,
-          "confidence": "high",
-          "latest_observation_at": "2026-09-02T17:37:37Z"
-        }
-      ],
-      "explorer_route": "#/table-for-two?venue=tft-colony"
-    },
-    {
       "id": "tft-cultivate",
       "name": "Cultivate",
       "dining_city_id": "205194002",
@@ -620,90 +532,6 @@
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-cultivate"
-    },
-    {
-      "id": "tft-estate",
-      "name": "Estate",
-      "dining_city_id": "205195358",
-      "dining_city_name": "Estate",
-      "category": "buffet",
-      "address": "Hilton Singapore Orchard, Level 5, 333 Orchard Road, Singapore 238867",
-      "aliases": [],
-      "menus": {
-        "default": {
-          "status": "buffet_no_menu_expected",
-          "checked_at": "2026-09-02T22:48:18Z"
-        }
-      },
-      "release_patterns": [
-        {
-          "meal": "Afternoon Tea",
-          "observation_count": 11,
-          "median_lead_days": 61.0,
-          "lead_days_min": 61,
-          "lead_days_max": 61,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.36,
-          "confidence": "medium",
-          "latest_observation_at": "2026-09-02T09:37:48Z"
-        },
-        {
-          "meal": "Dinner",
-          "observation_count": 13,
-          "median_lead_days": 61.0,
-          "lead_days_min": 7,
-          "lead_days_max": 61,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.54,
-          "confidence": "medium",
-          "latest_observation_at": "2026-09-02T13:52:57Z"
-        },
-        {
-          "meal": "Lunch",
-          "observation_count": 11,
-          "median_lead_days": 61.0,
-          "lead_days_min": 61,
-          "lead_days_max": 61,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.36,
-          "confidence": "medium",
-          "latest_observation_at": "2026-09-02T05:05:57Z"
-        }
-      ],
-      "explorer_route": "#/table-for-two?venue=tft-estate"
-    },
-    {
-      "id": "tft-forage",
-      "name": "Forage",
-      "dining_city_id": "205193590",
-      "dining_city_name": "Forage",
-      "category": "restaurant",
-      "address": "60 Mandai Lake Road, Singapore 729979",
-      "aliases": [],
-      "menus": {
-        "centurion": {
-          "status": "published",
-          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Forage-Menu_Centurion.pdf",
-          "filename": "Forage-Menu_Centurion.pdf",
-          "card": "centurion",
-          "label": "Centurion",
-          "checked_at": "2026-09-02T22:48:18Z",
-          "last_seen_at": "2026-09-02T22:48:18Z",
-          "sha256": "cf8f3c26ca57769df8e9b845d76afe7cec261f23625b77930f4aced51b9fc127"
-        },
-        "platinum": {
-          "status": "published",
-          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Forage-Menu_Platinium.pdf",
-          "filename": "Forage-Menu_Platinium.pdf",
-          "card": "platinum",
-          "label": "Platinum",
-          "checked_at": "2026-09-02T22:48:18Z",
-          "last_seen_at": "2026-09-02T22:48:18Z",
-          "sha256": "72c0b83a7423c846dfca177ed203329ac81ae211979ca37557885be8090ed62d"
-        }
-      },
-      "release_patterns": [],
-      "explorer_route": "#/table-for-two?venue=tft-forage"
     },
     {
       "id": "tft-ginger",
@@ -777,51 +605,6 @@
       "explorer_route": "#/table-for-two?venue=tft-grand-cru-wine-bar"
     },
     {
-      "id": "tft-highhouse",
-      "name": "HighHouse",
-      "dining_city_id": "205194016",
-      "dining_city_name": "HighHouse",
-      "category": "restaurant",
-      "address": "1 Raffles Place, Level 61-62, Singapore 048616",
-      "aliases": [],
-      "menus": {
-        "centurion": {
-          "status": "published",
-          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/HighHouse-Menu_Centurion.pdf",
-          "filename": "HighHouse-Menu_Centurion.pdf",
-          "card": "centurion",
-          "label": "Centurion",
-          "checked_at": "2026-09-02T22:48:18Z",
-          "last_seen_at": "2026-09-02T22:48:18Z",
-          "sha256": "988388d5cd4de95b0688c9ea4a4f874c444f4ea4ac8624d58c6b909bea1affff"
-        },
-        "platinum": {
-          "status": "published",
-          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/HighHouse-Menu_Platinum.pdf",
-          "filename": "HighHouse-Menu_Platinum.pdf",
-          "card": "platinum",
-          "label": "Platinum",
-          "checked_at": "2026-09-02T22:48:18Z",
-          "last_seen_at": "2026-09-02T22:48:18Z",
-          "sha256": "e4b9865c94f3fa05fe893465a756cabd8c28b7a5e42b60bf4cf676d933e8b794"
-        }
-      },
-      "release_patterns": [
-        {
-          "meal": "Dinner",
-          "observation_count": 11,
-          "median_lead_days": 29.0,
-          "lead_days_min": 10,
-          "lead_days_max": 29,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.55,
-          "confidence": "medium",
-          "latest_observation_at": "2026-09-02T17:37:37Z"
-        }
-      ],
-      "explorer_route": "#/table-for-two?venue=tft-highhouse"
-    },
-    {
       "id": "tft-kaya-at-the-standard",
       "name": "Kaya at The Standard",
       "dining_city_id": "205192104",
@@ -878,65 +661,6 @@
       "explorer_route": "#/table-for-two?venue=tft-kaya-at-the-standard"
     },
     {
-      "id": "tft-kees",
-      "name": "Kee's",
-      "dining_city_id": "205194842",
-      "dining_city_name": "Kee's",
-      "category": "cafe",
-      "address": "21 Carpenter Street, Singapore 059984",
-      "aliases": [
-        "Kees"
-      ],
-      "menus": {
-        "platinum": {
-          "status": "published",
-          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Kees-Menu.pdf",
-          "filename": "Kees-Menu.pdf",
-          "card": "platinum",
-          "label": "Platinum",
-          "checked_at": "2026-09-02T22:48:18Z",
-          "last_seen_at": "2026-09-02T22:48:18Z",
-          "sha256": "b23f3d03b26133c35e5c5722051cdcd968fc87b7426a9f6a2be1df51dbd7f03f"
-        }
-      },
-      "release_patterns": [
-        {
-          "meal": "Afternoon Tea",
-          "observation_count": 16,
-          "median_lead_days": 61.0,
-          "lead_days_min": 61,
-          "lead_days_max": 61,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.31,
-          "confidence": "high",
-          "latest_observation_at": "2026-09-02T09:37:48Z"
-        },
-        {
-          "meal": "Dinner",
-          "observation_count": 17,
-          "median_lead_days": 61.0,
-          "lead_days_min": 5,
-          "lead_days_max": 61,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.35,
-          "confidence": "high",
-          "latest_observation_at": "2026-09-02T09:37:48Z"
-        },
-        {
-          "meal": "Lunch",
-          "observation_count": 15,
-          "median_lead_days": 61.0,
-          "lead_days_min": 61,
-          "lead_days_max": 61,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.33,
-          "confidence": "high",
-          "latest_observation_at": "2026-09-02T05:05:57Z"
-        }
-      ],
-      "explorer_route": "#/table-for-two?venue=tft-kees"
-    },
-    {
       "id": "tft-la-brasserie",
       "name": "La Brasserie",
       "dining_city_id": "205173372",
@@ -991,62 +715,6 @@
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-la-brasserie"
-    },
-    {
-      "id": "tft-latido",
-      "name": "Latido",
-      "dining_city_id": "205195352",
-      "dining_city_name": "Latido",
-      "category": "restaurant",
-      "address": "40 Tras Street, Singapore 078979",
-      "aliases": [],
-      "menus": {
-        "centurion": {
-          "status": "published",
-          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Latido-Menu_Centurion.pdf",
-          "filename": "Latido-Menu_Centurion.pdf",
-          "card": "centurion",
-          "label": "Centurion",
-          "checked_at": "2026-09-02T22:48:18Z",
-          "last_seen_at": "2026-09-02T22:48:18Z",
-          "sha256": "33d9f7f4f446b5b83bfa8c7febe97eebb663a68563e333b392df6ae24dd07401"
-        },
-        "platinum": {
-          "status": "published",
-          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Latido-Menu_Platinum.pdf",
-          "filename": "Latido-Menu_Platinum.pdf",
-          "card": "platinum",
-          "label": "Platinum",
-          "checked_at": "2026-09-02T22:48:18Z",
-          "last_seen_at": "2026-09-02T22:48:18Z",
-          "sha256": "e71475b254c01b21f3d6371d55c9765f5c1b032d2f9ea351ea7a541ce63cf541"
-        }
-      },
-      "release_patterns": [
-        {
-          "meal": "Dinner",
-          "observation_count": 14,
-          "median_lead_days": 61.0,
-          "lead_days_min": 4,
-          "lead_days_max": 61,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.29,
-          "confidence": "medium",
-          "latest_observation_at": "2026-09-02T13:52:57Z"
-        },
-        {
-          "meal": "Lunch",
-          "observation_count": 10,
-          "median_lead_days": 61.0,
-          "lead_days_min": 61,
-          "lead_days_max": 61,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.4,
-          "confidence": "medium",
-          "latest_observation_at": "2026-08-31T06:41:44Z"
-        }
-      ],
-      "explorer_route": "#/table-for-two?venue=tft-latido"
     },
     {
       "id": "tft-one-ninety",

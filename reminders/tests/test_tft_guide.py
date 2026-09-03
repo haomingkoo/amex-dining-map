@@ -25,6 +25,19 @@ def _catalog() -> dict:
     return tft_guide.load_catalog()
 
 
+def _buffet_venue(catalog: dict) -> dict:
+    # Buffet venues come and go from the booking project, so pick one from the
+    # catalogue instead of naming a venue the roster may drop.
+    return next(
+        venue
+        for venue in catalog["venues"]
+        if any(
+            menu.get("status") == "buffet_no_menu_expected"
+            for menu in venue["menus"].values()
+        )
+    )
+
+
 def test_generated_catalog_matches_current_tft_source():
     module_path = ROOT / "scripts" / "build_tft_guide_catalog.py"
     spec = importlib.util.spec_from_file_location("build_tft_guide_catalog", module_path)
@@ -177,7 +190,9 @@ def test_missing_and_buffet_menu_states_are_honest():
     missing = tft_guide.handle_message(
         "/menu One Ninety platinum", _catalog(), NOW
     )
-    buffet = tft_guide.handle_message("/menu Colony platinum", _catalog(), NOW)
+    buffet = tft_guide.handle_message(
+        f"/menu {_buffet_venue(_catalog())['name']} platinum", _catalog(), NOW
+    )
 
     assert "No official PDF was matched" in missing
     assert "does not prove no menu exists" in missing
@@ -210,12 +225,13 @@ def test_absent_requested_variant_shows_source_freshness_and_nonexistence_caveat
 def test_missing_and_buffet_states_show_stale_and_specific_review_context():
     catalog = copy.deepcopy(_catalog())
     stale = (NOW - timedelta(hours=37)).isoformat()
-    for venue_id in ("tft-one-ninety", "tft-colony"):
+    buffet_venue = _buffet_venue(catalog)
+    for venue_id in ("tft-one-ninety", buffet_venue["id"]):
         venue = next(item for item in catalog["venues"] if item["id"] == venue_id)
         venue["menus"]["default"]["checked_at"] = stale
 
     missing = tft_guide.handle_message("/menu One Ninety", catalog, NOW)
-    buffet = tft_guide.handle_message("/menu Colony", catalog, NOW)
+    buffet = tft_guide.handle_message(f"/menu {buffet_venue['name']}", catalog, NOW)
 
     for answer in (missing, buffet):
         assert "Menu index checked:" in answer

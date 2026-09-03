@@ -1686,7 +1686,7 @@ def build_payload(
         else (existing_payload or {}).get("availability_last_checked_at")
     )
 
-    return {
+    payload = {
         "dataset": "table_for_two",
         "program": "American Express Table for Two by Platinum",
         "country": "Singapore",
@@ -1761,6 +1761,11 @@ def build_payload(
             booking_project_source,
         ),
     }
+    # The roster refresh does not own menu review state. Dropping it would strand the
+    # published menus without their approved decision receipts.
+    if "menu_source" in (existing_payload or {}):
+        payload["menu_source"] = existing_payload["menu_source"]
+    return payload
 
 
 def refresh_availability_payload(existing_payload: dict, *, include_profiles: bool = False) -> dict:
