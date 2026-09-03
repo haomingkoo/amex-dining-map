@@ -276,6 +276,29 @@ Large binary/cache files are gitignored. Committed:
 
 ---
 
+## Staleness Watchdog
+
+`scripts/build_source_health.py` writes per-source freshness into `data/source-health.json`
+every 30 minutes (`Monitor Source Health`). `scripts/watchdog_stale_sources.py` then acts
+on it:
+
+- A source past its `stale_after_hours` limit, or with a non-clear `failure_state`, gets
+  its owning workflow re-dispatched (`SOURCE_WORKFLOWS`), at most once per workflow per
+  6 hours. Sources sharing a workflow collapse into one dispatch.
+- If a retry already ran inside that window and the source is still degraded, the watchdog
+  opens a single `source-health` issue. Only one is open at a time, so the 30-minute
+  cadence cannot spam it.
+- `tabelog-ratings` is intentionally unmapped. `Match Tabelog Candidates` uploads a
+  candidate artifact and commits nothing, so no retry can clear it. It escalates instead.
+
+`review_required` is a human review flag, not staleness, and never triggers the watchdog.
+
+Dry run without dispatching anything:
+
+```bash
+python3 scripts/watchdog_stale_sources.py --dry-run
+```
+
 ## Table for Two Reminders Service (`reminders/`)
 
 Self-hosted signup for Table for Two availability alerts. Replaced the old
