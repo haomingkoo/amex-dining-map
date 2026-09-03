@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-03T01:31:29Z",
+  "updated_at": "2026-09-03T05:05:56Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_updated",
+      "subject": "Table for Two source",
+      "detected_at": "2026-09-03T05:05:56Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Booking-project identity conflicts": null
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Booking-project identity conflicts": 1
+        }
+      },
+      "changes": [
+        {
+          "field": "Booking-project identity conflicts",
+          "before": null,
+          "after": 1
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "b96af3cb39f05bdecfac",
+      "stream_id": "5a285967ca2795c90124",
+      "occurrence": 1,
+      "id": "0d29110a30fd479510c6"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -6858,11 +6891,12 @@
         }
       },
       "5a285967ca2795c90124": {
-        "latest_transition_id": "8cab75cfec2f74ea1ec4",
+        "latest_transition_id": "b96af3cb39f05bdecfac",
         "occurrences": {
           "1fd9e02b2a3042318396": 1,
           "70e4c572a36d9428cfc6": 1,
           "8cab75cfec2f74ea1ec4": 1,
+          "b96af3cb39f05bdecfac": 1,
           "fc6f72b06e09c47f8ec1": 1
         }
       },
