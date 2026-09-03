@@ -254,6 +254,15 @@ def test_receipt_verifier_rejects_unbound_reviewed_menu():
         tft_menu_reviews.verify_decision_receipts(payload)
 
 
+def test_receipt_verifier_keeps_history_for_a_delisted_venue():
+    payload, manifest, _item, _previous = fixture()
+    updated, _event = tft_menu_reviews.apply_review(payload, manifest, PDF, now=NOW)
+
+    updated["venues"] = []
+
+    tft_menu_reviews.verify_decision_receipts(updated)
+
+
 @pytest.mark.parametrize(
     "tamper",
     [
