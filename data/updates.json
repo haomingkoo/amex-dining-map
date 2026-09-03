@@ -1,7 +1,101 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-03T05:05:56Z",
+  "updated_at": "2026-09-03T05:06:04Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-03T05:06:04Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 21
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 21,
+          "after": 0
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "f1df936d6ee3b6ab351e",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 13,
+      "id": "ba6a9e179de248d4d7e8"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_review_required",
+      "subject": "Table for Two roster",
+      "detected_at": "2026-09-03T05:06:04Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 0
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 1
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "review_required"
+        },
+        {
+          "field": "Review",
+          "before": "clear",
+          "after": "required"
+        },
+        {
+          "field": "Review items",
+          "before": 0,
+          "after": 1
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "c78e0d1715c927df1196",
+      "stream_id": "66129efc1226a46f5069",
+      "occurrence": 1,
+      "id": "28d724c71cbb8f7cc63c"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -6925,14 +7019,15 @@
         }
       },
       "66129efc1226a46f5069": {
-        "latest_transition_id": "13c352bff48c50b6832d",
+        "latest_transition_id": "c78e0d1715c927df1196",
         "occurrences": {
           "083081096cbb3c8c1c76": 1,
           "0b5afd558ebf89b84ac5": 1,
           "13c352bff48c50b6832d": 1,
           "1c5d2ed58c6c8667c40a": 1,
           "2f1ca3a47249fa24a63c": 1,
-          "46ab8b1ef9cfe57b0575": 1
+          "46ab8b1ef9cfe57b0575": 1,
+          "c78e0d1715c927df1196": 1
         }
       },
       "6c34e993e7e1b73ad379": {
@@ -7117,7 +7212,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "5cd58468c50a86096186",
+        "latest_transition_id": "f1df936d6ee3b6ab351e",
         "occurrences": {
           "0486ed88fd4f242b58f7": 1,
           "23f1bba4701f42a76948": 3,
@@ -7135,7 +7230,7 @@
           "d039f79dfa5142cf1cf1": 1,
           "e80178cabd37915387ca": 1,
           "e9e1f6d401dbe0b5a79c": 1,
-          "f1df936d6ee3b6ab351e": 12
+          "f1df936d6ee3b6ab351e": 13
         }
       }
     }
