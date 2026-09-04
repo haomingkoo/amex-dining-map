@@ -4,10 +4,10 @@
 
 This analysis reads:
 
-- `/tmp/rejects_for_codex.json`
+- `docs/rejects-snapshot-2026-04-02.json` (was `/tmp/rejects_for_codex.json` at analysis time)
 - `data/japan-restaurants.json`
 - `data/tabelog-match-results.json`
-- `data/tabelog-ground-truth-sample.json`
+- `data/tabelog-ground-truth-sample.json` (gitignored local cache; not present in a fresh clone)
 
 The category counts below are **estimated** from local data and heuristics, not hand-verified row by row. The strongest signals were name similarity, address overlap, cuisine overlap, repeated wrong targets, and the repo's small manually verified ground-truth sample.
 
