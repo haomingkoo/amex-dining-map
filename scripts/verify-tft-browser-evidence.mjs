@@ -82,7 +82,9 @@ assert.equal(crypto.createHash("sha256").update(appSource).digest("hex"), eviden
 
 const table = await tableResponse.json();
 assert.equal(table.menu_source.checked_at, evidence.menu_checked_at);
-assert.equal(table.menu_source.review_queue_count, 2);
+// The queue count moves with the roster, so pin it to the capture rather than a
+// literal: a number frozen in this file rots the gate the next time a venue is added.
+assert.equal(table.menu_source.review_queue_count, evidence.review_queue_count);
 const vue = table.venues.find((venue) => venue.id === "tft-vue");
 assert.ok(vue, "deployed VUE record is missing");
 assert.equal(Object.values(vue.menu_pdfs || {}).filter((menu) => menu.status === "published").length, 2);
