@@ -684,10 +684,17 @@ def _same_membership_identity(left: dict, right: dict) -> bool:
 
 
 def _eligible_membership_record(record: dict) -> bool:
-    return (
-        record.get("status") in (None, "", "online")
-        and record.get("availability_project") in (None, "", DININGCITY_PROJECT)
-    )
+    """Membership is being listed in the AMEXPlatSG project and still online.
+
+    `availability_project` names the backend that serves a venue's slots, not the
+    programme it belongs to. DiningCity moved several Table for Two venues to
+    "diningcity" slot serving on 2026-09-02 while keeping them online in this
+    project; treating that as a removal deleted seven live venues from the roster
+    and published seven false "Removed" notices.
+    """
+    # "unknown" is what _booking_project_record stores when the row omits a status.
+    # Only an explicit non-online status removes a venue from the roster.
+    return record.get("status") in (None, "", "online", "unknown")
 
 
 def _membership_streaks(
@@ -777,10 +784,10 @@ def _auto_candidate_reasons(
     record: dict, published_roster: list[dict]
 ) -> list[str]:
     reasons = []
+    # availability_project names the slot backend, not the programme, so it is not
+    # a membership signal. See _eligible_membership_record.
     if record.get("status") != "online":
         reasons.append("not_online")
-    if record.get("availability_project") != DININGCITY_PROJECT:
-        reasons.append("wrong_availability_project")
     if not record.get("address"):
         reasons.append("missing_address")
     try:
