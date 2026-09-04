@@ -1,7 +1,61 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-04T06:34:06Z",
+  "updated_at": "2026-09-04T09:57:09Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-04T09:57:09Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 19,
+          "Coverage": "19/21 (90.5%), 2 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0,
+          "Coverage": "21/21 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 19,
+          "after": 0
+        },
+        {
+          "field": "Coverage",
+          "before": "19/21 (90.5%), 2 unavailable",
+          "after": "21/21 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "577b70fab03aa2efb8a6",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "44c4745b8247769e78b7"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -8230,10 +8284,11 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "90a7897a12006e9ef82e",
+        "latest_transition_id": "577b70fab03aa2efb8a6",
         "occurrences": {
           "0486ed88fd4f242b58f7": 1,
           "23f1bba4701f42a76948": 3,
+          "577b70fab03aa2efb8a6": 1,
           "581d8013f60982c250d6": 1,
           "59682348ebf010d3ed44": 1,
           "5cd58468c50a86096186": 21,
