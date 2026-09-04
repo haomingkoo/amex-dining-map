@@ -23,8 +23,11 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
 from pathlib import Path
+try:
+    from scripts.timeutil import iso_now
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from timeutil import iso_now
 
 try:
     from scripts import tft_document_reviews, tft_roster_reviews
@@ -538,8 +541,6 @@ def fetch_bytes(url: str) -> bytes:
         return response.read()
 
 
-def iso_now() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def fetch_json(path: str, params: dict | None = None, *, accept_version: bool = True) -> object:

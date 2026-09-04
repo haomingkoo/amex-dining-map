@@ -16,6 +16,10 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from pathlib import Path
+try:
+    from scripts.timeutil import parse_utc
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from timeutil import parse_utc
 
 DEFAULT_HEALTH_PATH = Path("data/source-health.json")
 RETRY_WINDOW_HOURS = 6
@@ -43,7 +47,6 @@ UNOWNED_SOURCES = {"tabelog-ratings"}
 class Action(str, Enum):
     DISPATCH = "dispatch"
     ESCALATE = "escalate"
-    SKIP = "skip"
 
 
 @dataclass(frozen=True)
@@ -52,16 +55,6 @@ class Plan:
     action: Action
     source_ids: tuple[str, ...]
     reason: str
-
-
-def parse_utc(value: str | None) -> datetime | None:
-    if not isinstance(value, str) or not value:
-        return None
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
 
 def is_degraded(source: dict) -> bool:

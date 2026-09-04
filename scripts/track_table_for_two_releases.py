@@ -13,6 +13,10 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Iterable
 from zoneinfo import ZoneInfo
+try:
+    from scripts.timeutil import parse_utc
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from timeutil import parse_utc
 
 
 SGT = ZoneInfo("Asia/Singapore")
@@ -24,12 +28,7 @@ def load_json(path: Path) -> dict[str, Any]:
 
 
 def parse_time(value: str | None) -> datetime | None:
-    if not value:
-        return None
-    try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return None
+    return parse_utc(value)
 
 
 def snapshot_time(payload: dict[str, Any]) -> datetime | None:
