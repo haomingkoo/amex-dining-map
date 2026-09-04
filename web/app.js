@@ -21,6 +21,9 @@ const DINING_FIT_OPTIONS = { padding: [48, 48], maxZoom: 11 };
 const STAYS_FIT_OPTIONS = { padding: [56, 56], maxZoom: 6 };
 const LOVE_FIT_OPTIONS = { padding: [48, 48], maxZoom: 15 };
 const TABLE_FOR_TWO_FIT_OPTIONS = { padding: [48, 48], maxZoom: 14 };
+const TFT_PIN_AVAILABLE = "#5fb9a6";
+const TFT_PIN_NO_SEATS = "#d6a44c";
+const TFT_PIN_UNKNOWN = "#c9a55a";
 const INTRO_STORAGE_KEY = "amex-benefits-intro-v3";
 const UPDATES_READ_STORAGE_KEY = "amex-benefits-updates-read-v1";
 const THEME_STORAGE_KEY = "theme-preference";
@@ -609,12 +612,20 @@ let stayMarkerClusterGroup = null;
 let loveDiningMarkerClusterGroup = null;
 let tableForTwoMarkerClusterGroup = null;
 
+function clusterHasBookableVenue(cluster) {
+  const children = typeof cluster.getAllChildMarkers === "function" ? cluster.getAllChildMarkers() : [];
+  return children.some((marker) => marker?.options?.pinColor === TFT_PIN_AVAILABLE);
+}
+
 function createMarkerClusterIcon(cluster) {
   const count = cluster.getChildCount();
   const size = count >= 100 ? "large" : count >= 10 ? "medium" : "small";
   const sizePx = size === "large" ? 48 : size === "medium" ? 42 : 36;
+  // Gold is the legend's "not bookable" colour, so a gold cluster over bookable
+  // venues tells the reader the opposite of the truth.
+  const tone = clusterHasBookableVenue(cluster) ? " benefit-cluster-available" : "";
   return L.divIcon({
-    html: `<div class="benefit-cluster-inner benefit-cluster-${size}"><span>${count}</span></div>`,
+    html: `<div class="benefit-cluster-inner benefit-cluster-${size}${tone}"><span>${count}</span></div>`,
     className: `marker-cluster benefit-marker-cluster benefit-marker-cluster-${size}`,
     iconSize: [sizePx, sizePx],
   });
@@ -5821,11 +5832,11 @@ function tableForTwoMarkerFilterTone() {
 }
 
 function tableForTwoPinColor(record) {
-  if (!record) return "#c9a55a";
+  if (!record) return TFT_PIN_UNKNOWN;
   const key = tableForTwoAvailabilityKey(record, state.tableForTwoCurrentFilters || {});
-  if (key === "available") return "#5fb9a6";
-  if (key === "no_seats") return "#d6a44c";
-  return "#c9a55a";
+  if (key === "available") return TFT_PIN_AVAILABLE;
+  if (key === "no_seats") return TFT_PIN_NO_SEATS;
+  return TFT_PIN_UNKNOWN;
 }
 
 function clearTableForTwoMarkers() {
@@ -5841,6 +5852,7 @@ function createTableForTwoMarker(record) {
   if (!hasLeaflet || !tableForTwoMap || !tableForTwoHasMapPin(record)) return null;
   const color = tableForTwoPinColor(record);
   const marker = L.marker(latLngForRecord(record), {
+    pinColor: color,
     icon: L.divIcon({
       html: `<div class="tft-marker-dot" style="width: 16px; height: 16px; border-radius: 50%; background: ${color}; border: 2px solid #091018; opacity: 0.92; cursor: pointer;"></div>`,
       iconSize: [16, 16],
