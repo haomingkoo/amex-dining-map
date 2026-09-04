@@ -7,6 +7,40 @@
       "program_id": "table-for-two",
       "route": "#/table-for-two",
       "kind": "correction",
+      "subject": "Forage",
+      "detected_at": "2026-09-04T21:40:49Z",
+      "status": "published",
+      "before": {
+        "state": "removed",
+        "fields": {
+          "Name": "Forage",
+          "Reason given": "Absent from the DiningCity AMEXPlatSG booking project"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Forage",
+          "Booking channel": "Amex Experiences App",
+          "Correction": "This venue was never removed from Table for Two."
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Removed",
+          "after": "Listed"
+        }
+      ],
+      "note": "Published in error on 2026-09-03. The roster check treated DiningCity's availability_project field as programme membership. That field names the slot backend, and these venues stayed online in the project throughout.",
+      "corrects": "2057056615accfd9a620",
+      "id": "e977ace0e97ca15a6203"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "correction",
       "subject": "HighHouse / Marina Bay/Boat Quay",
       "detected_at": "2026-09-04T21:40:49Z",
       "status": "published",
@@ -35,6 +69,40 @@
       "note": "Published in error on 2026-09-03. The roster check treated DiningCity's availability_project field as programme membership. That field names the slot backend, and these venues stayed online in the project throughout.",
       "corrects": "c3fde77535dee81d47cb",
       "id": "ca3e599aed400ef580e8"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "correction",
+      "subject": "Latido",
+      "detected_at": "2026-09-04T21:40:49Z",
+      "status": "published",
+      "before": {
+        "state": "removed",
+        "fields": {
+          "Name": "Latido",
+          "Reason given": "Absent from the DiningCity AMEXPlatSG booking project"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Latido",
+          "Booking channel": "Amex Experiences App",
+          "Correction": "This venue was never removed from Table for Two."
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Removed",
+          "after": "Listed"
+        }
+      ],
+      "note": "Published in error on 2026-09-03. The roster check treated DiningCity's availability_project field as programme membership. That field names the slot backend, and these venues stayed online in the project throughout.",
+      "corrects": "0da84472e928ccdd1ece",
+      "id": "b7a02d0b4efd82f998aa"
     },
     {
       "program": "Table for Two",
@@ -143,40 +211,6 @@
       "program_id": "table-for-two",
       "route": "#/table-for-two",
       "kind": "correction",
-      "subject": "Forage",
-      "detected_at": "2026-09-04T21:40:49Z",
-      "status": "published",
-      "before": {
-        "state": "removed",
-        "fields": {
-          "Name": "Forage",
-          "Reason given": "Absent from the DiningCity AMEXPlatSG booking project"
-        }
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Forage",
-          "Booking channel": "Amex Experiences App",
-          "Correction": "This venue was never removed from Table for Two."
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Removed",
-          "after": "Listed"
-        }
-      ],
-      "note": "Published in error on 2026-09-03. The roster check treated DiningCity's availability_project field as programme membership. That field names the slot backend, and these venues stayed online in the project throughout.",
-      "corrects": "2057056615accfd9a620",
-      "id": "e977ace0e97ca15a6203"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "correction",
       "subject": "Kee's",
       "detected_at": "2026-09-04T21:40:49Z",
       "status": "published",
@@ -210,35 +244,236 @@
       "program": "Table for Two",
       "program_id": "table-for-two",
       "route": "#/table-for-two",
-      "kind": "correction",
-      "subject": "Latido",
-      "detected_at": "2026-09-04T21:40:49Z",
+      "kind": "source_stale",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-04T21:04:43Z",
       "status": "published",
       "before": {
-        "state": "removed",
+        "state": "current",
         "fields": {
-          "Name": "Latido",
-          "Reason given": "Absent from the DiningCity AMEXPlatSG booking project"
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
         }
       },
       "after": {
-        "state": "listed",
+        "state": "stale",
         "fields": {
-          "Name": "Latido",
-          "Booking channel": "Amex Experiences App",
-          "Correction": "This venue was never removed from Table for Two."
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 20
         }
       },
       "changes": [
         {
-          "field": "Listing",
-          "before": "Removed",
-          "after": "Listed"
+          "field": "Source state",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 20
         }
       ],
-      "note": "Published in error on 2026-09-03. The roster check treated DiningCity's availability_project field as programme membership. That field names the slot backend, and these venues stayed online in the project throughout.",
-      "corrects": "0da84472e928ccdd1ece",
-      "id": "b7a02d0b4efd82f998aa"
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "6b0a8f0fbbc4c84ab912",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 12,
+      "id": "fcbb1c078392d25cf047"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-04T18:29:50Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 20
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 20,
+          "after": 0
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "b9782e66dd081210376b",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 6,
+      "id": "a3eb93c3411911f7c0fe"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_stale",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-04T18:29:06Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "after": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 20
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 20
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "6b0a8f0fbbc4c84ab912",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 11,
+      "id": "d6ea0d87c1684fabc94f"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-04T17:33:55Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 20
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 20,
+          "after": 0
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "b9782e66dd081210376b",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 5,
+      "id": "99f21fd3107270a79376"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_stale",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-04T15:09:50Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "after": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 20
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 20
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "6b0a8f0fbbc4c84ab912",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 10,
+      "id": "993c5d6b8b3094fdaaf5"
     },
     {
       "program": "Table for Two",
@@ -8326,7 +8561,7 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "f2db1926f1478e742f67",
+        "latest_transition_id": "02261b7ecfcb8fa754fa",
         "occurrences": {
           "02261b7ecfcb8fa754fa": 1,
           "04d54fb5e6257f646c0f": 1,
@@ -8361,6 +8596,12 @@
           "3f8657632ba8c8766e8f": 1
         }
       },
+      "273e2725dcd75e6aa23b": {
+        "latest_transition_id": "7eea0d905ec626138e3b",
+        "occurrences": {
+          "7eea0d905ec626138e3b": 1
+        }
+      },
       "2815ef390a27dbc3e9e6": {
         "latest_transition_id": "76df09d58e4670fbd1c9",
         "occurrences": {
@@ -8384,8 +8625,9 @@
         }
       },
       "3da2da7369597146b234": {
-        "latest_transition_id": "991b749a30288ee4e30f",
+        "latest_transition_id": "57b2a63792fe6aaa3018",
         "occurrences": {
+          "57b2a63792fe6aaa3018": 1,
           "991b749a30288ee4e30f": 1
         }
       },
@@ -8441,6 +8683,18 @@
           "c78e0d1715c927df1196": 1
         }
       },
+      "6a9d621c7ac66f9b8665": {
+        "latest_transition_id": "63a773d74e36c58a0fe2",
+        "occurrences": {
+          "63a773d74e36c58a0fe2": 1
+        }
+      },
+      "6c00d9815998a4c42ec6": {
+        "latest_transition_id": "e570d26521179eacc0da",
+        "occurrences": {
+          "e570d26521179eacc0da": 1
+        }
+      },
       "6c34e993e7e1b73ad379": {
         "latest_transition_id": "02e15546480e31ae05bb",
         "occurrences": {
@@ -8494,10 +8748,22 @@
           "2c11bff4d4231594e688": 1
         }
       },
+      "7e57fa76edf888c59c2a": {
+        "latest_transition_id": "99da9b49b2758166418f",
+        "occurrences": {
+          "99da9b49b2758166418f": 1
+        }
+      },
       "818edf3be2231939cce4": {
         "latest_transition_id": "f1dbb325ead287761763",
         "occurrences": {
           "f1dbb325ead287761763": 1
+        }
+      },
+      "81d1198639720806a3f0": {
+        "latest_transition_id": "fd825e0eb577c9f301ba",
+        "occurrences": {
+          "fd825e0eb577c9f301ba": 1
         }
       },
       "82cf12b07abc7392c6ad": {
@@ -8597,6 +8863,12 @@
           "8cfd283dd40f2203c621": 1
         }
       },
+      "ebf4bc78e02efc91f85b": {
+        "latest_transition_id": "4a6e45a284b3ab7e3fc3",
+        "occurrences": {
+          "4a6e45a284b3ab7e3fc3": 1
+        }
+      },
       "ecb70c7bec7eb7600d08": {
         "latest_transition_id": "d90ad45dbd488f7ba721",
         "occurrences": {
@@ -8606,7 +8878,6 @@
       "ecc53c9fa1d9097f64ac": {
         "latest_transition_id": "beb20a67c9b6c12889e1",
         "occurrences": {
-          "991b749a30288ee4e30f": 1,
           "beb20a67c9b6c12889e1": 1
         }
       },
@@ -8623,7 +8894,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "f3c1045e9b3a8d8861f1",
+        "latest_transition_id": "6b0a8f0fbbc4c84ab912",
         "occurrences": {
           "0486ed88fd4f242b58f7": 1,
           "23f1bba4701f42a76948": 3,
@@ -8632,14 +8903,14 @@
           "59682348ebf010d3ed44": 1,
           "5cd58468c50a86096186": 22,
           "689f87123d635d8652da": 2,
-          "6b0a8f0fbbc4c84ab912": 9,
+          "6b0a8f0fbbc4c84ab912": 12,
           "73f1934e9c3fa739f5ff": 1,
           "90a7897a12006e9ef82e": 1,
           "9d9d155296d216fc8107": 1,
           "a0e5d9c3222307d148c0": 1,
           "a35a007cefa6ec723d14": 1,
           "b65d58034636a5fc38a8": 1,
-          "b9782e66dd081210376b": 4,
+          "b9782e66dd081210376b": 6,
           "c6e1d48a099113033211": 1,
           "d039f79dfa5142cf1cf1": 1,
           "e721e784145cc39333ab": 1,
