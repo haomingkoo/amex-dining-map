@@ -1,7 +1,54 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-04T15:09:50Z",
+  "updated_at": "2026-09-04T17:33:55Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-04T17:33:55Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 20
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 20,
+          "after": 0
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "b9782e66dd081210376b",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 5,
+      "id": "99f21fd3107270a79376"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -8432,7 +8479,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "6b0a8f0fbbc4c84ab912",
+        "latest_transition_id": "b9782e66dd081210376b",
         "occurrences": {
           "0486ed88fd4f242b58f7": 1,
           "23f1bba4701f42a76948": 3,
@@ -8448,7 +8495,7 @@
           "a0e5d9c3222307d148c0": 1,
           "a35a007cefa6ec723d14": 1,
           "b65d58034636a5fc38a8": 1,
-          "b9782e66dd081210376b": 4,
+          "b9782e66dd081210376b": 5,
           "c6e1d48a099113033211": 1,
           "d039f79dfa5142cf1cf1": 1,
           "e721e784145cc39333ab": 1,
