@@ -82,7 +82,6 @@ Uses `llama-3.3-70b` via Groq API (already in `.env`). Result cached in HTTP cac
 
 | Script | Strategy | When to use |
 |--------|----------|-------------|
-| `retry_rejects_phone.py` | Targeted phone/name Tabelog searches | Quick pass, low yield |
 | `retry_rejects_cached.py` | **Cache-first** (Claude WebSearch URLs) + DDG/Yahoo fallback + Groq judge | **Best — run this** |
 
 ### URL Cache (`data/tabelog-url-cache.json`)

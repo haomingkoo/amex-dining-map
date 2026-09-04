@@ -26,8 +26,11 @@ import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
 from pathlib import Path
+try:
+    from scripts.timeutil import iso_now
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from timeutil import iso_now
 
 try:
     from scripts import source_change_alert, tft_menu_reviews
@@ -66,10 +69,6 @@ MENU_FILENAME_RE = re.compile(
     r"^[A-Za-z0-9][A-Za-z0-9._ -]{0,180}[-_]?Menu(?:[-_](?:Platinum|Platinium|Centurion))?\.pdf$",
     re.IGNORECASE,
 )
-
-
-def iso_now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def matching_terminal_decision(item: dict, decisions: list[dict]) -> dict | None:

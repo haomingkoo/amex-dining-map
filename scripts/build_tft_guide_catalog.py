@@ -9,6 +9,10 @@ import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+try:
+    from scripts.timeutil import parse_utc
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from timeutil import parse_utc
 
 try:
     from scripts import tft_document_reviews, tft_menu_reviews
@@ -68,12 +72,7 @@ def _menu_projection(menu: dict | None) -> dict | None:
 
 
 def _parsed_time(value: Any) -> datetime | None:
-    if not isinstance(value, str) or not value:
-        return None
-    try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return None
+    return parse_utc(value)
 
 
 def _release_projection(history: dict, venue_ids: set[str]) -> dict[str, list[dict]]:

@@ -8,6 +8,10 @@ from datetime import datetime, timezone
 import json
 from typing import Any
 import urllib.request
+try:
+    from scripts.timeutil import parse_utc
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from timeutil import parse_utc
 
 
 DEFAULT_URL = "https://amex-reminders-production.up.railway.app/healthz"
@@ -20,15 +24,7 @@ def _integer(value: object) -> bool:
 
 
 def _timestamp(value: object) -> datetime | None:
-    if not isinstance(value, str):
-        return None
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        return None
-    return parsed.astimezone(timezone.utc)
+    return parse_utc(value)
 
 
 def validate_health(
