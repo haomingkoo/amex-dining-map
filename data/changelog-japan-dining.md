@@ -346,3 +346,17 @@ Source: `data/japan-restaurants.json`
   - Chuugokuhanten Reiho / Nagoya
   - Sushi Tenkawa / Tokyo
   - Vivacchus / Osaka
+
+<!-- source-change:89162678eb2865792b46f1b6bd6790a0f5529f168ba4ff38b7dfca0a289a6109 -->
+## 2026-09-04 22:53 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (7)**
+  - Chuugokuhanten Fureika / Tokyo
+  - Chuugokuhanten Reisho / Karuizawa
+  - Chuugokuhanten Roppongi / Tokyo
+  - Chuugokuhanten Shigyokuran / Tokyo
+  - Chuugokuhanten Shunju / Nagoya
+  - Fujin Tree Taiwanese Cuisine & Champagne Harajuku Quest / Tokyo
+  - Sanmikouan Kyoto Bettei / Kyoto
