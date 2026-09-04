@@ -12,8 +12,8 @@
   "release_source": {
     "source": "data/table-for-two-release-history.json",
     "project": "AMEXPlatSG",
-    "updated_at": "2026-09-04T19:52:22+00:00",
-    "observation_count": 3318
+    "updated_at": "2026-09-04T22:08:35+00:00",
+    "observation_count": 3392
   },
   "slot_source": {
     "url": "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json",
@@ -450,14 +450,14 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 12,
+          "observation_count": 13,
           "median_lead_days": 29.0,
           "lead_days_min": 28,
           "lead_days_max": 29,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.58,
+          "typical_time_observation_share": 0.54,
           "confidence": "medium",
-          "latest_observation_at": "2026-09-02T17:37:37Z"
+          "latest_observation_at": "2026-09-04T22:08:35Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-baes-cocktail-club"
@@ -638,36 +638,36 @@
       "release_patterns": [
         {
           "meal": "Afternoon Tea",
-          "observation_count": 11,
+          "observation_count": 13,
           "median_lead_days": 61.0,
-          "lead_days_min": 61,
+          "lead_days_min": 59,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.36,
+          "typical_time_observation_share": 0.31,
           "confidence": "medium",
-          "latest_observation_at": "2026-09-02T09:37:48Z"
+          "latest_observation_at": "2026-09-04T22:08:35Z"
         },
         {
           "meal": "Dinner",
-          "observation_count": 13,
+          "observation_count": 15,
           "median_lead_days": 61.0,
           "lead_days_min": 7,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.54,
-          "confidence": "medium",
-          "latest_observation_at": "2026-09-02T13:52:57Z"
+          "typical_time_observation_share": 0.47,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-04T22:08:35Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 11,
+          "observation_count": 13,
           "median_lead_days": 61.0,
-          "lead_days_min": 61,
+          "lead_days_min": 59,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.36,
+          "typical_time_observation_share": 0.31,
           "confidence": "medium",
-          "latest_observation_at": "2026-09-02T05:05:57Z"
+          "latest_observation_at": "2026-09-04T22:08:35Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-estate"
@@ -702,7 +702,19 @@
           "sha256": "72c0b83a7423c846dfca177ed203329ac81ae211979ca37557885be8090ed62d"
         }
       },
-      "release_patterns": [],
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 57,
+          "median_lead_days": 31.0,
+          "lead_days_min": 0,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": "06:00",
+          "typical_time_observation_share": 0.98,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-04T22:08:35Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-forage"
     },
     {
@@ -809,14 +821,14 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 11,
+          "observation_count": 12,
           "median_lead_days": 29.0,
           "lead_days_min": 10,
           "lead_days_max": 29,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.55,
+          "typical_time_observation_share": 0.5,
           "confidence": "medium",
-          "latest_observation_at": "2026-09-02T17:37:37Z"
+          "latest_observation_at": "2026-09-04T22:08:35Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-highhouse"
@@ -902,36 +914,36 @@
       "release_patterns": [
         {
           "meal": "Afternoon Tea",
-          "observation_count": 16,
+          "observation_count": 18,
           "median_lead_days": 61.0,
-          "lead_days_min": 61,
+          "lead_days_min": 59,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.31,
+          "typical_time_observation_share": 0.28,
           "confidence": "high",
-          "latest_observation_at": "2026-09-02T09:37:48Z"
+          "latest_observation_at": "2026-09-04T22:08:35Z"
         },
         {
           "meal": "Dinner",
-          "observation_count": 17,
+          "observation_count": 19,
           "median_lead_days": 61.0,
           "lead_days_min": 5,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.35,
+          "typical_time_observation_share": 0.32,
           "confidence": "high",
-          "latest_observation_at": "2026-09-02T09:37:48Z"
+          "latest_observation_at": "2026-09-04T22:08:35Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 15,
+          "observation_count": 17,
           "median_lead_days": 61.0,
-          "lead_days_min": 61,
+          "lead_days_min": 59,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.33,
+          "typical_time_observation_share": 0.29,
           "confidence": "high",
-          "latest_observation_at": "2026-09-02T05:05:57Z"
+          "latest_observation_at": "2026-09-04T22:08:35Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-kees"
@@ -1025,25 +1037,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 14,
+          "observation_count": 16,
           "median_lead_days": 61.0,
           "lead_days_min": 4,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.29,
-          "confidence": "medium",
-          "latest_observation_at": "2026-09-02T13:52:57Z"
+          "typical_time_observation_share": 0.25,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-04T22:08:35Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 10,
+          "observation_count": 12,
           "median_lead_days": 61.0,
-          "lead_days_min": 61,
+          "lead_days_min": 59,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.4,
+          "typical_time_observation_share": 0.33,
           "confidence": "medium",
-          "latest_observation_at": "2026-08-31T06:41:44Z"
+          "latest_observation_at": "2026-09-04T22:08:35Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-latido"
