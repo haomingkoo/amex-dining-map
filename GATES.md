@@ -16,10 +16,10 @@ Tracker: parent #34; vertical slices #35 through #42.
   EXPECT: security audit verification passed
   EVIDENCE: 2026-08-30 verifier passed; Railway health, CORS, headers, disabled OpenAPI, body limits, and privacy-safe request logs were production-probed; owner-ingress authentication now precedes payload validation, so unauthenticated malformed bodies cannot enumerate the private schema. Dependabot reported no open alerts.
 
-- [x] G2: the deployed mobile Table for Two journey exposes venue details, current menu and official-source links, T&Cs context, release-pattern qualifications, and working reminder signup without browser-visible failures
+- [ ] G2: the deployed mobile Table for Two journey exposes venue details, current menu and official-source links, T&Cs context, release-pattern qualifications, and working reminder signup without browser-visible failures
   CHECK: node scripts/verify-tft-browser-evidence.mjs
   EXPECT: TFT browser evidence verification passed
-  EVIDENCE: 2026-08-30 exact Pages run 33300418007 deployed 697eb35. Browser acceptance at 390x844 and 320x740 passed VUE, Osteria Mozza, and One-Ninety deep-link reloads, per-venue review warnings, exact reviewed menus, T&C/roster/Google links, reminder-form visibility, release qualifications, loaded OpenStreetMap tiles, zero clipped focus-card descendants, zero page console errors, and no API-key watermark. Two expected handled DiningCity 404 probes remain for stale missing-project venues. The live-bound evidence verifier passed against app SHA 5a446a4193c6 and Railway deployment 530a9425-58c8-4451-b6e4-84ccf6352f40.
+  EVIDENCE: 2026-08-30 exact Pages run 33300418007 deployed 697eb35. Browser acceptance at 390x844 and 320x740 passed VUE, Osteria Mozza, and One-Ninety deep-link reloads, per-venue review warnings, exact reviewed menus, T&C/roster/Google links, reminder-form visibility, release qualifications, loaded OpenStreetMap tiles, zero clipped focus-card descendants, zero page console errors, and no API-key watermark. Two expected handled DiningCity 404 probes remain for stale missing-project venues. The live-bound evidence verifier passed against app SHA 5a446a4193c6 and Railway deployment 530a9425-58c8-4451-b6e4-84ccf6352f40. Reopened 2026-09-04: re-running the CHECK now aborts with `AssertionError: browser evidence is older than 24 hours` because docs/evidence/tft-browser-production.json still carries `captured_at: 2026-08-30T09:51:02Z` and `revision: 07f5b6b3`, both predating the roster correction in e520fa1. Recapture browser evidence against the current Pages deployment before checking this box again.
 
 - [x] G3: owner updates are formatted as concise before-and-after alerts and can only be delivered to the configured private Telegram channel
   CHECK: node scripts/verify-telegram-owner-alerts.mjs
@@ -87,10 +87,10 @@ Tracker: parent #34; vertical slices #35 through #42.
   EXPECT: Lazy dining table verification passed
   EVIDENCE: exit=0; shell=/bin/sh; cwd=/Users/koohaoming/dev/amex-dining-map; path=db7d51c629d2/23 entries; EXPECT=matched; output-sha256=3d3d559a3175baf59e68b4da1861f36dfe86a79dcd88b186947c6eb1357a4e63; output-bytes=38
 
-- [x] G15: TFT availability is scheduled with timing margin inside the honest 30-minute cutoff and cannot be displaced by unrelated source workflows
+- [ ] G15: TFT availability refreshes inside the 30-minute freshness cutoff and cannot be displaced by unrelated source workflows
   CHECK: node scripts/verify-source-health.mjs
   EXPECT: source health verification passed
-  EVIDENCE: exit=0; shell=/bin/sh; cwd=/Users/koohaoming/dev/amex-dining-map; path=db7d51c629d2/23 entries; EXPECT=matched; output-sha256=a06a11418b6df597acc876cf0a4eb5d6f9f9236d364916a8d6523f1a7c380eab; output-bytes=34
+  EVIDENCE: reopened 2026-09-04. Isolation still holds: availability uses `group: table-for-two-availability-refresh` while the daily writers and the health monitor share `group: source-ledger-refresh`. The 30-minute cutoff is not met. `.github/workflows/table-for-two-alerts.yml` declares `cron: "2,17,32,47 * * * *"`, but GitHub delivers far fewer runs: across the last 60 `chore: refresh table for two availability` commits the median gap is 195 minutes, the shortest is 38 minutes, and none is under 30. `data/source-health.json` currently reports `table-for-two-availability` as `stale` (last success 2026-09-04T19:52:22Z against `AVAILABILITY_STALE_HOURS = 0.5` in scripts/source_health.py), and 28 of the last 60 committed health snapshots were stale. `scripts/verify-source-health.mjs` only asserts the cron string is present in the YAML, so it cannot detect the gap between the declared and the delivered cadence.
 
 - [x] G16: normal mobile use avoids whole-roster browser scraping, ratings-driven map reconstruction, and per-keystroke broad-search rendering
   CHECK: node scripts/tests/test_frontend_work_budget.js

@@ -2,7 +2,9 @@ name: Match Tabelog Candidates
 
 on:
   schedule:
-    # Monthly candidate sweep so the Japan Tabelog matches do not drift unseen.
+    # Monthly sample, not a sweep: with no dispatch inputs this re-runs the FIRST
+    # 50 of 843 Japan records and uploads them as an artifact nothing consumes.
+    # It commits nothing, so tabelog-ratings stays stale until a manual promote/merge.
     - cron: "0 3 1 * *"
   workflow_dispatch:
     inputs:

@@ -15,8 +15,21 @@ from source_change_alert import append_updates, assign_event_identity
 
 SCHEMA_VERSION = 1
 PRIMARY_STALE_HOURS = 36
-AVAILABILITY_STALE_HOURS = 0.5
+# "Table for Two Alerts" declares cron "2,17,32,47 * * * *", but GitHub queues the
+# schedule: across 648 availability commits since 2026-08-05 the median gap was
+# 0.87h, p90 2.01h, max 11.33h, and only 22% of gaps were under 30 minutes. Source
+# health is itself only rebuilt every 30 minutes ("22,52 * * * *"), so a 0.5h limit
+# can never be met. 4h covers 97% of observed gaps.
+AVAILABILITY_STALE_HOURS = 4
 RATINGS_STALE_HOURS = 90 * 24
+# Nothing on a schedule refreshes these timestamps. "Match Tabelog Candidates"
+# (cron "0 3 1 * *") runs with `permissions: contents: read` and only uploads an
+# artifact; the last_checked_at values read below are written by
+# promote_tabelog_matches.py / merge_restaurant_quality_signals.py, which are run
+# by hand. watchdog_stale_sources.py lists tabelog-ratings in UNOWNED_SOURCES for
+# the same reason. The newest timestamp in data/japan-restaurants.json is
+# 2026-04-10, so this row has been past the limit since 2026-07-09 and cannot
+# return to "current" until a workflow commits promoted matches.
 TABELOG_STALE_HOURS = 90 * 24
 
 
@@ -128,6 +141,7 @@ def _source(
         "failure_state": failure_state,
         "checked_at": checked_at,
         "oldest_checked_at": format_time(parsed[0]) if parsed else None,
+        # web/app.js renders "Published source dated ..." from these two.
         "upstream_date": checked_at[:10] if checked_at else None,
         "upstream_year": int(checked_at[:4]) if checked_at else None,
         "stale_after_hours": stale_after_hours,
@@ -342,7 +356,7 @@ def build_source_health(data_dir: Path, now: datetime) -> dict[str, Any]:
             record_count=len(japan_records) if isinstance(japan_records, list) else 0,
             covered_count=len(tabelog_values),
             unavailable_count=max(0, len(japan_records) - len(tabelog_values)) if isinstance(japan_records, list) else 0,
-            detail=f"{len(tabelog_values)} of {len(japan_records) if isinstance(japan_records, list) else 0} current Japan venues covered",
+            detail=f"{len(tabelog_values)} of {len(japan_records) if isinstance(japan_records, list) else 0} current Japan venues covered; refreshed by a manual promote/merge run, not on a schedule",
             source_url="https://tabelog.com/en/",
         ),
     ]

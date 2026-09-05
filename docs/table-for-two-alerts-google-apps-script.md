@@ -237,6 +237,8 @@ ALERT_UNSUBSCRIBE_BASE_URL=https://script.google.com/macros/s/<deployment-id>/ex
 ALERT_HASH_SALT=<same value as Apps Script ALERT_HASH_SALT>
 ```
 
-You already need the SMTP secrets documented in the README. Do not set
+At the time this setup was live it also required SMTP secrets, which the README
+no longer documents; the active service sends through the Resend HTTP API
+(`RESEND_API_KEY` / `RESEND_FROM`). Do not set
 `ALERT_ONE_CLICK_UNSUBSCRIBE` unless the Apps Script is extended to handle POST
 requests.

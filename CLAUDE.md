@@ -16,13 +16,18 @@ This is a single-context repository. See `docs/agents/domain.md`.
 
 ## What This Project Is
 
-An AMEX Platinum dining map covering three programs:
+An AMEX Platinum map covering five datasets:
 1. **Japan** — Pocket Concierge partner restaurants enriched with Tabelog review scores,
    ratings, and metadata.
-2. **Global Dining Credit** — 16 countries scraped from `platinumdining.caffeinesoftware.com`
-   with coordinates, cuisine, and address from JSON-LD structured data.
+2. **Global Dining Credit** — 15 non-Japan countries (1,926 records) pulled from Amex's own
+   dining-offers API at `https://dining-offers-prod.amex.r53.tuimedia.com`
+   (`/api/countries`, then `/api/country/{code}/merchants?origin=SG`).
 3. **Love Dining** — Singapore hotel and restaurant program scraped from Amex SG website
-   (79 venues, geocoded via Nominatim).
+   (83 venues: 31 restaurants + 52 hotel outlets, geocoded via Nominatim).
+4. **Table for Two** — Amex SG Table for Two roster (30 venues in `data/table-for-two.json`),
+   with live slot availability from `api.diningcity.asia` (project `AMEXPlatSG`).
+5. **Plat Stay** — Amex Platinum hotel/stay partners (76 records in `data/plat-stays.json`)
+   from `go.amex/platstay`.
 
 All datasets display Google Maps ratings (scraped via Playwright) from `data/google-maps-ratings.json`.
 
@@ -45,13 +50,13 @@ promote_tabelog_matches.py      ← write verified/review matches into quality s
         ▼
 restaurant-quality-signals.json ← final output consumed by the map
 
-platinumdining.caffeinesoftware.com (sitemap)
+dining-offers-prod.amex.r53.tuimedia.com (Amex dining-offers API)
         │
         ▼
-scrape_global_dining.py         ← sitemap crawl + JSON-LD extraction
+scrape_global_dining.py         ← /api/countries + /api/country/{code}/merchants?origin=SG
         │
         ▼
-global-restaurants.json         ← 16-country global dining partner data
+global-restaurants.json         ← 15-country global dining partner data (1,926 records)
 ```
 
 ---
@@ -97,7 +102,7 @@ specific page instead of searching.
 ## Global Dining Scraper
 
 ```bash
-# Scrape all 16 non-Japan countries (~2,470 restaurants, ~10 min at 4 req/s)
+# Scrape all 15 non-Japan countries (~1,930 restaurants, 0.25s pause between requests)
 python3 scripts/scrape_global_dining.py
 
 # Check for additions/removals against last snapshot
@@ -107,9 +112,14 @@ python3 scripts/scrape_global_dining.py --diff
 python3 scripts/scrape_global_dining.py --dry-run --limit 20
 ```
 
-Source: `platinumdining.caffeinesoftware.com` (sitemap at same domain, URLs in sitemap
-reference `platinumdining.co.uk` but that domain is unreachable — the scraper remaps
-all URLs to `caffeinesoftware.com` automatically).
+Source: Amex's own dining-offers API at `https://dining-offers-prod.amex.r53.tuimedia.com`
+(`API_BASE_URL` in the script). `main()` calls `fetch_official_records()`, which hits
+`/api/countries` and then `/api/country/{code}/merchants?origin=SG` for every non-Japan
+country (Japan is skipped via `SKIP_COUNTRIES` because Pocket Concierge covers it).
+The public landing page is `https://www.americanexpress.com/en-sg/benefits/diningbenefit/`,
+recorded as `source_url` in `data/global-dining-source.json`. The `remap_url` /
+`fetch_sitemap_urls` / JSON-LD helpers and the `BASE_URL`, `SITEMAP_URL`, `SITEMAP_DOMAIN`
+constants are legacy dead code kept only to parse old stored source URLs.
 
 Output: `data/global-restaurants.json` — committed to repo and loaded by frontend.
 Snapshot: `data/global-dining-snapshot.json` — gitignored, used for diff detection only.
@@ -164,7 +174,7 @@ These are public read-only keys embedded in Michelin's frontend JS (visible in b
 tab on guide.michelin.com). Requires `Referer: guide.michelin.com` header.
 
 ```bash
-# Initial seed (run once, ~10 min for full 2440-restaurant dataset)
+# Initial seed (run once, ~10 min for the full ~1,930-restaurant dataset)
 python3 scripts/enrich_from_web_search.py --force --delay 0.2
 
 # Incremental update (skips fresh cached entries, retries no_result after 90 days)
@@ -263,15 +273,34 @@ When new restaurants are added to `japan-restaurants.json`:
 GROQ_API_KEY=...        # LLM judge for Japan matching + AI description generation
 ```
 
+`enrich_from_web_search.py` also requires `MICHELIN_ALGOLIA_APP_ID` and the
+matching Michelin Algolia API key in the same `.env`. They are named here without
+assignment syntax on purpose: the pre-commit hook rejects any diff containing
+`<NAME>=` for these keys, placeholder or not.
+
+Note: `.env.example` currently ships only `GROQ_API_KEY`.
+(Reminders-service and alert-job secrets are separate; see the Table for Two Reminders
+section below.)
+
 ---
 
 ## Data Files (gitignored)
 
-Large binary/cache files are gitignored. Committed:
-- `data/japan-restaurants.json`
-- `data/japan-restaurants.geojson`
-- `data/restaurant-quality-signals.json`
-- `data/tabelog-url-cache.json`  ← commit this, it's the Claude-searched URL index
+Large caches are gitignored (see `.gitignore`): `tabelog-match-http-cache.json`,
+`tabelog-match-candidates.json`, `tabelog-match-results.json` (plus their `.progress.json`
+sidecars), `global-dining-snapshot.json`, `web-search-signals-cache.json`,
+`review-promotion-batch.json`, `tabelog-ground-truth-sample.json`,
+`plat_stay_geoapify_cache.json`, `plat_stay_tomtom_cache.json` and `data/tft-menus/`.
+(`global-website-signals-cache.json` and `global-dining-geocode-cache.json` are listed in
+`.gitignore` but were committed before the rule was added, so they remain tracked.)
+
+Everything else under `data/` is committed, including every dataset the frontend loads
+(`japan-restaurants.json`, `japan-restaurants.geojson`, `global-restaurants.json`,
+`love-dining.json`, `plat-stays.json`, `plat-stays.geojson`, `table-for-two.json`,
+`table-for-two-slots.json`) plus `google-maps-ratings.json`,
+`restaurant-quality-signals.json`, `source-health.json`, `pocket-availability.json`,
+`geocode_cache.json`, `venue_detail_cache.json`, and `tabelog-url-cache.json`
+(the Claude-searched URL index).
 
 ---
 

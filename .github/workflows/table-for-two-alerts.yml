@@ -2,7 +2,9 @@ name: Table for Two Alerts
 
 on:
   schedule:
-    # Refresh well inside the 30-minute public freshness window.
+    # Requested every 15 minutes, but GitHub's scheduler queues this workflow:
+    # measured delivery is ~10 runs/day with 1-5h gaps. Treat 15 minutes as an
+    # upper bound on request frequency, not a freshness guarantee.
     - cron: "2,17,32,47 * * * *"
   workflow_dispatch:
 

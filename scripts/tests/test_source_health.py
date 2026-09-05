@@ -105,7 +105,14 @@ class SourceHealthTest(unittest.TestCase):
         self.assertEqual(source["coverage"]["unavailable"], 1)
         self.assertEqual(source["coverage"]["covered"], 1)
         self.assertEqual(source["tier"], "enrichment")
-        self.assertEqual(source["stale_after_minutes"], 30)
+        # Track the constant, not a literal: this row is the availability tier and
+        # must use the availability threshold, whatever that threshold is set to.
+        self.assertEqual(
+            source["stale_after_minutes"], int(MODULE.AVAILABILITY_STALE_HOURS * 60)
+        )
+        self.assertNotEqual(
+            source["stale_after_minutes"], int(MODULE.PRIMARY_STALE_HOURS * 60)
+        )
 
     def test_transition_events_include_exact_before_after(self):
         old = {"sources": [{

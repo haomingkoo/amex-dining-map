@@ -1,4 +1,9 @@
-# Codex Prompt: Analyze 288 Unmatched Tabelog Restaurants
+# Codex Prompt: Analyze 288 Unmatched Tabelog Restaurants (archived 2026-04-03)
+
+> Historical prompt. The counts below describe the matching run as of 2026-04-03
+> and are no longer current. As of 2026-09-05 the pipeline resolves 758 verified,
+> 65 review, and 21 reject across 844 records in `data/tabelog-match-results.json`.
+> Kept for provenance of `docs/codex-reject-analysis-results.md`.
 
 ## Context
 
@@ -14,7 +19,7 @@ The 288 rejects all have candidates found, but the candidates have conflicting p
 
 ## The Data
 
-Read `/tmp/rejects_for_codex.json` - it contains all 288 rejects with:
+Read `docs/rejects-snapshot-2026-04-02.json` - it contains all 288 rejects with:
 - `name`, `native_title` - restaurant name in English and Japanese
 - `prefecture`, `city`, `district` - location from source
 - `src_phone`, `src_addr` - source phone and address

@@ -12,10 +12,13 @@ Match Pocket Concierge Japan restaurants to the exact Tabelog listing URL with h
 Current truth-set result on the `51-70` sample:
 
 - `20/20` records have a real exact Tabelog listing
-- current matcher gets `9/20` exact top URLs
-- current promoted `verified` precision on that sample is `9/9`
+- current matcher gets `19/20` exact top URLs
+- current promoted `verified` precision on that sample is `15/15`
 
-That means the main problem is still `discovery coverage`, not reckless auto-accept.
+The remaining gap is a single moved-page case (`Aji Takebayashi`). The
+cache-first retry pass (`scripts/retry_rejects_cached.py`) closes it, so all
+`20/20` records reach `data/restaurant-quality-signals.json` with the correct
+Tabelog URL.
 
 ## Inputs We Need
 
@@ -264,7 +267,10 @@ Suggested provider:
 
 Status:
 
-- hook point identified
+- implemented as `groq_judge_match` in `scripts/match_tabelog_candidates.py`
+  (`llama-3.3-70b-versatile`), invoked on the top `5` candidates when the best
+  confidence is below the accept floor; `groq_judge` appears in the match
+  reasons of `93` of `844` records in `data/tabelog-match-results.json`
 - not yet benchmarked against the truth set
 
 ### 11. Evaluation Layer
@@ -282,13 +288,13 @@ Metrics that matter:
 
 Current truth-set insight:
 
-- current exact top hit rate on sample `51-70`: `45%`
+- current exact top hit rate on sample `51-70`: `95%`
 - current verified precision on that sample: `100%`
 
 That tells us:
 
 - we are conservative
-- but discovery still misses too many exact pages
+- discovery now misses only the moved-page tail (`1/20`)
 
 ## Nice-To-Have Tools
 
@@ -316,14 +322,11 @@ This can be done with sub-agents or manual review.
 
 ## What Is Still Missing
 
-1. Better discovery query templates for the `11` known misses in the truth set.
+1. Better discovery query templates for the `1` known miss left in the truth set.
 2. Moved-page awareness for cases like `Aji Takebayashi`.
-3. Stronger address/phone-led external queries for Nishinakasu / Otemon / Kitakyushu clusters.
-4. A real A/B benchmark for:
+3. A real A/B benchmark for:
    - current matcher
    - current matcher + Groq judge
-5. Promotion of verified truth-backed matches into:
-   - `data/restaurant-quality-signals.json`
 
 ## Practical Build Order
 

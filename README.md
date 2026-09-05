@@ -15,8 +15,10 @@ each dataset was cached, where it came from, and when a human review is needed.
 - `Love Dining`: Singapore restaurant and hotel outlets with official discount
   terms, exclusions, booking notes, and cache metadata.
 - `Table for Two`: Singapore Platinum set-menu roster from the official Amex
-  page, with 23/23 mapped roster venues and DiningCity `AMEXPlatSG`
-  slot-level availability checks for party-size/date/session filtering.
+  page plus the reviewed DiningCity `AMEXPlatSG` membership feed, with 30/30
+  mapped roster venues (28 current booking-project venues and 2 retained
+  historical records) and DiningCity `AMEXPlatSG` slot-level availability
+  checks for party-size/date/session filtering.
 
 ## Data Trust Model
 
@@ -148,8 +150,8 @@ git diff --check
 
 Current coordinate audit notes:
 
-- Global Dining: 1,816 mapped records, 110 records without coordinates.
-- Japan Dining: 839 mapped records, no missing coordinates.
+- Global Dining: 1,822 mapped records, 104 records without coordinates.
+- Japan Dining: 843 mapped records, no missing coordinates.
 - Plat Stay: 76 mapped records, no missing coordinates.
 - Love Dining: 77 mapped records, 6 intentionally bundled/unmapped records.
 - Table for Two: 30 mapped records (28 current booking-project venues and 2 retained historical records), no missing coordinates.
