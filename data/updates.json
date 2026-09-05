@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-05T00:08:07Z",
+  "updated_at": "2026-09-05T08:32:08Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-05T08:32:08Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "27/28 (96.4%), 1 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "28/28 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "27/28 (96.4%), 1 unavailable",
+          "after": "28/28 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "918f67e5b5e304347972",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "efaeae8a4586e642c026"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -9448,7 +9481,8 @@
       "273e2725dcd75e6aa23b": {
         "latest_transition_id": "7eea0d905ec626138e3b",
         "occurrences": {
-          "7eea0d905ec626138e3b": 1
+          "7eea0d905ec626138e3b": 1,
+          "dd1a257d478a3c48eb90": 1
         }
       },
       "2815ef390a27dbc3e9e6": {
@@ -9483,6 +9517,7 @@
       "3da2da7369597146b234": {
         "latest_transition_id": "57b2a63792fe6aaa3018",
         "occurrences": {
+          "249fd2bd986e529eb99e": 1,
           "57b2a63792fe6aaa3018": 1,
           "991b749a30288ee4e30f": 1
         }
@@ -9549,12 +9584,14 @@
       "6a9d621c7ac66f9b8665": {
         "latest_transition_id": "63a773d74e36c58a0fe2",
         "occurrences": {
-          "63a773d74e36c58a0fe2": 1
+          "63a773d74e36c58a0fe2": 1,
+          "921440410fb927d270fa": 1
         }
       },
       "6c00d9815998a4c42ec6": {
         "latest_transition_id": "e570d26521179eacc0da",
         "occurrences": {
+          "9961268798ef73b065ab": 1,
           "e570d26521179eacc0da": 1
         }
       },
@@ -9623,6 +9660,7 @@
       "7e57fa76edf888c59c2a": {
         "latest_transition_id": "99da9b49b2758166418f",
         "occurrences": {
+          "795a16238968974fbd31": 1,
           "99da9b49b2758166418f": 1
         }
       },
@@ -9635,6 +9673,7 @@
       "81d1198639720806a3f0": {
         "latest_transition_id": "fd825e0eb577c9f301ba",
         "occurrences": {
+          "ac5337aa783a825a73d9": 1,
           "fd825e0eb577c9f301ba": 1
         }
       },
@@ -9750,7 +9789,8 @@
       "ebf4bc78e02efc91f85b": {
         "latest_transition_id": "4a6e45a284b3ab7e3fc3",
         "occurrences": {
-          "4a6e45a284b3ab7e3fc3": 1
+          "4a6e45a284b3ab7e3fc3": 1,
+          "5fcc01c7ec71ee4cb2ba": 1
         }
       },
       "ecb70c7bec7eb7600d08": {
@@ -9784,7 +9824,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "f9da06e92487f100242e",
+        "latest_transition_id": "918f67e5b5e304347972",
         "occurrences": {
           "0486ed88fd4f242b58f7": 1,
           "163a7ec6057f7df9ed9f": 1,
@@ -9797,6 +9837,7 @@
           "6b0a8f0fbbc4c84ab912": 12,
           "73f1934e9c3fa739f5ff": 1,
           "90a7897a12006e9ef82e": 1,
+          "918f67e5b5e304347972": 1,
           "9d9d155296d216fc8107": 1,
           "a0e5d9c3222307d148c0": 1,
           "a35a007cefa6ec723d14": 1,
