@@ -23,6 +23,7 @@ DEFAULT_UPDATES = Path("data/updates.json")
 OWNER_ACTIONABLE_KINDS = {
     "added",
     "removed",
+    "renamed",
     "menu_added",
     "menu_updated",
     "details_updated",

@@ -3,17 +3,54 @@
 import importlib.util
 import copy
 import json
+import re
+import sys
 import tempfile
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "reminders"))
+
+from app.owner_alerts import OwnerAlertEvent  # noqa: E402
+
 MODULE_PATH = Path(__file__).resolve().parents[1] / "source_change_alert.py"
 SPEC = importlib.util.spec_from_file_location("source_change_alert", MODULE_PATH)
 MODULE = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader
 SPEC.loader.exec_module(MODULE)
+
+DISPATCH_PATH = Path(__file__).resolve().parents[1] / "dispatch_owner_updates.py"
+DISPATCH_SPEC = importlib.util.spec_from_file_location("dispatch_owner_updates", DISPATCH_PATH)
+DISPATCH = importlib.util.module_from_spec(DISPATCH_SPEC)
+assert DISPATCH_SPEC.loader
+DISPATCH_SPEC.loader.exec_module(DISPATCH)
+
+APP_JS_PATH = ROOT / "web" / "app.js"
+
+SOLLNER_MERCHANT_ID = "9f3c1a44-de2b-4f7e-8c11-6a0d2b5e9a77"
+
+
+def _sollner_record(name: str, record_id: str) -> dict:
+    """The Munich venue that DiningCity renamed on 2026-08-27, keyed by name slug."""
+    return {
+        "id": record_id,
+        "name": name,
+        "source_merchant_id": SOLLNER_MERCHANT_ID,
+        "country": "Germany",
+        "city": "München",
+        "source_localized_address": "Herterichstraße 61, 81479 München",
+        "source_url": "https://www.americanexpress.com/en-gb/benefits/global-dining-access",
+    }
+
+
+def _public_update_kinds_in_app_js() -> set[str]:
+    source = APP_JS_PATH.read_text()
+    start = source.index("const PUBLIC_UPDATE_KINDS = new Set([")
+    end = source.index("]);", start)
+    return set(re.findall(r'"([a-z][a-z0-9_]*)"', source[start:end]))
 
 
 class SourceChangeUpdatesTest(unittest.TestCase):
@@ -177,6 +214,112 @@ class SourceChangeUpdatesTest(unittest.TestCase):
             if item["transition_id"] == ordinary["transition_id"]
         ]
         self.assertEqual([item["occurrence"] for item in repeated], [2, 1])
+
+    def test_renamed_venue_is_one_event_not_a_removal_and_an_addition(self):
+        old = [_sollner_record("Gäststätte Sollner Hof", "amex-global-germany-gaststatte-sollner-hof")]
+        new = [_sollner_record("Gasthaus Sollner Hof", "amex-global-germany-gasthaus-sollner-hof")]
+
+        events = MODULE.build_record_update_events(
+            "Global Dining", old, new, {}, "2026-08-27T00:56:00Z"
+        )
+
+        self.assertEqual([event["kind"] for event in events], ["renamed"])
+        self.assertEqual(events[0]["subject"], "Gasthaus Sollner Hof / München")
+        self.assertEqual(events[0]["before"]["state"], "listed")
+        self.assertEqual(events[0]["after"]["state"], "listed")
+        self.assertEqual(
+            events[0]["changes"],
+            [{
+                "field": "Name",
+                "before": "Gäststätte Sollner Hof",
+                "after": "Gasthaus Sollner Hof",
+            }],
+        )
+        self.assertEqual(
+            MODULE.compare_records(old, new),
+            {"added": [], "removed": [], "changed": ["Gasthaus Sollner Hof / München"]},
+        )
+
+    def test_renamed_event_validates_against_the_owner_alert_schema(self):
+        old = [_sollner_record("Gäststätte Sollner Hof", "amex-global-germany-gaststatte-sollner-hof")]
+        new = [_sollner_record("Gasthaus Sollner Hof", "amex-global-germany-gasthaus-sollner-hof")]
+
+        event = MODULE.build_record_update_events(
+            "Global Dining", old, new, {}, "2026-08-27T00:56:00Z"
+        )[0]
+
+        validated = OwnerAlertEvent.model_validate(event)
+        self.assertEqual(validated.kind, "renamed")
+        self.assertEqual(validated.status, "published")
+
+    def test_renamed_event_is_dispatched_alongside_other_owner_events(self):
+        old = [_sollner_record("Gäststätte Sollner Hof", "amex-global-germany-gaststatte-sollner-hof")]
+        new = [_sollner_record("Gasthaus Sollner Hof", "amex-global-germany-gasthaus-sollner-hof")]
+        renamed = MODULE.build_record_update_events(
+            "Global Dining", old, new, {}, "2026-08-27T00:56:00Z"
+        )[0]
+        added = MODULE.build_record_update_events(
+            "Global Dining", [], [_sollner_record("Other Place", "amex-global-germany-other")], {}, "2026-08-27T00:56:00Z"
+        )[0]
+
+        selected, withheld = DISPATCH.select_owner_notifications([renamed, added])
+
+        self.assertEqual([event["kind"] for event in selected], ["renamed", "added"])
+        self.assertEqual(withheld, {})
+
+    def test_every_record_update_kind_is_known_to_both_downstream_allowlists(self):
+        old = [
+            {"id": "gone", "name": "Closed Place", "city": "Berlin"},
+            _sollner_record("Gäststätte Sollner Hof", "amex-global-germany-gaststatte-sollner-hof"),
+            {"id": "luce-old", "name": "LUCE", "hotel": "Wrong Hotel", "city": "Singapore", "address": "80 Middle Road"},
+            {"id": "stable", "name": "Stable Place", "notes": "Before"},
+            {"id": "menu", "name": "Menu Place", "menu_pdf": {"filename": "menu.pdf", "sha256": "a" * 64}},
+        ]
+        new = [
+            {"id": "fresh", "name": "New Place", "city": "Berlin"},
+            _sollner_record("Gasthaus Sollner Hof", "amex-global-germany-gasthaus-sollner-hof"),
+            {"id": "luce-new", "name": "LUCE", "hotel": "Frasers House", "city": "Singapore", "address": "80 Middle Road"},
+            {"id": "stable", "name": "Stable Place", "notes": "After"},
+            {"id": "menu", "name": "Menu Place", "menu_pdf": {"filename": "menu.pdf", "sha256": "b" * 64}},
+        ]
+
+        emitted = {
+            event["kind"]
+            for event in MODULE.build_record_update_events(
+                "Global Dining", old, new, {}, "2026-08-27T00:56:00Z"
+            )
+        }
+
+        self.assertEqual(
+            emitted,
+            {"added", "removed", "renamed", "correction", "details_updated", "menu_updated"},
+        )
+        self.assertLessEqual(
+            emitted, DISPATCH.OWNER_ACTIONABLE_KINDS | DISPATCH.OWNER_NOISE_KINDS
+        )
+        self.assertLessEqual(emitted, _public_update_kinds_in_app_js())
+
+    def test_records_without_a_source_identity_stay_removed_and_added(self):
+        old = [{"id": "bistro-old", "name": "Old Bistro", "city": "Paris"}]
+        new = [{"id": "bistro-new", "name": "New Bistro", "city": "Paris"}]
+
+        events = MODULE.build_record_update_events(
+            "Global Dining", old, new, {}, "2026-08-27T00:56:00Z"
+        )
+
+        self.assertEqual(sorted(event["kind"] for event in events), ["added", "removed"])
+
+    def test_source_identity_shared_with_a_surviving_record_stays_removed_and_added(self):
+        shared = {"source_merchant_id": "shared-merchant", "city": "Munich"}
+        keeper = {"id": "keeper", "name": "Keeper", **shared}
+        old = [{"id": "vanished", "name": "Vanished", **shared}, keeper]
+        new = [{"id": "appeared", "name": "Appeared", **shared}, keeper]
+
+        events = MODULE.build_record_update_events(
+            "Global Dining", old, new, {}, "2026-08-27T00:56:00Z"
+        )
+
+        self.assertEqual(sorted(event["kind"] for event in events), ["added", "removed"])
 
     def test_menu_hash_change_is_a_menu_update(self):
         old = [{"id": "venue-1", "name": "Place", "menu_pdf": {"status": "published", "filename": "menu.pdf", "sha256": "a" * 64}}]

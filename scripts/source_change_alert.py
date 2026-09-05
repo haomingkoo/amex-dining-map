@@ -14,6 +14,7 @@ import json
 import os
 import subprocess
 import tempfile
+from collections.abc import Callable
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -199,6 +200,57 @@ def record_location_identity(record: dict[str, Any]) -> str | None:
     return json.dumps([country, city, name, address], ensure_ascii=False, separators=(",", ":"))
 
 
+def record_source_identity(record: dict[str, Any]) -> str | None:
+    """Identity the source assigns, which survives a venue being renamed."""
+    for field in ("source_merchant_id", "dining_city_id"):
+        value = record.get(field)
+        if isinstance(value, str) and value.strip():
+            return f"{field}:{value.strip()}"
+    return None
+
+
+def _index_by_identity(
+    records_by_key: dict[str, dict[str, Any]],
+    identity_of: Callable[[dict[str, Any]], str | None],
+) -> dict[str, list[str]]:
+    index: dict[str, list[str]] = {}
+    for key, record in records_by_key.items():
+        identity = identity_of(record)
+        if identity:
+            index.setdefault(identity, []).append(key)
+    return index
+
+
+def match_rekeyed_records(
+    old_by_key: dict[str, dict[str, Any]],
+    new_by_key: dict[str, dict[str, Any]],
+) -> list[tuple[str, str]]:
+    """Pair disappeared with appeared records that are the same venue re-keyed.
+
+    Matches on location, then on the source-assigned id. An identity that is
+    missing, or shared by more than one record on either side, is left alone so
+    the caller falls back to reporting a removal plus an addition.
+    """
+    old_only = set(old_by_key) - set(new_by_key)
+    new_only = set(new_by_key) - set(old_by_key)
+    rekeyed: list[tuple[str, str]] = []
+    for identity_of in (record_location_identity, record_source_identity):
+        old_index = _index_by_identity(old_by_key, identity_of)
+        new_index = _index_by_identity(new_by_key, identity_of)
+        for identity in sorted(set(old_index) & set(new_index)):
+            old_keys = old_index[identity]
+            new_keys = new_index[identity]
+            if len(old_keys) != 1 or len(new_keys) != 1:
+                continue
+            old_key, new_key = old_keys[0], new_keys[0]
+            if old_key not in old_only or new_key not in new_only:
+                continue
+            old_only.remove(old_key)
+            new_only.remove(new_key)
+            rekeyed.append((old_key, new_key))
+    return rekeyed
+
+
 def record_label(record: dict[str, Any]) -> str:
     parts = [
         record.get("name") or record.get("app_name") or record.get("hotel") or "Unknown",
@@ -335,26 +387,9 @@ def build_record_update_events(
     new_by_key = {record_key(record): record for record in records_from_payload(new_payload)}
     events: list[dict[str, Any]] = []
 
-    old_only = set(old_by_key) - set(new_by_key)
-    new_only = set(new_by_key) - set(old_by_key)
-    old_by_location: dict[str, list[str]] = {}
-    new_by_location: dict[str, list[str]] = {}
-    for key in old_only:
-        identity = record_location_identity(old_by_key[key])
-        if identity:
-            old_by_location.setdefault(identity, []).append(key)
-    for key in new_only:
-        identity = record_location_identity(new_by_key[key])
-        if identity:
-            new_by_location.setdefault(identity, []).append(key)
-    rekeyed: list[tuple[str, str, str]] = []
-    for identity in sorted(set(old_by_location) & set(new_by_location)):
-        old_keys = old_by_location[identity]
-        new_keys = new_by_location[identity]
-        if len(old_keys) == 1 and len(new_keys) == 1:
-            rekeyed.append((old_keys[0], new_keys[0], identity))
-            old_only.remove(old_keys[0])
-            new_only.remove(new_keys[0])
+    rekeyed = match_rekeyed_records(old_by_key, new_by_key)
+    old_only = set(old_by_key) - set(new_by_key) - {old_key for old_key, _ in rekeyed}
+    new_only = set(new_by_key) - set(old_by_key) - {new_key for _, new_key in rekeyed}
 
     for key in sorted(new_only):
         record = new_by_key[key]
@@ -404,7 +439,7 @@ def build_record_update_events(
             f"record:{new_key}",
             True,
         )
-        for old_key, new_key, identity in rekeyed
+        for old_key, new_key in rekeyed
     )
     for key, old_record, new_record, entity_key, is_rekeyed in record_pairs:
         old_listed = old_record.get("booking_project_status") != "not_listed"
@@ -450,6 +485,13 @@ def build_record_update_events(
             continue
         menu_change = any("menu" in change["field"].lower() for change in changes)
         menu_review_required = menu_change and _menu_review_required(new_record)
+        source_identity = record_source_identity(old_record)
+        renamed = (
+            is_rekeyed
+            and source_identity is not None
+            and source_identity == record_source_identity(new_record)
+            and old_record.get("name") != new_record.get("name")
+        )
         event = {
             "program": program,
             "program_id": config["id"],
@@ -457,6 +499,8 @@ def build_record_update_events(
             "kind": (
                 "menu_updated"
                 if menu_change
+                else "renamed"
+                if renamed
                 else "correction"
                 if is_rekeyed
                 else "details_updated"
@@ -776,27 +820,9 @@ def compare_records(old_payload: Any | None, new_payload: Any | None) -> dict[st
     new_records = records_from_payload(new_payload) if new_payload is not None else []
     old_by_key = {record_key(record): record for record in old_records}
     new_by_key = {record_key(record): record for record in new_records}
-    old_only = set(old_by_key) - set(new_by_key)
-    new_only = set(new_by_key) - set(old_by_key)
-    old_by_location: dict[str, list[str]] = {}
-    new_by_location: dict[str, list[str]] = {}
-    for key in old_only:
-        identity = record_location_identity(old_by_key[key])
-        if identity:
-            old_by_location.setdefault(identity, []).append(key)
-    for key in new_only:
-        identity = record_location_identity(new_by_key[key])
-        if identity:
-            new_by_location.setdefault(identity, []).append(key)
-    rekeyed = []
-    for identity in sorted(set(old_by_location) & set(new_by_location)):
-        old_keys = old_by_location[identity]
-        new_keys = new_by_location[identity]
-        if len(old_keys) == 1 and len(new_keys) == 1:
-            old_key, new_key = old_keys[0], new_keys[0]
-            old_only.remove(old_key)
-            new_only.remove(new_key)
-            rekeyed.append((old_key, new_key))
+    rekeyed = match_rekeyed_records(old_by_key, new_by_key)
+    old_only = set(old_by_key) - set(new_by_key) - {old_key for old_key, _ in rekeyed}
+    new_only = set(new_by_key) - set(old_by_key) - {new_key for _, new_key in rekeyed}
 
     added = sorted(record_label(new_by_key[key]) for key in new_only)
     removed = sorted(record_label(old_by_key[key]) for key in old_only)
