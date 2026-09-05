@@ -33,6 +33,12 @@ jobs:
         continue-on-error: true
         run: python3 scripts/scrape_table_for_two.py
 
+      - name: Check roster parity against the live project
+        id: roster_parity
+        if: always()
+        continue-on-error: true
+        run: python3 scripts/check_roster_parity.py
+
       - name: Verify reviewed official document pages
         id: document_verify
         if: always()
@@ -165,6 +171,7 @@ jobs:
         if: always()
         env:
           ROSTER_OUTCOME: ${{ steps.roster_refresh.outcome }}
+          PARITY_OUTCOME: ${{ steps.roster_parity.outcome }}
           DOCUMENT_OUTCOME: ${{ steps.document_verify.outcome }}
           MENU_OUTCOME: ${{ steps.menu_refresh.outcome }}
           GUIDE_OUTCOME: ${{ steps.guide_catalogue.outcome }}
@@ -178,7 +185,7 @@ jobs:
           SOURCE_ISSUE_OUTCOME: ${{ steps.source_issue.outcome }}
         run: |
           failed=()
-          for stage in ROSTER DOCUMENT MENU GUIDE ALERT COMMIT ROSTER_HEALTH MENU_HEALTH HEALTH_COMMIT OWNER_DISPATCH RECEIPT_COMMIT; do
+          for stage in ROSTER PARITY DOCUMENT MENU GUIDE ALERT COMMIT ROSTER_HEALTH MENU_HEALTH HEALTH_COMMIT OWNER_DISPATCH RECEIPT_COMMIT; do
             outcome_name="${stage}_OUTCOME"
             outcome="${!outcome_name}"
             if [ "$outcome" != "success" ]; then

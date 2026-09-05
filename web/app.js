@@ -2577,6 +2577,7 @@ function tabelogCheckedRange(records) {
 const PUBLIC_UPDATE_KINDS = new Set([
   "added",
   "removed",
+  "renamed",
   "menu_added",
   "menu_updated",
   "menu_removed",
@@ -2600,6 +2601,7 @@ function isPrimaryPublicUpdate(update) {
   const kind = String(update?.kind || "");
   return kind === "added"
     || kind === "removed"
+    || kind === "renamed"
     || kind.startsWith("menu_")
     || kind.startsWith("terms_")
     || kind.startsWith("faq_");
@@ -2612,6 +2614,7 @@ function updateKindLabel(kind, update = null) {
   return {
     added: `${listingNoun} added`,
     removed: `${listingNoun} removed`,
+    renamed: `${listingNoun} renamed`,
     menu_added: "Menu added",
     menu_updated: "Menu changed",
     menu_removed: "Menu removed",
@@ -2629,6 +2632,7 @@ function updateKindLabel(kind, update = null) {
 function updateKindBadgeLabel(kind, update = null) {
   if (kind === "added") return "Added";
   if (kind === "removed") return "Removed";
+  if (kind === "renamed") return "Renamed";
   return updateKindLabel(kind, update);
 }
 
@@ -2657,6 +2661,7 @@ function publicUpdateSummary(updates) {
     restaurantsRemoved: 0,
     propertiesAdded: 0,
     propertiesRemoved: 0,
+    renamed: 0,
     menus: 0,
     terms: 0,
   };
@@ -2665,6 +2670,7 @@ function publicUpdateSummary(updates) {
     const isProperty = update?.program_id === "plat-stay" || update?.program === "Plat Stay";
     if (kind === "added") counts[isProperty ? "propertiesAdded" : "restaurantsAdded"] += 1;
     else if (kind === "removed") counts[isProperty ? "propertiesRemoved" : "restaurantsRemoved"] += 1;
+    else if (kind === "renamed") counts.renamed += 1;
     else if (kind.startsWith("menu_")) counts.menus += 1;
     else if (kind.startsWith("terms_") || kind.startsWith("faq_")) counts.terms += 1;
   });
@@ -2673,6 +2679,7 @@ function publicUpdateSummary(updates) {
     counts.restaurantsRemoved ? `${counts.restaurantsRemoved} restaurant${counts.restaurantsRemoved === 1 ? "" : "s"} removed` : "",
     counts.propertiesAdded ? `${counts.propertiesAdded} propert${counts.propertiesAdded === 1 ? "y" : "ies"} added` : "",
     counts.propertiesRemoved ? `${counts.propertiesRemoved} propert${counts.propertiesRemoved === 1 ? "y" : "ies"} removed` : "",
+    counts.renamed ? `${counts.renamed} venue${counts.renamed === 1 ? "" : "s"} renamed` : "",
     counts.menus ? `${counts.menus} menu${counts.menus === 1 ? "" : "s"} changed` : "",
     counts.terms ? `${counts.terms} benefit term${counts.terms === 1 ? "" : "s"} changed` : "",
   ].filter(Boolean);

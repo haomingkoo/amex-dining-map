@@ -16,6 +16,8 @@ vm.runInNewContext(
   `${app.slice(helpersStart, helpersEnd)}
    this.isPublicDecisionUpdate = isPublicDecisionUpdate;
    this.isPrimaryPublicUpdate = isPrimaryPublicUpdate;
+   this.updateKindLabel = updateKindLabel;
+   this.updateKindBadgeLabel = updateKindBadgeLabel;
    this.publicUpdateChanges = publicUpdateChanges;
    this.publicUpdateSummary = publicUpdateSummary;`,
   context,
@@ -29,6 +31,21 @@ assert.equal(context.isPublicDecisionUpdate({ status: "review_required", kind: "
 assert.equal(context.isPrimaryPublicUpdate({ kind: "added" }), true);
 assert.equal(context.isPrimaryPublicUpdate({ kind: "menu_updated" }), true);
 assert.equal(context.isPrimaryPublicUpdate({ kind: "correction" }), false);
+
+// A venue the source renamed must reach readers as a rename, not vanish from the feed.
+assert.equal(context.isPublicDecisionUpdate({ status: "published", kind: "renamed" }), true);
+assert.equal(context.isPrimaryPublicUpdate({ kind: "renamed" }), true);
+assert.equal(context.updateKindBadgeLabel("renamed"), "Renamed");
+assert.equal(context.updateKindLabel("renamed"), "Restaurant renamed");
+assert.equal(
+  context.updateKindLabel("renamed", { program_id: "plat-stay" }),
+  "Property renamed",
+);
+assert.equal(
+  context.publicUpdateSummary([{ kind: "renamed" }, { kind: "renamed" }, { kind: "added" }]),
+  "1 restaurant added · 2 venues renamed",
+);
+assert.equal(context.publicUpdateSummary([{ kind: "renamed" }]), "1 venue renamed");
 
 assert.equal(
   context.publicUpdateSummary([
