@@ -86,6 +86,9 @@ jobs:
           do
             cp "data/${file}" site/data/
           done
+          # The reminders service reads this back at runtime so its copy cannot
+          # drift from the site between manual redeploys.
+          cp reminders/app/tft_guide_catalog.json site/data/tft_guide_catalog.json
           python3 scripts/build_telegram_public_config.py --output site/data/telegram-guide.json
           python3 scripts/build_public_data_projections.py \
             --table-for-two data/table-for-two.json \
