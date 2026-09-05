@@ -40,7 +40,8 @@ def test_document_verifier_installs_the_patched_pypdf_version() -> None:
 def test_independent_observations_continue_after_a_failure() -> None:
     text = workflow_text()
     stages = (
-        ("Refresh public roster snapshot", "Verify reviewed official document pages"),
+        ("Refresh public roster snapshot", "Check roster parity against the live project"),
+        ("Check roster parity against the live project", "Verify reviewed official document pages"),
         ("Verify reviewed official document pages", "Refresh and retain official menu versions"),
         ("Refresh and retain official menu versions", "Build Telegram guide catalogue"),
         ("Build Telegram guide catalogue", "Build Table for Two source alert"),
