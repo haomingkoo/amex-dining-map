@@ -151,7 +151,7 @@ git diff --check
 Current coordinate audit notes:
 
 - Global Dining: 1,822 mapped records, 104 records without coordinates.
-- Japan Dining: 843 mapped records, no missing coordinates.
+- Japan Dining: 850 mapped records, no missing coordinates.
 - Plat Stay: 76 mapped records, no missing coordinates.
 - Love Dining: 77 mapped records, 6 intentionally bundled/unmapped records.
 - Table for Two: 30 mapped records (28 current booking-project venues and 2 retained historical records), no missing coordinates.
@@ -203,7 +203,8 @@ Two isolated Telegram identities are implemented but disabled by default. The
 owner-alert bot can deliver reviewed before-and-after updates only to one fixed
 private channel. The public guide bot answers deterministic private-chat TFT
 program, venue, official-menu, T&C, FAQ, slot, and release questions from a
-bundled source snapshot. It does not
+published source snapshot, refreshed from the deployed site and falling back to the
+bundled copy. It does not
 invoke an LLM, fetch user URLs, read subscriber data, or share the owner bot's
 token. Real Telegram activation remains pending; setup, rotation, monitoring,
 rollback, privacy, and freshness procedures are in
@@ -229,7 +230,7 @@ the [TFT menu review runbook](docs/tft-menu-review-runbook.md); do not publish a
 menu candidate with the generic update-review command below.
 
 The TFT participating-roster image is also review-gated. A new image hash keeps
-the last approved snapshot (currently 21 active and two historical venues) public and records one source-scoped review
+the last approved snapshot (currently 28 active and two historical venues) public and records one source-scoped review
 item; it does not silently turn the hardcoded roster into a claimed official
 addition or removal. After reviewing the complete image, add a hash-addressed
 manifest under `data/reviews/table-for-two-roster/` with predecessor lineage,
