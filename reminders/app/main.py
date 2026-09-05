@@ -44,6 +44,12 @@ live_refresher = TFTLiveRefresher(
     settings.tft_live_snapshot_path,
 )
 
+# The site publishes the same catalogue the image bakes in; following it stops the
+# deployed copy drifting between redeploys. Half the 30-minute Monitor Source Health
+# cadence, so a published change is adopted before the next check reads /healthz.
+PUBLISHED_CATALOG_URL = f"{settings.explorer_base_url}/data/tft_guide_catalog.json"
+CATALOG_REFRESH_INTERVAL_SECONDS = 900
+
 
 async def run_live_refresh_loop(
     refresher: TFTLiveRefresher,
@@ -65,23 +71,51 @@ async def run_live_refresh_loop(
         await sleep(interval_seconds)
 
 
+async def run_catalog_refresh_loop(
+    url: str,
+    interval_seconds: int,
+    *,
+    to_thread: Callable[..., Awaitable[Any]] = asyncio.to_thread,
+    sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+) -> None:
+    """Adopt the published catalogue on a fixed cadence, off the event loop."""
+
+    while True:
+        await to_thread(tft_guide.adopt_published_catalog, url)
+        await sleep(interval_seconds)
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    task: asyncio.Task[None] | None = None
+    tasks: list[asyncio.Task[None]] = []
     if settings.tft_live_refresh_enabled:
-        task = asyncio.create_task(
-            run_live_refresh_loop(
-                live_refresher,
-                settings.tft_live_refresh_interval_seconds,
+        tasks.append(
+            asyncio.create_task(
+                run_live_refresh_loop(
+                    live_refresher,
+                    settings.tft_live_refresh_interval_seconds,
+                )
             )
         )
         # Start the immediate refresh before application startup completes.
         await asyncio.sleep(0)
+    # An HTTPS public base URL is what config.py already treats as "deployed"; local
+    # runs and the test suite keep the baked copy and stay off the network.
+    if settings.public_base_url.startswith("https://"):
+        tasks.append(
+            asyncio.create_task(
+                run_catalog_refresh_loop(
+                    PUBLISHED_CATALOG_URL,
+                    CATALOG_REFRESH_INTERVAL_SECONDS,
+                )
+            )
+        )
     try:
         yield
     finally:
-        if task is not None:
+        for task in tasks:
             task.cancel()
+        for task in tasks:
             with suppress(asyncio.CancelledError):
                 await task
 
@@ -135,14 +169,14 @@ def bundle_revision() -> str:
     return f"bundle:{digest.hexdigest()[:12]}"
 
 
-@lru_cache(maxsize=1)
 def catalog_health() -> dict[str, Any]:
     try:
-        raw = tft_guide.CATALOG_PATH.read_bytes()
-        catalog = tft_guide.load_catalog()
+        in_use = tft_guide.catalog_in_use()
+        catalog = in_use.payload
         return {
             "catalog_ok": True,
-            "catalog_sha256": hashlib.sha256(raw).hexdigest(),
+            "catalog_source": in_use.source,
+            "catalog_sha256": hashlib.sha256(in_use.raw).hexdigest(),
             "catalog_schema_version": catalog.get("schema_version"),
             "catalog_roster_checked_at": catalog.get("roster_checked_at"),
             "catalog_menu_checked_at": (catalog.get("menu_source") or {}).get(

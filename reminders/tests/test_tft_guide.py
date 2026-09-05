@@ -6,6 +6,8 @@ import json
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import pytest
+
 from app import tft_guide
 
 
@@ -473,3 +475,100 @@ def test_release_projection_joins_by_stable_venue_id_not_display_name():
         pattern for pattern in vue["release_patterns"] if pattern["meal"] == "Dinner"
     )
     assert dinner["latest_observation_at"] == expected_latest_observation
+
+
+PUBLISHED_URL = "https://amex-explorer.kooexperience.com/data/tft_guide_catalog.json"
+
+
+@pytest.fixture()
+def baked_catalog_state():
+    tft_guide.use_baked_catalog()
+    yield
+    tft_guide.use_baked_catalog()
+
+
+def _baked_payload() -> dict:
+    return json.loads(tft_guide.CATALOG_PATH.read_bytes())
+
+
+def _published(**overrides) -> bytes:
+    payload = _baked_payload()
+    payload["roster_checked_at"] = "2099-01-01T00:00:00Z"
+    payload.update(overrides)
+    return json.dumps(payload).encode("utf-8")
+
+
+def test_catalog_in_use_defaults_to_the_baked_copy_without_fetching(
+    baked_catalog_state,
+):
+    in_use = tft_guide.catalog_in_use()
+
+    assert in_use.source == "baked"
+    assert in_use.raw == tft_guide.CATALOG_PATH.read_bytes()
+    assert in_use.payload == _baked_payload()
+
+
+def test_adopt_published_catalog_serves_a_newer_published_roster(baked_catalog_state):
+    raw = _published()
+
+    adopted = tft_guide.adopt_published_catalog(PUBLISHED_URL, fetcher=lambda _url: raw)
+
+    in_use = tft_guide.catalog_in_use()
+    assert adopted is True
+    assert in_use.source == "published"
+    assert in_use.raw == raw
+    assert in_use.payload == json.loads(raw)
+    assert tft_guide.load_catalog()["roster_checked_at"] == "2099-01-01T00:00:00Z"
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        pytest.param(b"<!DOCTYPE html>", id="not_json"),
+        pytest.param(b'["venues"]', id="not_an_object"),
+        pytest.param(_published(schema_version=99), id="schema_version_mismatch"),
+        pytest.param(_published(venues=[]), id="empty_venue_list"),
+        pytest.param(_published(venues={"tft-vue": {}}), id="venues_not_a_list"),
+        pytest.param(_published(roster_checked_at=None), id="unusable_roster_stamp"),
+        pytest.param(
+            _published(roster_checked_at="2000-01-01T00:00:00Z"), id="older_than_baked"
+        ),
+    ],
+)
+def test_adopt_published_catalog_rejects_an_unusable_payload(baked_catalog_state, body):
+    adopted = tft_guide.adopt_published_catalog(
+        PUBLISHED_URL, fetcher=lambda _url: body
+    )
+
+    assert adopted is False
+    assert tft_guide.catalog_in_use().source == "baked"
+    assert tft_guide.load_catalog() == _baked_payload()
+
+
+def test_adopt_published_catalog_keeps_serving_when_the_fetch_raises(
+    baked_catalog_state,
+):
+    def _unreachable(_url: str) -> bytes:
+        raise OSError("site unreachable")
+
+    adopted = tft_guide.adopt_published_catalog(PUBLISHED_URL, fetcher=_unreachable)
+
+    assert adopted is False
+    assert tft_guide.catalog_in_use().source == "baked"
+    assert tft_guide.load_catalog() == _baked_payload()
+
+
+def test_adopt_published_catalog_retains_the_adopted_copy_on_a_later_failure(
+    baked_catalog_state,
+):
+    raw = _published()
+    assert tft_guide.adopt_published_catalog(PUBLISHED_URL, fetcher=lambda _url: raw)
+
+    def _unreachable(_url: str) -> bytes:
+        raise OSError("site unreachable")
+
+    adopted = tft_guide.adopt_published_catalog(PUBLISHED_URL, fetcher=_unreachable)
+
+    assert adopted is False
+    assert tft_guide.catalog_in_use().raw == raw
+    assert tft_guide.load_catalog()["roster_checked_at"] == "2099-01-01T00:00:00Z"

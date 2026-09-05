@@ -1,28 +1,28 @@
 {
   "schema_version": 1,
-  "captured_at": "2026-08-30T09:51:02Z",
+  "captured_at": "2026-09-05T14:42:44Z",
   "site_url": "https://amex-explorer.kooexperience.com/",
   "route": "#/table-for-two?venue=tft-vue",
-  "revision": "07f5b6b30876a23f3003f1eeca11b8e77ddb5833",
-  "app_sha256": "c60d44adf687087c78b8c9e97755e2a53c9ea96938a928ac903227bd23e0c363",
-  "menu_checked_at": "2026-08-30T09:44:51Z",
+  "revision": "31142b1491bf",
+  "app_sha256": "31142b1491bf13a645378d16992cbd774ab318549440a43bb595abc2a8bbb8fc",
   "selected_venue_id": "tft-vue",
+  "menu_checked_at": "2026-09-04T23:40:39Z",
+  "review_queue_count": 9,
   "console_error_count": 0,
   "unhandled_failed_page_resources": [],
-  "expected_handled_diningcity_404_count": 2,
   "api_key_watermark_visible": false,
   "reminder_form_visible": true,
-  "venue_details_visible": true,
-  "availability_visible": true,
-  "menus_visible": true,
-  "terms_visible": true,
-  "official_roster_visible": true,
-  "release_qualification_visible": true,
-  "menu_freshness_visible": true,
   "tile_hosts": [
     "tile.openstreetmap.de"
   ],
-  "loaded_tile_count": 6,
+  "loaded_tile_count": 12,
+  "venue_details_visible": true,
+  "availability_visible": true,
+  "menus_visible": true,
+  "terms_pdf_linked": true,
+  "official_roster_linked": true,
+  "release_qualification_visible": true,
+  "menu_freshness_visible": true,
   "viewports": {
     "390x844": {
       "horizontal_overflow": false,
@@ -34,36 +34,268 @@
     }
   },
   "venues": {
-    "tft-vue": {
+    "tft-15-stamford-restaurant": {
       "deep_link_survives_reload": true,
-      "review_warnings": [],
-      "terms_visible": true,
-      "google_maps_visible": true,
-      "menu_urls": [
-        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/VUE-Menu_Platinum.pdf",
-        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/VUE-Menu_Centurion.pdf"
-      ]
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/15Stamford-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/15Stamford-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-baes-cocktail-club": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Baes-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Baes-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-cultivate": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Cultivate-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Cultivate-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-highhouse": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/HighHouse-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/HighHouse-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-la-brasserie": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/La-Brasserie-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/La-Brasserie-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
     },
     "tft-osteria-mozza": {
       "deep_link_survives_reload": true,
-      "review_warnings": [
-        "An alternate menu candidate is under review. Published menu links remain active until owner review is complete."
+      "card_notes": [
+        "This venue remains in the retained official-roster snapshot, but it is absent from the current DiningCity AMEXPlatSG booking project. That does not independently prove the restaurant itself has closed."
       ],
-      "terms_visible": true,
-      "google_maps_visible": true,
-      "menu_urls": [
-        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Osteria-Mozza-Menu_Platinum.pdf",
-        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Osteria-Mozza-Menu-Centurion.pdf"
-      ]
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Osteria-Mozza-Menu-Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Osteria-Mozza-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-polo-bar-steakhouse": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Polo-Bar-Steakhouse-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Polo-Bar-Steakhouse-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-kaya-at-the-standard": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Kaya-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Kaya-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-rappu": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/RAPPU-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/RAPPU-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-sarai": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/SARAI-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/SARAI-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-tanoke": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/TANOKE-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TANOKE-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-the-feather-blade": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Feather-Blade_Menu.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-vineyard": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Vineyard-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Vineyard-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-vue": {
+      "deep_link_survives_reload": true,
+      "card_notes": [
+        "A possible menu change is being verified. The last reviewed menu remains available."
+      ],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/VUE-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/VUE-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
     },
     "tft-one-ninety": {
       "deep_link_survives_reload": true,
-      "review_warnings": [
-        "No indexed official menu PDF was found for this venue. The missing-menu result is awaiting owner review."
+      "card_notes": [
+        "We could not verify an official menu for this venue. Check the official source before booking."
       ],
-      "terms_visible": true,
-      "google_maps_visible": true,
-      "menu_urls": []
+      "card_menu_pdf_urls": [],
+      "google_maps_visible": true
+    },
+    "tft-latido": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Latido-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Latido-Menu_Platinum.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-colony": {
+      "deep_link_survives_reload": true,
+      "card_notes": [
+        "Buffet venue — no set menu PDF."
+      ],
+      "card_menu_pdf_urls": [],
+      "google_maps_visible": true
+    },
+    "tft-estate": {
+      "deep_link_survives_reload": true,
+      "card_notes": [
+        "Buffet venue — no set menu PDF."
+      ],
+      "card_menu_pdf_urls": [],
+      "google_maps_visible": true
+    },
+    "tft-peppermint": {
+      "deep_link_survives_reload": true,
+      "card_notes": [
+        "Buffet venue — no set menu PDF."
+      ],
+      "card_menu_pdf_urls": [],
+      "google_maps_visible": true
+    },
+    "tft-ginger": {
+      "deep_link_survives_reload": true,
+      "card_notes": [
+        "Buffet venue — no set menu PDF."
+      ],
+      "card_menu_pdf_urls": [],
+      "google_maps_visible": true
+    },
+    "tft-capitol-bistro-bar-patisserie": {
+      "deep_link_survives_reload": true,
+      "card_notes": [
+        "The official Amex Love Dining page says this venue is permanently closed from 10 August 2026. It is also absent from the current DiningCity AMEXPlatSG booking project."
+      ],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/CapitolBistro-Menu.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-kees": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Kees-Menu.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-the-plump-frenchman": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Plump-Frenchman_Menu.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-forage": {
+      "deep_link_survives_reload": true,
+      "card_notes": [
+        "A possible menu change is being verified. The last reviewed menu remains available."
+      ],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Forage-Menu_Centurion.pdf",
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Forage-Menu_Platinium.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-sarnies": {
+      "deep_link_survives_reload": true,
+      "card_notes": [],
+      "card_menu_pdf_urls": [
+        "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Sarnies-Menu.pdf"
+      ],
+      "google_maps_visible": true
+    },
+    "tft-grand-cru-wine-bar": {
+      "deep_link_survives_reload": true,
+      "card_notes": [
+        "We could not verify an official menu for this venue. Check the official source before booking."
+      ],
+      "card_menu_pdf_urls": [],
+      "google_maps_visible": true
+    },
+    "tft-brewerkz-east-coast-park": {
+      "deep_link_survives_reload": true,
+      "card_notes": [
+        "We could not verify an official menu for this venue. Check the official source before booking."
+      ],
+      "card_menu_pdf_urls": [],
+      "google_maps_visible": true
+    },
+    "tft-brewerkz-riverside-point": {
+      "deep_link_survives_reload": true,
+      "card_notes": [
+        "We could not verify an official menu for this venue. Check the official source before booking."
+      ],
+      "card_menu_pdf_urls": [],
+      "google_maps_visible": true
+    },
+    "tft-park90": {
+      "deep_link_survives_reload": true,
+      "card_notes": [
+        "We could not verify an official menu for this venue. Check the official source before booking."
+      ],
+      "card_menu_pdf_urls": [],
+      "google_maps_visible": true
+    },
+    "tft-oso-ristorante": {
+      "deep_link_survives_reload": true,
+      "card_notes": [
+        "We could not verify an official menu for this venue. Check the official source before booking."
+      ],
+      "card_menu_pdf_urls": [],
+      "google_maps_visible": true
     }
   }
 }
