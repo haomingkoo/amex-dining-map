@@ -57,7 +57,7 @@ jobs:
           node scripts/tests/test_tft_public_payloads.js
 
       - name: Configure Pages
-        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
       - name: Stage Static Site
         env:
