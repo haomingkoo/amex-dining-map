@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
+import threading
 import unicodedata
+import urllib.request
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from urllib.parse import urlparse
 from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
@@ -20,12 +23,124 @@ CATALOG_PATH = Path(__file__).with_name("tft_guide_catalog.json")
 MENU_STALE_AFTER = timedelta(hours=36)
 RELEASE_STALE_AFTER = timedelta(hours=36)
 MAX_REPLY_LENGTH = 3900
+PUBLISHED_MAX_BYTES = 1_000_000
+PUBLISHED_TIMEOUT_SECONDS = 4
 SGT = ZoneInfo("Asia/Singapore")
 
+logger = logging.getLogger(__name__)
 
-@lru_cache(maxsize=1)
-def load_catalog(path: Path = CATALOG_PATH) -> dict:
-    return json.loads(path.read_text())
+Fetcher = Callable[[str], bytes]
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *_args: Any, **_kwargs: Any) -> None:
+        return None
+
+
+_opener = urllib.request.build_opener(_NoRedirect()).open
+
+
+@dataclass(frozen=True)
+class Catalog:
+    """The catalogue the service answers from, and the bytes its sha256 covers."""
+
+    payload: dict
+    raw: bytes
+    source: str
+
+
+_catalog_lock = threading.Lock()
+_in_use: Catalog | None = None
+
+
+def _baked_catalog() -> Catalog:
+    raw = CATALOG_PATH.read_bytes()
+    return Catalog(payload=json.loads(raw), raw=raw, source="baked")
+
+
+def catalog_in_use() -> Catalog:
+    """Return the single catalogue the service serves. Never reads the network."""
+
+    global _in_use
+    with _catalog_lock:
+        if _in_use is None:
+            _in_use = _baked_catalog()
+        return _in_use
+
+
+def load_catalog() -> dict:
+    return catalog_in_use().payload
+
+
+def use_baked_catalog() -> None:
+    """Drop any adopted copy so the next read reloads the baked file."""
+
+    global _in_use
+    with _catalog_lock:
+        _in_use = None
+
+
+def _fetch_published(url: str, opener: Callable = _opener) -> bytes:
+    request = urllib.request.Request(
+        url,
+        headers={"Accept": "application/json", "User-Agent": "AmexExplorer/1.0"},
+    )
+    with opener(request, timeout=PUBLISHED_TIMEOUT_SECONDS) as response:
+        if response.getcode() != 200:
+            raise ValueError("published catalogue returned a non-success status")
+        content_type = str(response.headers.get("Content-Type") or "").split(";", 1)[0]
+        if content_type.casefold() != "application/json":
+            raise ValueError("published catalogue did not return JSON")
+        body = response.read(PUBLISHED_MAX_BYTES + 1)
+    if len(body) > PUBLISHED_MAX_BYTES:
+        raise ValueError("published catalogue exceeded the size limit")
+    return body
+
+
+def _roster_checked_at(payload: dict) -> datetime | None:
+    value = payload.get("roster_checked_at")
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None else None
+
+
+def _accepted_payload(raw: bytes, baked: dict) -> dict | None:
+    payload = json.loads(raw)
+    if not isinstance(payload, dict):
+        return None
+    if payload.get("schema_version") != baked.get("schema_version"):
+        return None
+    venues = payload.get("venues")
+    if not isinstance(venues, list) or not venues:
+        return None
+    published_at = _roster_checked_at(payload)
+    baked_at = _roster_checked_at(baked)
+    # Railway can redeploy before Pages does, so never step back to an older roster.
+    if published_at is None or (baked_at is not None and published_at < baked_at):
+        return None
+    return payload
+
+
+def adopt_published_catalog(url: str, fetcher: Fetcher = _fetch_published) -> bool:
+    """Adopt the published catalogue when it validates, else keep the one in use."""
+
+    global _in_use
+    try:
+        raw = fetcher(url)
+        payload = _accepted_payload(raw, _baked_catalog().payload)
+    except Exception as exc:  # any failure leaves the catalogue in use untouched
+        logger.warning("published catalogue not adopted error=%s", type(exc).__name__)
+        return False
+    if payload is None:
+        logger.warning("published catalogue not adopted error=rejected")
+        return False
+    with _catalog_lock:
+        _in_use = Catalog(payload=payload, raw=raw, source="published")
+    return True
 
 
 def normalize_venue(value: str) -> str:

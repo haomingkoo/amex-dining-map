@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 from dataclasses import replace
 import hashlib
+import json
 from pathlib import Path
 import re
+import threading
 
 from fastapi.testclient import TestClient
 import pytest
@@ -13,7 +16,14 @@ from app import main, tft_guide
 from app.main import app, bundle_revision
 
 
-def test_healthz_ok(monkeypatch):
+@pytest.fixture()
+def baked_catalog_state():
+    tft_guide.use_baked_catalog()
+    yield
+    tft_guide.use_baked_catalog()
+
+
+def test_healthz_ok(monkeypatch, baked_catalog_state):
     monkeypatch.delenv("RAILWAY_DEPLOYMENT_ID", raising=False)
     monkeypatch.delenv("RAILWAY_GIT_COMMIT_SHA", raising=False)
     response = TestClient(app).get("/healthz")
@@ -25,6 +35,7 @@ def test_healthz_ok(monkeypatch):
     assert re.fullmatch(r"bundle:[0-9a-f]{12}", payload["revision"])
     assert payload["revision"] == bundle_revision()
     assert payload["catalog_ok"] is True
+    assert payload["catalog_source"] == "baked"
     assert payload["catalog_sha256"] == hashlib.sha256(
         tft_guide.CATALOG_PATH.read_bytes()
     ).hexdigest()
@@ -48,6 +59,80 @@ def test_healthz_ok(monkeypatch):
         "age_seconds": None,
         "counts": None,
     }
+
+
+def test_healthz_reports_the_catalogue_actually_being_served(baked_catalog_state):
+    published = json.loads(tft_guide.CATALOG_PATH.read_bytes())
+    published["roster_checked_at"] = "2099-01-01T00:00:00Z"
+    raw = json.dumps(published).encode("utf-8")
+    assert tft_guide.adopt_published_catalog(
+        "https://svc.example/data/tft_guide_catalog.json", fetcher=lambda _url: raw
+    )
+
+    payload = TestClient(app).get("/healthz").json()
+
+    assert payload["catalog_ok"] is True
+    assert payload["catalog_source"] == "published"
+    assert payload["catalog_sha256"] == hashlib.sha256(raw).hexdigest()
+    assert payload["catalog_roster_checked_at"] == "2099-01-01T00:00:00Z"
+    assert payload["catalog_sha256"] != hashlib.sha256(
+        tft_guide.CATALOG_PATH.read_bytes()
+    ).hexdigest()
+
+
+def test_catalog_refresh_loop_adopts_off_the_event_loop_then_waits():
+    url = "https://svc.example/data/tft_guide_catalog.json"
+    events: list[object] = []
+
+    async def fake_to_thread(call, fetched_url):
+        events.append(("thread", call, fetched_url))
+
+    async def fake_sleep(seconds):
+        events.append(("sleep", seconds))
+        raise asyncio.CancelledError
+
+    async def scenario():
+        with pytest.raises(asyncio.CancelledError):
+            await main.run_catalog_refresh_loop(
+                url, 900, to_thread=fake_to_thread, sleep=fake_sleep
+            )
+
+    asyncio.run(scenario())
+
+    assert events == [
+        ("thread", tft_guide.adopt_published_catalog, url),
+        ("sleep", 900),
+    ]
+
+
+def test_app_lifespan_follows_the_published_catalogue_when_deployed(monkeypatch):
+    calls: list[str] = []
+    adopted = threading.Event()
+
+    def _record(url: str) -> bool:
+        calls.append(url)
+        adopted.set()
+        return False
+
+    monkeypatch.setattr(
+        main, "settings", replace(main.settings, public_base_url="https://svc.example")
+    )
+    monkeypatch.setattr(main.tft_guide, "adopt_published_catalog", _record)
+
+    with TestClient(app):
+        assert adopted.wait(timeout=1)
+
+    assert calls == [main.PUBLISHED_CATALOG_URL]
+
+
+def test_app_lifespan_keeps_the_baked_catalogue_outside_a_deployment(monkeypatch):
+    adopted = threading.Event()
+    monkeypatch.setattr(
+        main.tft_guide, "adopt_published_catalog", lambda _url: adopted.set()
+    )
+
+    with TestClient(app):
+        assert not adopted.wait(timeout=0.25)
 
 
 def test_production_server_disables_query_string_access_logs():

@@ -3256,6 +3256,12 @@ function renderJourneyShell(route) {
   });
 }
 
+// A shared link names its destination, so the section chooser has nothing to choose.
+function hashNamesSpecificRoute(hashValue) {
+  if (!normalizeRouteHash(hashValue)) return false;
+  return resolveRouteFromHash(hashValue) !== PROGRAMS.dining.defaultRoute;
+}
+
 function showIntroGate(force = false) {
   if (!introGate) return;
   if (!force && window.localStorage.getItem(INTRO_STORAGE_KEY) === "seen") {
@@ -7887,11 +7893,14 @@ async function init() {
   setStayToolbarOpen(false);
   setLoveToolbarOpen(false);
 
-  if (!window.location.hash) {
+  const incomingHash = window.location.hash;
+  if (!incomingHash) {
     window.history.replaceState(null, "", "#/dining/world");
   }
   handleHashRoute();
-  showIntroGate();
+  if (!hashNamesSpecificRoute(incomingHash)) {
+    showIntroGate();
+  }
 }
 
 searchInput.addEventListener("input", () => {
