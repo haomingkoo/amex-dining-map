@@ -119,14 +119,20 @@ for (const venue of table.venues) {
 // web/app.js replaces the second with a payload-wide review banner. All three are
 // accepted, and so is a reword, because the assertions below are about the payload
 // holding a reason and the card carrying a note, not about which words are used.
-const missingMenuQueue = new Set(
-  (table.menu_source.review_queue || [])
-    .filter((item) => item?.kind === "missing_venue_menu" && item.venue_id)
-    .map((item) => item.venue_id),
-);
+// Mirror web/app.js tableForTwoVenueMenuReviewItems: match on venue identity across
+// ANY kind. fetch_tft_menus.py suppresses the missing_venue_menu item once a concrete
+// candidate is queued for that venue, so filtering on that one kind reddens this gate
+// the first time a menu appears for a venue in the missing queue -- while the card is
+// rendering exactly the reason the assertion claims is absent.
+const reviewedVenueIds = new Set();
+for (const item of table.menu_source.review_queue || []) {
+  for (const id of [item?.venue_id, item?.candidate_venue_id, ...(item?.candidate_venue_ids || [])]) {
+    if (id) reviewedVenueIds.add(id);
+  }
+}
 for (const venue of withoutMenus) {
   assert.ok(
-    venue.menu_pdf?.status === "buffet_no_menu_expected" || missingMenuQueue.has(venue.id),
+    venue.menu_pdf?.status === "buffet_no_menu_expected" || reviewedVenueIds.has(venue.id),
     `${venue.id} publishes no menu and the payload holds no reason to caveat it, so its card has nothing to say`,
   );
   assert.ok(
