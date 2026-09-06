@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-06T22:41:18Z",
+  "updated_at": "2026-09-06T22:58:25Z",
   "updates": [
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_updated",
+      "subject": "Global Dining source",
+      "detected_at": "2026-09-06T22:58:25Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Mapped count": 1822
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Mapped count": 1823
+        }
+      },
+      "changes": [
+        {
+          "field": "Mapped count",
+          "before": 1822,
+          "after": 1823
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "d9b28eaccaf9f5a2a3a0",
+      "stream_id": "128d0d698ba4426680b0",
+      "occurrence": 1,
+      "id": "ecc9b73c488e1ebf7c5d"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -9881,9 +9914,10 @@
         }
       },
       "128d0d698ba4426680b0": {
-        "latest_transition_id": "a4db0856a25b145eb59d",
+        "latest_transition_id": "d9b28eaccaf9f5a2a3a0",
         "occurrences": {
-          "a4db0856a25b145eb59d": 1
+          "a4db0856a25b145eb59d": 1,
+          "d9b28eaccaf9f5a2a3a0": 1
         }
       },
       "1343644c36ca05961a55": {
