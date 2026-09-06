@@ -1,7 +1,54 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-06T00:37:15Z",
+  "updated_at": "2026-09-06T04:49:16Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_stale",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-06T04:49:16Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "after": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 28
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 28
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "e80178cabd37915387ca",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 2,
+      "id": "e5fde2413d93e95eb8b2"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -10056,7 +10103,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "7ffb7001b334fce9c042",
+        "latest_transition_id": "e80178cabd37915387ca",
         "occurrences": {
           "0486ed88fd4f242b58f7": 1,
           "163a7ec6057f7df9ed9f": 1,
@@ -10082,7 +10129,7 @@
           "c6e1d48a099113033211": 1,
           "d039f79dfa5142cf1cf1": 1,
           "e721e784145cc39333ab": 1,
-          "e80178cabd37915387ca": 1,
+          "e80178cabd37915387ca": 2,
           "e9e1f6d401dbe0b5a79c": 1,
           "ea379dab4a7dc9d7f236": 1,
           "f1df936d6ee3b6ab351e": 15,
