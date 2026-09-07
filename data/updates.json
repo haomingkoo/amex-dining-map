@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-07T19:21:44Z",
+  "updated_at": "2026-09-07T23:17:23Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-07T23:17:23Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "c32bf8c8b6e5"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "7d3f27f53687"
+        }
+      },
+      "changes": [
+        {
+          "field": "Official records SHA-256",
+          "before": "c32bf8c8b6e5",
+          "after": "7d3f27f53687"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "af667c9a723df3e47a14",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "44470aee720a40c4d0e2"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -10094,7 +10127,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "521fd5f7344a85cb5626",
+        "latest_transition_id": "af667c9a723df3e47a14",
         "occurrences": {
           "1bdc1625c55bcf38ea77": 1,
           "26b7a44003d30867579d": 1,
@@ -10103,6 +10136,7 @@
           "521fd5f7344a85cb5626": 1,
           "6e90385f86895882df7f": 1,
           "827885cc967f7e007f12": 1,
+          "af667c9a723df3e47a14": 1,
           "b9acef5ccde9cc17c509": 1,
           "cad0b78553f798df3101": 1,
           "cdd40254aaa0087e8392": 1
