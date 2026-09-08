@@ -1,7 +1,93 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-08T22:54:36Z",
+  "updated_at": "2026-09-08T23:17:05Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Miyo / Kamakura",
+      "detected_at": "2026-09-08T23:17:05Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Miyo",
+          "Country": "Japan",
+          "Region": "Kamakura/Hayama/Shonan",
+          "City": "Kamakura",
+          "District": "Yamanochi",
+          "Address": "157, Yamanochi, Kamakura-shi, Kanagawa",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245676/",
+      "transition_id": "a1f6947e5456f1f739ff",
+      "stream_id": "608bb9dfc6f6fb3081f0",
+      "occurrence": 1,
+      "id": "c7002673d3af68f275a8"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-08T23:17:05Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 850,
+          "Mapped count": 850,
+          "Official records SHA-256": "7d3f27f53687"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 851,
+          "Mapped count": 851,
+          "Official records SHA-256": "afbacb1983e2"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 850,
+          "after": 851
+        },
+        {
+          "field": "Mapped count",
+          "before": 850,
+          "after": 851
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "7d3f27f53687",
+          "after": "afbacb1983e2"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "935e84b29e318238bec4",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "28104c68115e8d7c07e2"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -10226,7 +10312,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "af667c9a723df3e47a14",
+        "latest_transition_id": "935e84b29e318238bec4",
         "occurrences": {
           "1bdc1625c55bcf38ea77": 1,
           "26b7a44003d30867579d": 1,
@@ -10235,6 +10321,7 @@
           "521fd5f7344a85cb5626": 1,
           "6e90385f86895882df7f": 1,
           "827885cc967f7e007f12": 1,
+          "935e84b29e318238bec4": 1,
           "af667c9a723df3e47a14": 1,
           "b9acef5ccde9cc17c509": 1,
           "cad0b78553f798df3101": 1,
@@ -10378,6 +10465,12 @@
         "latest_transition_id": "8a4e6049c67923b51bf3",
         "occurrences": {
           "8a4e6049c67923b51bf3": 1
+        }
+      },
+      "608bb9dfc6f6fb3081f0": {
+        "latest_transition_id": "a1f6947e5456f1f739ff",
+        "occurrences": {
+          "a1f6947e5456f1f739ff": 1
         }
       },
       "60cefba6d097eb03abf0": {

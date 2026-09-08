@@ -360,3 +360,11 @@ Source: `data/japan-restaurants.json`
   - Chuugokuhanten Shunju / Nagoya
   - Fujin Tree Taiwanese Cuisine & Champagne Harajuku Quest / Tokyo
   - Sanmikouan Kyoto Bettei / Kyoto
+
+<!-- source-change:153eaf1a1f37234a3463a7ff69ec572dbba4e5d572f23be649cf9817d22c9d6c -->
+## 2026-09-08 23:17 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Miyo / Kamakura
