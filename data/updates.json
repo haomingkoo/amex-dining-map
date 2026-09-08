@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-07T23:17:23Z",
+  "updated_at": "2026-09-08T17:47:22Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-08T17:47:22Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "28/28 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "27/28 (96.4%), 1 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "28/28 (100%), 0 unavailable",
+          "after": "27/28 (96.4%), 1 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "5dda4e6f15a28a3ce4bd",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 4,
+      "id": "fea93990d49e93cb5235"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -10550,7 +10583,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "02538e2bc5983d462994",
+        "latest_transition_id": "5dda4e6f15a28a3ce4bd",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
@@ -10561,7 +10594,7 @@
           "581d8013f60982c250d6": 1,
           "59682348ebf010d3ed44": 1,
           "5cd58468c50a86096186": 22,
-          "5dda4e6f15a28a3ce4bd": 3,
+          "5dda4e6f15a28a3ce4bd": 4,
           "623ce4692800ed720097": 2,
           "689f87123d635d8652da": 2,
           "6b0a8f0fbbc4c84ab912": 12,
