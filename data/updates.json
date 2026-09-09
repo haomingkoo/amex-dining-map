@@ -1,7 +1,65 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-09T22:59:48Z",
+  "updated_at": "2026-09-09T23:49:13Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "menu_updated",
+      "subject": "Sarnies",
+      "detected_at": "2026-09-09T23:49:13Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sarnies",
+          "Category": "cafe",
+          "Address": "136 Telok Ayer Street, Singapore 068601",
+          "Booking channel": "Amex Experiences App",
+          "Menu file": "Sarnies-Menu.pdf",
+          "Menu version": "3c1a4122d5d5",
+          "Platinum menu file": "Sarnies-Menu.pdf",
+          "Platinum menu version": "3c1a4122d5d5"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sarnies",
+          "Category": "cafe",
+          "Address": "136 Telok Ayer Street, Singapore 068601",
+          "Booking channel": "Amex Experiences App"
+        }
+      },
+      "changes": [
+        {
+          "field": "Menu file",
+          "before": "Sarnies-Menu.pdf",
+          "after": null
+        },
+        {
+          "field": "Menu version",
+          "before": "3c1a4122d5d5",
+          "after": null
+        },
+        {
+          "field": "Platinum menu file",
+          "before": "Sarnies-Menu.pdf",
+          "after": null
+        },
+        {
+          "field": "Platinum menu version",
+          "before": "3c1a4122d5d5",
+          "after": null
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/Sarnies",
+      "transition_id": "b8823f084c3bb3eba315",
+      "stream_id": "01fd7b24b113008c8f9b",
+      "occurrence": 1,
+      "id": "50218705a7508aefc2f7"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -10782,9 +10840,10 @@
         }
       },
       "01fd7b24b113008c8f9b": {
-        "latest_transition_id": "867f4d8f71b96b22bc42",
+        "latest_transition_id": "b8823f084c3bb3eba315",
         "occurrences": {
-          "867f4d8f71b96b22bc42": 1
+          "867f4d8f71b96b22bc42": 1,
+          "b8823f084c3bb3eba315": 1
         }
       },
       "0902bdeaa40f90de655d": {
