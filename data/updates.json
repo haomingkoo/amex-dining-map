@@ -1,7 +1,93 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-09T21:14:29Z",
+  "updated_at": "2026-09-09T22:59:43Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-09T22:59:43Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 851,
+          "Mapped count": 851,
+          "Official records SHA-256": "afbacb1983e2"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 852,
+          "Mapped count": 852,
+          "Official records SHA-256": "1a39b3427b78"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 851,
+          "after": 852
+        },
+        {
+          "field": "Mapped count",
+          "before": 851,
+          "after": 852
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "afbacb1983e2",
+          "after": "1a39b3427b78"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "969b1b0b77458669dc12",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "f0df914d29a45cbbafe4"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "C’EST CHOUETTE / Tokyo",
+      "detected_at": "2026-09-09T22:59:43Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "C’EST CHOUETTE",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Hirakawacho",
+          "Address": "B1F, 1-5-13, Hirakawacho, Chiyoda-ku, Tokyo",
+          "Cuisine": [
+            "French"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245638/",
+      "transition_id": "9f8fda9c5eb1438191ae",
+      "stream_id": "e0575f70c674407d0df8",
+      "occurrence": 1,
+      "id": "2fb699b9fd1f6f31b8ba"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -10643,7 +10729,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "935e84b29e318238bec4",
+        "latest_transition_id": "969b1b0b77458669dc12",
         "occurrences": {
           "1bdc1625c55bcf38ea77": 1,
           "26b7a44003d30867579d": 1,
@@ -10653,6 +10739,7 @@
           "6e90385f86895882df7f": 1,
           "827885cc967f7e007f12": 1,
           "935e84b29e318238bec4": 1,
+          "969b1b0b77458669dc12": 1,
           "af667c9a723df3e47a14": 1,
           "b9acef5ccde9cc17c509": 1,
           "cad0b78553f798df3101": 1,
@@ -11030,6 +11117,12 @@
         "latest_transition_id": "b6c7b06ec3f61777993e",
         "occurrences": {
           "b6c7b06ec3f61777993e": 1
+        }
+      },
+      "e0575f70c674407d0df8": {
+        "latest_transition_id": "9f8fda9c5eb1438191ae",
+        "occurrences": {
+          "9f8fda9c5eb1438191ae": 1
         }
       },
       "e8cc2990793c11c75a3c": {

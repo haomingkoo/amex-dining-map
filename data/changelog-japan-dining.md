@@ -368,3 +368,11 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - Miyo / Kamakura
+
+<!-- source-change:4f7234446d8cb76c678bae4f31e13bafe5c07639ec234da7a3a556db36267f7f -->
+## 2026-09-09 22:59 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - C’EST CHOUETTE / Tokyo
