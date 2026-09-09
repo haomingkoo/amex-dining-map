@@ -1,7 +1,106 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-09T22:59:43Z",
+  "updated_at": "2026-09-09T22:59:48Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-09-09T22:59:48Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Coverage": "780/851 (91.7%), 71 unavailable"
+        }
+      },
+      "after": {
+        "state": "stale",
+        "fields": {
+          "Coverage": "780/852 (91.5%), 72 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "780/851 (91.7%), 71 unavailable",
+          "after": "780/852 (91.5%), 72 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "bf2d43448230e25274b0",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "e6201dbd2103d174877c"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-09-09T22:59:48Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2939/2966 (99.1%), 27 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2939/2967 (99.1%), 28 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "2939/2966 (99.1%), 27 unavailable",
+          "after": "2939/2967 (99.1%), 28 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "7fd508a38f1b1c135b6a",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "c66112c2958540c18550"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-09-09T22:59:48Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "851/851 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "852/852 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "851/851 (100%), 0 unavailable",
+          "after": "852/852 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "0024ea21d692def9b91b",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "9604c2fcdeaeaebe3739"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -10720,12 +10819,13 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "0e86b64ab05f97a7ae46",
+        "latest_transition_id": "bf2d43448230e25274b0",
         "occurrences": {
           "0e86b64ab05f97a7ae46": 1,
           "4dd69dc8a805967651d8": 1,
           "865267d7376e2a047f1f": 1,
-          "be8786bcd58599df6c59": 1
+          "be8786bcd58599df6c59": 1,
+          "bf2d43448230e25274b0": 1
         }
       },
       "144a07273fbc23853124": {
@@ -10815,8 +10915,9 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "a5618f6621d57dfec25d",
+        "latest_transition_id": "0024ea21d692def9b91b",
         "occurrences": {
+          "0024ea21d692def9b91b": 1,
           "411a7dbbcc8e1fe4a3d9": 1,
           "76df09d58e4670fbd1c9": 1,
           "a5618f6621d57dfec25d": 1,
@@ -10963,7 +11064,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "6f692e210315547883d9",
+        "latest_transition_id": "7fd508a38f1b1c135b6a",
         "occurrences": {
           "1c7f262ce9ab4a1ccc5f": 1,
           "4258225d5117a5d79957": 1,
@@ -10971,6 +11072,7 @@
           "63a5bd704752e39cbb00": 1,
           "6788d36d5c8844e749a7": 1,
           "6f692e210315547883d9": 1,
+          "7fd508a38f1b1c135b6a": 1,
           "9b20e2012d24b98c912c": 1,
           "d0735dd662b564b1d23c": 1,
           "ecb804c7aa8649ff67ed": 1,
