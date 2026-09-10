@@ -166,3 +166,37 @@ def test_a_listing_miss_still_unpublishes_a_menu_that_was_never_published():
 def test_a_buffet_listing_miss_keeps_reporting_buffet():
     """The buffet branch must not be swallowed by the guard."""
     assert _info({"name": "Buffet Place", "category": "buffet"}, {})["status"] == "buffet_no_menu_expected"
+
+
+def test_a_retained_menu_is_not_counted_as_matched(tmp_path, monkeypatch):
+    """Retention must not make a listing miss look like a match.
+
+    Keeping a published menu across a miss is right, but counting it in
+    venues_matched hides the miss from source health, which derives menu
+    coverage from that number. A matcher regression would then look normal.
+    """
+    data = tmp_path / "tft.json"
+    data.write_text(json.dumps({
+        "venues": [{
+            "id": "tft-x", "name": "Example", "category": "cafe",
+            "menu_pdfs": {"platinum": {
+                "status": "published", "url": "https://www.americanexpress.com/x.pdf",
+                "filename": "x.pdf", "card": "platinum", "label": "Platinum",
+                "sha256": "a" * 64, "bytes": 10, "checked_at": "2026-09-01T00:00:00Z",
+                "first_seen_at": "2026-09-01T00:00:00Z", "last_seen_at": "2026-09-01T00:00:00Z",
+            }},
+        }],
+        "menu_source": {},
+    }))
+    monkeypatch.setattr(fetch_tft_menus, "fetch_aem_menu_listing", lambda key: {})
+    monkeypatch.setattr(sys, "argv", [
+        "fetch_tft_menus.py", "--input", str(data), "--output", str(data),
+        "--cache-dir", "", "--no-download",
+    ])
+
+    assert fetch_tft_menus.main() == 0
+
+    out = json.loads(data.read_text())
+    assert out["venues"][0]["menu_pdfs"]["platinum"]["status"] == "published"
+    assert out["menu_source"]["venues_matched"] == 0
+    assert out["menu_source"]["menus_matched"] == 0

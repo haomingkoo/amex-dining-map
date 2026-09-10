@@ -566,6 +566,7 @@ def main() -> int:
         concrete_candidate_queued = False
         previous_menus = venue.get("menu_pdfs") or {}
         source_infos = {}
+        listed_sources: set[str] = set()
         listing_matches = {}
         for source_key, listing in listings.items():
             candidates = match_venue_candidates(venue["name"], list(listing.keys()))
@@ -635,6 +636,7 @@ def main() -> int:
             info = venue_menu_info(venue, entry, pdf_bytes, checked_at, previous)
             if entry:
                 observed_assets.add((source_key, entry["filename"]))
+                listed_sources.add(source_key)
             active_info = active_menu_after_observation(info, previous)
             if active_info is not None:
                 source_infos[source_key] = active_info
@@ -689,14 +691,21 @@ def main() -> int:
         published_infos = {
             key: info for key, info in source_infos.items() if info["status"] == "published"
         }
+        # A menu retained across a listing miss is still published, but it was not
+        # matched this run. Counting it would hide the miss from source health,
+        # which derives menu coverage from these numbers.
+        listed_published = {
+            key: info for key, info in published_infos.items() if key in listed_sources
+        }
         if published_infos:
-            matched_menu_count += len(published_infos)
-            matched_venue_count += 1
+            matched_menu_count += len(listed_published)
+            matched_venue_count += 1 if listed_published else 0
             parts = []
             for key, info in published_infos.items():
                 size_str = f"{info['bytes']:,}B" if info["bytes"] else "?"
-                parts.append(f"{AEM_MENU_SOURCES[key]['label']}: {info['filename']} ({size_str})")
-            print(f"  OK  {venue['name']:38s}  {' | '.join(parts)}")
+                seen = "" if key in listed_sources else " [retained, not listed]"
+                parts.append(f"{AEM_MENU_SOURCES[key]['label']}: {info['filename']} ({size_str}){seen}")
+            print(f"  {'OK ' if listed_published else 'RET'}  {venue['name']:38s}  {' | '.join(parts)}")
         elif venue["menu_pdf"]["status"] == "buffet_no_menu_expected":
             buffet_count += 1
             print(f"  BUF {venue['name']:38s}  (buffet — no menu PDF expected)")
