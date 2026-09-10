@@ -59,3 +59,11 @@ Source: `data/reviews/love-dining/2026-08-30-hotel-attribution-correction.json`
   - Crossroads Bar: Orchard Hotel Singapore → Paradox Singapore
 
 The earlier 2026-06-02 add/remove entry is retained as historical parser output, not an official venue churn claim. Three incorrect 2026-08-29 published additions were retracted in `data/updates.json` and linked to their reviewed correction events.
+
+<!-- source-change:0a57c0f59f7a7c51b9378c7b8b774ac44dd75dfdafbd4835b5e76fbf100f2e86 -->
+## 2026-09-10 23:26 UTC — Love Dining
+
+Source: `data/love-dining.json`
+
+- **Removed (1)**
+  - Capitol Bistro. Bar. Patisserie / Singapore

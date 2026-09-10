@@ -1,7 +1,100 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-10T22:57:57Z",
+  "updated_at": "2026-09-10T23:26:02Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_updated",
+      "subject": "Love Dining source",
+      "detected_at": "2026-09-10T23:26:02Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 83,
+          "Hotel outlet count": 52,
+          "Official records SHA-256": "9faa09c6cdc3",
+          "Hotel T&C PDF hash": "806756636efb"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 82,
+          "Hotel outlet count": 51,
+          "Official records SHA-256": "b6637a913bef",
+          "Hotel T&C PDF hash": "30a6a4fa0684"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 83,
+          "after": 82
+        },
+        {
+          "field": "Hotel outlet count",
+          "before": 52,
+          "after": 51
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "9faa09c6cdc3",
+          "after": "b6637a913bef"
+        },
+        {
+          "field": "Hotel T&C PDF hash",
+          "before": "806756636efb",
+          "after": "30a6a4fa0684"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "68fa17c2152d9a9fc42c",
+      "stream_id": "915d672147e8dd8f713f",
+      "occurrence": 1,
+      "id": "9e6ef1f427b6dc9c1e19"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "removed",
+      "subject": "Capitol Bistro. Bar. Patisserie / Singapore",
+      "detected_at": "2026-09-10T23:26:02Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Capitol Bistro. Bar. Patisserie",
+          "Hotel": "The Capitol Kempinski Hotel Singapore",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "13 Stamford Road, #01-86/87, Arcade @ The Capitol Kempinski, Singapore 178905",
+          "Cuisine": "European",
+          "Notes": "Capitol Bistro. Bar. Patisserie will be permanently closed from 10 August 2026. Due to applicable blackout dates, Love Dining privileges will only be valid until 7 August 2026. Advanced reservations are recommended. Please make your reservations here to ensure your reservation is prioritised.",
+          "Opening hours": "Mon – Sun:; 12PM – 10.30PM"
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+      "transition_id": "e9997abaea7b5731d8b1",
+      "stream_id": "aea6c2c7bdbe94bb83ad",
+      "occurrence": 1,
+      "id": "23f14d1fcb083e17caee"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -11509,8 +11602,9 @@
         }
       },
       "915d672147e8dd8f713f": {
-        "latest_transition_id": "72081ace45ff2a46e4a4",
+        "latest_transition_id": "68fa17c2152d9a9fc42c",
         "occurrences": {
+          "68fa17c2152d9a9fc42c": 1,
           "72081ace45ff2a46e4a4": 1
         }
       },
@@ -11548,6 +11642,12 @@
         "latest_transition_id": "b289993978c55110dc59",
         "occurrences": {
           "b289993978c55110dc59": 1
+        }
+      },
+      "aea6c2c7bdbe94bb83ad": {
+        "latest_transition_id": "e9997abaea7b5731d8b1",
+        "occurrences": {
+          "e9997abaea7b5731d8b1": 1
         }
       },
       "b3590ff2775fba760cd0": {
