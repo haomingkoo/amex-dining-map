@@ -368,16 +368,11 @@ def venue_menu_info(
     previous = previous or {}
 
     if listing_entry is None:
-        # A menu can drop out of one listing fetch and still be live at its
-        # recorded URL, so a single miss is not evidence of removal. Wiping on
-        # it destroys the published state an approved review receipt points at,
-        # which wedges the pipeline: verify_decision_receipts then raises, and
-        # this fetcher calls that verifier on startup, so it can never
-        # re-discover the menu and heal itself. Keep what review approved and
-        # let last_seen_at carry the staleness.
-        if previous.get("status") == "published" and re.fullmatch(
-            r"[0-9a-f]{64}", str(previous.get("sha256"))
-        ):
+        # One miss is not proof of removal, and wiping wedges the pipeline:
+        # the approved receipt still points at the published menu, so
+        # verify_decision_receipts raises, and this fetcher runs that verifier
+        # on startup, so it can never re-discover the menu and heal itself.
+        if previous.get("status") == "published":
             return dict(previous)
         status = "buffet_no_menu_expected" if has_buffet_tag(venue) else "no_pdf_found"
         return {
