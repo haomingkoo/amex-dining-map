@@ -138,3 +138,70 @@ def test_default_approval_fails_when_retained_candidate_is_unusable(
 
     with pytest.raises(ValueError, match="observation archive|content-addressed path"):
         apply_tft_menu_review.main()
+
+
+PUBLISHED_MENU = {
+    "status": "published",
+    "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Sarnies-Menu.pdf",
+    "filename": "Sarnies-Menu.pdf",
+    "card": "platinum",
+    "label": "Platinum",
+    "checked_at": "2026-09-08T23:49:22Z",
+    "first_seen_at": "2026-09-02T22:00:42Z",
+    "last_seen_at": "2026-09-08T23:49:22Z",
+    "sha256": "3c1a4122d5d589755dce2fb4aaa677385edf65ccc0cc412681023a811ce03f95",
+    "bytes": 3298511,
+    "aem_created": "Tue Jun 30 2026 02:40:36 GMT-0700",
+    "changed_at": None,
+    "review_manifest_sha256": "0017058c0dfb0baf2f7293628e87e6ddc0e4b52e101d33371ed0cfe868ff2607",
+    "reviewed_at": "2026-09-02T22:01:32Z",
+}
+
+
+def test_one_listing_miss_does_not_unpublish_a_reviewed_menu():
+    """A menu absent from a single listing fetch must survive that fetch.
+
+    A transient discovery miss wiped Sarnies' approved menu on 2026-09-09 while
+    the PDF was still live at its recorded URL. That wedged the whole pipeline:
+    the approved receipt still claimed the menu was published, so
+    verify_decision_receipts raised, and because fetch_tft_menus calls that
+    verifier on startup the fetcher could no longer re-discover and republish.
+    """
+    info = fetch_tft_menus.venue_menu_info(
+        {"id": "tft-sarnies", "name": "Sarnies", "category": "cafe"},
+        None,
+        None,
+        "2026-09-09T23:48:32Z",
+        dict(PUBLISHED_MENU),
+    )
+
+    assert info["status"] == "published"
+    assert info["sha256"] == PUBLISHED_MENU["sha256"]
+    assert info["review_manifest_sha256"] == PUBLISHED_MENU["review_manifest_sha256"]
+
+
+def test_a_listing_miss_still_unpublishes_a_menu_that_was_never_published():
+    """Retention is only for state worth keeping, so a non-published menu still clears."""
+    info = fetch_tft_menus.venue_menu_info(
+        {"id": "tft-example", "name": "Example", "category": "cafe"},
+        None,
+        None,
+        "2026-09-09T23:48:32Z",
+        {"status": "no_pdf_found", "sha256": None, "filename": None},
+    )
+
+    assert info["status"] == "no_pdf_found"
+    assert info["sha256"] is None
+
+
+def test_a_buffet_listing_miss_keeps_reporting_buffet():
+    """The buffet branch must not be swallowed by the retention guard."""
+    info = fetch_tft_menus.venue_menu_info(
+        {"id": "tft-buffet", "name": "Buffet Place", "category": "buffet"},
+        None,
+        None,
+        "2026-09-09T23:48:32Z",
+        {},
+    )
+
+    assert info["status"] == "buffet_no_menu_expected"
