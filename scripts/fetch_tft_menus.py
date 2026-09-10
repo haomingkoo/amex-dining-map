@@ -368,6 +368,12 @@ def venue_menu_info(
     previous = previous or {}
 
     if listing_entry is None:
+        # One miss is not proof of removal, and wiping wedges the pipeline:
+        # the approved receipt still points at the published menu, so
+        # verify_decision_receipts raises, and this fetcher runs that verifier
+        # on startup, so it can never re-discover the menu and heal itself.
+        if previous.get("status") == "published":
+            return dict(previous)
         status = "buffet_no_menu_expected" if has_buffet_tag(venue) else "no_pdf_found"
         return {
             "status": status,

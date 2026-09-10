@@ -138,3 +138,31 @@ def test_default_approval_fails_when_retained_candidate_is_unusable(
 
     with pytest.raises(ValueError, match="observation archive|content-addressed path"):
         apply_tft_menu_review.main()
+
+
+PUBLISHED_MENU = {
+    "status": "published",
+    "url": "https://www.americanexpress.com/.../Sarnies-Menu.pdf",
+    "filename": "Sarnies-Menu.pdf",
+    "sha256": "3c1a4122d5d589755dce2fb4aaa677385edf65ccc0cc412681023a811ce03f95",
+    "review_manifest_sha256": "0017058c0dfb0baf2f7293628e87e6ddc0e4b52e101d33371ed0cfe868ff2607",
+}
+
+
+def _info(venue, previous):
+    return fetch_tft_menus.venue_menu_info(venue, None, None, "2026-09-09T23:48:32Z", previous)
+
+
+def test_one_listing_miss_does_not_unpublish_a_reviewed_menu():
+    """A miss wiped Sarnies on 2026-09-09 while the PDF was still live, wedging the pipeline."""
+    assert _info({"name": "Sarnies", "category": "cafe"}, dict(PUBLISHED_MENU)) == PUBLISHED_MENU
+
+
+def test_a_listing_miss_still_unpublishes_a_menu_that_was_never_published():
+    """Retention only covers state worth keeping."""
+    assert _info({"name": "Example", "category": "cafe"}, {"status": "no_pdf_found"})["status"] == "no_pdf_found"
+
+
+def test_a_buffet_listing_miss_keeps_reporting_buffet():
+    """The buffet branch must not be swallowed by the guard."""
+    assert _info({"name": "Buffet Place", "category": "buffet"}, {})["status"] == "buffet_no_menu_expected"
