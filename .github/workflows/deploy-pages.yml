@@ -18,6 +18,7 @@ on:
 
 permissions:
   contents: read
+  deployments: read
   pages: write
   id-token: write
 
@@ -26,8 +27,42 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  # Every upstream workflow triggers this one on completion, whether or not it
+  # committed anything. Monitor Source Health alone runs ~7x/day and commits
+  # about once a week, so most runs rebuilt and redeployed identical bytes.
+  changed:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.check.outputs.deploy }}
+    steps:
+      - name: Compare main against the live Pages deployment
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          head="$(gh api "repos/$REPO/commits/main" --jq .sha)"
+          # Newest deployment that actually succeeded, so a failed deploy cannot
+          # wedge the site by making later runs think its commit is already live.
+          live=""
+          while read -r sha url; do
+            if [ "$(gh api "$url" --jq '.[0].state // ""')" = "success" ]; then
+              live="$sha"
+              break
+            fi
+          done < <(gh api "repos/$REPO/deployments?environment=github-pages&per_page=10" \
+                     --jq '.[]|"\(.sha) \(.statuses_url)"')
+          if [ "$head" = "$live" ]; then
+            echo "main $head is already live; skipping redeploy." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: changed
+    if: needs.changed.outputs.deploy == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
