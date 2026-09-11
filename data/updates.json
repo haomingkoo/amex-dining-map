@@ -1,7 +1,181 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-11T11:45:24Z",
+  "updated_at": "2026-09-11T11:45:29Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-09-11T11:45:29Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Stale records": 780,
+          "Coverage": "780/852 (91.5%), 72 unavailable"
+        }
+      },
+      "after": {
+        "state": "stale",
+        "fields": {
+          "Stale records": 779,
+          "Coverage": "779/851 (91.5%), 72 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 780,
+          "after": 779
+        },
+        {
+          "field": "Coverage",
+          "before": "780/852 (91.5%), 72 unavailable",
+          "after": "779/851 (91.5%), 72 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "6a8bbc10984738ed7d1d",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "dbf6636cdc79eee00cda"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_recovered",
+      "subject": "Japan Dining",
+      "detected_at": "2026-09-11T11:45:29Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Freshness": "stale",
+          "Stale records": 1,
+          "Coverage": "852/852 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Freshness": "current",
+          "Stale records": 0,
+          "Coverage": "851/851 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 1,
+          "after": 0
+        },
+        {
+          "field": "Coverage",
+          "before": "852/852 (100%), 0 unavailable",
+          "after": "851/851 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "3481ce6d2f15d2493728",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "9c50f3359c49b7db48f2"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-09-11T11:45:29Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 2183,
+          "Coverage": "2938/2967 (99%), 29 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 2182,
+          "Coverage": "2937/2966 (99%), 29 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 2183,
+          "after": 2182
+        },
+        {
+          "field": "Coverage",
+          "before": "2938/2967 (99%), 29 unavailable",
+          "after": "2937/2966 (99%), 29 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "2505bfbc794de3ef7e1b",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "59f34b884c47a0e93e80"
+    },
+    {
+      "program": "Plat Stay",
+      "program_id": "plat-stay",
+      "route": "#/stays",
+      "kind": "source_recovered",
+      "subject": "Plat Stay",
+      "detected_at": "2026-09-11T11:45:29Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 1
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 1,
+          "after": 0
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/platstay.pdf?extlink=SG",
+      "transition_id": "6f53e26ddf6cc842e76c",
+      "stream_id": "81f43cf088be994e2ef7",
+      "occurrence": 1,
+      "id": "5599e4e976300d05abc9"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -11855,10 +12029,11 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "bf2d43448230e25274b0",
+        "latest_transition_id": "6a8bbc10984738ed7d1d",
         "occurrences": {
           "0e86b64ab05f97a7ae46": 1,
           "4dd69dc8a805967651d8": 1,
+          "6a8bbc10984738ed7d1d": 1,
           "865267d7376e2a047f1f": 1,
           "be8786bcd58599df6c59": 1,
           "bf2d43448230e25274b0": 1
@@ -11955,9 +12130,10 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "d23603c301d18a4a78e1",
+        "latest_transition_id": "3481ce6d2f15d2493728",
         "occurrences": {
           "0024ea21d692def9b91b": 1,
+          "3481ce6d2f15d2493728": 1,
           "411a7dbbcc8e1fe4a3d9": 1,
           "76df09d58e4670fbd1c9": 1,
           "a5618f6621d57dfec25d": 1,
@@ -12108,10 +12284,11 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "115ecbdf7edd8b04fc52",
+        "latest_transition_id": "2505bfbc794de3ef7e1b",
         "occurrences": {
           "115ecbdf7edd8b04fc52": 1,
           "1c7f262ce9ab4a1ccc5f": 1,
+          "2505bfbc794de3ef7e1b": 1,
           "2c9cfaa8dc40d88a2308": 1,
           "4258225d5117a5d79957": 1,
           "60dc180f760c021d210c": 1,
@@ -12165,9 +12342,10 @@
         }
       },
       "81f43cf088be994e2ef7": {
-        "latest_transition_id": "06d66f94fa73a9e62815",
+        "latest_transition_id": "6f53e26ddf6cc842e76c",
         "occurrences": {
-          "06d66f94fa73a9e62815": 1
+          "06d66f94fa73a9e62815": 1,
+          "6f53e26ddf6cc842e76c": 1
         }
       },
       "82cf12b07abc7392c6ad": {
