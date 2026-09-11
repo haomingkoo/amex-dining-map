@@ -1,7 +1,73 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-11T23:01:41Z",
+  "updated_at": "2026-09-11T23:51:10Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-09-11T23:51:10Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 9
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 10
+        }
+      },
+      "changes": [
+        {
+          "field": "Review items",
+          "before": 9,
+          "after": 10
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "876a8d4c7a2af4684659",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "b0a3544d23534c98ff0f"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-11T23:51:10Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "28/29 (96.6%), 1 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "29/29 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "28/29 (96.6%), 1 unavailable",
+          "after": "29/29 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "252e3c33201e3823a27b",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "07dc0175be37647daff8"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -12243,7 +12309,7 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "a354667e24761ed7c664",
+        "latest_transition_id": "876a8d4c7a2af4684659",
         "occurrences": {
           "02261b7ecfcb8fa754fa": 1,
           "04d54fb5e6257f646c0f": 1,
@@ -12253,6 +12319,7 @@
           "40e94b2b92f0f585356f": 1,
           "472d92dd815005a80185": 1,
           "665d959cd0704f2ddb99": 1,
+          "876a8d4c7a2af4684659": 1,
           "a0c395933ede11a9d792": 1,
           "a354667e24761ed7c664": 1,
           "a5a3c3879b9a7443876f": 1,
@@ -12686,12 +12753,13 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "6ba961eb0afc692e2138",
+        "latest_transition_id": "252e3c33201e3823a27b",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
           "163a7ec6057f7df9ed9f": 1,
           "23f1bba4701f42a76948": 3,
+          "252e3c33201e3823a27b": 1,
           "3cb3af30e4ddbef963fa": 1,
           "5104b3df2d979c9afc52": 3,
           "569eb360db0f74267e06": 1,
