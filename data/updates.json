@@ -1,7 +1,93 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-11T11:32:18Z",
+  "updated_at": "2026-09-11T11:45:24Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-11T11:45:24Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 852,
+          "Mapped count": 852,
+          "Official records SHA-256": "1a39b3427b78"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 851,
+          "Mapped count": 851,
+          "Official records SHA-256": "466f8c176f3b"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 852,
+          "after": 851
+        },
+        {
+          "field": "Mapped count",
+          "before": 852,
+          "after": 851
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "1a39b3427b78",
+          "after": "466f8c176f3b"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "a4d8fc4959b0de7deb1e",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "acc91b64ec5306d1eea9"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": "Sushi Kawanaka / Matsuyama",
+      "detected_at": "2026-09-11T11:45:24Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sushi Kawanaka",
+          "Country": "Japan",
+          "Region": "Chugoku/Shikoku",
+          "City": "Matsuyama",
+          "District": "Ichibancho",
+          "Address": "1F, 1-11-9, Ichibancho, Matsuyama-shi, Ehime",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245511/",
+      "transition_id": "89fa1b968fc3eccaa96d",
+      "stream_id": "dde0bd2b769f93d1aa50",
+      "occurrence": 1,
+      "id": "5e63ff22179f53b336a7"
+    },
     {
       "program": "Plat Stay",
       "program_id": "plat-stay",
@@ -11779,7 +11865,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "969b1b0b77458669dc12",
+        "latest_transition_id": "a4d8fc4959b0de7deb1e",
         "occurrences": {
           "1bdc1625c55bcf38ea77": 1,
           "26b7a44003d30867579d": 1,
@@ -11790,6 +11876,7 @@
           "827885cc967f7e007f12": 1,
           "935e84b29e318238bec4": 1,
           "969b1b0b77458669dc12": 1,
+          "a4d8fc4959b0de7deb1e": 1,
           "af667c9a723df3e47a14": 1,
           "b9acef5ccde9cc17c509": 1,
           "cad0b78553f798df3101": 1,
@@ -12191,6 +12278,12 @@
         "latest_transition_id": "e89cbcd2d956f9ba3c76",
         "occurrences": {
           "e89cbcd2d956f9ba3c76": 1
+        }
+      },
+      "dde0bd2b769f93d1aa50": {
+        "latest_transition_id": "89fa1b968fc3eccaa96d",
+        "occurrences": {
+          "89fa1b968fc3eccaa96d": 1
         }
       },
       "de2f6e2fecadba275c3c": {

@@ -376,3 +376,11 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - C’EST CHOUETTE / Tokyo
+
+<!-- source-change:dcb1d47b72ad706c537f09111fe41a1a496af955bec0ec05be897c3cf92b27b9 -->
+## 2026-09-11 11:45 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Sushi Kawanaka / Matsuyama
