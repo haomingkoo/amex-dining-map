@@ -1,7 +1,94 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-11T10:02:53Z",
+  "updated_at": "2026-09-11T11:32:18Z",
   "updates": [
+    {
+      "program": "Plat Stay",
+      "program_id": "plat-stay",
+      "route": "#/stays",
+      "kind": "source_stale",
+      "subject": "Plat Stay",
+      "detected_at": "2026-09-11T11:32:18Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "after": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 1
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 1
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/platstay.pdf?extlink=SG",
+      "transition_id": "06d66f94fa73a9e62815",
+      "stream_id": "81f43cf088be994e2ef7",
+      "occurrence": 1,
+      "id": "fd013b92c538da806021"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_stale",
+      "subject": "Japan Dining",
+      "detected_at": "2026-09-11T11:32:18Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Freshness": "stale",
+          "Stale records": 1
+        }
+      },
+      "changes": [
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 1
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "d23603c301d18a4a78e1",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "a498e072d26d20bc51c9"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -11781,12 +11868,13 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "0024ea21d692def9b91b",
+        "latest_transition_id": "d23603c301d18a4a78e1",
         "occurrences": {
           "0024ea21d692def9b91b": 1,
           "411a7dbbcc8e1fe4a3d9": 1,
           "76df09d58e4670fbd1c9": 1,
           "a5618f6621d57dfec25d": 1,
+          "d23603c301d18a4a78e1": 1,
           "ecee01e4770cfc076669": 1
         }
       },
@@ -11987,6 +12075,12 @@
         "occurrences": {
           "ac5337aa783a825a73d9": 1,
           "fd825e0eb577c9f301ba": 1
+        }
+      },
+      "81f43cf088be994e2ef7": {
+        "latest_transition_id": "06d66f94fa73a9e62815",
+        "occurrences": {
+          "06d66f94fa73a9e62815": 1
         }
       },
       "82cf12b07abc7392c6ad": {
