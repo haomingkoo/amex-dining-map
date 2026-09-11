@@ -12,8 +12,8 @@
   "release_source": {
     "source": "data/table-for-two-release-history.json",
     "project": "AMEXPlatSG",
-    "updated_at": "2026-09-11T05:38:20+00:00",
-    "observation_count": 3546
+    "updated_at": "2026-09-11T10:01:03+00:00",
+    "observation_count": 3714
   },
   "slot_source": {
     "url": "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json",
@@ -649,14 +649,14 @@
         },
         {
           "meal": "Dinner",
-          "observation_count": 19,
+          "observation_count": 20,
           "median_lead_days": 61.0,
           "lead_days_min": 7,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.42,
+          "typical_time_observation_share": 0.4,
           "confidence": "high",
-          "latest_observation_at": "2026-09-10T10:53:49Z"
+          "latest_observation_at": "2026-09-11T10:01:03Z"
         },
         {
           "meal": "Lunch",
@@ -705,14 +705,14 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 62,
-          "median_lead_days": 32.5,
+          "observation_count": 63,
+          "median_lead_days": 33.0,
           "lead_days_min": 0,
           "lead_days_max": 61,
           "typical_first_seen_sgt": "06:00",
-          "typical_time_observation_share": 0.9,
+          "typical_time_observation_share": 0.89,
           "confidence": "high",
-          "latest_observation_at": "2026-09-10T14:51:17Z"
+          "latest_observation_at": "2026-09-11T10:01:03Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-forage"
@@ -914,25 +914,25 @@
       "release_patterns": [
         {
           "meal": "Afternoon Tea",
-          "observation_count": 24,
+          "observation_count": 25,
           "median_lead_days": 61.0,
           "lead_days_min": 59,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.21,
+          "typical_time_observation_share": 0.2,
           "confidence": "high",
-          "latest_observation_at": "2026-09-10T07:46:51Z"
+          "latest_observation_at": "2026-09-11T10:01:03Z"
         },
         {
           "meal": "Dinner",
-          "observation_count": 25,
+          "observation_count": 26,
           "median_lead_days": 61.0,
           "lead_days_min": 5,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.32,
+          "typical_time_observation_share": 0.31,
           "confidence": "high",
-          "latest_observation_at": "2026-09-10T10:53:49Z"
+          "latest_observation_at": "2026-09-11T10:01:03Z"
         },
         {
           "meal": "Lunch",
@@ -1048,14 +1048,14 @@
         },
         {
           "meal": "Dinner",
-          "observation_count": 21,
+          "observation_count": 22,
           "median_lead_days": 61.0,
           "lead_days_min": 4,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.24,
+          "typical_time_observation_share": 0.23,
           "confidence": "high",
-          "latest_observation_at": "2026-09-10T10:53:49Z"
+          "latest_observation_at": "2026-09-11T10:01:03Z"
         },
         {
           "meal": "Lunch",
@@ -1665,6 +1665,45 @@
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-vue"
+    },
+    {
+      "id": "tft-xing-yue-xuan",
+      "name": "Xing Yue Xuan",
+      "dining_city_id": "205195622",
+      "dining_city_name": "Xing Yue Xuan",
+      "category": "restaurant",
+      "address": "26 Sentosa Gateway, B1-201 Resorts World Sentosa WEAVE, 098138",
+      "aliases": [],
+      "menus": {
+        "default": {
+          "status": "no_pdf_found"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 82,
+          "median_lead_days": 43.5,
+          "lead_days_min": 3,
+          "lead_days_max": 87,
+          "typical_first_seen_sgt": "18:00",
+          "typical_time_observation_share": 1.0,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-11T10:01:03Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 81,
+          "median_lead_days": 44.0,
+          "lead_days_min": 4,
+          "lead_days_max": 87,
+          "typical_first_seen_sgt": "18:00",
+          "typical_time_observation_share": 1.0,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-11T10:01:03Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-xing-yue-xuan"
     }
   ]
 }

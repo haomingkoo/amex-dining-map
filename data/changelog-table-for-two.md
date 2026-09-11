@@ -28,3 +28,11 @@ Source: `data/table-for-two.json`
 
 - **Removed (1)**
   - Forage
+
+<!-- source-change:eeada1d149e0cb4ec969d018788537dbce899580cdb3b44de2eca0673b63989c -->
+## 2026-09-11 10:02 UTC — Table for Two
+
+Source: `data/table-for-two.json`
+
+- **Added (1)**
+  - Xing Yue Xuan

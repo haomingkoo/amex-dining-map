@@ -1,7 +1,41 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-11T05:39:37Z",
+  "updated_at": "2026-09-11T10:02:49Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "added",
+      "subject": "Xing Yue Xuan",
+      "detected_at": "2026-09-11T10:02:49Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Xing Yue Xuan",
+          "Category": "restaurant",
+          "Address": "26 Sentosa Gateway, B1-201 Resorts World Sentosa WEAVE, 098138",
+          "Booking channel": "Amex Experiences App"
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/Xing_Yue_Xuan",
+      "transition_id": "e89cbcd2d956f9ba3c76",
+      "stream_id": "daa1d764ed06cdd00bc0",
+      "occurrence": 1,
+      "id": "36b3a78e30e66bbed8fb"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -11922,6 +11956,12 @@
         "latest_transition_id": "04908e00c0461fd483e4",
         "occurrences": {
           "04908e00c0461fd483e4": 1
+        }
+      },
+      "daa1d764ed06cdd00bc0": {
+        "latest_transition_id": "e89cbcd2d956f9ba3c76",
+        "occurrences": {
+          "e89cbcd2d956f9ba3c76": 1
         }
       },
       "de2f6e2fecadba275c3c": {
