@@ -1381,7 +1381,6 @@ def build_records(pdf_bytes: bytes, resolved_url: str, fetched_at: str, page_cou
             "coordinate_source": None,
             "coordinate_confidence": "unknown",
             "map_pin_note": "Pin is not plotted yet. Confirm the official property address before booking or arrival.",
-            "source_hash_sha256": hashlib.sha256(pdf_bytes).hexdigest(),
             "source_page_count": page_count,
             "last_synced_at": fetched_at,
             "search_text": "",
