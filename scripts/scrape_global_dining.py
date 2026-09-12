@@ -50,9 +50,6 @@ COUNTRIES_API_URL = f"{API_BASE_URL}/api/countries"
 ORIGIN_MARKET = "SG"
 
 # Legacy constants kept for compatibility with helpers that parse old source URLs.
-BASE_URL = API_BASE_URL
-SITEMAP_URL = f"{API_BASE_URL}/sitemap.xml"
-SITEMAP_DOMAIN = API_BASE_URL
 
 # Countries that are handled by Pocket Concierge — skip them
 SKIP_COUNTRIES = {"japan"}
@@ -130,42 +127,6 @@ def http_json(url: str, retries: int = 3, timeout: int = 30) -> Any:
     return json.loads(body)
 
 
-def remap_url(url: str) -> str:
-    """Remap sitemap domain (platinumdining.co.uk) to fetchable domain (caffeinesoftware.com)."""
-    return url.replace(SITEMAP_DOMAIN, BASE_URL)
-
-
-def fetch_sitemap_urls() -> list[str]:
-    """Download sitemap and return all restaurant page URLs (3-level paths)."""
-    print("Fetching sitemap...", file=sys.stderr)
-    xml_content = http_get(SITEMAP_URL)
-    if not xml_content:
-        raise RuntimeError("Failed to fetch sitemap")
-
-    root = ET.fromstring(xml_content)
-    ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
-
-    # Check if it's a sitemap index
-    sitemaps = root.findall("sm:sitemap/sm:loc", ns)
-    if sitemaps:
-        all_urls: list[str] = []
-        for sitemap_loc in sitemaps:
-            sub_url = remap_url(sitemap_loc.text or "")
-            if not sub_url:
-                continue
-            sub_xml = http_get(sub_url)
-            if not sub_xml:
-                continue
-            sub_root = ET.fromstring(sub_xml)
-            for url_el in sub_root.findall("sm:url/sm:loc", ns):
-                all_urls.append(remap_url(url_el.text or ""))
-            time.sleep(0.3)
-        return all_urls
-
-    # Single sitemap
-    return [remap_url(el.text or "") for el in root.findall("sm:url/sm:loc", ns) if el.text]
-
-
 ISO_COUNTRY_MAP = {
     "AU": "Australia", "AT": "Austria", "CA": "Canada", "FR": "France",
     "DE": "Germany", "HK": "Hong Kong", "IT": "Italy", "MX": "Mexico",
@@ -195,7 +156,7 @@ COUNTRY_BOUNDS: dict[str, tuple[float, float, float, float]] = {
 
 def is_restaurant_url(url: str) -> bool:
     """Return True if the URL is a 3-level restaurant detail page."""
-    path = url.replace(BASE_URL, "").replace(SITEMAP_DOMAIN, "").strip("/")
+    path = url.replace(API_BASE_URL, "").strip("/")
     parts = path.split("/")
     if len(parts) != 3:
         return False
@@ -205,27 +166,6 @@ def is_restaurant_url(url: str) -> bool:
     if parts[0] in ("api", "_next", "static", "sitemap", "map"):
         return False
     return True
-
-
-def extract_json_ld(html: str) -> dict[str, Any] | None:
-    """Extract the first Restaurant schema.org JSON-LD block from HTML."""
-    pattern = re.compile(
-        r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
-        re.DOTALL | re.IGNORECASE,
-    )
-    for match in pattern.finditer(html):
-        try:
-            data = json.loads(match.group(1))
-            # Handle @graph arrays
-            if isinstance(data, dict) and data.get("@graph"):
-                for item in data["@graph"]:
-                    if isinstance(item, dict) and item.get("@type") == "Restaurant":
-                        return item
-            if isinstance(data, dict) and data.get("@type") == "Restaurant":
-                return data
-        except Exception:
-            continue
-    return None
 
 
 def slug_to_country_name(slug: str) -> str:
@@ -605,7 +545,7 @@ def unique_record_id(record: dict[str, Any], include_region: bool = False) -> st
             return f"amex-global-{country_slug}-{name_slug}-{city_slug}"
         return f"amex-global-{country_slug}-{name_slug}"
 
-    path = (record.get("source_url") or "").replace(BASE_URL, "").replace(SITEMAP_DOMAIN, "").strip("/")
+    path = (record.get("source_url") or "").replace(API_BASE_URL, "").strip("/")
     parts = path.split("/")
     country_slug = parts[0] if len(parts) >= 1 else ""
     region_slug = parts[1] if len(parts) >= 2 else ""
@@ -630,7 +570,7 @@ def assign_unique_record_ids(records: list[dict[str, Any]]) -> int:
         for record in group:
             candidate = unique_record_id(record, include_region=True)
             if not candidate or candidate in used_ids:
-                path = (record.get("source_url") or "").replace(BASE_URL, "").replace(SITEMAP_DOMAIN, "").strip("/")
+                path = (record.get("source_url") or "").replace(API_BASE_URL, "").strip("/")
                 stable_key = record.get("source_merchant_id") or path
                 short_hash = hashlib.sha1(stable_key.encode()).hexdigest()[:8]
                 candidate = f"{unique_record_id(record, include_region=True)}-{short_hash}"
@@ -784,117 +724,6 @@ def validate_record_coordinates(
         "The published source coordinates could not be validated yet, so the pin is hidden "
         "until the venue address can be confirmed."
     )
-
-
-def build_record(url: str, json_ld: dict[str, Any]) -> dict[str, Any]:
-    """Build a restaurant record from a JSON-LD block and source URL."""
-    path = url.replace(BASE_URL, "").replace(SITEMAP_DOMAIN, "").strip("/")
-    parts = path.split("/")
-    country_slug = parts[0] if len(parts) >= 1 else ""
-    region_slug = parts[1] if len(parts) >= 2 else ""
-    restaurant_slug = parts[2] if len(parts) >= 3 else ""
-
-    country = slug_to_country_name(country_slug)
-    region = slug_to_region_name(region_slug)
-
-    addr = json_ld.get("address") or {}
-    if isinstance(addr, str):
-        addr = {}
-
-    street = addr.get("streetAddress") or ""
-    locality = addr.get("addressLocality") or ""
-    state = addr.get("addressRegion") or region
-    postal = addr.get("postalCode") or ""
-    raw_country_code = addr.get("addressCountry") or ""
-    addr_country = ISO_COUNTRY_MAP.get(raw_country_code.upper(), raw_country_code) or country
-
-    # Some records have the state in addressLocality — extract suburb from street if so
-    # e.g. street="1 Burbury Cl, Barton", locality="Australian Capital Territory"
-    city = locality
-    if not city or city == state:
-        # Try extracting the last part of streetAddress as suburb
-        street_parts = [p.strip() for p in street.split(",") if p.strip()]
-        if len(street_parts) >= 2:
-            city = street_parts[-1]
-        else:
-            city = state or region
-
-    # Build full address string — deduplicate consecutive identical segments
-    # (some JSON-LD records repeat the region in both addressLocality and addressRegion)
-    raw_parts = [p for p in [street, locality, state, postal] if p]
-    address_parts: list[str] = []
-    for part in raw_parts:
-        if not address_parts or part != address_parts[-1]:
-            address_parts.append(part)
-    full_address = ", ".join(address_parts)
-    if addr_country and addr_country not in full_address:
-        full_address = f"{full_address}, {addr_country}" if full_address else addr_country
-
-    # Coordinates
-    geo = json_ld.get("geo") or {}
-    lat = geo.get("latitude") or geo.get("lat")
-    lng = geo.get("longitude") or geo.get("long") or geo.get("lng")
-    try:
-        lat = float(lat) if lat is not None else None
-        lng = float(lng) if lng is not None else None
-    except (TypeError, ValueError):
-        lat = lng = None
-
-    # Cuisine
-    cuisine_raw = json_ld.get("servesCuisine") or ""
-    if isinstance(cuisine_raw, list):
-        cuisines = [c for c in cuisine_raw if c]
-    else:
-        cuisines = [cuisine_raw] if cuisine_raw else []
-
-    name = json_ld.get("name") or restaurant_slug.replace("-", " ").title()
-    website = json_ld.get("url") or json_ld.get("sameAs") or ""
-    source_google_map_url = json_ld.get("hasMap") or None
-
-    record_id = f"amex-global-{country_slug}-{restaurant_slug}"
-
-    search_parts = [name, city, state, country, *cuisines, street]
-    search_text = " ".join(p.lower() for p in search_parts if p)
-
-    return {
-        "id": record_id,
-        "source": "Amex Platinum Dining",
-        "source_url": url,
-        "country": country,
-        "region": state or region,
-        "city": city,
-        "district": None,
-        "name": name,
-        "cuisines": cuisines,
-        "source_localized_address": full_address,
-        "source_google_map_url": source_google_map_url,
-        "lat": lat,
-        "lng": lng,
-        "coordinate_source": "json_ld_geo" if (lat is not None and lng is not None) else None,
-        "coordinate_confidence": "source" if (lat and lng) else "none",
-        "map_pin_note": None,
-        "website_url": website or None,
-        "external_signals": {},
-        "search_text": search_text,
-        # Fields present in Japan data (default values for non-Japan)
-        "price_lunch_band_key": None,
-        "price_dinner_band_key": None,
-        "price_lunch_band_tier": None,
-        "price_dinner_band_tier": None,
-        "price_lunch_band_label": None,
-        "price_dinner_band_label": None,
-        "price_lunch_min_jpy": None,
-        "price_lunch_max_jpy": None,
-        "price_dinner_min_jpy": None,
-        "price_dinner_max_jpy": None,
-        "child_policy_norm": "unknown",
-        "english_menu": None,
-        "reservation_type": None,
-        "known_for_tags": [],
-        "signature_dish_tags": [],
-        "nearest_stations": [],
-        "summary_official": None,
-    }
 
 
 def country_slug(country_name: str) -> str:

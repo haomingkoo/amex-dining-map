@@ -117,9 +117,8 @@ Source: Amex's own dining-offers API at `https://dining-offers-prod.amex.r53.tui
 `/api/countries` and then `/api/country/{code}/merchants?origin=SG` for every non-Japan
 country (Japan is skipped via `SKIP_COUNTRIES` because Pocket Concierge covers it).
 The public landing page is `https://www.americanexpress.com/en-sg/benefits/diningbenefit/`,
-recorded as `source_url` in `data/global-dining-source.json`. The `remap_url` /
-`fetch_sitemap_urls` / JSON-LD helpers and the `BASE_URL`, `SITEMAP_URL`, `SITEMAP_DOMAIN`
-constants are legacy dead code kept only to parse old stored source URLs.
+recorded as `source_url` in `data/global-dining-source.json`. Stored source URLs are
+parsed by stripping `API_BASE_URL`.
 
 Output: `data/global-restaurants.json` — committed to repo and loaded by frontend.
 Snapshot: `data/global-dining-snapshot.json` — gitignored, used for diff detection only.
