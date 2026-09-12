@@ -30,10 +30,10 @@ def tft_ratings_projection(table_for_two: dict, ratings: dict) -> dict:
     if not isinstance(ratings, dict):
         raise ValueError("Google ratings payload must be an object")
 
-    missing = [venue_id for venue_id in venue_ids if venue_id not in ratings]
-    if missing:
-        raise ValueError(f"Missing Google ratings for Table for Two venues: {', '.join(missing)}")
-    return {venue_id: ratings[venue_id] for venue_id in venue_ids}
+    # Ratings are a weekly enrichment, so a roster addition is unrated until the
+    # scraper next runs. Demanding full coverage here made one new venue block
+    # every deploy for days. Coverage regressions stay visible in source health.
+    return {venue_id: ratings[venue_id] for venue_id in venue_ids if venue_id in ratings}
 
 
 def tft_catalog_projection(table_for_two: dict) -> dict:
