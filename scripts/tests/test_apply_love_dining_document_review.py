@@ -14,8 +14,21 @@ MANIFEST = ROOT / "data/reviews/official-documents/love-dining-restaurant-terms/
 HOTEL_MANIFEST = ROOT / "data/reviews/official-documents/love-dining-hotel-terms/806756636efb4a11906d9110f18e74857f9efe9918c8f2d125253c50e5a53ef4.json"
 
 
+# These reviews pin a sha256 of the Love Dining data as it stood on 2026-08-30.
+# The data refreshes daily, so replaying them against the live files asserted
+# only that the data had not moved, which it always does. Four tests had been
+# failing since, unnoticed, because no workflow runs this suite. Pin the inputs.
+FIXTURES = ROOT / "scripts/tests/fixtures/love-dining-2026-08-30"
+
+
+def _path(path: str) -> Path:
+    """Pinned copy when one exists, else the live file (manifests stay live)."""
+    pinned = FIXTURES / Path(path).name
+    return pinned if pinned.exists() else ROOT / path
+
+
 def _load(path: str):
-    return json.loads((ROOT / path).read_text())
+    return json.loads(_path(path).read_text())
 
 
 def test_restaurant_baseline_does_not_approve_pending_hotel_document():
