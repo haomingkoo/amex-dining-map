@@ -18,8 +18,21 @@ assert SPEC.loader is not None
 SPEC.loader.exec_module(MODULE)
 
 
+# These reviews pin a sha256 of the Love Dining data as it stood on 2026-08-30.
+# The data refreshes daily, so replaying them against the live files asserted
+# only that the data had not moved, which it always does. Four tests had been
+# failing since, unnoticed, because no workflow runs this suite. Pin the inputs.
+FIXTURES = ROOT / "scripts/tests/fixtures/love-dining-2026-08-30"
+
+
+def _path(path: str) -> Path:
+    """Pinned copy when one exists, else the live file (manifests stay live)."""
+    pinned = FIXTURES / Path(path).name
+    return pinned if pinned.exists() else ROOT / path
+
+
 def _load(path: str):
-    return json.loads((ROOT / path).read_text())
+    return json.loads(_path(path).read_text())
 
 
 def test_review_publishes_corrections_and_preserves_current_terms_state():
@@ -132,7 +145,7 @@ def test_main_locks_before_reads_and_writes_ledger_before_meta(
         "updates": "data/updates.json",
     }.items():
         paths[name] = tmp_path / f"{name}.json"
-        paths[name].write_text((ROOT / source).read_text())
+        paths[name].write_text(_path(source).read_text())
     locked = False
     reads = []
     writes = []
