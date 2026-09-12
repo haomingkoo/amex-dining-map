@@ -64,7 +64,6 @@ query searchVenues($areaIds: [ID!], $pagination: PaginationInput) {
         name
       }
       id
-      limitedScopeUrlHash
       name
       priceRanges {
         max
@@ -627,7 +626,6 @@ def build_record_from_search_result(venue: dict, area_name: str) -> dict:
         "source_url": build_source_url(venue_id),
         "source_search_area_ids": [venue.get("area", {}).get("id") or area_name],
         "source_search_areas": [area_name],
-        "source_limited_scope_url_hash": venue.get("limitedScopeUrlHash"),
         "country": "Japan",
         "region": area_name,
         "area_title": area_name,
