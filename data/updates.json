@@ -1,7 +1,73 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-11T23:51:10Z",
+  "updated_at": "2026-09-12T00:42:00Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-09-12T00:42:00Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 2182
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 2184
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 2182,
+          "after": 2184
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "9ed6d46a5813888cc394",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "e153c625e4bfcc37f3b5"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-12T00:42:00Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "29/29 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "27/29 (93.1%), 2 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "29/29 (100%), 0 unavailable",
+          "after": "27/29 (93.1%), 2 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "a3b730cd421c75db1b85",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 3,
+      "id": "88c261f1462fbc11f549"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -12517,7 +12583,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "2505bfbc794de3ef7e1b",
+        "latest_transition_id": "9ed6d46a5813888cc394",
         "occurrences": {
           "115ecbdf7edd8b04fc52": 1,
           "1c7f262ce9ab4a1ccc5f": 1,
@@ -12530,6 +12596,7 @@
           "6f692e210315547883d9": 1,
           "7fd508a38f1b1c135b6a": 1,
           "9b20e2012d24b98c912c": 1,
+          "9ed6d46a5813888cc394": 1,
           "d0735dd662b564b1d23c": 1,
           "ecb804c7aa8649ff67ed": 1,
           "f1130c410a7ffb37b21d": 1,
@@ -12753,7 +12820,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "252e3c33201e3823a27b",
+        "latest_transition_id": "a3b730cd421c75db1b85",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
@@ -12782,7 +12849,7 @@
           "9d9d155296d216fc8107": 1,
           "a0e5d9c3222307d148c0": 1,
           "a35a007cefa6ec723d14": 1,
-          "a3b730cd421c75db1b85": 2,
+          "a3b730cd421c75db1b85": 3,
           "aae2a9dbc6f70d8fea97": 1,
           "b65d58034636a5fc38a8": 1,
           "b9782e66dd081210376b": 6,
