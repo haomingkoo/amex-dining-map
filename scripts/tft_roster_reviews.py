@@ -22,7 +22,6 @@ OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card
 REVIEW_ROOT = Path(__file__).resolve().parents[1] / "data/reviews/table-for-two-roster"
 RUNTIME_FIELDS = {
     "availability",
-    "booking_project_checked_at",
     "booking_project_status",
     "dining_city_profile",
     "menu_pdf",

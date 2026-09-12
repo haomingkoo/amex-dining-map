@@ -1600,9 +1600,6 @@ def normalized_venues(
             **venue,
             "booking_channel": "Amex Experiences App",
             "booking_project_status": booking_project_status,
-            "booking_project_checked_at": (booking_project_source or {}).get(
-                "checked_at"
-            ),
             "slot_source_status": (
                 "not_currently_in_project"
                 if booking_project_status == "not_listed"
@@ -1847,7 +1844,6 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
             **venue,
             **operational_fields,
             "booking_project_status": booking_project_status,
-            "booking_project_checked_at": booking_project_source.get("checked_at"),
             "slot_source_status": (
                 "not_currently_in_project"
                 if booking_project_status == "not_listed"
