@@ -8,6 +8,10 @@ from scripts import build_public_data_projections as projections
 
 ROOT = Path(__file__).resolve().parents[2]
 
+# Observed ~4.7KB/venue. Generous enough for real growth, tight enough that a
+# projection leaking bulk back in still trips it.
+MAX_CATALOG_BYTES_PER_VENUE = 12_000
+
 
 class PublicDataProjectionTests(unittest.TestCase):
     def test_tft_ratings_contains_only_exact_venue_ids(self):
@@ -100,10 +104,13 @@ class PublicDataProjectionTests(unittest.TestCase):
         self.assertEqual(len(summary["patterns"]), len(history["patterns"]))
         self.assertNotIn("observations", summary)
         self.assertTrue(all("availability" not in venue for venue in catalog["venues"]))
-        self.assertLess(
-            len(json.dumps(catalog, separators=(",", ":")).encode()),
-            250_000,
-        )
+        # Per venue, not total. A fixed ceiling on a growing roster is a timer:
+        # this one sat at 56% and would have blocked every deploy about 23
+        # venues from now, the same way one unrated venue blocked them for two
+        # days on 2026-09-11. Per-venue still catches the regression that
+        # matters, a projection that starts carrying slots or other bulk again.
+        catalog_bytes = len(json.dumps(catalog, separators=(",", ":")).encode())
+        self.assertLess(catalog_bytes / len(catalog["venues"]), MAX_CATALOG_BYTES_PER_VENUE)
 
     def test_cli_writes_both_outputs(self):
         with tempfile.TemporaryDirectory() as directory:
