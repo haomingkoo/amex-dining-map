@@ -1567,6 +1567,49 @@ def should_preserve_availability(existing: dict | None, curated: dict | None) ->
     return availability.get("source") != curated.get("source") or availability.get("captured_at") != curated.get("captured_at")
 
 
+_CURATED_BY_ID = {venue["id"]: venue for venue in VENUES}
+
+OPERATIONAL_FIELDS = (
+    "operational_status",
+    "operational_status_effective_at",
+    "operational_status_source",
+    "operational_status_source_url",
+    "operational_status_note",
+)
+
+
+def _carry_venue_state(
+    record: dict,
+    existing_record: dict | None,
+    curated: dict | None,
+    live_profile: dict | None,
+) -> dict:
+    """Restore the fields a rebuild must not invent, curated first then last payload.
+
+    Both writers rebuild a venue from scratch, so anything they do not copy is
+    silently dropped. That is how the menu review receipts were lost, and how
+    Capitol Bistro's officially sourced permanently_closed flag disappeared on
+    every daily refresh and came back on the next availability run.
+    """
+    existing_record = existing_record if isinstance(existing_record, dict) else {}
+    curated = curated or {}
+    for key in OPERATIONAL_FIELDS:
+        if key in curated:
+            record[key] = curated[key]
+        elif key in existing_record:
+            record[key] = existing_record[key]
+    if live_profile:
+        record["dining_city_profile"] = live_profile
+    elif isinstance(existing_record.get("dining_city_profile"), dict):
+        record["dining_city_profile"] = existing_record["dining_city_profile"]
+    for key in ("menu_pdfs", "menu_pdf"):
+        if key in existing_record:
+            record[key] = existing_record[key]
+    record.setdefault("menu_pdfs", {})
+    record.setdefault("menu_pdf", _empty_menu_state())
+    return record
+
+
 def normalized_venues(
     existing_by_id: dict[str, dict] | None = None,
     live_availability_by_id: dict[str, dict] | None = None,
@@ -1611,16 +1654,7 @@ def normalized_venues(
             "availability": availability,
         }
         record["availability"] = availability
-        if live_profile:
-            record["dining_city_profile"] = live_profile
-        elif isinstance(existing_record, dict) and isinstance(existing_record.get("dining_city_profile"), dict):
-            record["dining_city_profile"] = existing_record["dining_city_profile"]
-        if isinstance(existing_record, dict):
-            for key in ("menu_pdfs", "menu_pdf"):
-                if key in existing_record:
-                    record[key] = existing_record[key]
-        record.setdefault("menu_pdfs", {})
-        record.setdefault("menu_pdf", _empty_menu_state())
+        _carry_venue_state(record, existing_record, _CURATED_BY_ID.get(venue.get("id")), live_profile)
         records.append(record)
     return records
 
@@ -1783,7 +1817,6 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
 
     checked_at = iso_now()
     existing_by_id = {record["id"]: record for record in venues}
-    curated_by_id = {venue["id"]: venue for venue in VENUES}
     reviewed_roster = [
         record
         for record in venues
@@ -1818,18 +1851,7 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
     for venue in venues:
         venue_id = venue["id"]
         existing_record = existing_by_id.get(venue_id) or {}
-        curated = curated_by_id.get(venue_id) or {}
-        operational_fields = {
-            key: (curated if key in curated else existing_record)[key]
-            for key in (
-                "operational_status",
-                "operational_status_effective_at",
-                "operational_status_source",
-                "operational_status_source_url",
-                "operational_status_note",
-            )
-            if key in curated or key in existing_record
-        }
+
         booking_project_status = booking_project_status_for_venue(
             venue, booking_project_source, existing_record
         )
@@ -1842,7 +1864,6 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
         )
         record = {
             **venue,
-            **operational_fields,
             "booking_project_status": booking_project_status,
             "slot_source_status": (
                 "not_currently_in_project"
@@ -1854,15 +1875,10 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
             ),
             "availability": availability,
         }
-        if venue_id in live_profiles_by_id:
-            record["dining_city_profile"] = live_profiles_by_id[venue_id]
-        elif isinstance(existing_record.get("dining_city_profile"), dict):
-            record["dining_city_profile"] = existing_record["dining_city_profile"]
-        for key in ("menu_pdfs", "menu_pdf"):
-            if key in existing_record:
-                record[key] = existing_record[key]
-        record.setdefault("menu_pdfs", {})
-        record.setdefault("menu_pdf", _empty_menu_state())
+        _carry_venue_state(
+            record, existing_record, _CURATED_BY_ID.get(venue_id),
+            live_profiles_by_id.get(venue_id),
+        )
         records.append(record)
 
     payload = {
