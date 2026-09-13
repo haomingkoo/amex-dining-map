@@ -21,9 +21,9 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from scripts.jsonio import records_from_payload
+    from scripts.jsonio import load_json, records_from_payload
 except ImportError:  # running as `python3 scripts/<file>.py`
-    from jsonio import records_from_payload
+    from jsonio import load_json, records_from_payload
 
 
 try:
@@ -156,10 +156,6 @@ TERMINAL_OWNER_DELIVERY_STATES = {
     "dead",
     "schema_rejected",
 }
-
-
-def load_json(path: str | Path) -> Any:
-    return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
 def git_show_json(path: str) -> Any | None:

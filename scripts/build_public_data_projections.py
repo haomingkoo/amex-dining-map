@@ -9,12 +9,14 @@ import json
 from pathlib import Path
 from typing import Any
 
+try:
+    from scripts.jsonio import load_json
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from jsonio import load_json
+
+
 
 RELEASE_SUMMARY_KEYS = ("schema_version", "source_project", "updated_at", "patterns")
-
-
-def load_json(path: Path) -> Any:
-    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def tft_ratings_projection(table_for_two: dict, ratings: dict) -> dict:

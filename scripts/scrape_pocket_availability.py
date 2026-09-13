@@ -14,6 +14,12 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+try:
+    from scripts.jsonio import load_json
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from jsonio import load_json
+
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
@@ -101,10 +107,6 @@ def post_graphql(query: str, variables: dict, operation_name: str, retries: int 
             raise
 
     return {}
-
-
-def load_json(path: Path):
-    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def save_json(path: Path, payload: dict) -> None:

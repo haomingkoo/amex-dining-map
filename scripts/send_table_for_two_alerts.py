@@ -26,6 +26,12 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 try:
+    from scripts.jsonio import load_json
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from jsonio import load_json
+
+
+try:
     from scripts.timeutil import iso_now
 except ImportError:  # running as `python3 scripts/<file>.py`
     from timeutil import iso_now
@@ -70,10 +76,6 @@ def normalize_header(value: str) -> str:
 
 def normalize_venue_key(value: Any) -> str:
     return re.sub(r"[^a-z0-9]+", "", str(value or "").casefold())
-
-
-def load_json(path: str | Path) -> Any:
-    return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
 def write_json(path: str | Path, payload: Any) -> None:

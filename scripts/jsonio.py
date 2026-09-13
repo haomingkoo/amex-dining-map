@@ -1,6 +1,7 @@
 """Shared dataset JSON helpers.
 
-`load_json` is not here yet: eleven modules define it under two signatures.
+The `load_json(path, default)` variants stay in their own modules: they disagree
+on whether corrupt JSON is an error or a missing file.
 """
 
 from __future__ import annotations
@@ -8,6 +9,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any
+
+
+def load_json(path: str | Path) -> Any:
+    """Read a dataset. Raises if the file is missing or malformed."""
+    return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
 def save_json(path: Path, payload: Any) -> None:
