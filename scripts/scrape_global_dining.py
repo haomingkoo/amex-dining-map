@@ -33,6 +33,12 @@ import urllib.request
 import urllib.error
 import urllib.parse
 
+try:
+    from scripts.jsonio import save_json
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from jsonio import save_json
+
+
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
 OUTPUT_PATH = DATA_DIR / "global-restaurants.json"
@@ -197,10 +203,6 @@ def slug_to_region_name(slug: str) -> str:
 
 def compact_space(value: str | None) -> str:
     return re.sub(r"\s+", " ", value or "").strip()
-
-
-def save_json(path: Path, payload: Any) -> None:
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
 
 
 def distance_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:

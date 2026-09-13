@@ -15,6 +15,12 @@ from datetime import UTC, datetime
 from math import asin, cos, radians, sin, sqrt
 from pathlib import Path
 
+try:
+    from scripts.jsonio import save_json
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from jsonio import save_json
+
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
@@ -233,10 +239,6 @@ def load_json(path: Path, default):
     if not path.exists():
         return default
     return json.loads(path.read_text())
-
-
-def save_json(path: Path, payload) -> None:
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
 
 
 def source_record_projection(record: dict) -> dict:
