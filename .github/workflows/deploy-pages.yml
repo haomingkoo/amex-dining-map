@@ -40,6 +40,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         run: |
+          # Fail open: a rate limit or 5xx here must not stop the site publishing.
+          set +e
           head="$(gh api "repos/$REPO/commits/main" --jq .sha)"
           # Newest *succeeded* deploy: a failed one must not look already-live.
           live=""
@@ -50,7 +52,7 @@ jobs:
             fi
           done < <(gh api "repos/$REPO/deployments?environment=github-pages&per_page=10" \
                      --jq '.[]|"\(.sha) \(.statuses_url)"')
-          if [ "$head" = "$live" ]; then
+          if [ -n "$head" ] && [ -n "$live" ] && [ "$head" = "$live" ]; then
             echo "main $head is already live; skipping redeploy." | tee -a "$GITHUB_STEP_SUMMARY"
             echo "deploy=false" >> "$GITHUB_OUTPUT"
           else
@@ -59,7 +61,7 @@ jobs:
 
   deploy:
     needs: changed
-    if: needs.changed.outputs.deploy == 'true'
+    if: needs.changed.outputs.deploy == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

@@ -363,13 +363,15 @@ def venue_menu_info(
     pdf_bytes: bytes | None,
     checked_at: str,
     previous: dict | None = None,
+    card: str | None = None,
 ) -> dict:
     """Return menu PDF metadata for one venue/source pair."""
     previous = previous or {}
 
     if listing_entry is None:
         # One miss is not proof of removal, and wiping wedges verify_decision_receipts.
-        if previous.get("status") == "published":
+        # The caller falls back to the legacy menu_pdf, which may hold the other card.
+        if previous.get("status") == "published" and previous.get("card") in (None, card):
             return dict(previous)
         status = "buffet_no_menu_expected" if has_buffet_tag(venue) else "no_pdf_found"
         return {
@@ -395,7 +397,7 @@ def venue_menu_info(
             and re.fullmatch(r"[0-9a-f]{64}", str(previous.get("sha256")))
         ):
             return dict(previous)
-        return venue_menu_info(venue, None, None, checked_at, previous)
+        return venue_menu_info(venue, None, None, checked_at, previous, card)
     sha256 = hashlib.sha256(pdf_bytes).hexdigest()
     size = len(pdf_bytes)
     prev_sha = previous.get("sha256")
@@ -630,7 +632,7 @@ def main() -> int:
             previous = previous_menus.get(source_key) or {}
             if not previous and source_key == "platinum":
                 previous = venue.get("menu_pdf") or {}
-            info = venue_menu_info(venue, entry, pdf_bytes, checked_at, previous)
+            info = venue_menu_info(venue, entry, pdf_bytes, checked_at, previous, source_key)
             if entry:
                 observed_assets.add((source_key, entry["filename"]))
                 listed_sources.add(source_key)
