@@ -28,14 +28,7 @@ class PublicDataProjectionTests(unittest.TestCase):
         )
 
     def test_tft_ratings_omits_a_venue_that_has_no_rating_yet(self):
-        """A newly listed venue must not block the whole site from deploying.
-
-        Ratings are a weekly enrichment, so every roster addition spends up to a
-        week unrated. Demanding full coverage here blocked 22 Deploy Pages runs
-        over two days when Xing Yue Xuan joined. The frontend already renders a
-        missing rating as null, love-dining already ships unrated venues, and
-        source health already reports ratings coverage.
-        """
+        """A newly listed venue must not block the whole site from deploying."""
         projected = projections.tft_ratings_projection(
             {"venues": [{"id": "tft-a"}, {"id": "tft-b"}]},
             {"tft-a": {"rating": 4.1}},
@@ -96,19 +89,14 @@ class PublicDataProjectionTests(unittest.TestCase):
         catalog = projections.tft_catalog_projection(table_for_two)
         summary = projections.release_history_summary(history)
 
-        # Bounded by the roster, not equal to it: a venue listed since the last
-        # weekly ratings run is legitimately unrated and must not fail the build.
+        # Bounded by the roster, not equal to it.
         roster_ids = {venue["id"] for venue in table_for_two["venues"]}
         self.assertTrue(set(tft_ratings).issubset(roster_ids))
         self.assertTrue(tft_ratings)
         self.assertEqual(len(summary["patterns"]), len(history["patterns"]))
         self.assertNotIn("observations", summary)
         self.assertTrue(all("availability" not in venue for venue in catalog["venues"]))
-        # Per venue, not total. A fixed ceiling on a growing roster is a timer:
-        # this one sat at 56% and would have blocked every deploy about 23
-        # venues from now, the same way one unrated venue blocked them for two
-        # days on 2026-09-11. Per-venue still catches the regression that
-        # matters, a projection that starts carrying slots or other bulk again.
+        # Per venue, not total: a fixed ceiling on a growing roster is a timer.
         catalog_bytes = len(json.dumps(catalog, separators=(",", ":")).encode())
         self.assertLess(catalog_bytes / len(catalog["venues"]), MAX_CATALOG_BYTES_PER_VENUE)
 

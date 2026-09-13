@@ -368,10 +368,7 @@ def venue_menu_info(
     previous = previous or {}
 
     if listing_entry is None:
-        # One miss is not proof of removal, and wiping wedges the pipeline:
-        # the approved receipt still points at the published menu, so
-        # verify_decision_receipts raises, and this fetcher runs that verifier
-        # on startup, so it can never re-discover the menu and heal itself.
+        # One miss is not proof of removal, and wiping wedges verify_decision_receipts.
         if previous.get("status") == "published":
             return dict(previous)
         status = "buffet_no_menu_expected" if has_buffet_tag(venue) else "no_pdf_found"
@@ -691,9 +688,7 @@ def main() -> int:
         published_infos = {
             key: info for key, info in source_infos.items() if info["status"] == "published"
         }
-        # A menu retained across a listing miss is still published, but it was not
-        # matched this run. Counting it would hide the miss from source health,
-        # which derives menu coverage from these numbers.
+        # Count only what this run saw listed, so a retained miss stays visible.
         listed_published = {
             key: info for key, info in published_infos.items() if key in listed_sources
         }

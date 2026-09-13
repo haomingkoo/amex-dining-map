@@ -1,12 +1,6 @@
 """Shared dataset JSON helpers.
 
-Every pipeline writes its dataset the same way, and every consumer has to cope
-with the same handful of container shapes. Both were hand-copied across the
-scripts, so a change to either meant finding all the copies.
-
-`load_json` is deliberately not here yet: it exists in eleven modules under two
-different signatures, one returning a default for a missing file, and merging
-those is a separate change.
+`load_json` is not here yet: eleven modules define it under two signatures.
 """
 
 from __future__ import annotations
@@ -17,7 +11,7 @@ from typing import Any
 
 
 def save_json(path: Path, payload: Any) -> None:
-    """Write a dataset the way every dataset in this repo is written."""
+    """Write a dataset in this repo's standard shape."""
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
 
 

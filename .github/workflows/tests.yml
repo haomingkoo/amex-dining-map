@@ -1,9 +1,6 @@
 name: Tests
 
-# Deliberately not wired into Deploy Pages. A failing test here should tell you
-# the code is wrong, not stop the site publishing fresh data: one unrated venue
-# blocking the deploy gate already cost two days of stale production on
-# 2026-09-11.
+# Not wired into Deploy Pages: a failing test must not stop publishing data.
 on:
   push:
     branches:

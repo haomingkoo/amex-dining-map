@@ -30,9 +30,7 @@ def tft_ratings_projection(table_for_two: dict, ratings: dict) -> dict:
     if not isinstance(ratings, dict):
         raise ValueError("Google ratings payload must be an object")
 
-    # Ratings are a weekly enrichment, so a roster addition is unrated until the
-    # scraper next runs. Demanding full coverage here made one new venue block
-    # every deploy for days. Coverage regressions stay visible in source health.
+    # Ratings refresh weekly, so a new venue is legitimately unrated.
     return {venue_id: ratings[venue_id] for venue_id in venue_ids if venue_id in ratings}
 
 
