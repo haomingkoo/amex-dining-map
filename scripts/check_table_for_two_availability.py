@@ -13,14 +13,16 @@ import json
 from pathlib import Path
 
 try:
+    from scripts.jsonio import load_json
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from jsonio import load_json
+
+
+try:
     from scripts.timeutil import iso_now
 except ImportError:  # running as `python3 scripts/<file>.py`
     from timeutil import iso_now
 
-
-
-def load_json(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def write_json(path: Path, payload: dict) -> None:

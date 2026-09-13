@@ -13,6 +13,12 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Iterable
 from zoneinfo import ZoneInfo
+
+try:
+    from scripts.jsonio import load_json
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from jsonio import load_json
+
 try:
     from scripts.timeutil import parse_utc
 except ImportError:  # running as `python3 scripts/<file>.py`
@@ -21,10 +27,6 @@ except ImportError:  # running as `python3 scripts/<file>.py`
 
 SGT = ZoneInfo("Asia/Singapore")
 SOURCE_PROJECT = "AMEXPlatSG"
-
-
-def load_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def parse_time(value: str | None) -> datetime | None:
