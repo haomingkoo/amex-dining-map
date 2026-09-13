@@ -136,10 +136,11 @@ def test_monitor_workflow_runs_the_watchdog_with_the_rights_it_needs() -> None:
     assert "issues: write" in workflow
 
 
-def test_tabelog_candidates_runs_on_a_schedule_with_usable_defaults() -> None:
+def test_tabelog_candidates_is_dispatch_only_with_usable_defaults() -> None:
     workflow = (ROOT / ".github/workflows/match-tabelog-candidates.yml").read_text()
 
-    assert "schedule:" in workflow
-    # A scheduled run carries no inputs, so every one needs a literal fallback.
+    # The monthly schedule only produced an artifact nothing consumed.
+    assert "schedule:" not in workflow
+    assert "workflow_dispatch:" in workflow
     for field, default in (("offset", "0"), ("limit", "50"), ("top", "5"), ("pause", "0.2")):
         assert f"inputs.{field} || '{default}'" in workflow

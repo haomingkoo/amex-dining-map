@@ -1,11 +1,8 @@
 name: Match Tabelog Candidates
 
+# Dispatch only. The monthly schedule re-ran the first 50 of 843 records into an
+# artifact nothing downloads, and committed nothing, so it never cleared anything.
 on:
-  schedule:
-    # Monthly sample, not a sweep: with no dispatch inputs this re-runs the FIRST
-    # 50 of 843 Japan records and uploads them as an artifact nothing consumes.
-    # It commits nothing, so tabelog-ratings stays stale until a manual promote/merge.
-    - cron: "0 3 1 * *"
   workflow_dispatch:
     inputs:
       offset:
