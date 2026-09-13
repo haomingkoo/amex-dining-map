@@ -154,7 +154,7 @@ def _info(venue, previous):
 
 
 def test_one_listing_miss_does_not_unpublish_a_reviewed_menu():
-    """A miss wiped Sarnies on 2026-09-09 while the PDF was still live, wedging the pipeline."""
+    """A miss must not unpublish a menu that is still live upstream."""
     assert _info({"name": "Sarnies", "category": "cafe"}, dict(PUBLISHED_MENU)) == PUBLISHED_MENU
 
 
@@ -169,12 +169,7 @@ def test_a_buffet_listing_miss_keeps_reporting_buffet():
 
 
 def test_a_retained_menu_is_not_counted_as_matched(tmp_path, monkeypatch):
-    """Retention must not make a listing miss look like a match.
-
-    Keeping a published menu across a miss is right, but counting it in
-    venues_matched hides the miss from source health, which derives menu
-    coverage from that number. A matcher regression would then look normal.
-    """
+    """Retention must not make a listing miss look like a match."""
     data = tmp_path / "tft.json"
     data.write_text(json.dumps({
         "venues": [{

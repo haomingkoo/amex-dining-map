@@ -27,9 +27,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Every upstream workflow triggers this one on completion, whether or not it
-  # committed anything. Monitor Source Health alone runs ~7x/day and commits
-  # about once a week, so most runs rebuilt and redeployed identical bytes.
+  # Upstream workflows trigger this on completion even when they commit nothing.
   changed:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
@@ -43,8 +41,7 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           head="$(gh api "repos/$REPO/commits/main" --jq .sha)"
-          # Newest deployment that actually succeeded, so a failed deploy cannot
-          # wedge the site by making later runs think its commit is already live.
+          # Newest *succeeded* deploy: a failed one must not look already-live.
           live=""
           while read -r sha url; do
             if [ "$(gh api "$url" --jq '.[0].state // ""')" = "success" ]; then
