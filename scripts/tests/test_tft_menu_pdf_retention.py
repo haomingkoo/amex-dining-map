@@ -149,8 +149,10 @@ PUBLISHED_MENU = {
 }
 
 
-def _info(venue, previous):
-    return fetch_tft_menus.venue_menu_info(venue, None, None, "2026-09-09T23:48:32Z", previous)
+def _info(venue, previous, card="platinum"):
+    return fetch_tft_menus.venue_menu_info(
+        venue, None, None, "2026-09-09T23:48:32Z", previous, card
+    )
 
 
 def test_one_listing_miss_does_not_unpublish_a_reviewed_menu():
@@ -195,3 +197,16 @@ def test_a_retained_menu_is_not_counted_as_matched(tmp_path, monkeypatch):
     assert out["venues"][0]["menu_pdfs"]["platinum"]["status"] == "published"
     assert out["menu_source"]["venues_matched"] == 0
     assert out["menu_source"]["menus_matched"] == 0
+
+
+def test_retention_never_moves_a_centurion_menu_into_the_platinum_slot():
+    """previous falls back to the legacy menu_pdf, which may hold the other card."""
+    centurion = {
+        "status": "published", "card": "centurion", "label": "Centurion",
+        "filename": "X-Menu-Centurion.pdf", "url": "https://www.americanexpress.com/x.pdf",
+        "sha256": "b" * 64, "bytes": 100,
+    }
+
+    info = _info({"name": "X", "category": "cafe"}, centurion, card="platinum")
+
+    assert info["status"] != "published"

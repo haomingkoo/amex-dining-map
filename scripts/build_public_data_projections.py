@@ -32,8 +32,12 @@ def tft_ratings_projection(table_for_two: dict, ratings: dict) -> dict:
     if not isinstance(ratings, dict):
         raise ValueError("Google ratings payload must be an object")
 
-    # Ratings refresh weekly, so a new venue is legitimately unrated.
-    return {venue_id: ratings[venue_id] for venue_id in venue_ids if venue_id in ratings}
+    # Ratings refresh weekly, so a new venue is legitimately unrated. Total loss
+    # is still a failure: an empty projection means the ratings file went missing.
+    projected = {venue_id: ratings[venue_id] for venue_id in venue_ids if venue_id in ratings}
+    if not projected:
+        raise ValueError("no Table for Two venue has a Google rating")
+    return projected
 
 
 def tft_catalog_projection(table_for_two: dict) -> dict:

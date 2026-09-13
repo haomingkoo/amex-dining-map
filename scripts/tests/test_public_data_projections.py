@@ -27,6 +27,11 @@ class PublicDataProjectionTests(unittest.TestCase):
             {"tft-a": {"rating": 4.1}, "tft-b": {"rating": 4.8}},
         )
 
+    def test_tft_ratings_still_fails_when_every_rating_is_gone(self):
+        """Partial coverage is normal; zero coverage means the ratings file vanished."""
+        with self.assertRaisesRegex(ValueError, "no Table for Two venue"):
+            projections.tft_ratings_projection({"venues": [{"id": "tft-a"}]}, {})
+
     def test_tft_ratings_omits_a_venue_that_has_no_rating_yet(self):
         """A newly listed venue must not block the whole site from deploying."""
         projected = projections.tft_ratings_projection(
