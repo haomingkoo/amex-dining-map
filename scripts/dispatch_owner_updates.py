@@ -14,6 +14,12 @@ import urllib.request
 from pathlib import Path
 
 try:
+    from scripts.timeutil import iso_now
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from timeutil import iso_now
+
+
+try:
     from scripts import source_change_alert
 except ModuleNotFoundError:  # Direct `python scripts/dispatch_owner_updates.py`.
     import source_change_alert
@@ -171,7 +177,7 @@ def main() -> int:
         source_change_alert.record_owner_delivery_states(
             args.updates,
             terminal_outcomes,
-            source_change_alert.now_iso(),
+            iso_now(),
         )
     print(f"Owner alert ingress accepted {count} published ledger event(s).")
     return 0

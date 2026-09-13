@@ -20,6 +20,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+try:
+    from scripts.timeutil import iso_now
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from timeutil import iso_now
+
+
 
 IGNORED_RECORD_FIELDS = {
     "lat",
@@ -144,10 +150,6 @@ TERMINAL_OWNER_DELIVERY_STATES = {
     "dead",
     "schema_rejected",
 }
-
-
-def now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def load_json(path: str | Path) -> Any:
@@ -937,7 +939,7 @@ def main() -> int:
             if reason not in reasons:
                 reasons.append(str(reason))
 
-    detected_at = now_iso()
+    detected_at = iso_now()
     record_diffs: list[tuple[str, dict[str, list[str]]]] = []
     update_events: list[dict[str, Any]] = []
     for data_path in args.data:

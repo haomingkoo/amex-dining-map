@@ -5,12 +5,13 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    from scripts.timeutil import iso_now
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from timeutil import iso_now
 
-def now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def main() -> int:
@@ -29,7 +30,7 @@ def main() -> int:
 
     update = matches[0]
     update["status"] = args.status
-    update["reviewed_at"] = now_iso()
+    update["reviewed_at"] = iso_now()
     if args.note:
         update["review_note"] = args.note
     payload["updated_at"] = update["reviewed_at"]
