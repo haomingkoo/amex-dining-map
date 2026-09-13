@@ -25,6 +25,12 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
+try:
+    from scripts.timeutil import iso_now
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from timeutil import iso_now
+
+
 
 DEFAULT_DATA_PATH = "data/table-for-two.json"
 DEFAULT_SENT_LOG_PATH = "data/table-for-two-alert-sent.json"
@@ -48,10 +54,6 @@ class Subscription:
     venues: tuple[str, ...]
     unsubscribe_url: str
     source_label: str
-
-
-def now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def today_singapore() -> date:
@@ -643,7 +645,7 @@ def send_messages(
         raise RuntimeError("RESEND_API_KEY and RESEND_FROM are required when matches need emails")
     for message, sent_key in zip(messages, sent_keys_for_messages, strict=True):
         _send_resend_message(message, config, sent_key)
-        timestamp = now_iso()
+        timestamp = iso_now()
         sent_keys[sent_key] = timestamp
         write_json(sent_log_path, {"updated_at": timestamp, "sent_keys": sent_keys})
 

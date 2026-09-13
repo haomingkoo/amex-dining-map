@@ -23,6 +23,12 @@ import urllib.parse
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
 
+try:
+    from scripts.timeutil import iso_now
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from timeutil import iso_now
+
+
 if TYPE_CHECKING:
     from playwright.sync_api import Page
 
@@ -55,10 +61,6 @@ PRESERVED_ENRICHMENT_FIELDS = ("lat", "lng")
 
 def normalize_inline_text(value: str | None) -> str:
     return re.sub(r"\s+", " ", (value or "").replace("\xa0", " ")).strip()
-
-
-def now_utc_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def fetch_bytes(url: str) -> bytes:
@@ -744,7 +746,7 @@ def main() -> None:
     for record in all_records:
         annotate_location_metadata(record)
         annotate_eligibility_metadata(record)
-    checked_at = now_utc_iso()
+    checked_at = iso_now()
     print(f"\nTotal: {len(all_records)} venues")
 
     if args.dry_run:

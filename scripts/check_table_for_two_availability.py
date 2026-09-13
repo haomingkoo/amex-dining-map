@@ -10,12 +10,13 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    from scripts.timeutil import iso_now
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from timeutil import iso_now
 
-def now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def load_json(path: Path) -> dict:
@@ -39,7 +40,7 @@ def main() -> int:
     parser.add_argument("--date-label", default="", help="Human-readable date note when exact date is not known")
     parser.add_argument("--times", required=True, help="Comma-separated available times, e.g. 12:00,12:30")
     parser.add_argument("--seats", type=int, default=2)
-    parser.add_argument("--captured-at", default=now_iso())
+    parser.add_argument("--captured-at", default=iso_now())
     parser.add_argument("--source", default="manual_app_capture")
     args = parser.parse_args()
 
