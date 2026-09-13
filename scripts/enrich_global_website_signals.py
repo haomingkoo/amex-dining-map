@@ -28,6 +28,12 @@ import urllib.error
 import urllib.request
 
 try:
+    from scripts.jsonio import save_json
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from jsonio import save_json
+
+
+try:
     from lxml import html as lxml_html
 except Exception:  # pragma: no cover - optional dependency
     lxml_html = None
@@ -544,10 +550,6 @@ def load_cache() -> dict[str, Any]:
         return json.loads(CACHE_PATH.read_text())
     except json.JSONDecodeError:
         return {}
-
-
-def save_json(path: Path, payload: Any) -> None:
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
 
 
 def fetch_signal(url: str, record_name: str | None) -> tuple[str, dict[str, Any]]:

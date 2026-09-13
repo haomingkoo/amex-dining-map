@@ -21,6 +21,12 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from scripts.jsonio import records_from_payload
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from jsonio import records_from_payload
+
+
+try:
     from scripts.timeutil import iso_now
 except ImportError:  # running as `python3 scripts/<file>.py`
     from timeutil import iso_now
@@ -171,17 +177,6 @@ def nested_get(payload: Any, dotted_path: str) -> Any:
             return None
         value = value.get(part)
     return value
-
-
-def records_from_payload(payload: Any) -> list[dict[str, Any]]:
-    if isinstance(payload, list):
-        return [record for record in payload if isinstance(record, dict)]
-    if isinstance(payload, dict):
-        for key in ("venues", "records", "restaurants", "data"):
-            value = payload.get(key)
-            if isinstance(value, list):
-                return [record for record in value if isinstance(record, dict)]
-    return []
 
 
 def record_key(record: dict[str, Any]) -> str:

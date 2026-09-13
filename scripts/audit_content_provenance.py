@@ -13,6 +13,12 @@ import json
 from pathlib import Path
 from typing import Any
 
+try:
+    from scripts.jsonio import records_from_payload
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from jsonio import records_from_payload
+
+
 
 DATASETS = [
     Path("data/global-restaurants.json"),
@@ -20,17 +26,6 @@ DATASETS = [
     Path("data/love-dining.json"),
     Path("data/table-for-two.json"),
 ]
-
-
-def records_from_payload(payload: Any) -> list[dict[str, Any]]:
-    if isinstance(payload, list):
-        return [record for record in payload if isinstance(record, dict)]
-    if isinstance(payload, dict):
-        for key in ("venues", "records", "restaurants", "data"):
-            value = payload.get(key)
-            if isinstance(value, list):
-                return [record for record in value if isinstance(record, dict)]
-    return []
 
 
 def main() -> int:
