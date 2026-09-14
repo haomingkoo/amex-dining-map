@@ -1,7 +1,41 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-14T10:21:56Z",
+  "updated_at": "2026-09-14T16:28:54Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "removed",
+      "subject": "Park90",
+      "detected_at": "2026-09-14T16:28:54Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Park90",
+          "Category": "restaurant",
+          "Address": "Pan Pacific Orchard, 10 Claymore Rd, Level 11 Garden Terrace, 229540",
+          "Booking channel": "Amex Experiences App"
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/park90",
+      "transition_id": "9b23828550ac26dd66ba",
+      "stream_id": "d5ed8482ba53ae47fd96",
+      "occurrence": 1,
+      "id": "37564fa120afaf81827b"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -13553,9 +13587,10 @@
         }
       },
       "d5ed8482ba53ae47fd96": {
-        "latest_transition_id": "87ac31095724b2d4f5d9",
+        "latest_transition_id": "9b23828550ac26dd66ba",
         "occurrences": {
-          "87ac31095724b2d4f5d9": 1
+          "87ac31095724b2d4f5d9": 1,
+          "9b23828550ac26dd66ba": 1
         }
       },
       "d77211f5928539dc6df1": {

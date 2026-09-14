@@ -36,3 +36,11 @@ Source: `data/table-for-two.json`
 
 - **Added (1)**
   - Xing Yue Xuan
+
+<!-- source-change:e295d2ec071c1e873b357491a864945d41357d3a8cb1f041b100f68bd9249f15 -->
+## 2026-09-14 16:28 UTC — Table for Two
+
+Source: `data/table-for-two.json`
+
+- **Removed (1)**
+  - Park90
