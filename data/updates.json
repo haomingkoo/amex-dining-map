@@ -1,7 +1,171 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-14T23:20:20Z",
+  "updated_at": "2026-09-14T23:47:20Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-14T23:47:20Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 851,
+          "Mapped count": 851,
+          "Official records SHA-256": "7bee8867ac33"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 854,
+          "Mapped count": 854,
+          "Official records SHA-256": "324d99298446"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 851,
+          "after": 854
+        },
+        {
+          "field": "Mapped count",
+          "before": 851,
+          "after": 854
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "7bee8867ac33",
+          "after": "324d99298446"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "586c1281b071e05f9d61",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "e8b54b7ce18892665c26"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "SAIME / Tokyo",
+      "detected_at": "2026-09-14T23:47:20Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "SAIME",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Nandomachi",
+          "Address": "101, 33, Nandomachi, Shinjuku-ku, Tokyo",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245668/",
+      "transition_id": "51b2278ea822b8ab0ee8",
+      "stream_id": "f9bb01e5e074f50470c7",
+      "occurrence": 1,
+      "id": "b2c329fd3118a5ea8d1e"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Sushi Senpachi  / Fukuoka",
+      "detected_at": "2026-09-14T23:47:20Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sushi Senpachi ",
+          "Country": "Japan",
+          "Region": "Kyushu/Okinawa",
+          "City": "Fukuoka",
+          "District": "Takasago",
+          "Address": "MGH TAKASAGO B1F, 2-19-4, Takasago, Chuo-ku, Fukuoka-shi, Fukuoka",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/244433/",
+      "transition_id": "d187d0c70d27ec694d8e",
+      "stream_id": "39ee8250e5fa9809dbd8",
+      "occurrence": 1,
+      "id": "a2f5e5b0bd5e0f4d8ea9"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Asperge Blanche / Kyoto",
+      "detected_at": "2026-09-14T23:47:20Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Asperge Blanche",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Kyoto",
+          "District": "Yokosuwan cho",
+          "Address": "313-2, Yokosuwan cho, Shimogyo-ku, Kyoto-shi, Kyoto",
+          "Cuisine": [
+            "French"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245669/",
+      "transition_id": "de3144d45997baadecec",
+      "stream_id": "4581a64f9d684dc9bca0",
+      "occurrence": 1,
+      "id": "7e8e6d9067422afd3251"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -13377,13 +13541,14 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "8edeee16126633a3ea28",
+        "latest_transition_id": "586c1281b071e05f9d61",
         "occurrences": {
           "1bdc1625c55bcf38ea77": 1,
           "26b7a44003d30867579d": 1,
           "38187411348a7313bb86": 1,
           "3bda87f3d7165ef0aed7": 1,
           "521fd5f7344a85cb5626": 1,
+          "586c1281b071e05f9d61": 1,
           "6e90385f86895882df7f": 1,
           "74682b8a640073f04137": 1,
           "7a077e08d6622c1d2181": 1,
@@ -13505,6 +13670,12 @@
           "fd87ceca56069730718d": 2
         }
       },
+      "39ee8250e5fa9809dbd8": {
+        "latest_transition_id": "d187d0c70d27ec694d8e",
+        "occurrences": {
+          "d187d0c70d27ec694d8e": 1
+        }
+      },
       "3da2da7369597146b234": {
         "latest_transition_id": "57b2a63792fe6aaa3018",
         "occurrences": {
@@ -13517,6 +13688,12 @@
         "latest_transition_id": "bf7a18ba448a2827731c",
         "occurrences": {
           "bf7a18ba448a2827731c": 1
+        }
+      },
+      "4581a64f9d684dc9bca0": {
+        "latest_transition_id": "de3144d45997baadecec",
+        "occurrences": {
+          "de3144d45997baadecec": 1
         }
       },
       "585a938fbe25d79b823d": {
@@ -13859,6 +14036,12 @@
         "latest_transition_id": "0457ff1f334bb08354bc",
         "occurrences": {
           "0457ff1f334bb08354bc": 1
+        }
+      },
+      "f9bb01e5e074f50470c7": {
+        "latest_transition_id": "51b2278ea822b8ab0ee8",
+        "occurrences": {
+          "51b2278ea822b8ab0ee8": 1
         }
       },
       "fb1a582bd933bb7bddbb": {

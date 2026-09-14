@@ -384,3 +384,13 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Sushi Kawanaka / Matsuyama
+
+<!-- source-change:d8cfe59133b4d8a4ebab54970faab3b9725b6eaea8429e4ab95015c9363f5d13 -->
+## 2026-09-14 23:47 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (3)**
+  - Asperge Blanche / Kyoto
+  - SAIME / Tokyo
+  - Sushi Senpachi  / Fukuoka
