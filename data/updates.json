@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-15T00:12:56Z",
+  "updated_at": "2026-09-15T01:45:21Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-15T01:45:21Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "27/28 (96.4%), 1 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "25/28 (89.3%), 3 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "27/28 (96.4%), 1 unavailable",
+          "after": "25/28 (89.3%), 3 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "dc7263ee769fe19fd4ab",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "9852b336d54cd1384d2c"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -14201,7 +14234,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "5dda4e6f15a28a3ce4bd",
+        "latest_transition_id": "dc7263ee769fe19fd4ab",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
@@ -14246,6 +14279,7 @@
           "c6e1d48a099113033211": 1,
           "cf51a13f3f6c6d8da61e": 4,
           "d039f79dfa5142cf1cf1": 1,
+          "dc7263ee769fe19fd4ab": 1,
           "dd85182b7f93f7ad3396": 1,
           "e721e784145cc39333ab": 1,
           "e80178cabd37915387ca": 2,
