@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-14T23:47:26Z",
+  "updated_at": "2026-09-15T00:12:56Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-09-15T00:12:56Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 10
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 9
+        }
+      },
+      "changes": [
+        {
+          "field": "Review items",
+          "before": 10,
+          "after": 9
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "59d76005ed396c2cce4b",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "ff30d14a8a40326a8245"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -13696,7 +13729,7 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "adf852a454b0433b4bb8",
+        "latest_transition_id": "59d76005ed396c2cce4b",
         "occurrences": {
           "02261b7ecfcb8fa754fa": 1,
           "04d54fb5e6257f646c0f": 1,
@@ -13705,6 +13738,7 @@
           "3e2a836daab0dde1d10d": 1,
           "40e94b2b92f0f585356f": 1,
           "472d92dd815005a80185": 1,
+          "59d76005ed396c2cce4b": 1,
           "665d959cd0704f2ddb99": 1,
           "876a8d4c7a2af4684659": 1,
           "a0c395933ede11a9d792": 1,
