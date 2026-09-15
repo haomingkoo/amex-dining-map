@@ -1,7 +1,118 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-15T22:55:14Z",
+  "updated_at": "2026-09-15T23:27:45Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": "Matakichi / Kyoto",
+      "detected_at": "2026-09-15T23:27:45Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Matakichi",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Kyoto",
+          "District": "Gionmachi Minamigawa",
+          "Address": "1F, 570-120, Gionmachi Minamigawa, Higashiyama-ku, Kyoto-shi, Kyoto",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245527/",
+      "transition_id": "8a98416a30ea33001d67",
+      "stream_id": "518ad9640beeca90bdf2",
+      "occurrence": 1,
+      "id": "fe4db1878570dbb2f506"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-15T23:27:45Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "324d99298446"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "c9b8f23d6a0d"
+        }
+      },
+      "changes": [
+        {
+          "field": "Official records SHA-256",
+          "before": "324d99298446",
+          "after": "c9b8f23d6a0d"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "c1d28318da2111657e70",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "333b43cc059bf47c4af5"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Kisui / Tokyo",
+      "detected_at": "2026-09-15T23:27:45Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Kisui",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Nihombashiningyocho",
+          "Address": "302, 1-5-10, Nihombashiningyocho, Chuo-ku, Tokyo",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245667/",
+      "transition_id": "eddda1f47d661e630477",
+      "stream_id": "f1892ac4a91839c063be",
+      "occurrence": 1,
+      "id": "1a136bb1ac7be1a3be95"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -14022,7 +14133,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "586c1281b071e05f9d61",
+        "latest_transition_id": "c1d28318da2111657e70",
         "occurrences": {
           "1bdc1625c55bcf38ea77": 1,
           "26b7a44003d30867579d": 1,
@@ -14040,6 +14151,7 @@
           "a4d8fc4959b0de7deb1e": 1,
           "af667c9a723df3e47a14": 1,
           "b9acef5ccde9cc17c509": 1,
+          "c1d28318da2111657e70": 1,
           "cad0b78553f798df3101": 1,
           "cdd40254aaa0087e8392": 1
         }
@@ -14177,6 +14289,12 @@
         "latest_transition_id": "de3144d45997baadecec",
         "occurrences": {
           "de3144d45997baadecec": 1
+        }
+      },
+      "518ad9640beeca90bdf2": {
+        "latest_transition_id": "8a98416a30ea33001d67",
+        "occurrences": {
+          "8a98416a30ea33001d67": 1
         }
       },
       "585a938fbe25d79b823d": {
@@ -14520,6 +14638,12 @@
         "latest_transition_id": "0457ff1f334bb08354bc",
         "occurrences": {
           "0457ff1f334bb08354bc": 1
+        }
+      },
+      "f1892ac4a91839c063be": {
+        "latest_transition_id": "eddda1f47d661e630477",
+        "occurrences": {
+          "eddda1f47d661e630477": 1
         }
       },
       "f9bb01e5e074f50470c7": {

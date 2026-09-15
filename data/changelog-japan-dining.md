@@ -394,3 +394,13 @@ Source: `data/japan-restaurants.json`
   - Asperge Blanche / Kyoto
   - SAIME / Tokyo
   - Sushi Senpachi  / Fukuoka
+
+<!-- source-change:d657fd498c58dc55986a964d304ca7d7e58f8a0fc0b340351ad1e2d6e87adf6a -->
+## 2026-09-15 23:27 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Kisui / Tokyo
+- **Removed (1)**
+  - Matakichi / Kyoto
