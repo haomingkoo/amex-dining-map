@@ -1,7 +1,54 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-15T06:47:19Z",
+  "updated_at": "2026-09-15T11:53:03Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_stale",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-15T11:53:03Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "after": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 25
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 25
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "60641bac4fed2bca23fe",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 2,
+      "id": "f075aaacc952e13f1cf1"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -14368,7 +14415,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "92b7ba994268a516ccef",
+        "latest_transition_id": "60641bac4fed2bca23fe",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
@@ -14388,7 +14435,7 @@
           "59682348ebf010d3ed44": 1,
           "5cd58468c50a86096186": 22,
           "5dda4e6f15a28a3ce4bd": 7,
-          "60641bac4fed2bca23fe": 1,
+          "60641bac4fed2bca23fe": 2,
           "623ce4692800ed720097": 5,
           "689f87123d635d8652da": 2,
           "6b0a8f0fbbc4c84ab912": 12,
