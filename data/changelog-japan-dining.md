@@ -404,3 +404,12 @@ Source: `data/japan-restaurants.json`
   - Kisui / Tokyo
 - **Removed (1)**
   - Matakichi / Kyoto
+
+<!-- source-change:66f800814a1af3039fb0c0abbfbfee62bfd9671c970c28361306430e5d4bb592 -->
+## 2026-09-16 23:32 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (2)**
+  - Ichiu / Tokyo
+  - Sushi Tsubomi / Tokyo

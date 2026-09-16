@@ -1,7 +1,132 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-16T19:02:39Z",
+  "updated_at": "2026-09-16T23:32:03Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": "Ichiu / Tokyo",
+      "detected_at": "2026-09-16T23:32:03Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Ichiu",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Kagurazaka",
+          "Address": "2-22, Kagurazaka, Shinjuku-ku, Tokyo",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245311/",
+      "transition_id": "5bbc94948b8bf5ce5518",
+      "stream_id": "13376ee360abcc2c53ef",
+      "occurrence": 1,
+      "id": "ecdb205b56eb6dfd9601"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": "Sushi Tsubomi / Tokyo",
+      "detected_at": "2026-09-16T23:32:03Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sushi Tsubomi",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Higashiyama",
+          "Address": "1F, 1－21－26, Higashiyama, Meguro-ku, Tokyo",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/244810/",
+      "transition_id": "46a23d3500f93b0c8507",
+      "stream_id": "e6adc7469ae248a98560",
+      "occurrence": 1,
+      "id": "687485b34f7bf9b104ee"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-16T23:32:03Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 854,
+          "Mapped count": 854,
+          "Official records SHA-256": "c9b8f23d6a0d"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 852,
+          "Mapped count": 852,
+          "Official records SHA-256": "b4b4c5cc5844"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 854,
+          "after": 852
+        },
+        {
+          "field": "Mapped count",
+          "before": 854,
+          "after": 852
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "c9b8f23d6a0d",
+          "after": "b4b4c5cc5844"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "cc1ab665fa1a52273279",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "37bc8625c33c85a78abf"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -14365,6 +14490,12 @@
           "d9b28eaccaf9f5a2a3a0": 1
         }
       },
+      "13376ee360abcc2c53ef": {
+        "latest_transition_id": "5bbc94948b8bf5ce5518",
+        "occurrences": {
+          "5bbc94948b8bf5ce5518": 1
+        }
+      },
       "1343644c36ca05961a55": {
         "latest_transition_id": "21e13cd6db6f8de0e836",
         "occurrences": {
@@ -14379,7 +14510,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "c1d28318da2111657e70",
+        "latest_transition_id": "cc1ab665fa1a52273279",
         "occurrences": {
           "1bdc1625c55bcf38ea77": 1,
           "26b7a44003d30867579d": 1,
@@ -14399,6 +14530,7 @@
           "b9acef5ccde9cc17c509": 1,
           "c1d28318da2111657e70": 1,
           "cad0b78553f798df3101": 1,
+          "cc1ab665fa1a52273279": 1,
           "cdd40254aaa0087e8392": 1
         }
       },
@@ -14848,6 +14980,12 @@
         "latest_transition_id": "9f8fda9c5eb1438191ae",
         "occurrences": {
           "9f8fda9c5eb1438191ae": 1
+        }
+      },
+      "e6adc7469ae248a98560": {
+        "latest_transition_id": "46a23d3500f93b0c8507",
+        "occurrences": {
+          "46a23d3500f93b0c8507": 1
         }
       },
       "e8cc2990793c11c75a3c": {
