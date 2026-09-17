@@ -413,3 +413,11 @@ Source: `data/japan-restaurants.json`
 - **Removed (2)**
   - Ichiu / Tokyo
   - Sushi Tsubomi / Tokyo
+
+<!-- source-change:2478dc59ae165ad21fe5143b229c41a9a22e74ac40e0a439e680ac244f793f73 -->
+## 2026-09-17 23:23 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Kataori / Kanazawa

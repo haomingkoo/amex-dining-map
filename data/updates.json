@@ -1,7 +1,93 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-17T22:06:45Z",
+  "updated_at": "2026-09-17T23:23:11Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-17T23:23:11Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 852,
+          "Mapped count": 852,
+          "Official records SHA-256": "b4b4c5cc5844"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 851,
+          "Mapped count": 851,
+          "Official records SHA-256": "7af147f48f11"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 852,
+          "after": 851
+        },
+        {
+          "field": "Mapped count",
+          "before": 852,
+          "after": 851
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "b4b4c5cc5844",
+          "after": "7af147f48f11"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "04514ecd0f76bb86d085",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "d911cbc31aa0bcee78b6"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": "Kataori / Kanazawa",
+      "detected_at": "2026-09-17T23:23:11Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Kataori",
+          "Country": "Japan",
+          "Region": "Kanazawa/Toyama/Hokuriku",
+          "City": "Kanazawa",
+          "District": "Namikimachi",
+          "Address": "3-36, Namikimachi, Kanazawa-shi, Ishikawa",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/244500/",
+      "transition_id": "ec5d8e211c413af3e936",
+      "stream_id": "1ba87b6abf78f05850a6",
+      "occurrence": 1,
+      "id": "ce5387e62d844ae8e667"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -14789,8 +14875,9 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "cc1ab665fa1a52273279",
+        "latest_transition_id": "04514ecd0f76bb86d085",
         "occurrences": {
+          "04514ecd0f76bb86d085": 1,
           "1bdc1625c55bcf38ea77": 1,
           "26b7a44003d30867579d": 1,
           "38187411348a7313bb86": 1,
@@ -14823,6 +14910,12 @@
         "latest_transition_id": "6ab406b2afd6f41f2d6a",
         "occurrences": {
           "6ab406b2afd6f41f2d6a": 1
+        }
+      },
+      "1ba87b6abf78f05850a6": {
+        "latest_transition_id": "ec5d8e211c413af3e936",
+        "occurrences": {
+          "ec5d8e211c413af3e936": 1
         }
       },
       "1d67ceb4eee6fbcc780c": {
