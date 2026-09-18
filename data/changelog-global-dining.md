@@ -150,3 +150,65 @@ Source: `data/global-restaurants.json`
   - SANJI'S Steak, Grill & Bar / München
 - **Removed (1)**
   - Gäststätte Sollner Hof / München
+
+<!-- source-change:ae25860b2d7319877c6e38bbdd8a35cc653b06606bd6548482321e0436c0cc39 -->
+## 2026-09-18 23:27 UTC — Global Dining
+
+Source: `data/global-restaurants.json`
+
+- **Added (59)**
+  - 24 York / New South Wales
+  - 7 Alfred / Victoria
+  - ALEX Augsburg / Augsburg
+  - Alpha Dining / New South Wales
+  - Anan Sushi / Hsinchu County
+  - Atelier Fischer / Stankt Gilgen
+  - Beauvallon Sur Mer by Yannick Alléno / Grimaud
+  - Campero Madrid / Madrid
+  - Casa Fiori Chiari / Milano
+  - Chefs Atelier / Essen
+  - Clubhaus Bachmair Weissach / Tegernsee
+  - Disfrutar Barcelona / Barcelona
+  - FUKAI / Tainan City
+  - Felix / New South Wales
+  - Firoo / Hsinchu County
+  - Good Luck Restaurant / New South Wales
+  - Gran Torino / New South Wales
+  - Gutshofrestaurant / Weißenkirchen in der Wachau
+  - Hattersheimer Ölmühle / Hattersheim am Main
+  - J parc / Kaohsiung City
+  - Kingsleys Woolloomooloo / New South Wales
+  - La Bauhinia / Paris
+  - La Cuisine / Paris
+  - La Galerie / Paris
+  - Le Grand Véfour / Paris
+  - Le Lobby / Paris
+  - Le Salon Proust / Paris
+  - Les Deux / München
+  - Leña Ibiza / Ibiza
+  - Li Yueh / Hsinchu County
+  - Lin.nu / Kaohsiung City
+  - Lobito de Mar Ibiza / Ibiza
+  - MUHIS / Recklinghausen
+  - Margaret / New South Wales
+  - Meat & Wine Co / Victoria
+  - Meat & Wine Co / Western Australia
+  - Papageno / Stankt Gilgen
+  - Paul & Vitos / Wien
+  - Restaurant KLIEMSTEIN-VinoVitis Vinothek / Linz
+  - Restaurant La Bohème / München
+  - Restaurant Oscar / Klagenfurt
+  - Restaurant Zeik / Hamburg
+  - Restaurante Arzak / San Sebastian
+  - Restaurante Martin Berasategui / Lasarte Oria (Guipuzcoa)
+  - Rouge Noir / Weissensee
+  - SABI / Hsinchu County
+  - SACHI Milano / Milano
+  - Sahtein / New South Wales
+  - Salt & Silver Restaurant / Hamburg
+  - Saporium Firenze / Firenze
+  - ... and 9 more
+- **Removed (3)**
+  - Hari1090 by Kumar’s Kitchen / Wien
+  - Loma Linda / Mexico
+  - Wild Blue / Whistler
