@@ -1,7 +1,80 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-18T23:27:54Z",
+  "updated_at": "2026-09-18T23:27:56Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-09-18T23:27:56Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 1932,
+          "Coverage": "2933/2967 (98.9%), 34 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 1931,
+          "Coverage": "2928/3023 (96.9%), 95 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 1932,
+          "after": 1931
+        },
+        {
+          "field": "Coverage",
+          "before": "2933/2967 (98.9%), 34 unavailable",
+          "after": "2928/3023 (96.9%), 95 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "c659536cfbf89d1dd8c1",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "ec78fdb467b59272ec5f"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Global Dining",
+      "detected_at": "2026-09-18T23:27:56Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "1926/1926 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "1982/1982 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "1926/1926 (100%), 0 unavailable",
+          "after": "1982/1982 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "ee9a1c9e140f6b412f3d",
+      "stream_id": "d03cc6f867310ca61cf7",
+      "occurrence": 1,
+      "id": "5cf823ad9768b3c191eb"
+    },
     {
       "program": "Global Dining",
       "program_id": "global-dining",
@@ -18560,7 +18633,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "503524f40cdf0c1d8ac8",
+        "latest_transition_id": "c659536cfbf89d1dd8c1",
         "occurrences": {
           "115ecbdf7edd8b04fc52": 1,
           "1c7f262ce9ab4a1ccc5f": 1,
@@ -18580,6 +18653,7 @@
           "a488b1b9472205b79e52": 1,
           "bc3ecb671dd6eb49653d": 1,
           "c1951243a662d64e4486": 1,
+          "c659536cfbf89d1dd8c1": 1,
           "c953012ca0f18c444179": 1,
           "d0735dd662b564b1d23c": 1,
           "ecb804c7aa8649ff67ed": 1,
@@ -18848,6 +18922,12 @@
         "latest_transition_id": "d87698bd2a8b34fb409d",
         "occurrences": {
           "d87698bd2a8b34fb409d": 1
+        }
+      },
+      "d03cc6f867310ca61cf7": {
+        "latest_transition_id": "ee9a1c9e140f6b412f3d",
+        "occurrences": {
+          "ee9a1c9e140f6b412f3d": 1
         }
       },
       "d22372bccbd73d4167e3": {
