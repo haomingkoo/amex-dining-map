@@ -421,3 +421,15 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Kataori / Kanazawa
+
+<!-- source-change:7584fa28eb26bfb3d93a7b8a84de380004c8b38b4a373088a9cb70ad3d0dac95 -->
+## 2026-09-18 23:05 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (3)**
+  - Masumasu Masuda / Kyoto
+  - Matakichi / Kyoto
+  - ava / Kyoto
+- **Removed (1)**
+  - Bini / Kyoto

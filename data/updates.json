@@ -1,7 +1,210 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-18T22:21:09Z",
+  "updated_at": "2026-09-18T23:05:23Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": "Bini / Kyoto",
+      "detected_at": "2026-09-18T23:05:23Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Bini",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Kyoto",
+          "District": "Nakagyo-ku",
+          "Address": "445-1, Higashinotoindori Marutacho, Nakagyo-ku, Kyoto-shi, Kyoto",
+          "Cuisine": [
+            "Italian"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/243985/",
+      "transition_id": "fe4a8fc85b356e4cff7e",
+      "stream_id": "1c814cc336643f590249",
+      "occurrence": 1,
+      "id": "d40796a85bc66f14be25"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-18T23:05:23Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 851,
+          "Mapped count": 851,
+          "Official records SHA-256": "7af147f48f11"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 853,
+          "Mapped count": 853,
+          "Official records SHA-256": "ecd5641e2c36"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 851,
+          "after": 853
+        },
+        {
+          "field": "Mapped count",
+          "before": 851,
+          "after": 853
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "7af147f48f11",
+          "after": "ecd5641e2c36"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "be63932baeeb2ff4892b",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "d3de9ecce31c4b7fea35"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "ava / Kyoto",
+      "detected_at": "2026-09-18T23:05:23Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "ava",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Kyoto",
+          "District": "Kannoncho",
+          "Address": "87, Kannoncho, Nakagyo-ku, Kyoto-shi, Kyoto",
+          "Cuisine": [
+            "Italian"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245666/",
+      "transition_id": "a9fa523838f2babfee03",
+      "stream_id": "6218a2ff34ba1d60655e",
+      "occurrence": 1,
+      "id": "58785a632cd4b7e7978f"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Masumasu Masuda / Kyoto",
+      "detected_at": "2026-09-18T23:05:23Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Masumasu Masuda",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Kyoto",
+          "District": "Hisashi-cho, Kyu-Omiya-dori Nakadachiuri-agaru",
+          "Address": "187-1, Hisashi-cho, Kyu-Omiya-dori Nakadachiuri-agaru, Kamigyo-ku, Kyoto-shi, Kyoto",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245672/",
+      "transition_id": "ee445d5c5c9c2d57c043",
+      "stream_id": "51526f495692c514dff5",
+      "occurrence": 1,
+      "id": "4f001de737168a790f59"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Matakichi / Kyoto",
+      "detected_at": "2026-09-18T23:05:23Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Matakichi",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Kyoto",
+          "District": "Gionmachi Minamigawa",
+          "Address": "1F, 570-120, Gionmachi Minamigawa, Higashiyama-ku, Kyoto-shi, Kyoto",
+          "Cuisine": [
+            "Italian"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245527/",
+      "transition_id": "97353b89f57bc876ad5b",
+      "stream_id": "518ad9640beeca90bdf2",
+      "occurrence": 1,
+      "id": "16265023447bdafcd61f"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -15187,7 +15390,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "04514ecd0f76bb86d085",
+        "latest_transition_id": "be63932baeeb2ff4892b",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
           "1bdc1625c55bcf38ea77": 1,
@@ -15206,6 +15409,7 @@
           "a4d8fc4959b0de7deb1e": 1,
           "af667c9a723df3e47a14": 1,
           "b9acef5ccde9cc17c509": 1,
+          "be63932baeeb2ff4892b": 1,
           "c1d28318da2111657e70": 1,
           "cad0b78553f798df3101": 1,
           "cc1ab665fa1a52273279": 1,
@@ -15228,6 +15432,12 @@
         "latest_transition_id": "ec5d8e211c413af3e936",
         "occurrences": {
           "ec5d8e211c413af3e936": 1
+        }
+      },
+      "1c814cc336643f590249": {
+        "latest_transition_id": "fe4a8fc85b356e4cff7e",
+        "occurrences": {
+          "fe4a8fc85b356e4cff7e": 1
         }
       },
       "1d67ceb4eee6fbcc780c": {
@@ -15355,10 +15565,17 @@
           "de3144d45997baadecec": 1
         }
       },
-      "518ad9640beeca90bdf2": {
-        "latest_transition_id": "8a98416a30ea33001d67",
+      "51526f495692c514dff5": {
+        "latest_transition_id": "ee445d5c5c9c2d57c043",
         "occurrences": {
-          "8a98416a30ea33001d67": 1
+          "ee445d5c5c9c2d57c043": 1
+        }
+      },
+      "518ad9640beeca90bdf2": {
+        "latest_transition_id": "97353b89f57bc876ad5b",
+        "occurrences": {
+          "8a98416a30ea33001d67": 1,
+          "97353b89f57bc876ad5b": 1
         }
       },
       "585a938fbe25d79b823d": {
@@ -15402,6 +15619,12 @@
         "latest_transition_id": "89f6a36215c7b52b08cf",
         "occurrences": {
           "89f6a36215c7b52b08cf": 1
+        }
+      },
+      "6218a2ff34ba1d60655e": {
+        "latest_transition_id": "a9fa523838f2babfee03",
+        "occurrences": {
+          "a9fa523838f2babfee03": 1
         }
       },
       "65d363713c3518f2f606": {
