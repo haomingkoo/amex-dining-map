@@ -1,7 +1,139 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-21T12:41:32Z",
+  "updated_at": "2026-09-21T12:41:36Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-09-21T12:41:36Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2968/3023 (98.2%), 55 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2969/3024 (98.2%), 55 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "2968/3023 (98.2%), 55 unavailable",
+          "after": "2969/3024 (98.2%), 55 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "2d4ce67bacad8f77cc37",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "73a88336cac0479ca635"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two roster",
+      "detected_at": "2026-09-21T12:41:36Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "30/30 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "31/31 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "30/30 (100%), 0 unavailable",
+          "after": "31/31 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "65a1e1a667c0fd353b6c",
+      "stream_id": "66129efc1226a46f5069",
+      "occurrence": 2,
+      "id": "6c193848fba2cd9fb622"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-21T12:41:36Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "25/28 (89.3%), 3 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "27/29 (93.1%), 2 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "25/28 (89.3%), 3 unavailable",
+          "after": "27/29 (93.1%), 2 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "3239caa8063fc29c89d0",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "650fee6844e93ee81873"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-09-21T12:41:36Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "20/30 (66.7%), 10 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "20/31 (64.5%), 11 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "20/30 (66.7%), 10 unavailable",
+          "after": "20/31 (64.5%), 11 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "a354667e24761ed7c664",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 2,
+      "id": "400decd3f780b7ddf3cf"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -18979,7 +19111,7 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "59d76005ed396c2cce4b",
+        "latest_transition_id": "a354667e24761ed7c664",
         "occurrences": {
           "02261b7ecfcb8fa754fa": 1,
           "04d54fb5e6257f646c0f": 1,
@@ -18992,7 +19124,7 @@
           "665d959cd0704f2ddb99": 1,
           "876a8d4c7a2af4684659": 1,
           "a0c395933ede11a9d792": 1,
-          "a354667e24761ed7c664": 1,
+          "a354667e24761ed7c664": 2,
           "a5a3c3879b9a7443876f": 1,
           "a7f998e64b49e46f1a72": 1,
           "adf852a454b0433b4bb8": 1,
@@ -19276,7 +19408,7 @@
         }
       },
       "66129efc1226a46f5069": {
-        "latest_transition_id": "ade51a08e8177d88ab76",
+        "latest_transition_id": "65a1e1a667c0fd353b6c",
         "occurrences": {
           "083081096cbb3c8c1c76": 1,
           "0b5afd558ebf89b84ac5": 1,
@@ -19285,7 +19417,7 @@
           "2f1ca3a47249fa24a63c": 1,
           "46ab8b1ef9cfe57b0575": 1,
           "48c6897c6752df3fd28d": 1,
-          "65a1e1a667c0fd353b6c": 1,
+          "65a1e1a667c0fd353b6c": 2,
           "ade51a08e8177d88ab76": 1,
           "c78e0d1715c927df1196": 1
         }
@@ -19353,12 +19485,13 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "6c48f3c93029a0c4e8c8",
+        "latest_transition_id": "2d4ce67bacad8f77cc37",
         "occurrences": {
           "115ecbdf7edd8b04fc52": 1,
           "1c7f262ce9ab4a1ccc5f": 1,
           "2505bfbc794de3ef7e1b": 1,
           "2c9cfaa8dc40d88a2308": 1,
+          "2d4ce67bacad8f77cc37": 1,
           "3d07ff7f35ab35cde0d8": 1,
           "3f69c4d5e73544c80c60": 1,
           "4258225d5117a5d79957": 1,
@@ -19842,7 +19975,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "92b7ba994268a516ccef",
+        "latest_transition_id": "3239caa8063fc29c89d0",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
@@ -19853,6 +19986,7 @@
           "252e3c33201e3823a27b": 3,
           "26e57ec40c3a4d347fd1": 2,
           "2a4df22568bb28e34e01": 1,
+          "3239caa8063fc29c89d0": 1,
           "3cb3af30e4ddbef963fa": 1,
           "5104b3df2d979c9afc52": 4,
           "51788b6da8334881a570": 1,
