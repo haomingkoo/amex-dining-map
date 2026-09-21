@@ -44,3 +44,11 @@ Source: `data/table-for-two.json`
 
 - **Removed (1)**
   - Park90
+
+<!-- source-change:5e0e11e48ad9bc5d3a352c7875951f278b2d1d7d1fcfe793b0f936eecf6882a2 -->
+## 2026-09-21 12:41 UTC — Table for Two
+
+Source: `data/table-for-two.json`
+
+- **Added (1)**
+  - Park90

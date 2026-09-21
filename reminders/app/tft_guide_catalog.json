@@ -12,8 +12,8 @@
   "release_source": {
     "source": "data/table-for-two-release-history.json",
     "project": "AMEXPlatSG",
-    "updated_at": "2026-09-21T06:00:33+00:00",
-    "observation_count": 3886
+    "updated_at": "2026-09-21T12:38:41+00:00",
+    "observation_count": 3888
   },
   "slot_source": {
     "url": "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json",
@@ -705,14 +705,14 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 70,
-          "median_lead_days": 37.5,
+          "observation_count": 71,
+          "median_lead_days": 38.0,
           "lead_days_min": 0,
           "lead_days_max": 61,
           "typical_first_seen_sgt": "06:00",
-          "typical_time_observation_share": 0.8,
+          "typical_time_observation_share": 0.79,
           "confidence": "high",
-          "latest_observation_at": "2026-09-20T11:50:15Z"
+          "latest_observation_at": "2026-09-21T12:38:41Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-forage"
@@ -925,14 +925,14 @@
         },
         {
           "meal": "Dinner",
-          "observation_count": 35,
+          "observation_count": 36,
           "median_lead_days": 61.0,
           "lead_days_min": 5,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.26,
+          "typical_time_observation_share": 0.25,
           "confidence": "high",
-          "latest_observation_at": "2026-09-20T11:50:15Z"
+          "latest_observation_at": "2026-09-21T12:38:41Z"
         },
         {
           "meal": "Lunch",
@@ -1142,6 +1142,34 @@
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-oso-ristorante"
+    },
+    {
+      "id": "tft-park90",
+      "name": "Park90",
+      "dining_city_id": "205196438",
+      "dining_city_name": "Park90",
+      "category": "restaurant",
+      "address": "Pan Pacific Orchard, 10 Claymore Rd, Level 11 Garden Terrace, 229540",
+      "aliases": [],
+      "menus": {
+        "default": {
+          "status": "no_pdf_found"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "All-day Dining",
+          "observation_count": 87,
+          "median_lead_days": 49.0,
+          "lead_days_min": 3,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "06:30",
+          "typical_time_observation_share": 0.94,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-park90"
     },
     {
       "id": "tft-peppermint",
