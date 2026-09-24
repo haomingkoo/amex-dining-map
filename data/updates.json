@@ -1,7 +1,58 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-24T00:13:15Z",
+  "updated_at": "2026-09-24T00:32:08Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_updated",
+      "subject": "Table for Two source",
+      "detected_at": "2026-09-24T00:32:08Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Booking-project candidates added": []
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Booking-project candidates added": [
+            "Forage",
+            "Xing Yue Xuan",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "Park90",
+            "OSO Ristorante"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Booking-project candidates added",
+          "before": [],
+          "after": [
+            "Forage",
+            "Xing Yue Xuan",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "Park90",
+            "OSO Ristorante"
+          ]
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "f6a2789274aed0ca7342",
+      "stream_id": "5a285967ca2795c90124",
+      "occurrence": 1,
+      "id": "900cd4bd0ea8eeaa9d07"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -20149,7 +20200,7 @@
         }
       },
       "5a285967ca2795c90124": {
-        "latest_transition_id": "725f4d41dd42c33eadb5",
+        "latest_transition_id": "f6a2789274aed0ca7342",
         "occurrences": {
           "1fd9e02b2a3042318396": 1,
           "295d64447a5b74ace553": 1,
@@ -20160,6 +20211,7 @@
           "b52d191286d1bfb2d8cf": 1,
           "b96af3cb39f05bdecfac": 1,
           "de3459eea0f029902049": 1,
+          "f6a2789274aed0ca7342": 1,
           "fc6f72b06e09c47f8ec1": 1
         }
       },
