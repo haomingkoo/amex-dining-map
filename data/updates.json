@@ -1,7 +1,93 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-24T10:06:28Z",
+  "updated_at": "2026-09-24T23:47:12Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-24T23:47:12Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 853,
+          "Mapped count": 853,
+          "Official records SHA-256": "66e0a4277fbc"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 852,
+          "Mapped count": 852,
+          "Official records SHA-256": "902a6471e3fe"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 853,
+          "after": 852
+        },
+        {
+          "field": "Mapped count",
+          "before": 853,
+          "after": 852
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "66e0a4277fbc",
+          "after": "902a6471e3fe"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "16046de0225f04d3667c",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "cf216313e0a566285e58"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": "Sushi Senpachi  / Fukuoka",
+      "detected_at": "2026-09-24T23:47:12Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sushi Senpachi ",
+          "Country": "Japan",
+          "Region": "Kyushu/Okinawa",
+          "City": "Fukuoka",
+          "District": "Takasago",
+          "Address": "MGH TAKASAGO B1F, 2-19-4, Takasago, Chuo-ku, Fukuoka-shi, Fukuoka",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/244433/",
+      "transition_id": "56c426688b75f4fe4ff1",
+      "stream_id": "39ee8250e5fa9809dbd8",
+      "occurrence": 1,
+      "id": "2cb85c8a6d96ed207a97"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -19984,9 +20070,10 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "2e38c0b153373c1aac9c",
+        "latest_transition_id": "16046de0225f04d3667c",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
+          "16046de0225f04d3667c": 1,
           "1bdc1625c55bcf38ea77": 1,
           "26b7a44003d30867579d": 1,
           "2e38c0b153373c1aac9c": 1,
@@ -20206,8 +20293,9 @@
         }
       },
       "39ee8250e5fa9809dbd8": {
-        "latest_transition_id": "d187d0c70d27ec694d8e",
+        "latest_transition_id": "56c426688b75f4fe4ff1",
         "occurrences": {
+          "56c426688b75f4fe4ff1": 1,
           "d187d0c70d27ec694d8e": 1
         }
       },

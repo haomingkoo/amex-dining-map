@@ -433,3 +433,11 @@ Source: `data/japan-restaurants.json`
   - ava / Kyoto
 - **Removed (1)**
   - Bini / Kyoto
+
+<!-- source-change:f8c694213a8aa4b15e7fc7f919a6286ad4f7a0e9ebfd611c2edfe45b7f4d2276 -->
+## 2026-09-24 23:47 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Sushi Senpachi  / Fukuoka
