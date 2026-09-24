@@ -1,7 +1,93 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-24T00:00:05Z",
+  "updated_at": "2026-09-24T00:13:13Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_updated",
+      "subject": "Table for Two source",
+      "detected_at": "2026-09-24T00:13:13Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Participating merchants image hash": "5a2c3eb79ad8",
+          "Roster review status": "approved",
+          "Observed roster image hash": "5a2c3eb79ad8",
+          "Roster review item": null,
+          "Booking-project candidates added": [
+            "Forage",
+            "Xing Yue Xuan",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "Park90",
+            "OSO Ristorante"
+          ],
+          "Voucher cycles image hash": "58fe005ae32d"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Participating merchants image hash": "b70fbc97e9f8",
+          "Roster review status": "review_required",
+          "Observed roster image hash": "b70fbc97e9f8",
+          "Roster review item": "unknown_participating_image",
+          "Booking-project candidates added": [],
+          "Voucher cycles image hash": "327019c90169"
+        }
+      },
+      "changes": [
+        {
+          "field": "Participating merchants image hash",
+          "before": "5a2c3eb79ad8",
+          "after": "b70fbc97e9f8"
+        },
+        {
+          "field": "Roster review status",
+          "before": "approved",
+          "after": "review_required"
+        },
+        {
+          "field": "Observed roster image hash",
+          "before": "5a2c3eb79ad8",
+          "after": "b70fbc97e9f8"
+        },
+        {
+          "field": "Roster review item",
+          "before": null,
+          "after": "unknown_participating_image"
+        },
+        {
+          "field": "Booking-project candidates added",
+          "before": [
+            "Forage",
+            "Xing Yue Xuan",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "Park90",
+            "OSO Ristorante"
+          ],
+          "after": []
+        },
+        {
+          "field": "Voucher cycles image hash",
+          "before": "58fe005ae32d",
+          "after": "327019c90169"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "725f4d41dd42c33eadb5",
+      "stream_id": "5a285967ca2795c90124",
+      "occurrence": 1,
+      "id": "f9cc6102fab7ea73f929"
+    },
     {
       "program": "Love Dining",
       "program_id": "love-dining",
@@ -19983,11 +20069,12 @@
         }
       },
       "5a285967ca2795c90124": {
-        "latest_transition_id": "b52d191286d1bfb2d8cf",
+        "latest_transition_id": "725f4d41dd42c33eadb5",
         "occurrences": {
           "1fd9e02b2a3042318396": 1,
           "295d64447a5b74ace553": 1,
           "70e4c572a36d9428cfc6": 1,
+          "725f4d41dd42c33eadb5": 1,
           "81ed566b466b25c9b9bd": 1,
           "8cab75cfec2f74ea1ec4": 1,
           "b52d191286d1bfb2d8cf": 1,
