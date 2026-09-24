@@ -1,7 +1,86 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-23T23:28:54Z",
+  "updated_at": "2026-09-24T00:00:05Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "details_updated",
+      "subject": "The Cliff / Singapore",
+      "detected_at": "2026-09-24T00:00:05Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "The Cliff",
+          "Type": "restaurant",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "Sofitel Singapore Sentosa, 2 Bukit Manis Road, Sentosa, Singapore 099891",
+          "Cuisine": "Southern Italian",
+          "Cuisine category": "Western"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "The Cliff",
+          "Type": "restaurant",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "Sofitel Singapore Sentosa, 2 Bukit Manis Road, Sentosa, Singapore 099891",
+          "Cuisine": "Southern Italian",
+          "Cuisine category": "Western",
+          "Notes": "Please note that The Cliff will be temporarily closed for renovation works from 24 September 2026 to 6 December 2026. During this time, Love Dining privileges will not be eligible at The Cliff."
+        }
+      },
+      "changes": [
+        {
+          "field": "Notes",
+          "before": null,
+          "after": "Please note that The Cliff will be temporarily closed for renovation works from 24 September 2026 to 6 December 2026. During this time, Love Dining privileges will not be eligible at The Cliff."
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "5dd24fe33eb505db40aa",
+      "stream_id": "93a3191d48f7ba104d24",
+      "occurrence": 1,
+      "id": "414e1180e0ac685f70cf"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_updated",
+      "subject": "Love Dining source",
+      "detected_at": "2026-09-24T00:00:05Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "b6637a913bef"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "70aad10e1da9"
+        }
+      },
+      "changes": [
+        {
+          "field": "Official records SHA-256",
+          "before": "b6637a913bef",
+          "after": "70aad10e1da9"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "6a5507925fe103a94b20",
+      "stream_id": "915d672147e8dd8f713f",
+      "occurrence": 1,
+      "id": "2826c4d40b59cc4e4ad4"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -20174,9 +20253,10 @@
         }
       },
       "915d672147e8dd8f713f": {
-        "latest_transition_id": "68fa17c2152d9a9fc42c",
+        "latest_transition_id": "6a5507925fe103a94b20",
         "occurrences": {
           "68fa17c2152d9a9fc42c": 1,
+          "6a5507925fe103a94b20": 1,
           "72081ace45ff2a46e4a4": 1
         }
       },
@@ -20184,6 +20264,12 @@
         "latest_transition_id": "b1b19a5ffde784a5c860",
         "occurrences": {
           "b1b19a5ffde784a5c860": 1
+        }
+      },
+      "93a3191d48f7ba104d24": {
+        "latest_transition_id": "5dd24fe33eb505db40aa",
+        "occurrences": {
+          "5dd24fe33eb505db40aa": 1
         }
       },
       "93a698427bdd4b026c58": {
