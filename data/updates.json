@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-25T00:41:39Z",
+  "updated_at": "2026-09-25T05:26:54Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-25T05:26:54Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "27/29 (93.1%), 2 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "29/29 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "27/29 (93.1%), 2 unavailable",
+          "after": "29/29 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "957cb551d4d32c436358",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 3,
+      "id": "35ac10083c3b21e1e817"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -19617,41 +19650,6 @@
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
-      "kind": "source_updated",
-      "subject": "Love Dining source",
-      "detected_at": "2026-08-30T05:31:04Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "127e53e1d0eb"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "9faa09c6cdc3"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "127e53e1d0eb",
-          "after": "9faa09c6cdc3"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
-      "transition_id": "72081ace45ff2a46e4a4",
-      "stream_id": "915d672147e8dd8f713f",
-      "occurrence": 1,
-      "id": "b52358ba1444a55d35b4",
-      "reviewed_at": "2026-08-30T05:35:00Z",
-      "review_note": "Superseded by six reviewed Hotel before-and-after correction events."
-    },
-    {
-      "program": "Love Dining",
-      "program_id": "love-dining",
-      "route": "#/love-dining",
       "kind": "added",
       "subject": "LUCE / Singapore",
       "detected_at": "2026-08-29T23:16:00Z",
@@ -21382,7 +21380,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "a3b730cd421c75db1b85",
+        "latest_transition_id": "957cb551d4d32c436358",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
@@ -21418,7 +21416,7 @@
           "918f67e5b5e304347972": 20,
           "92b7ba994268a516ccef": 3,
           "955118824449f1c676ee": 1,
-          "957cb551d4d32c436358": 2,
+          "957cb551d4d32c436358": 3,
           "96bb235b6966032395ba": 1,
           "98997d254b5dfdda4b93": 4,
           "9d9d155296d216fc8107": 1,
