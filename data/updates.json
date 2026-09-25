@@ -1,7 +1,58 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-25T00:14:59Z",
+  "updated_at": "2026-09-25T00:41:39Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_updated",
+      "subject": "Table for Two source",
+      "detected_at": "2026-09-25T00:41:39Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Booking-project candidates added": []
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Booking-project candidates added": [
+            "Forage",
+            "Xing Yue Xuan",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "Park90",
+            "OSO Ristorante"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Booking-project candidates added",
+          "before": [],
+          "after": [
+            "Forage",
+            "Xing Yue Xuan",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "Park90",
+            "OSO Ristorante"
+          ]
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "f6a2789274aed0ca7342",
+      "stream_id": "5a285967ca2795c90124",
+      "occurrence": 2,
+      "id": "ae8616d9b8e127ad102b"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -19814,73 +19865,6 @@
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
-      "kind": "source_updated",
-      "subject": "Love Dining source",
-      "detected_at": "2026-08-29T23:16:00Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Record count": 79,
-          "Restaurant count": 30,
-          "Hotel outlet count": 49,
-          "Official records SHA-256": "79663d90e4c1",
-          "Restaurant T&C PDF hash": "e989ae2c814397c10f41aac776e678a4c149e2c94fa5bd44654836e828aba2ca",
-          "Hotel T&C PDF hash": "49e0ead741d93baaeb27ff8ddf45fc568d7a01f8a30c5740c755b8a7b36cc1aa"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Record count": 83,
-          "Restaurant count": 31,
-          "Hotel outlet count": 52,
-          "Official records SHA-256": "127e53e1d0eb",
-          "Restaurant T&C PDF hash": "c277102a13880883bbe046cf06da51172ff2ba357deec435d6c5e266638c1426",
-          "Hotel T&C PDF hash": "806756636efb4a11906d9110f18e74857f9efe9918c8f2d125253c50e5a53ef4"
-        }
-      },
-      "changes": [
-        {
-          "field": "Record count",
-          "before": 79,
-          "after": 83
-        },
-        {
-          "field": "Restaurant count",
-          "before": 30,
-          "after": 31
-        },
-        {
-          "field": "Hotel outlet count",
-          "before": 49,
-          "after": 52
-        },
-        {
-          "field": "Official records SHA-256",
-          "before": "79663d90e4c1",
-          "after": "127e53e1d0eb"
-        },
-        {
-          "field": "Restaurant T&C PDF hash",
-          "before": "e989ae2c8143",
-          "after": "c277102a1388"
-        },
-        {
-          "field": "Hotel T&C PDF hash",
-          "before": "49e0ead741d9",
-          "after": "806756636efb"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
-      "id": "828a9ae7f3965510cfd3",
-      "reviewed_at": "2026-08-30T06:10:00Z",
-      "review_note": "Roster changes were superseded by reviewed correction events. Current T&C versions are approved as baselines only; prior PDF content was not retained, so no retroactive clause-level change is claimed."
-    },
-    {
-      "program": "Love Dining",
-      "program_id": "love-dining",
-      "route": "#/love-dining",
       "kind": "added",
       "subject": "Tajimaya Yakiniku / Singapore",
       "detected_at": "2026-08-29T23:16:00Z",
@@ -20743,7 +20727,7 @@
         }
       },
       "5a285967ca2795c90124": {
-        "latest_transition_id": "c4c12d214e7857dd00d3",
+        "latest_transition_id": "f6a2789274aed0ca7342",
         "occurrences": {
           "1fd9e02b2a3042318396": 1,
           "295d64447a5b74ace553": 1,
@@ -20755,7 +20739,7 @@
           "b96af3cb39f05bdecfac": 1,
           "c4c12d214e7857dd00d3": 1,
           "de3459eea0f029902049": 1,
-          "f6a2789274aed0ca7342": 1,
+          "f6a2789274aed0ca7342": 2,
           "fc6f72b06e09c47f8ec1": 1
         }
       },
