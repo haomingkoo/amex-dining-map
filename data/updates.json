@@ -1,7 +1,73 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-25T00:02:20Z",
+  "updated_at": "2026-09-25T00:02:22Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_health_changed",
+      "subject": "Love Dining",
+      "detected_at": "2026-09-25T00:02:22Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "82/82 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "81/81 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "82/82 (100%), 0 unavailable",
+          "after": "81/81 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "1721cde76de73061427b",
+      "stream_id": "325506f85300a0ec65a3",
+      "occurrence": 1,
+      "id": "a06b3fe3e029d29ac5af"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-09-25T00:02:22Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2968/3023 (98.2%), 55 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2967/3022 (98.2%), 55 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "2968/3023 (98.2%), 55 unavailable",
+          "after": "2967/3022 (98.2%), 55 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "1ab8e0fbb8680e92c68d",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "195a9c18bad477e6bcc3"
+    },
     {
       "program": "Love Dining",
       "program_id": "love-dining",
@@ -20482,8 +20548,9 @@
         }
       },
       "325506f85300a0ec65a3": {
-        "latest_transition_id": "3d93a8994faef3d34eef",
+        "latest_transition_id": "1721cde76de73061427b",
         "occurrences": {
+          "1721cde76de73061427b": 1,
           "3d93a8994faef3d34eef": 1,
           "6d25cfe12d49db98b041": 1,
           "cea2d37ee2da89ff16c6": 2,
@@ -20740,9 +20807,10 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "fee4ef42543023945682",
+        "latest_transition_id": "1ab8e0fbb8680e92c68d",
         "occurrences": {
           "115ecbdf7edd8b04fc52": 1,
+          "1ab8e0fbb8680e92c68d": 1,
           "1c7f262ce9ab4a1ccc5f": 1,
           "2505bfbc794de3ef7e1b": 1,
           "2c9cfaa8dc40d88a2308": 1,
