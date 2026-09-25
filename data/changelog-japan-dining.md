@@ -441,3 +441,11 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Sushi Senpachi  / Fukuoka
+
+<!-- source-change:370746f2440b9f3fae65220f7855c5e83061937e2e68fb6e2aba48a6272c3177 -->
+## 2026-09-25 23:48 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Funaokayama Shimizu / Kyoto

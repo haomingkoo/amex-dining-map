@@ -1,7 +1,93 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-25T22:41:05Z",
+  "updated_at": "2026-09-25T23:48:48Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-25T23:48:48Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 852,
+          "Mapped count": 852,
+          "Official records SHA-256": "902a6471e3fe"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 853,
+          "Mapped count": 853,
+          "Official records SHA-256": "48897bcb1d0c"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 852,
+          "after": 853
+        },
+        {
+          "field": "Mapped count",
+          "before": 852,
+          "after": 853
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "902a6471e3fe",
+          "after": "48897bcb1d0c"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "36c0c3c0c034ae3cd067",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "fe3aeba32d50b162554b"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Funaokayama Shimizu / Kyoto",
+      "detected_at": "2026-09-25T23:48:48Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Funaokayama Shimizu",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Kyoto",
+          "District": "Murasakinohigashifunaoka cho",
+          "Address": "20-2, Murasakinohigashifunaoka cho, Kita-ku, Kyoto-shi, Kyoto",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245678/",
+      "transition_id": "e062aa833e2fb1d5036a",
+      "stream_id": "b73c8b96f727b13d34c3",
+      "occurrence": 1,
+      "id": "2abf5358decdb3b12359"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -20439,13 +20525,14 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "16046de0225f04d3667c",
+        "latest_transition_id": "36c0c3c0c034ae3cd067",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
           "16046de0225f04d3667c": 1,
           "1bdc1625c55bcf38ea77": 1,
           "26b7a44003d30867579d": 1,
           "2e38c0b153373c1aac9c": 1,
+          "36c0c3c0c034ae3cd067": 1,
           "38187411348a7313bb86": 1,
           "3bda87f3d7165ef0aed7": 1,
           "521fd5f7344a85cb5626": 1,
@@ -21178,6 +21265,12 @@
         "latest_transition_id": "ca3c1ae7754e46c194ea",
         "occurrences": {
           "ca3c1ae7754e46c194ea": 1
+        }
+      },
+      "b73c8b96f727b13d34c3": {
+        "latest_transition_id": "e062aa833e2fb1d5036a",
+        "occurrences": {
+          "e062aa833e2fb1d5036a": 1
         }
       },
       "b75f4538e5db930980d0": {
