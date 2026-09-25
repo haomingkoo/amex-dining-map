@@ -1,7 +1,97 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-24T23:47:16Z",
+  "updated_at": "2026-09-25T00:02:20Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "removed",
+      "subject": "Escape Restaurant / Singapore",
+      "detected_at": "2026-09-25T00:02:20Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Escape Restaurant",
+          "Type": "restaurant",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "One Farrer Hotel, 1 Farrer Park Station Road, Level 6, Singapore 217562",
+          "Cuisine category": "Western"
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "cfd1f6930c920c7bcd16",
+      "stream_id": "94895633c28328b273bb",
+      "occurrence": 1,
+      "id": "5eeb85aa86fee31ba0ab"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_updated",
+      "subject": "Love Dining source",
+      "detected_at": "2026-09-25T00:02:20Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 82,
+          "Restaurant count": 31,
+          "Official records SHA-256": "70aad10e1da9",
+          "Restaurant T&C PDF hash": "c277102a1388"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 81,
+          "Restaurant count": 30,
+          "Official records SHA-256": "cb38eb4460a3",
+          "Restaurant T&C PDF hash": "96bcb8d099fc"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 82,
+          "after": 81
+        },
+        {
+          "field": "Restaurant count",
+          "before": 31,
+          "after": 30
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "70aad10e1da9",
+          "after": "cb38eb4460a3"
+        },
+        {
+          "field": "Restaurant T&C PDF hash",
+          "before": "c277102a1388",
+          "after": "96bcb8d099fc"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "117254b8bf019a093aa9",
+      "stream_id": "915d672147e8dd8f713f",
+      "occurrence": 1,
+      "id": "54df89158050373db1fe"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -20776,8 +20866,9 @@
         }
       },
       "915d672147e8dd8f713f": {
-        "latest_transition_id": "6a5507925fe103a94b20",
+        "latest_transition_id": "117254b8bf019a093aa9",
         "occurrences": {
+          "117254b8bf019a093aa9": 1,
           "68fa17c2152d9a9fc42c": 1,
           "6a5507925fe103a94b20": 1,
           "72081ace45ff2a46e4a4": 1
@@ -20805,6 +20896,12 @@
         "latest_transition_id": "edeadf9e1d8699e36fae",
         "occurrences": {
           "edeadf9e1d8699e36fae": 1
+        }
+      },
+      "94895633c28328b273bb": {
+        "latest_transition_id": "cfd1f6930c920c7bcd16",
+        "occurrences": {
+          "cfd1f6930c920c7bcd16": 1
         }
       },
       "98776f9676eceb42f395": {

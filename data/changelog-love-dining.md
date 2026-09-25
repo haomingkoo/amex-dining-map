@@ -67,3 +67,11 @@ Source: `data/love-dining.json`
 
 - **Removed (1)**
   - Capitol Bistro. Bar. Patisserie / Singapore
+
+<!-- source-change:b27396f8c284f6b6f862295bc9c14de0e46a57de78675a94332f40ecaa2e74be -->
+## 2026-09-25 00:02 UTC — Love Dining
+
+Source: `data/love-dining.json`
+
+- **Removed (1)**
+  - Escape Restaurant / Singapore
