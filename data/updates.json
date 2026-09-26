@@ -1,7 +1,58 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-26T00:01:22Z",
+  "updated_at": "2026-09-26T00:21:58Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_updated",
+      "subject": "Table for Two source",
+      "detected_at": "2026-09-26T00:21:58Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Booking-project candidates added": [
+            "Forage",
+            "Xing Yue Xuan",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "Park90",
+            "OSO Ristorante"
+          ]
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Booking-project candidates added": []
+        }
+      },
+      "changes": [
+        {
+          "field": "Booking-project candidates added",
+          "before": [
+            "Forage",
+            "Xing Yue Xuan",
+            "Sarnies",
+            "Grand Cru Wine Bar",
+            "Brewerkz East Coast Park",
+            "Brewerkz Riverside Point",
+            "Park90",
+            "OSO Ristorante"
+          ],
+          "after": []
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "c4c12d214e7857dd00d3",
+      "stream_id": "5a285967ca2795c90124",
+      "occurrence": 2,
+      "id": "4cda699d10eda491a5c6"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -20979,7 +21030,7 @@
         }
       },
       "5a285967ca2795c90124": {
-        "latest_transition_id": "f6a2789274aed0ca7342",
+        "latest_transition_id": "c4c12d214e7857dd00d3",
         "occurrences": {
           "1fd9e02b2a3042318396": 1,
           "295d64447a5b74ace553": 1,
@@ -20989,7 +21040,7 @@
           "8cab75cfec2f74ea1ec4": 1,
           "b52d191286d1bfb2d8cf": 1,
           "b96af3cb39f05bdecfac": 1,
-          "c4c12d214e7857dd00d3": 1,
+          "c4c12d214e7857dd00d3": 2,
           "de3459eea0f029902049": 1,
           "f6a2789274aed0ca7342": 2,
           "fc6f72b06e09c47f8ec1": 1
