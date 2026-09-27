@@ -57,6 +57,7 @@ MAX_AVAILABILITY_TIMES = 12
 AVAILABILITY_WORKERS = 6
 DININGCITY_REQUEST_RETRIES = 2
 DININGCITY_REQUEST_TIMEOUT_SECONDS = 12
+HTTP_TIMEOUT_SECONDS = 30
 DININGCITY_PROJECT_PAGE_SIZE = 100
 AUTO_MEMBERSHIP_CONFIRMATIONS = 2
 SINGAPORE_LAT_RANGE = (1.15, 1.50)
@@ -71,7 +72,7 @@ def fetch_bytes(url: str) -> bytes:
             "User-Agent": "Mozilla/5.0 amex-dining-map source verifier",
         },
     )
-    with urllib.request.urlopen(request, timeout=30) as response:
+    with urllib.request.urlopen(request, timeout=HTTP_TIMEOUT_SECONDS) as response:
         return response.read()
 
 

@@ -24,6 +24,11 @@ import urllib.request
 import unicodedata
 from pathlib import Path
 
+try:
+    from scripts.netutil import NETWORK_ERRORS
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from netutil import NETWORK_ERRORS
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
@@ -38,6 +43,7 @@ BROWSER_USER_AGENT = (
 )
 POCKET_JP_RESTAURANT_URL = "https://pocket-concierge.jp/restaurants/{id}/"
 HTTP_CACHE = {"native_meta": {}, "search_pages": {}, "detail_pages": {}}
+SEARCH_STATS = {"attempted": 0, "failed": 0}
 BROWSE_INDEX: dict[str, list[dict]] = {}  # prefecture_slug -> list of candidates from area browse
 # Dense prefectures: browse sub-areas to bypass Tabelog's 60-page-per-area cap.
 # Discovered from each prefecture's index page (e.g., tabelog.com/tokyo/).
@@ -45,6 +51,26 @@ DENSE_PREFECTURE_SUBAREAS: dict[str, list[str]] = {}
 def tlog(msg: str) -> None:
     """Print a timestamped log message."""
     print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
+
+
+def fetch_search_logged(fetcher, label: str, url: str) -> list[dict] | None:
+    """Run one search fetch; log and count a network failure and return None."""
+    SEARCH_STATS["attempted"] += 1
+    try:
+        return fetcher(url)
+    except NETWORK_ERRORS as exc:
+        SEARCH_STATS["failed"] += 1
+        tlog(f"WARNING: search {label} failed: {exc!r}")
+        return None
+
+
+def raise_if_searches_failed() -> None:
+    """Report search failures; exit non-zero when every search attempt failed."""
+    attempted, failed = SEARCH_STATS["attempted"], SEARCH_STATS["failed"]
+    if failed:
+        tlog(f"WARNING: {failed}/{attempted} search requests failed")
+    if attempted and failed == attempted:
+        raise SystemExit(f"All {attempted} search requests failed; results are not trustworthy")
 
 
 def progress_bar(
@@ -2016,9 +2042,8 @@ def rank_candidates(
             ))
 
         for qlabel, qurl in targeted_queries:
-            try:
-                qcands = fetch_search_candidates(qurl)
-            except Exception:
+            qcands = fetch_search_logged(fetch_search_candidates, qlabel, qurl)
+            if qcands is None:
                 time.sleep(pause_seconds)
                 continue
             for c in qcands:
@@ -2051,9 +2076,8 @@ def rank_candidates(
         # DDG fallback (primary - more reliable)
         ddg_queries = ddg_fallback_queries(record)
         for query in ddg_queries:
-            try:
-                query_candidates = fetch_ddg_search_candidates(query["url"])
-            except Exception:
+            query_candidates = fetch_search_logged(fetch_ddg_search_candidates, query["label"], query["url"])
+            if query_candidates is None:
                 continue
             for candidate in query_candidates[:per_query_limit]:
                 candidate["score"] = external_candidate_score(record, candidate, query["label"])
@@ -2070,9 +2094,8 @@ def rank_candidates(
         # Yahoo fallback (secondary)
         fallback_queries = fallback_search_queries(record)
         for query in fallback_queries:
-            try:
-                query_candidates = fetch_yahoo_search_candidates(query["url"])
-            except Exception:
+            query_candidates = fetch_search_logged(fetch_yahoo_search_candidates, query["label"], query["url"])
+            if query_candidates is None:
                 continue
             for candidate in query_candidates[:per_query_limit]:
                 candidate["score"] = external_candidate_score(record, candidate, query["label"])
@@ -2236,6 +2259,7 @@ def main() -> None:
     v, r, x = status_counts.get("verified", 0), status_counts.get("review", 0), status_counts.get("reject", 0)
     tlog(f"Done! {len(payload)} records -> {output_path} ({total_elapsed.total_seconds():.1f}s)")
     tlog(f"Results: {v} verified, {r} review, {x} rejected")
+    raise_if_searches_failed()
 
 
 if __name__ == "__main__":

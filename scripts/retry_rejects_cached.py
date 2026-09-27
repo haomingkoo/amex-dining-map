@@ -26,12 +26,14 @@ from match_tabelog_candidates import (
     external_candidate_score,
     fallback_search_queries,
     fetch_ddg_search_candidates,
+    fetch_search_logged,
     fetch_native_metadata,
     fetch_yahoo_search_candidates,
     groq_judge_match,
     load_http_cache,
     load_records,
     progress_bar,
+    raise_if_searches_failed,
     save_http_cache,
     tlog,
 )
@@ -74,17 +76,15 @@ def ddg_yahoo_search(record: dict, pause: float) -> list[dict]:
                 aggregate[url] = {**c, "source_queries": [label], "query_hits": 1}
 
     for query in ddg_fallback_queries(record):
-        try:
-            absorb(fetch_ddg_search_candidates(query["url"]), query["label"])
-        except Exception:
-            pass
+        candidates = fetch_search_logged(fetch_ddg_search_candidates, query["label"], query["url"])
+        if candidates is not None:
+            absorb(candidates, query["label"])
         time.sleep(pause)
 
     for query in fallback_search_queries(record):
-        try:
-            absorb(fetch_yahoo_search_candidates(query["url"]), query["label"])
-        except Exception:
-            pass
+        candidates = fetch_search_logged(fetch_yahoo_search_candidates, query["label"], query["url"])
+        if candidates is not None:
+            absorb(candidates, query["label"])
         time.sleep(pause)
 
     if not aggregate:
@@ -199,6 +199,7 @@ def main() -> None:
         s = best[0].get("match_status", "no_candidates") if best else "no_candidates"
         final[s] += 1
     tlog(f"Final: verified={final['verified']}, review={final['review']}, reject={final['reject']}")
+    raise_if_searches_failed()
 
 
 if __name__ == "__main__":
