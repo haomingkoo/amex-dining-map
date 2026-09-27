@@ -128,12 +128,12 @@ def test_an_unqueued_absence_from_the_roster_is_a_fault() -> None:
 
 
 def test_the_two_legitimately_absent_venues_do_not_fault() -> None:
-    """Osteria Mozza and Capitol Bistro are absent from the project and marked so."""
+    """Kuriya Dining and Capitol Bistro are absent from the project and marked so."""
     payload = json.loads((ROOT / "data/table-for-two.json").read_text())
     hidden = [v for v in payload["venues"] if v.get("booking_project_status") == "not_listed"]
     observed = {str(o["id"]) for o in payload["booking_project_source"]["observed_venues"]}
 
-    assert {v["name"] for v in hidden} == {"Osteria Mozza", "Capitol Bistro. Bar. Patisserie"}
+    assert {v["name"] for v in hidden} == {"Kuriya Dining", "Capitol Bistro. Bar. Patisserie"}
     assert all(str(v["dining_city_id"]) not in observed for v in hidden)
 
 
