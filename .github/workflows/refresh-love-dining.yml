@@ -57,11 +57,21 @@ jobs:
             --changelog data/changelog-love-dining.md \
             --updates data/updates.json
 
+      - name: Finalize source health
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            outcome=success
+          else
+            outcome=failure
+          fi
+          python3 scripts/build_source_health.py --source love-dining --attempt-outcome "$outcome"
+
       - name: Commit refreshed Love Dining data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/love-dining.json data/love-dining-source.json data/updates.json
+          git add data/love-dining.json data/love-dining-source.json data/updates.json data/source-health.json
           if [ -f data/changelog-love-dining.md ]; then
             git add data/changelog-love-dining.md
           fi
@@ -80,18 +90,9 @@ jobs:
           done
           exit 1
 
-      - name: Finalize source health
-        if: always()
-        run: |
-          if [ "${{ job.status }}" = "success" ]; then
-            outcome=success
-          else
-            outcome=failure
-          fi
-          python3 scripts/build_source_health.py --source love-dining --attempt-outcome "$outcome"
-
       - name: Commit source health
-        if: always()
+        # Success paths ship health in the data commit; this records failed runs.
+        if: failure()
         env:
           COMMIT_MESSAGE: "chore: record love dining source health"
           MUST_STAGE: |

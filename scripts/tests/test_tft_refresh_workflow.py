@@ -45,8 +45,10 @@ def test_independent_observations_continue_after_a_failure() -> None:
         ("Verify reviewed official document pages", "Refresh and retain official menu versions"),
         ("Refresh and retain official menu versions", "Build Telegram guide catalogue"),
         ("Build Telegram guide catalogue", "Build Table for Two source alert"),
-        ("Build Table for Two source alert", "Commit refreshed Table for Two data"),
-        ("Commit refreshed Table for Two data", "Finalize Table for Two roster health"),
+        ("Build Table for Two source alert", "Finalize Table for Two roster health"),
+        ("Finalize Table for Two roster health", "Finalize Table for Two menu health"),
+        ("Finalize Table for Two menu health", "Commit refreshed Table for Two data"),
+        ("Commit refreshed Table for Two data", "Dispatch published owner updates"),
     )
     for name, next_name in stages:
         assert "continue-on-error: true" in step_block(text, name, next_name)
@@ -68,7 +70,7 @@ def test_source_health_uses_the_actual_stage_outcomes() -> None:
     menu_block = step_block(
         text,
         "Finalize Table for Two menu health",
-        "Commit source health",
+        "Commit refreshed Table for Two data",
     )
     assert 'steps.menu_refresh.outcome' in menu_block
     assert 'job.status' not in menu_block
@@ -89,11 +91,12 @@ def test_refresh_commit_uses_the_conflict_safe_helper() -> None:
     block = step_block(
         text,
         "Commit refreshed Table for Two data",
-        "Finalize Table for Two roster health",
+        "Dispatch published owner updates",
     )
     assert "bash scripts/commit_and_push.sh" in block
     assert "data/table-for-two.json" in block
     assert "data/reviews/tft-menu-pdfs" in block
+    assert "data/source-health.json" in block
     assert "KEEP_LOCAL_ON_CONFLICT" in block
 
 
@@ -101,7 +104,7 @@ def test_shared_update_ledger_is_staged_but_never_overwritten_on_conflict() -> N
     block = step_block(
         workflow_text(),
         "Commit refreshed Table for Two data",
-        "Finalize Table for Two roster health",
+        "Dispatch published owner updates",
     )
     must_stage, keep_local = block.split("KEEP_LOCAL_ON_CONFLICT:", 1)
     assert "data/updates.json" in must_stage

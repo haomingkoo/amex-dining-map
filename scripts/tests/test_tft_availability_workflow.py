@@ -35,7 +35,7 @@ def test_shared_update_ledger_never_overwrites_remote_events_on_conflict() -> No
     block = step_block(
         text,
         "Commit refreshed availability and alert state",
-        "Finalize source health",
+        "Dispatch published owner updates",
     )
     must_stage, keep_local = block.split("KEEP_LOCAL_ON_CONFLICT:", 1)
     assert "data/updates.json" in must_stage
@@ -55,7 +55,8 @@ def test_independent_availability_evidence_survives_partial_failure() -> None:
         ("Build bounded Table for Two slot snapshot", "Track first-seen release patterns"),
         ("Track first-seen release patterns", "Rebuild Telegram release catalogue"),
         ("Rebuild Telegram release catalogue", "Send matching alert emails"),
-        ("Commit refreshed availability and alert state", "Finalize source health"),
+        ("Finalize source health", "Commit refreshed availability and alert state"),
+        ("Commit refreshed availability and alert state", "Dispatch published owner updates"),
     )
     for name, next_name in stages:
         assert "continue-on-error: true" in step_block(text, name, next_name)
@@ -63,7 +64,9 @@ def test_independent_availability_evidence_survives_partial_failure() -> None:
 
 def test_health_uses_source_refresh_outcome_and_final_gate_is_last() -> None:
     text = workflow_text()
-    health = step_block(text, "Finalize source health", "Commit source health")
+    health = step_block(
+        text, "Finalize source health", "Commit refreshed availability and alert state"
+    )
     assert "steps.source_refresh.outcome" in health
     assert "job.status" not in health
     fail_at = text.index("      - name: Fail after preserving availability evidence")

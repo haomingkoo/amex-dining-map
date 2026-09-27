@@ -98,6 +98,18 @@ jobs:
           RESEND_FROM: ${{ secrets.RESEND_FROM }}
         run: python3 scripts/send_table_for_two_alerts.py
 
+      - name: Finalize source health
+        id: availability_health
+        if: always()
+        continue-on-error: true
+        run: |
+          if [ "${{ steps.source_refresh.outcome }}" = "success" ]; then
+            outcome=success
+          else
+            outcome=failure
+          fi
+          python3 scripts/build_source_health.py --source table-for-two-availability --attempt-outcome "$outcome"
+
       - name: Commit refreshed availability and alert state
         id: data_commit
         if: always()
@@ -112,6 +124,7 @@ jobs:
             data/updates.json
             data/changelog-table-for-two.md
             reminders/app/tft_guide_catalog.json
+            data/source-health.json
           KEEP_LOCAL_ON_CONFLICT: |
             data/table-for-two.json
             data/table-for-two-slots.json
@@ -119,32 +132,6 @@ jobs:
             data/table-for-two-alert-sent.json
             data/changelog-table-for-two.md
             reminders/app/tft_guide_catalog.json
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          bash scripts/commit_and_push.sh
-
-      - name: Finalize source health
-        id: availability_health
-        if: always()
-        continue-on-error: true
-        run: |
-          if [ "${{ steps.source_refresh.outcome }}" = "success" ]; then
-            outcome=success
-          else
-            outcome=failure
-          fi
-          python3 scripts/build_source_health.py --source table-for-two-availability --attempt-outcome "$outcome"
-
-      - name: Commit source health
-        id: health_commit
-        if: always()
-        continue-on-error: true
-        env:
-          COMMIT_MESSAGE: "chore: record Table for Two availability health"
-          MUST_STAGE: |
-            data/source-health.json
-            data/updates.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -194,13 +181,12 @@ jobs:
           EMAIL_ALERTS_OUTCOME: ${{ steps.alerts.outcome }}
           DATA_COMMIT_OUTCOME: ${{ steps.data_commit.outcome }}
           AVAILABILITY_HEALTH_OUTCOME: ${{ steps.availability_health.outcome }}
-          HEALTH_COMMIT_OUTCOME: ${{ steps.health_commit.outcome }}
           OWNER_DISPATCH_OUTCOME: ${{ steps.owner_dispatch.outcome }}
           RECEIPT_COMMIT_OUTCOME: ${{ steps.receipt_commit.outcome }}
           SOURCE_ISSUE_OUTCOME: ${{ steps.source_issue.outcome }}
         run: |
           failed=()
-          for stage in SOURCE MEMBERSHIP_ALERT SLOT_SNAPSHOT RELEASE_PATTERNS GUIDE_CATALOGUE DATA_COMMIT AVAILABILITY_HEALTH HEALTH_COMMIT OWNER_DISPATCH RECEIPT_COMMIT; do
+          for stage in SOURCE MEMBERSHIP_ALERT SLOT_SNAPSHOT RELEASE_PATTERNS GUIDE_CATALOGUE DATA_COMMIT AVAILABILITY_HEALTH OWNER_DISPATCH RECEIPT_COMMIT; do
             outcome_name="${stage}_OUTCOME"
             outcome="${!outcome_name}"
             if [ "$outcome" != "success" ]; then
