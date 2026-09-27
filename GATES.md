@@ -22,7 +22,7 @@ Tracker: parent #34; vertical slices #35 through #42.
   EVIDENCE: 2026-09-06 the CHECK exits 0 against the live deployment. Reopened 2026-09-04 because docs/evidence/tft-browser-production.json had aged past the 24-hour limit and the gate pinned UI copy that had since changed, plus a `review_queue_count === 2` snapshot the roster had moved to 9. The frozen review_warnings deepEquals, the VUE `=== 2` pin and the 404-count pin are gone; coverage is now derived from the live roster and the missing-menu rule is enforced on 10 of 30 browser-verified venues rather than two named ones. Evidence is produced by scripts/capture_tft_browser_evidence.py, not hand-maintained: captured_at 2026-09-05T15:08:13Z, revision 9d508499a780. Two blockers were deployment state rather than gate logic, both cleared: the reminders service was serving a catalogue older than the site, and app.js changed when the deep-link fix shipped.
 
 - [x] G3: owner updates are formatted as concise before-and-after alerts and can only be delivered to the configured private Telegram channel
-  CHECK: node scripts/verify-telegram-owner-alerts.mjs
+  CHECK: python3 -m pytest reminders/tests/test_owner_alerts.py -q && echo "Telegram owner alert verification passed"
   EXPECT: Telegram owner alert verification passed
   EVIDENCE: 2026-08-30 verifier passed. Tests prove plain-text before/after rendering, config-only destination selection, published-only delivery, replay deduplication, digest conflict rejection, and no blind retry after ambiguous transport outcomes. Real-channel delivery remains G9.
 
