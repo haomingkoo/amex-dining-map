@@ -750,6 +750,9 @@ def booking_project_membership_statuses(source: dict | None) -> tuple[str, set[s
 def booking_project_status_for_venue(
     venue: dict, source: dict | None, existing_record: dict | None = None
 ) -> str:
+    # A reviewed venue with no DiningCity listing cannot be in the booking project.
+    if venue.get("dining_city_listing") == "not_on_diningcity":
+        return "not_listed"
     membership_status, active_ids = booking_project_membership_statuses(source)
     previous_status = (existing_record or {}).get("booking_project_status")
     if membership_status != "success":
