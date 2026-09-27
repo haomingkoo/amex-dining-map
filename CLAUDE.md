@@ -360,5 +360,8 @@ pins 3.12. Run `reminders/.venv/bin/python -m pytest reminders/tests`.
 `ALERT_EXPORT_TOKEN`, `REMINDERS_API_BASE`, plus service-only `DB_PATH`,
 `ALLOWED_ORIGIN`, `PUBLIC_BASE_URL`, `CONFIRM_TOKEN_EXPIRY_HOURS`, and the existing
 `ALERT_HASH_SALT`, plus service-only `ABUSE_HASH_SALT` and proxy/rate settings.
+Service-only `GITHUB_DISPATCH_TOKEN` (fine-grained, Actions: write on this repo) makes
+the service trigger `Table for Two Alerts` every 15 minutes, because GitHub's own cron
+drops most of those runs; `/healthz` reports `alert_dispatch_enabled` and the last result.
 The `Table for Two Alerts` workflow runs from `main`, so the
 alert job only picks up rewires after a merge.

@@ -52,7 +52,9 @@ def test_healthz_ok(monkeypatch, baked_catalog_state):
         "telegram_guide_enabled": False,
         "telegram_reminders_enabled": False,
         "tft_live_refresh_enabled": False,
+        "alert_dispatch_enabled": False,
     }
+    assert set(payload["alert_dispatch"]) == {"at", "status", "error"}
     assert payload["tft_live"] == {
         "status": "unavailable",
         "generated_at": None,
