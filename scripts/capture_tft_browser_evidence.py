@@ -26,11 +26,15 @@ import re
 import sys
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
 from pathlib import Path
 
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
+
+try:
+    from scripts.timeutil import iso_now
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from timeutil import iso_now
 
 SITE_URL = "https://amex-explorer.kooexperience.com/"
 ROUTE = "#/table-for-two?venue=tft-vue"
@@ -39,10 +43,6 @@ EVIDENCE_PATH = Path("docs/evidence/tft-browser-production.json")
 INTRO_STORAGE_KEY = "amex-benefits-intro-v3"
 VIEWPORTS = {"390x844": (390, 844), "320x740": (320, 740)}
 CARD_RENDER_TIMEOUT_MS = 30000
-
-
-def iso_now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 # Cloudflare fronts the site and rejects urllib's default agent with a 403.

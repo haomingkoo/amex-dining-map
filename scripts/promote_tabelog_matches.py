@@ -4,26 +4,19 @@
 from __future__ import annotations
 
 import argparse
-import json
 from datetime import date
 from pathlib import Path
 
 try:
-    from scripts.jsonio import save_json
+    from scripts.jsonio import load_json_or, save_json
 except ImportError:  # running as `python3 scripts/<file>.py`
-    from jsonio import save_json
+    from jsonio import load_json_or, save_json
 
 
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
 QUALITY_SIGNALS_PATH = DATA_DIR / "restaurant-quality-signals.json"
-
-
-def load_json(path: Path, default):
-    if not path.exists():
-        return default
-    return json.loads(path.read_text())
 
 
 def honest_stars(score_raw: float) -> float:
@@ -82,11 +75,11 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    reviewed = load_json(args.input, [])
+    reviewed = load_json_or(args.input, [])
     if not isinstance(reviewed, list):
         raise SystemExit("Reviewed input must be a JSON array.")
 
-    signals = load_json(args.output, {})
+    signals = load_json_or(args.output, {})
     updated = 0
     for entry in reviewed:
         record_id, payload = normalize_review_entry(entry)

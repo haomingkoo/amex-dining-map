@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import io
-import json
 import re
 from dataclasses import dataclass
 from datetime import datetime
@@ -15,6 +14,7 @@ import pypdf
 from pypdf import PdfReader
 
 from scripts import source_change_alert
+from scripts.jsonio import manifest_sha256
 
 
 EXTRACTOR = "pypdf 6.16.2 extract_text normalized-whitespace-v1"
@@ -87,11 +87,6 @@ def pdf_page_hashes(pdf_bytes: bytes) -> list[str]:
             raise ValueError("official PDF page text is empty or oversized")
         hashes.append(hashlib.sha256(normalized.encode()).hexdigest())
     return hashes
-
-
-def manifest_sha256(manifest: dict) -> str:
-    canonical = json.dumps(manifest, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(canonical.encode()).hexdigest()
 
 
 def _validated_clauses(manifest: dict, page_hashes: list[str]) -> list[dict]:

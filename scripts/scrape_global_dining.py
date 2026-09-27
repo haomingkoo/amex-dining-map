@@ -18,7 +18,6 @@ import shutil
 import hashlib
 import json
 import difflib
-from math import atan2, cos, radians, sin, sqrt
 import re
 import subprocess
 import sys
@@ -37,6 +36,10 @@ try:
     from scripts.jsonio import save_json
 except ImportError:  # running as `python3 scripts/<file>.py`
     from jsonio import save_json
+try:
+    from scripts.geo import distance_km
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from geo import distance_km
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -61,6 +64,7 @@ ORIGIN_MARKET = "SG"
 SKIP_COUNTRIES = {"japan"}
 SKIP_COUNTRY_CODES = {"JP"}
 
+HTTP_BACKOFF_BASE = 1.5
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
@@ -82,52 +86,22 @@ POSTCODE_TOKEN_RE = re.compile(
 NUMBERED_TERM_RE = re.compile(r"^\s*(\d+)\.\s*(.+)$")
 
 
-def http_get(url: str, retries: int = 3, timeout: int = 15) -> str:
-    """Simple HTTP GET with retries."""
-    req = urllib.request.Request(url, headers=HEADERS)
-    for attempt in range(retries):
-        try:
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                return resp.read().decode("utf-8", errors="replace")
-        except urllib.error.HTTPError as e:
-            if e.code == 404:
-                return ""
-            if e.code in {429, 500, 502, 503, 504} and attempt < retries - 1:
-                time.sleep(1.5 ** attempt)
-                continue
-            if attempt == retries - 1:
-                raise
-            time.sleep(1.5 ** attempt)
-        except Exception:
-            if attempt == retries - 1:
-                raise
-            time.sleep(1.5 ** attempt)
-    return ""
-
-
 def http_bytes(url: str, retries: int = 3, timeout: int = 30) -> bytes:
-    """Simple binary HTTP GET with retries."""
+    """Binary HTTP GET, retrying every failure with exponential backoff."""
     req = urllib.request.Request(url, headers=HEADERS)
     for attempt in range(retries):
         try:
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 return resp.read()
-        except urllib.error.HTTPError as e:
-            if e.code in {429, 500, 502, 503, 504} and attempt < retries - 1:
-                time.sleep(1.5 ** attempt)
-                continue
-            if attempt == retries - 1:
-                raise
-            time.sleep(1.5 ** attempt)
         except Exception:
             if attempt == retries - 1:
                 raise
-            time.sleep(1.5 ** attempt)
-    return b""
+            time.sleep(HTTP_BACKOFF_BASE ** attempt)
+    raise ValueError(f"retries must be positive, got {retries}")
 
 
 def http_json(url: str, retries: int = 3, timeout: int = 30) -> Any:
-    body = http_get(url, retries=retries, timeout=timeout)
+    body = http_bytes(url, retries=retries, timeout=timeout).decode("utf-8", errors="replace")
     if not body:
         raise RuntimeError(f"Empty response from {url}")
     return json.loads(body)
@@ -203,13 +177,6 @@ def slug_to_region_name(slug: str) -> str:
 
 def compact_space(value: str | None) -> str:
     return re.sub(r"\s+", " ", value or "").strip()
-
-
-def distance_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
-    d_lat = radians(lat2 - lat1)
-    d_lng = radians(lng2 - lng1)
-    a = sin(d_lat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(d_lng / 2) ** 2
-    return 6371 * 2 * atan2(sqrt(a), sqrt(1 - a))
 
 
 def within_country_bounds(country: str | None, lat: float | None, lng: float | None) -> bool:
