@@ -32,7 +32,7 @@ const listEnd = app.indexOf("\nfunction renderTableForTwoCard", listStart);
 const listSource = app.slice(listStart, listEnd);
 assert.ok(listStart >= 0 && listEnd > listStart, "Table for Two list renderer not found");
 assert.doesNotMatch(listSource, /tableForTwoFreshnessLabel\(record\)/);
-assert.match(listSource, /dateSummary === "Availability may be outdated" \? "" : dateSummary/);
+assert.match(listSource, /dateSummary === "Availability may be outdated" \|\| availabilityLine\.startsWith\(dateSummary\) \? "" : dateSummary/);
 assert.match(listSource, /card\.setAttribute\("role", "button"\)/);
 assert.match(listSource, /card\.setAttribute\("tabindex", "0"\)/);
 assert.match(listSource, /card\.setAttribute\("aria-controls", "tft-focus-card"\)/);
