@@ -28,7 +28,8 @@ API_BASE = "https://api.diningcity.asia/public"
 MAX_VENUES = 50
 MAX_WORKERS = 6
 MAX_DATES_PER_VENUE = 62
-MAX_SLOTS_PER_MEAL = 512
+# All-day Dining lists a slot every few minutes; the largest meal was 1,260 in Sept 2026.
+MAX_SLOTS_PER_MEAL = 2048
 # Meal names as the published TFT data spells them; DiningCity varies the case.
 MEALS = ("Lunch", "Dinner", "All-day Dining", "Afternoon Tea")
 _MEAL_BY_KEY = {meal.lower(): meal for meal in MEALS}
