@@ -302,6 +302,8 @@ def main() -> None:
         record["known_for_tags"] = known_for
         record["signature_dish_tags"] = specialties
         record["summary_official"] = cleaned_source_summary(record, known_for, specialties)
+        # Website signals are derivation input only; the page never reads them.
+        record.pop("external_signals", None)
         if known_for:
             with_known += 1
         if specialties:

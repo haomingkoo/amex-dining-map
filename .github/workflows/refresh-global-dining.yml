@@ -55,6 +55,14 @@ jobs:
             python3 scripts/verify_global_dining_official.py --all
           fi
 
+      - name: Restore source descriptions
+        # The scrape rebuilds records bare; replay cached website signals (fetching only
+        # new sites) and derive the known-for tags and official summaries from them.
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.mode == 'terms') }}
+        run: |
+          python3 scripts/enrich_global_website_signals.py
+          python3 scripts/derive_global_source_tags.py
+
       - name: Audit map coordinates
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.mode }}" == "terms" ]]; then
@@ -80,7 +88,10 @@ jobs:
             --data data/global-restaurants.json \
             --output /tmp/global-dining-alert.md \
             --changelog data/changelog-global-dining.md \
-            --updates data/updates.json
+            --updates data/updates.json \
+            --ignore-field summary_official \
+            --ignore-field known_for_tags \
+            --ignore-field signature_dish_tags
 
       - name: Finalize source health
         if: always()
@@ -99,11 +110,13 @@ jobs:
             data/global-restaurants.json
             data/global-dining-source.json
             data/global-dining-geocode-cache.json
+            data/global-website-signals-cache.json
             data/changelog-global-dining.md
             data/updates.json
             data/source-health.json
           KEEP_LOCAL_ON_CONFLICT: |
             data/global-dining-geocode-cache.json
+            data/global-website-signals-cache.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
