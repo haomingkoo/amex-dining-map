@@ -146,7 +146,7 @@ jobs:
       - name: Deploy attempt 1
         id: deploy_1
         continue-on-error: true
-        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
       - name: Wait before deploy retry
         if: steps.deploy_1.outcome == 'failure'
@@ -156,7 +156,7 @@ jobs:
         id: deploy_2
         if: steps.deploy_1.outcome == 'failure'
         continue-on-error: true
-        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
       - name: Wait before final deploy retry
         if: steps.deploy_1.outcome == 'failure' && steps.deploy_2.outcome == 'failure'
@@ -165,7 +165,7 @@ jobs:
       - name: Deploy attempt 3
         id: deployment
         if: steps.deploy_1.outcome == 'failure' && steps.deploy_2.outcome == 'failure'
-        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
       - name: Dispatch Telegram reminders from deployed snapshot
         if: ${{ always() && (steps.deploy_1.outcome == 'success' || steps.deploy_2.outcome == 'success' || steps.deployment.outcome == 'success') }}
