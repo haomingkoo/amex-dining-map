@@ -2597,6 +2597,12 @@ function isPublicDecisionUpdate(update) {
     && PUBLIC_UPDATE_KINDS.has(String(update.kind || ""));
 }
 
+// A published correction retracts the events it lists in `corrects`.
+function withoutCorrectedUpdates(updates) {
+  const corrected = new Set(updates.flatMap((update) => update.corrects || []));
+  return updates.filter((update) => !corrected.has(update.id));
+}
+
 function isPrimaryPublicUpdate(update) {
   const kind = String(update?.kind || "");
   return kind === "added"
@@ -2959,8 +2965,7 @@ function renderUpdateRow(update) {
 
 function renderUpdates() {
   if (!updatesShell || !updatesList || !updatesHeadline || !updatesCount) return;
-  const published = state.updates
-    .filter(isPublicDecisionUpdate)
+  const published = withoutCorrectedUpdates(state.updates.filter(isPublicDecisionUpdate))
     .sort((a, b) => String(b.reviewed_at || b.detected_at || "").localeCompare(String(a.reviewed_at || a.detected_at || "")));
   state.updates = published;
   const primary = published.filter(isPrimaryPublicUpdate);

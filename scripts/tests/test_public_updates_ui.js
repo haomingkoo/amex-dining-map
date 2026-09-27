@@ -16,6 +16,7 @@ vm.runInNewContext(
   `${app.slice(helpersStart, helpersEnd)}
    this.isPublicDecisionUpdate = isPublicDecisionUpdate;
    this.isPrimaryPublicUpdate = isPrimaryPublicUpdate;
+   this.withoutCorrectedUpdates = withoutCorrectedUpdates;
    this.updateKindLabel = updateKindLabel;
    this.updateKindBadgeLabel = updateKindBadgeLabel;
    this.publicUpdateChanges = publicUpdateChanges;
@@ -28,6 +29,15 @@ assert.equal(context.isPublicDecisionUpdate({ status: "published", kind: "menu_u
 assert.equal(context.isPublicDecisionUpdate({ status: "published", kind: "source_recovered" }), false);
 assert.equal(context.isPublicDecisionUpdate({ status: "published", kind: "source_stale" }), false);
 assert.equal(context.isPublicDecisionUpdate({ status: "review_required", kind: "menu_updated" }), false);
+// A removal retracted by a published correction must not reach readers.
+assert.deepEqual(
+  Array.from(context.withoutCorrectedUpdates([
+    { id: "a", kind: "removed" },
+    { id: "b", kind: "removed" },
+    { id: "c", kind: "correction", corrects: ["a"] },
+  ]), (update) => update.id),
+  ["b", "c"],
+);
 assert.equal(context.isPrimaryPublicUpdate({ kind: "added" }), true);
 assert.equal(context.isPrimaryPublicUpdate({ kind: "menu_updated" }), true);
 assert.equal(context.isPrimaryPublicUpdate({ kind: "correction" }), false);
