@@ -39,8 +39,9 @@ settings = load_settings()
 configure_logging()
 
 
+# Same adopted catalogue as the guide, so a venue added after a deploy is refreshed.
 live_refresher = TFTLiveRefresher(
-    tft_guide.CATALOG_PATH,
+    tft_guide.load_catalog,
     settings.tft_live_snapshot_path,
 )
 

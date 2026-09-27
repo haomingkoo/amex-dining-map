@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import threading
 import time
+from typing import Callable
 
 import pytest
 
@@ -14,7 +15,7 @@ from app import tft_live_refresh
 NOW = datetime(2026, 9, 2, 4, 5, 6, tzinfo=timezone.utc)
 
 
-def catalog(path: Path, *, count: int = 2) -> Path:
+def catalog(path: Path, *, count: int = 2) -> Callable[[], dict]:
     venues = [
         {
             "id": f"venue-{index}",
@@ -31,8 +32,7 @@ def catalog(path: Path, *, count: int = 2) -> Path:
             {"id": "unapproved", "dining_city_id": "9993", "approved": False},
         ]
     )
-    path.write_text(json.dumps({"venues": venues}), encoding="utf-8")
-    return path
+    return lambda: {"venues": venues}
 
 
 def membership(*ids: str) -> list[dict]:
@@ -431,3 +431,41 @@ def test_default_fetch_rejects_wrong_content_type_and_oversized_body(monkeypatch
     )
     with pytest.raises(ValueError, match="too large"):
         tft_live_refresh._default_fetch("/test", None, True)
+
+
+def test_all_day_dining_slots_count_as_bookable(tmp_path):
+    def fetch(path, _params, _versioned):
+        if path.startswith("/projects/"):
+            return membership("2000")
+        times = [{"meal_type_text": "All-Day Dining", "time": "15:00", "seats": {"available": [2]}}]
+        return {"data": [{"date": "2026-09-20", "times": times}]}
+
+    result = tft_live_refresh.TFTLiveRefresher(
+        catalog(tmp_path / "catalog.json", count=1),
+        tmp_path / "snapshot.json",
+        fetcher=fetch,
+        clock=lambda: NOW,
+    ).refresh()
+
+    venue = result["venues"][0]
+    assert venue["status"] == "live_available"
+    assert [meal["meal"] for meal in venue["meals"]] == ["All-day Dining"]
+
+
+def test_refresh_reads_the_current_catalog_each_run(tmp_path):
+    venues = [{"id": "venue-0", "dining_city_id": "2000"}]
+
+    def fetch(path, _params, _versioned):
+        return membership("2000", "2001") if path.startswith("/projects/") else slots()
+
+    refresher = tft_live_refresh.TFTLiveRefresher(
+        lambda: {"venues": venues},
+        tmp_path / "snapshot.json",
+        fetcher=fetch,
+        clock=lambda: NOW,
+    )
+    refresher.refresh()
+    venues.append({"id": "venue-1", "dining_city_id": "2001"})
+    result = refresher.refresh()
+
+    assert [row["id"] for row in result["venues"]] == ["venue-0", "venue-1"]
