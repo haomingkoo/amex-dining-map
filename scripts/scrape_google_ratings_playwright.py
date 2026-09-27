@@ -96,6 +96,11 @@ def make_target(record: dict, dataset: str) -> str:
     return f"{name} {loc}"
 
 
+def oldest_first(pairs: list[tuple[str, str]], existing: dict) -> list[tuple[str, str]]:
+    """Never-scraped records first, then the oldest ratings, so a query budget rotates fairly."""
+    return sorted(pairs, key=lambda pair: str((existing.get(pair[1]) or {}).get("scraped_at") or ""))
+
+
 def build_queries(records: list[dict], dataset: str, skip_ids: set[str]) -> list[tuple[str, str]]:
     """Return [(target, record_id), ...]."""
     pairs = []
@@ -435,7 +440,7 @@ def main() -> None:
         all_queries.extend(pairs)
 
     if args.max_queries > 0:
-        all_queries = all_queries[: args.max_queries]
+        all_queries = oldest_first(all_queries, existing)[: args.max_queries]
 
     print(f"\nTotal queries: {len(all_queries)}")
     if not all_queries:

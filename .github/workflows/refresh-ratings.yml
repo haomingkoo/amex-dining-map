@@ -51,6 +51,10 @@ jobs:
           PYTHONUNBUFFERED: "1"
           INPUT_DATASETS: ${{ github.event.inputs.datasets || 'global japan love tft stays' }}
           INPUT_MISSING_ONLY: ${{ github.event.inputs.missing_only == 'true' && 'true' || 'false' }}
+          # Matches the site's GOOGLE_RATING_STALE_DAYS; older ratings drop out of ranking.
+          MAX_AGE_DAYS: "90"
+          # About 1 hour per run; ~3,900 ratings rotate every 4 weeks, inside MAX_AGE_DAYS.
+          WEEKLY_QUERY_BUDGET: "1000"
         run: |
           read -r -a datasets <<< "$INPUT_DATASETS"
           for dataset in "${datasets[@]}"; do
@@ -60,7 +64,7 @@ jobs:
           if [ "$INPUT_MISSING_ONLY" = "true" ]; then
             args+=(--missing-only)
           else
-            args+=(--max-age-days 90 --max-queries 250)
+            args+=(--max-age-days "$MAX_AGE_DAYS" --max-queries "$WEEKLY_QUERY_BUDGET")
           fi
           python3 scripts/scrape_google_ratings_playwright.py "${args[@]}"
 
