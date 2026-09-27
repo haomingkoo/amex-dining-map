@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-27T14:51:30Z",
+  "updated_at": "2026-09-27T15:03:21Z",
   "updates": [
     {
       "program": "Explorer ratings",
@@ -951,6 +951,90 @@
       "stream_id": "5a285967ca2795c90124",
       "occurrence": 2,
       "id": "4cda699d10eda491a5c6"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two?venue=tft-forage",
+      "kind": "menu_updated",
+      "subject": "Forage · Platinum menu",
+      "detected_at": "2026-09-26T00:21:45Z",
+      "status": "published",
+      "before": {
+        "state": "published",
+        "fields": {
+          "Menu file": "Forage-Menu_Platinium.pdf",
+          "Menu version": "72c0b83a7423"
+        }
+      },
+      "after": {
+        "state": "published",
+        "fields": {
+          "Menu file": "Forage-Menu_Platinium.pdf",
+          "Menu version": "a66905a7eff3"
+        }
+      },
+      "changes": [
+        {
+          "field": "Menu file",
+          "before": "Forage-Menu_Platinium.pdf",
+          "after": "Forage-Menu_Platinium.pdf"
+        },
+        {
+          "field": "Menu version",
+          "before": "72c0b83a7423",
+          "after": "a66905a7eff3"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Forage-Menu_Platinium.pdf",
+      "reviewed_at": "2026-09-27T15:03:21Z",
+      "review_note": "Forage-Menu_Platinium.pdf changed at the same URL: new courses (Hokkaido scallop, king salmon, duck, white chocolate) replacing the caviar, chutoro, black cod and pork menu, with unchanged Table for Two terms. Approved as the active Platinum menu.",
+      "transition_id": "5cc4501cb7aed4661c63",
+      "stream_id": "de2f6e2fecadba275c3c",
+      "occurrence": 1,
+      "id": "c1114bbcdc9de2eb9d88"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two?venue=tft-vue",
+      "kind": "menu_updated",
+      "subject": "VUE · Platinum menu",
+      "detected_at": "2026-09-26T00:21:45Z",
+      "status": "published",
+      "before": {
+        "state": "published",
+        "fields": {
+          "Menu file": "VUE-Menu_Platinum.pdf",
+          "Menu version": "af9a1807f718"
+        }
+      },
+      "after": {
+        "state": "published",
+        "fields": {
+          "Menu file": "VUE-Menu_Platinium.pdf",
+          "Menu version": "559b3b04c699"
+        }
+      },
+      "changes": [
+        {
+          "field": "Menu file",
+          "before": "VUE-Menu_Platinum.pdf",
+          "after": "VUE-Menu_Platinium.pdf"
+        },
+        {
+          "field": "Menu version",
+          "before": "af9a1807f718",
+          "after": "559b3b04c699"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/VUE-Menu_Platinium.pdf",
+      "reviewed_at": "2026-09-27T15:03:07Z",
+      "review_note": "VUE-Menu_Platinium.pdf (AEM 2026-06-30) is a newer menu than the published 2026-04-30 file: new courses (chilled somen, Eyrewoolf abalone, Kokuou A5 wagyu, summer stone fruits) with unchanged Table for Two terms. Approved as the active Platinum menu.",
+      "transition_id": "8eaa83bb07e7aa3e2209",
+      "stream_id": "e31b7b9144c4a5f0291c",
+      "occurrence": 1,
+      "id": "2fa2fd1ca31e19638e12"
     },
     {
       "program": "Explorer ratings",
@@ -22064,14 +22148,6 @@
           "0a4a4aa540164506ebb4": 1
         }
       },
-      "915d672147e8dd8f713f": {
-        "latest_transition_id": "117254b8bf019a093aa9",
-        "occurrences": {
-          "117254b8bf019a093aa9": 1,
-          "68fa17c2152d9a9fc42c": 1,
-          "6a5507925fe103a94b20": 1
-        }
-      },
       "92472e860fb874b35365": {
         "latest_transition_id": "b1b19a5ffde784a5c860",
         "occurrences": {
@@ -22323,8 +22399,9 @@
         }
       },
       "de2f6e2fecadba275c3c": {
-        "latest_transition_id": "b6c7b06ec3f61777993e",
+        "latest_transition_id": "5cc4501cb7aed4661c63",
         "occurrences": {
+          "5cc4501cb7aed4661c63": 1,
           "b6c7b06ec3f61777993e": 1
         }
       },
@@ -22332,6 +22409,12 @@
         "latest_transition_id": "9f8fda9c5eb1438191ae",
         "occurrences": {
           "9f8fda9c5eb1438191ae": 1
+        }
+      },
+      "e31b7b9144c4a5f0291c": {
+        "latest_transition_id": "8eaa83bb07e7aa3e2209",
+        "occurrences": {
+          "8eaa83bb07e7aa3e2209": 1
         }
       },
       "e68b762f7a26d3ae9718": {

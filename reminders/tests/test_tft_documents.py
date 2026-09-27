@@ -166,7 +166,8 @@ def test_malformed_runtime_projection_never_returns_substantive_text(mutation):
 
 
 def test_existing_menu_release_and_slot_routes_are_not_captured():
-    assert "VUE-Menu_Platinum.pdf" in tft_guide.handle_message(
+    vue = next(venue for venue in catalog()["venues"] if venue["id"] == "tft-vue")
+    assert vue["menus"]["platinum"]["filename"] in tft_guide.handle_message(
         "/menu VUE platinum", catalog(), NOW
     )
     assert "observed first-detection pattern" in tft_guide.handle_message(
