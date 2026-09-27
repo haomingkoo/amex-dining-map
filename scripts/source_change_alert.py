@@ -43,6 +43,8 @@ IGNORED_RECORD_FIELDS = {
     "last_verified_at",
     "availability",
     "slot_source_status",
+    # Ratings and website enrichment, refreshed on their own schedules; never source data.
+    "external_signals",
 }
 
 # Nested keys (under any dict, at any depth) that flip every scrape but do not
@@ -906,7 +908,14 @@ def main() -> int:
         "--updates",
         help="Append structured before-and-after records to this update ledger.",
     )
+    parser.add_argument(
+        "--ignore-field",
+        action="append",
+        default=[],
+        help="Record field this program derives from enrichment, not from the source.",
+    )
     args = parser.parse_args()
+    IGNORED_RECORD_FIELDS.update(args.ignore_field)
 
     current_meta = load_json(args.meta)
     previous_meta = git_show_json(args.meta)
