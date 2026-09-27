@@ -12,6 +12,10 @@ const TABLE_FOR_TWO_DATA_FALLBACK_URL = "../data/table-for-two.json";
 const TABLE_FOR_TWO_STATIC_SNAPSHOT_URL = "../data/table-for-two-slots.json";
 const TABLE_FOR_TWO_RELEASE_HISTORY_URL = "../data/table-for-two-release-history-summary.json";
 const TABLE_FOR_TWO_RELEASE_HISTORY_FALLBACK_URL = "../data/table-for-two-release-history.json";
+// DiningCity serves photos from a Qiniu CDN that resizes via imageView2.
+const DININGCITY_IMAGE_HOST = "static-assets.diningcity.asia";
+const TABLE_FOR_TWO_PHOTO_WIDTH_PX = 720;
+const TABLE_FOR_TWO_PHOTO_HEIGHT_PX = 405;
 const TELEGRAM_GUIDE_CONFIG_URL = "../data/telegram-guide.json";
 const UPDATES_DATA_URL = "../data/updates.json";
 const SOURCE_HEALTH_DATA_URL = "../data/source-health.json";
@@ -6771,7 +6775,19 @@ function tableForTwoProfileDescription(record) {
 }
 
 function tableForTwoProfileImageUrl(record) {
-  return tableForTwoProfile(record).cover_url || tableForTwoProfile(record).image_url || "";
+  const url = tableForTwoProfile(record).cover_url || tableForTwoProfile(record).image_url || "";
+  return resizedDiningCityImageUrl(url);
+}
+
+function resizedDiningCityImageUrl(url) {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return url;
+  }
+  if (parsed.hostname !== DININGCITY_IMAGE_HOST || parsed.search.length > 1) return url;
+  return `${parsed.origin}${parsed.pathname}?imageView2/2/w/${TABLE_FOR_TWO_PHOTO_WIDTH_PX}/format/webp`;
 }
 
 function tableForTwoVenueMenuReviewItems(payload, record) {
@@ -6950,7 +6966,7 @@ function renderTableForTwoCard() {
       : "";
 
   tableForTwoFocusCard.innerHTML = `
-    ${profileImageUrl ? `<img class="tft-venue-photo" src="${escapeHtml(profileImageUrl)}" alt="${escapeHtml(displayName)}">` : ""}
+    ${profileImageUrl ? `<img class="tft-venue-photo" src="${escapeHtml(profileImageUrl)}" alt="${escapeHtml(displayName)}" width="${TABLE_FOR_TWO_PHOTO_WIDTH_PX}" height="${TABLE_FOR_TWO_PHOTO_HEIGHT_PX}" loading="lazy" decoding="async">` : ""}
     <div class="focus-kicker">${escapeHtml(tableForTwoCategoryLabel(record.category))} / Singapore</div>
     <div class="focus-title-row">
       <h3 class="focus-title">${escapeHtml(displayName)}</h3>
