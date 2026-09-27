@@ -1,7 +1,101 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-27T13:20:54Z",
+  "updated_at": "2026-09-27T14:51:30Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-09-27T14:51:30Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 775
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Source state": "mixed_age",
+          "Freshness": "mixed_age",
+          "Stale records": 19
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "mixed_age"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "mixed_age"
+        },
+        {
+          "field": "Stale records",
+          "before": 775,
+          "after": 19
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "40041d19ddaed47164da",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "fea63b8b17cb25cd32b0"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_review_cleared",
+      "subject": "Love Dining",
+      "detected_at": "2026-09-27T14:51:30Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 2
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "review_required",
+          "after": "current"
+        },
+        {
+          "field": "Review",
+          "before": "required",
+          "after": "clear"
+        },
+        {
+          "field": "Review items",
+          "before": 2,
+          "after": 0
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "494c890d5cec9722be8e",
+      "stream_id": "325506f85300a0ec65a3",
+      "occurrence": 1,
+      "id": "708da304f8387635eae1"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -1382,62 +1476,6 @@
       "reviewed_at": "2026-09-27T05:30:00Z"
     },
     {
-      "program": "Love Dining",
-      "program_id": "love-dining",
-      "route": "#/love-dining",
-      "kind": "source_updated",
-      "subject": "Love Dining source",
-      "detected_at": "2026-09-25T00:02:20Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Record count": 82,
-          "Restaurant count": 31,
-          "Official records SHA-256": "70aad10e1da9",
-          "Restaurant T&C PDF hash": "c277102a1388"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Record count": 81,
-          "Restaurant count": 30,
-          "Official records SHA-256": "cb38eb4460a3",
-          "Restaurant T&C PDF hash": "96bcb8d099fc"
-        }
-      },
-      "changes": [
-        {
-          "field": "Record count",
-          "before": 82,
-          "after": 81
-        },
-        {
-          "field": "Restaurant count",
-          "before": 31,
-          "after": 30
-        },
-        {
-          "field": "Official records SHA-256",
-          "before": "70aad10e1da9",
-          "after": "cb38eb4460a3"
-        },
-        {
-          "field": "Restaurant T&C PDF hash",
-          "before": "c277102a1388",
-          "after": "96bcb8d099fc"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
-      "transition_id": "117254b8bf019a093aa9",
-      "stream_id": "915d672147e8dd8f713f",
-      "occurrence": 1,
-      "id": "54df89158050373db1fe",
-      "review_note": "Roster changes were superseded by reviewed correction events. Current T&C versions are approved as baselines only; prior PDF content was not retained, so no retroactive clause-level change is claimed.",
-      "reviewed_at": "2026-09-27T04:30:00Z"
-    },
-    {
       "program": "Japan Dining",
       "program_id": "japan-dining",
       "route": "#/dining/japan/top",
@@ -1998,41 +2036,6 @@
       "occurrence": 1,
       "id": "414e1180e0ac685f70cf",
       "review_note": "Checked against the official pages on 2026-09-27. Escape Restaurant is no longer on the restaurants page, Capitol Bistro. Bar. Patisserie is no longer on the hotels page, and The Cliff shows its 24 Sep to 6 Dec 2026 renovation closure.",
-      "reviewed_at": "2026-09-27T05:30:00Z"
-    },
-    {
-      "program": "Love Dining",
-      "program_id": "love-dining",
-      "route": "#/love-dining",
-      "kind": "source_updated",
-      "subject": "Love Dining source",
-      "detected_at": "2026-09-24T00:00:05Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "b6637a913bef"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "70aad10e1da9"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "b6637a913bef",
-          "after": "70aad10e1da9"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
-      "transition_id": "6a5507925fe103a94b20",
-      "stream_id": "915d672147e8dd8f713f",
-      "occurrence": 1,
-      "id": "2826c4d40b59cc4e4ad4",
-      "review_note": "Superseded by the reviewed record events.",
       "reviewed_at": "2026-09-27T05:30:00Z"
     },
     {
@@ -10286,62 +10289,6 @@
       "stream_id": "75dc7ff790819667042f",
       "occurrence": 1,
       "id": "434c93b99f82cf00fb04"
-    },
-    {
-      "program": "Love Dining",
-      "program_id": "love-dining",
-      "route": "#/love-dining",
-      "kind": "source_updated",
-      "subject": "Love Dining source",
-      "detected_at": "2026-09-10T23:26:02Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Record count": 83,
-          "Hotel outlet count": 52,
-          "Official records SHA-256": "9faa09c6cdc3",
-          "Hotel T&C PDF hash": "806756636efb"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Record count": 82,
-          "Hotel outlet count": 51,
-          "Official records SHA-256": "b6637a913bef",
-          "Hotel T&C PDF hash": "30a6a4fa0684"
-        }
-      },
-      "changes": [
-        {
-          "field": "Record count",
-          "before": 83,
-          "after": 82
-        },
-        {
-          "field": "Hotel outlet count",
-          "before": 52,
-          "after": 51
-        },
-        {
-          "field": "Official records SHA-256",
-          "before": "9faa09c6cdc3",
-          "after": "b6637a913bef"
-        },
-        {
-          "field": "Hotel T&C PDF hash",
-          "before": "806756636efb",
-          "after": "30a6a4fa0684"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
-      "transition_id": "68fa17c2152d9a9fc42c",
-      "stream_id": "915d672147e8dd8f713f",
-      "occurrence": 1,
-      "id": "9e6ef1f427b6dc9c1e19",
-      "review_note": "Roster changes were superseded by reviewed correction events. Current T&C versions are approved as baselines only; prior PDF content was not retained, so no retroactive clause-level change is claimed.",
-      "reviewed_at": "2026-09-27T04:30:00Z"
     },
     {
       "program": "Love Dining",
@@ -21502,11 +21449,12 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "81469570479e26998d74",
+        "latest_transition_id": "40041d19ddaed47164da",
         "occurrences": {
           "0e86b64ab05f97a7ae46": 1,
           "21e13cd6db6f8de0e836": 1,
           "3527ca050b470473e393": 1,
+          "40041d19ddaed47164da": 1,
           "4dd69dc8a805967651d8": 1,
           "50b49b2093693100bcfa": 1,
           "6a8bbc10984738ed7d1d": 1,
@@ -21737,10 +21685,11 @@
         }
       },
       "325506f85300a0ec65a3": {
-        "latest_transition_id": "1721cde76de73061427b",
+        "latest_transition_id": "494c890d5cec9722be8e",
         "occurrences": {
           "1721cde76de73061427b": 1,
           "3d93a8994faef3d34eef": 1,
+          "494c890d5cec9722be8e": 1,
           "6d25cfe12d49db98b041": 1,
           "cea2d37ee2da89ff16c6": 2,
           "f07cb3104e4317089870": 1,
