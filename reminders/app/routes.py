@@ -20,6 +20,7 @@ from app.config import Settings, load_settings
 from app.emailer import EmailDeliveryError, confirm_email_html, send_email
 from app.observability import log_event
 from app.schemas import VENUES_PATH, SubscribeRequest
+from app.tft_live_refresh import MEALS
 
 router = APIRouter()
 logger = logging.getLogger("amex_reminders.lifecycle")
@@ -307,8 +308,7 @@ __STATUS_NOTE__
    <div class="venuelist" id="m_venue_list">__VENUE_CHECKBOXES__</div>
  </fieldset>
  <fieldset><legend>Session</legend><div class="checks">
-   <label><input type="checkbox" name="session" value="Lunch" __LUNCH__> Lunch</label>
-   <label><input type="checkbox" name="session" value="Dinner" __DINNER__> Dinner</label>
+   __SESSION_CHECKBOXES__
  </div></fieldset>
  <label>From<input id="m_start" type="date" value="__START__" min="__TODAY__"></label>
  <label>To<input id="m_end" type="date" value="__END__" min="__TODAY__"></label>
@@ -382,8 +382,11 @@ def _manage_page(record: dict, token: str, base: str, venue_names: list[str]) ->
         "__VENUE_CHECKBOXES__": "".join(checkboxes),
         "__ANY_CHECKED__": "checked" if any_selected else "",
         "__DATE_CHIPS__": date_chips,
-        "__LUNCH__": "checked" if "Lunch" in record["sessions"] else "",
-        "__DINNER__": "checked" if "Dinner" in record["sessions"] else "",
+        "__SESSION_CHECKBOXES__": "".join(
+            f'<label><input type="checkbox" name="session" value="{meal}"'
+            f'{" checked" if meal in record["sessions"] else ""}> {meal}</label>'
+            for meal in MEALS
+        ),
         "__START__": html_escape(record["date_start"]),
         "__END__": html_escape(record["date_end"]),
         "__TODAY__": date.today().isoformat(),

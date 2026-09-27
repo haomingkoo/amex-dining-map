@@ -219,6 +219,34 @@ def test_manage_invalid_token_rejected(client):
     assert client.post("/api/manage?token=nope", json={}).status_code == 400
 
 
+@pytest.mark.parametrize("meal", ["All-day Dining", "Afternoon Tea"])
+def test_subscribe_accepts_non_lunch_dinner_meal(client, meal):
+    response = client.post("/api/subscribe", json=_body(sessions=[meal]))
+
+    assert response.status_code == 200
+    assert json.loads(_token(client.db_path, "sessions")) == [meal]
+
+
+def test_manage_page_offers_every_meal_and_checks_saved_one(client):
+    client.post("/api/subscribe", json=_body(sessions=["All-day Dining"]))
+    token = _token(client.db_path, "manage_token")
+
+    page = client.get(f"/api/manage?token={token}").text
+
+    assert 'value="Afternoon Tea">' in page
+    assert 'value="All-day Dining" checked>' in page
+
+
+def test_existing_lunch_dinner_row_still_loads_on_manage_page(client):
+    client.post("/api/subscribe", json=_body(sessions=["Lunch", "Dinner"]))
+    token = _token(client.db_path, "manage_token")
+
+    page = client.get(f"/api/manage?token={token}").text
+
+    assert 'value="Lunch" checked>' in page
+    assert 'value="Dinner" checked>' in page
+
+
 def test_unsubscribe_removes_from_export(client):
     client.post("/api/subscribe", json=_body())
     confirm_token = _token(client.db_path, "confirm_token")

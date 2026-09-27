@@ -129,3 +129,27 @@ def test_send_messages_persists_each_confirmed_receipt_before_next_send(tmp_path
     persisted = json.loads(sent_log.read_text())
     assert "first-key" in persisted["sent_keys"]
     assert "second-key" not in persisted["sent_keys"]
+
+
+def test_all_day_dining_subscriber_matches_only_all_day_slots():
+    sub = alerts.subscription_from_row(
+        {"email": "a@example.com", "sessions": ["All-day Dining"], "venues": ["any"]},
+        {},
+        "test",
+    )
+    slot = {"date": "2026-10-01", "time": "15:00", "max_seats": 2}
+    venue = {
+        "id": "tft-park90",
+        "name": "Park90",
+        "availability": {
+            "status": "live_available",
+            "meals": [
+                {"meal": "All-day Dining", "status": "available", "slots": [slot]},
+                {"meal": "Dinner", "status": "available", "slots": [slot]},
+            ]
+        },
+    }
+
+    matches = alerts.matching_slots(sub, [venue])
+
+    assert [match["meal"] for match in matches] == ["All-day Dining"]

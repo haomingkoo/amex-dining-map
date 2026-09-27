@@ -10,6 +10,7 @@ from typing import Literal
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 from app.db import SubscriberInput
+from app.tft_live_refresh import MEALS
 
 MAX_HORIZON_DAYS = 120
 VENUES_PATH = Path(__file__).parent / "venues.json"
@@ -31,7 +32,7 @@ class SubscribeRequest(BaseModel):
     email: EmailStr
     name: str | None = Field(default=None, max_length=80)
     party_size: int
-    sessions: list[Literal["Lunch", "Dinner"]] = Field(min_length=1, max_length=2)
+    sessions: list[Literal[MEALS]] = Field(min_length=1, max_length=len(MEALS))
     venues: list[str] = Field(min_length=1, max_length=30)
     date_start: date
     date_end: date

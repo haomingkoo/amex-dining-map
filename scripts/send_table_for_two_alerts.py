@@ -36,6 +36,11 @@ try:
 except ImportError:  # running as `python3 scripts/<file>.py`
     from timeutil import iso_now
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from reminders.app.tft_live_refresh import MEALS
 
 
 DEFAULT_DATA_PATH = "data/table-for-two.json"
@@ -69,6 +74,8 @@ def today_singapore() -> date:
 def normalize_text(value: Any) -> str:
     return re.sub(r"\s+", " ", str(value or "").strip()).casefold()
 
+
+MEAL_KEYS = frozenset(normalize_text(meal) for meal in MEALS)
 
 def normalize_header(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", value.casefold())
@@ -131,7 +138,9 @@ def parse_sessions(value: Any) -> tuple[str, ...]:
         normalized = normalize_text(part)
         if normalized in {"all", "any", "any session", "either"}:
             continue
-        if "lunch" in normalized:
+        if normalized in MEAL_KEYS:
+            sessions.append(normalized)
+        elif "lunch" in normalized:
             sessions.append("lunch")
         elif "afternoon" in normalized and "tea" in normalized:
             sessions.append("afternoon tea")
