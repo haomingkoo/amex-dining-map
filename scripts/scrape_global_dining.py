@@ -160,47 +160,6 @@ COUNTRY_BOUNDS: dict[str, tuple[float, float, float, float]] = {
 }
 
 
-def is_restaurant_url(url: str) -> bool:
-    """Return True if the URL is a 3-level restaurant detail page."""
-    path = url.replace(API_BASE_URL, "").strip("/")
-    parts = path.split("/")
-    if len(parts) != 3:
-        return False
-    country_slug = parts[0].lower()
-    if country_slug in SKIP_COUNTRIES:
-        return False
-    if parts[0] in ("api", "_next", "static", "sitemap", "map"):
-        return False
-    return True
-
-
-def slug_to_country_name(slug: str) -> str:
-    """Convert a URL slug to a display country name."""
-    mapping = {
-        "australia": "Australia",
-        "austria": "Austria",
-        "canada": "Canada",
-        "france": "France",
-        "germany": "Germany",
-        "hong-kong": "Hong Kong",
-        "italy": "Italy",
-        "mexico": "Mexico",
-        "monaco": "Monaco",
-        "new-zealand": "New Zealand",
-        "singapore": "Singapore",
-        "spain": "Spain",
-        "taiwan": "Taiwan",
-        "thailand": "Thailand",
-        "united-kingdom": "United Kingdom",
-        "united-states": "United States",
-    }
-    return mapping.get(slug, slug.replace("-", " ").title())
-
-
-def slug_to_region_name(slug: str) -> str:
-    return slug.replace("-", " ").title()
-
-
 def compact_space(value: str | None) -> str:
     return re.sub(r"\s+", " ", value or "").strip()
 

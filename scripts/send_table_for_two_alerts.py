@@ -441,21 +441,6 @@ def subscription_state_key(subscription: Subscription, kind: str, salt: str) -> 
     )
 
 
-def slot_key(subscription: Subscription, slot: dict[str, Any], salt: str) -> str:
-    return salted_hash(
-        [
-            subscription.email.casefold(),
-            subscription.party_size,
-            slot.get("venue_id"),
-            slot.get("date"),
-            slot.get("meal"),
-            slot.get("time"),
-            slot.get("max_seats"),
-        ],
-        salt,
-    )
-
-
 def format_slot(slot: dict[str, Any]) -> str:
     date = slot.get("date") or "date not specified"
     meal = slot.get("meal") or "Session"

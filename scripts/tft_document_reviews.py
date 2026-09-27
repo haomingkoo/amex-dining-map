@@ -102,25 +102,6 @@ def _valid_hash(value: Any) -> bool:
     return isinstance(value, str) and HASH.fullmatch(value) is not None
 
 
-def baseline_state(
-    source: dict[str, Any], document_id: str, manifest: dict[str, Any]
-) -> dict[str, Any]:
-    config = DOCUMENTS[document_id]
-    observed = (source.get("source_documents") or {}).get(config["hash_key"])
-    if not _valid_hash(observed) or manifest.get("raw_sha256") != observed:
-        raise ValueError(f"baseline manifest does not match observed {document_id}")
-    return {
-        "status": "approved",
-        "review_required": False,
-        "observed_sha256": observed,
-        "approved_sha256": observed,
-        "approved_manifest_sha256": manifest_sha256(manifest),
-        "approved_captured_at": manifest.get("captured_at"),
-        "reviewed_at": manifest.get("reviewed_at"),
-        "review_item": None,
-    }
-
-
 def refresh_states(
     observed_hashes: dict[str, str],
     existing_source: dict[str, Any] | None,
