@@ -1206,7 +1206,9 @@ def build_payload(
     html = fetch_bytes(OFFICIAL_URL).decode("utf-8", errors="replace")
     participating_url = extract_image_url(html, "Participating Merchants")
     cycles_url = extract_image_url(html, "Voucher Cycles 2026")
+    cafe_buffet_url = extract_image_url(html, "TFT Participating Cafe and Buffet")
     participating_hash = hashlib.sha256(fetch_bytes(participating_url)).hexdigest()
+    cafe_buffet_hash = hashlib.sha256(fetch_bytes(cafe_buffet_url)).hexdigest()
     cycles_hash = hashlib.sha256(fetch_bytes(cycles_url)).hexdigest()
     terms_bytes = fetch_bytes(TERMS_URL)
     faq_bytes = fetch_bytes(FAQ_URL)
@@ -1218,7 +1220,10 @@ def build_payload(
     )
     checked_at = iso_now()
     roster, roster_source = tft_roster_reviews.review_state(
-        participating_hash, participating_url, checked_at, existing_payload
+        tft_roster_reviews.roster_fingerprint([participating_hash, cafe_buffet_hash]),
+        participating_url,
+        checked_at,
+        existing_payload,
     )
     observed_documents = {
         "terms_sha256": terms_hash,
@@ -1270,9 +1275,11 @@ def build_payload(
         "terms_url": TERMS_URL,
         "faq_url": FAQ_URL,
         "participating_merchants_image_url": participating_url,
+        "cafe_buffet_merchants_image_url": cafe_buffet_url,
         "voucher_cycles_image_url": cycles_url,
         "source_images": {
             "participating_merchants_sha256": participating_hash,
+            "cafe_buffet_merchants_sha256": cafe_buffet_hash,
             "voucher_cycles_sha256": cycles_hash,
         },
         "source_documents": observed_documents,

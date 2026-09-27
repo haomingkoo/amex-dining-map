@@ -334,3 +334,73 @@ def test_generic_meta_alert_surfaces_roster_review_item():
     fields = {change["field"] for change in event["changes"]}
     assert {"Roster review status", "Observed roster image hash", "Roster review item"} <= fields
     assert event["status"] == "review_required"
+
+
+RESTAURANT_IMAGE = {"url": "https://www.americanexpress.com/content/dam/chic.png", "sha256": "a" * 64}
+CAFE_BUFFET_IMAGE = {"url": "https://www.americanexpress.com/content/dam/cafe-buffet.png", "sha256": "b" * 64}
+
+
+def two_image_manifest() -> dict:
+    manifest = changed_manifest()
+    manifest["source"].update(
+        images=[RESTAURANT_IMAGE, CAFE_BUFFET_IMAGE],
+        participating_image_url=RESTAURANT_IMAGE["url"],
+        participating_image_sha256=tft_roster_reviews.roster_fingerprint(
+            [RESTAURANT_IMAGE["sha256"], CAFE_BUFFET_IMAGE["sha256"]]
+        ),
+    )
+    manifest["manifest_sha256"] = tft_roster_reviews.manifest_sha256(manifest)
+    return manifest
+
+
+def two_image_data(cafe_buffet_sha: str) -> dict:
+    data = reviewed_data()
+    data["participating_merchants_image_url"] = RESTAURANT_IMAGE["url"]
+    data["source_images"]["participating_merchants_sha256"] = RESTAURANT_IMAGE["sha256"]
+    data["source_images"]["cafe_buffet_merchants_sha256"] = cafe_buffet_sha
+    return data
+
+
+def test_single_image_fingerprint_is_the_image_hash():
+    assert tft_roster_reviews.roster_fingerprint([IMAGE_SHA]) == IMAGE_SHA
+
+
+def test_two_image_manifest_applies_when_both_observed_images_match():
+    manifest = two_image_manifest()
+
+    updated, _events = tft_roster_reviews.apply_manifest(
+        manifest, two_image_data(CAFE_BUFFET_IMAGE["sha256"])
+    )
+
+    assert (
+        updated["roster_source"]["approved_participating_sha256"]
+        == manifest["source"]["participating_image_sha256"]
+    )
+
+
+def test_two_image_manifest_rejects_changed_cafe_buffet_image():
+    with pytest.raises(ValueError, match="does not match the review"):
+        tft_roster_reviews.apply_manifest(two_image_manifest(), two_image_data("c" * 64))
+
+
+def test_changed_cafe_buffet_image_requires_roster_review():
+    manifest = two_image_manifest()
+    applied, _events = tft_roster_reviews.apply_manifest(
+        manifest, two_image_data(CAFE_BUFFET_IMAGE["sha256"])
+    )
+    changed = tft_roster_reviews.roster_fingerprint([RESTAURANT_IMAGE["sha256"], "c" * 64])
+
+    _roster, state = tft_roster_reviews.review_state(
+        changed, RESTAURANT_IMAGE["url"], "2026-09-27T00:00:00Z", applied
+    )
+
+    assert state["review_required"] is True
+
+
+def test_manifest_rejects_images_that_do_not_fingerprint_to_its_hash():
+    manifest = two_image_manifest()
+    manifest["source"]["images"][1] = {**CAFE_BUFFET_IMAGE, "sha256": "c" * 64}
+    manifest["manifest_sha256"] = tft_roster_reviews.manifest_sha256(manifest)
+
+    with pytest.raises(ValueError, match="fingerprint"):
+        tft_roster_reviews.validate_manifest(manifest)
