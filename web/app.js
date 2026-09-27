@@ -4294,6 +4294,7 @@ function renderTable() {
       )
     : state.filtered;
 
+  const hadRowFocus = resultsTableBody.contains(document.activeElement);
   resultsTableBody.innerHTML = "";
   if (!tableRows.length) {
     resultsTableBody.innerHTML =
@@ -4308,6 +4309,7 @@ function renderTable() {
       setActiveRecord(record.id);
       focusActiveRecordOnMap();
     });
+    makeRowKeyboardOperable(row);
 
     const isJapanRow = record.country === "Japan";
     const gRow = googleRating(record);
@@ -4347,6 +4349,7 @@ function renderTable() {
     `;
     resultsTableBody.appendChild(row);
   });
+  refocusActiveRow(resultsTableBody, hadRowFocus);
 }
 
 const MOBILE_PAGE_SIZE = 50;
@@ -5180,6 +5183,22 @@ function renderStayFocusCard() {
   }
 }
 
+function makeRowKeyboardOperable(row) {
+  row.tabIndex = 0;
+  row.classList.add("keyboard-row");
+  row.addEventListener("keydown", (event) => {
+    // Leave keys on links or buttons inside the row to those controls.
+    if (event.target !== row || (event.key !== "Enter" && event.key !== " ")) return;
+    event.preventDefault();
+    row.click();
+  });
+}
+
+// Table rebuilds replace the focused row, so move focus to the new active row.
+function refocusActiveRow(tableBody, hadRowFocus) {
+  if (hadRowFocus) tableBody.querySelector("tr.active")?.focus({ preventScroll: true });
+}
+
 function renderStayTable() {
   if (!state.stayFiltered.length) {
     staysResultsTableBody.innerHTML =
@@ -5187,22 +5206,16 @@ function renderStayTable() {
     return;
   }
 
+  const hadRowFocus = staysResultsTableBody.contains(document.activeElement);
   staysResultsTableBody.innerHTML = "";
   state.stayFiltered.forEach((record) => {
     const row = document.createElement("tr");
     row.className = record.id === state.stayActiveId ? "active" : "";
-    row.tabIndex = 0;
     row.addEventListener("click", () => {
       setActiveStayRecord(record.id);
       focusActiveStayOnMap();
     });
-    row.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter" && event.key !== " ") return;
-      event.preventDefault();
-      row.click();
-      // The click rebuilds the table, so return focus to the new active row.
-      staysResultsTableBody.querySelector("tr.active")?.focus();
-    });
+    makeRowKeyboardOperable(row);
     row.innerHTML = `
       <td><div class="table-title">${escapeHtml(stayNameProfile(record).displayName)}</div></td>
       <td>
@@ -5215,6 +5228,7 @@ function renderStayTable() {
     `;
     staysResultsTableBody.appendChild(row);
   });
+  refocusActiveRow(staysResultsTableBody, hadRowFocus);
 }
 
 function renderStayMobileCards() {
@@ -5587,7 +5601,7 @@ function tableForTwoDateOptionLabel(dateValue) {
   const date = new Date(Date.UTC(year, month - 1, day));
   const weekday = date.toLocaleDateString("en-SG", { weekday: "short", timeZone: "UTC" });
   const dayMonth = date.toLocaleDateString("en-SG", { day: "2-digit", month: "short", timeZone: "UTC" });
-  return `${weekday}, ${dayMonth}`;
+  return `${weekday}, ${dayMonth}${tableForTwoYearSuffix(year)}`;
 }
 
 function tableForTwoTimeToMinutes(timeValue) {
@@ -6366,11 +6380,17 @@ function tableForTwoAvailabilityBadgeClass(record, filters = state.tableForTwoCu
 function tableForTwoShortDate(dateValue) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue || "")) return dateValue || "";
   const [year, month, day] = dateValue.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString("en-SG", {
+  const dayMonth = new Date(Date.UTC(year, month - 1, day)).toLocaleDateString("en-SG", {
     day: "2-digit",
     month: "short",
     timeZone: "UTC",
   });
+  return `${dayMonth}${tableForTwoYearSuffix(year)}`;
+}
+
+// Dates outside the current year carry the year so ranges across New Year stay clear.
+function tableForTwoYearSuffix(year) {
+  return year === new Date().getFullYear() ? "" : ` ${year}`;
 }
 
 function tableForTwoMonthLabel(monthKey) {
