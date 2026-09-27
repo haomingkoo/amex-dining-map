@@ -3252,6 +3252,8 @@ function renderProgramShell(program, route) {
       isSpecificRoute ? link.dataset.route === route.id : link.dataset.program === program.id && !activeRouteLink
     );
   });
+  // The phone tab strip scrolls sideways, so bring the active tab on screen.
+  programLinks.find((link) => link.classList.contains("active"))?.scrollIntoView({ block: "nearest", inline: "nearest" });
 }
 
 function renderJourneyShell(route) {
@@ -5189,9 +5191,17 @@ function renderStayTable() {
   state.stayFiltered.forEach((record) => {
     const row = document.createElement("tr");
     row.className = record.id === state.stayActiveId ? "active" : "";
+    row.tabIndex = 0;
     row.addEventListener("click", () => {
       setActiveStayRecord(record.id);
       focusActiveStayOnMap();
+    });
+    row.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      row.click();
+      // The click rebuilds the table, so return focus to the new active row.
+      staysResultsTableBody.querySelector("tr.active")?.focus();
     });
     row.innerHTML = `
       <td><div class="table-title">${escapeHtml(stayNameProfile(record).displayName)}</div></td>
@@ -5577,7 +5587,7 @@ function tableForTwoDateOptionLabel(dateValue) {
   const date = new Date(Date.UTC(year, month - 1, day));
   const weekday = date.toLocaleDateString("en-SG", { weekday: "short", timeZone: "UTC" });
   const dayMonth = date.toLocaleDateString("en-SG", { day: "2-digit", month: "short", timeZone: "UTC" });
-  return `${dateValue} · ${weekday}, ${dayMonth}`;
+  return `${weekday}, ${dayMonth}`;
 }
 
 function tableForTwoTimeToMinutes(timeValue) {
@@ -5770,7 +5780,7 @@ async function submitTableForTwoAlert(event) {
     form.querySelectorAll('input[name="session"]:checked'),
   ).map((input) => input.value);
   if (!sessions.length) {
-    showTableForTwoAlertStatus("Pick at least one session (lunch or dinner).", true);
+    showTableForTwoAlertStatus("Pick at least one session.", true);
     return;
   }
 
@@ -6106,7 +6116,8 @@ function filterTableForTwo() {
     day || "",
   ].filter(Boolean).join(" · ");
   const statusBits = [
-    autoAvailabilityOnly ? `${shown} bookable venues` : `${shown === total ? total : `${shown} of ${total}`} roster venues`,
+    autoAvailabilityOnly ? `${shown} bookable venues` : `${shown === total ? total : `${shown} of ${total}`} venues in the Amex app`,
+    notListedVenues.length ? `${total + notListedVenues.length} on the official roster` : "",
     filterLabel,
     !autoAvailabilityOnly && freshAvailableCount ? `${freshAvailableCount} bookable` : "",
     !autoAvailabilityOnly && freshNoSeatCount ? `${freshNoSeatCount} not bookable` : "",
@@ -6821,7 +6832,9 @@ function renderTableForTwoList() {
     const availabilityBadgeClass = tableForTwoAvailabilityBadgeClass(record, filters);
     const availabilityLabel = tableForTwoAvailabilityLabel(record, filters);
     const dateSummary = tableForTwoDateSummary(record, filters);
-    const listDateSummary = dateSummary === "Availability may be outdated" ? "" : dateSummary;
+    const availabilityLine = tableForTwoCompactAvailabilityLine(record, filters);
+    // The availability line already opens with the date range when slots match.
+    const listDateSummary = dateSummary === "Availability may be outdated" || availabilityLine.startsWith(dateSummary) ? "" : dateSummary;
     const rating = googleRating(record);
     const ratingStr = rating && rating.rating != null
       ? `<span class="card-google-rating">★ ${escapeHtml(String(rating.rating))}${rating.review_count ? ` (${Number(rating.review_count).toLocaleString()})` : ""} · ${escapeHtml(formatSourceDate(rating.scraped_at))}</span>`
@@ -6842,7 +6855,7 @@ function renderTableForTwoList() {
           </div>
         </div>
       </div>
-      <p class="mobile-card-desc">${escapeHtml(tableForTwoCompactAvailabilityLine(record, filters))}</p>
+      <p class="mobile-card-desc">${escapeHtml(availabilityLine)}</p>
       <div class="mobile-card-meta">
         ${listDateSummary ? `<span>${escapeHtml(listDateSummary)}</span>` : ""}
         <span>${escapeHtml(tableForTwoMenuMetaLabel(record))}</span>
@@ -6877,7 +6890,7 @@ function renderTableForTwoCard() {
         <div class="price-card">
           <span class="price-label">Roster</span>
           <div class="price-tier">${escapeHtml(payload.venues?.length ? `${payload.venues.length} venues` : "No venues loaded")}</div>
-          <div class="price-raw">Official Amex source checked ${escapeHtml(payload.last_verified_at ? formatTimestamp(payload.last_verified_at) : "pending")}.</div>
+          <div class="price-raw">${escapeHtml(tableForTwoNotListedVenues().length ? `${tableForTwoVenues().length} listed in the Amex app. ` : "")}Official Amex source checked ${escapeHtml(payload.last_verified_at ? formatTimestamp(payload.last_verified_at) : "pending")}.</div>
         </div>
         <div class="price-card">
           <span class="price-label">Availability source</span>
