@@ -1,7 +1,134 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-27T01:52:18Z",
+  "updated_at": "2026-09-27T07:39:17Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_review_cleared",
+      "subject": "Japan Dining",
+      "detected_at": "2026-09-27T07:39:17Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 1
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "review_required",
+          "after": "current"
+        },
+        {
+          "field": "Review",
+          "before": "required",
+          "after": "clear"
+        },
+        {
+          "field": "Review items",
+          "before": 1,
+          "after": 0
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "5b416ddace2ab713a3d8",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "d2f4512b73debe30633b"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-27T07:39:17Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "28/29 (96.6%), 1 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "29/29 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "28/29 (96.6%), 1 unavailable",
+          "after": "29/29 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "252e3c33201e3823a27b",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 8,
+      "id": "9de3bbca48d7fa54c892"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_review_cleared",
+      "subject": "Global Dining",
+      "detected_at": "2026-09-27T07:39:17Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 1
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "review_required",
+          "after": "current"
+        },
+        {
+          "field": "Review",
+          "before": "required",
+          "after": "clear"
+        },
+        {
+          "field": "Review items",
+          "before": 1,
+          "after": 0
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "d03e8d97cb01efd6f547",
+      "stream_id": "d03cc6f867310ca61cf7",
+      "occurrence": 1,
+      "id": "062460f641ef984d316a"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -21477,7 +21604,7 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "4cbb85a7c317c300d511",
+        "latest_transition_id": "5b416ddace2ab713a3d8",
         "occurrences": {
           "0024ea21d692def9b91b": 1,
           "09984113ccd7320c1c13": 1,
@@ -21485,6 +21612,7 @@
           "3481ce6d2f15d2493728": 1,
           "411a7dbbcc8e1fe4a3d9": 1,
           "4cbb85a7c317c300d511": 1,
+          "5b416ddace2ab713a3d8": 1,
           "630fba426215e10e413a": 1,
           "76df09d58e4670fbd1c9": 1,
           "8c661fda8625deb97e56": 1,
@@ -22104,8 +22232,9 @@
         }
       },
       "d03cc6f867310ca61cf7": {
-        "latest_transition_id": "ee9a1c9e140f6b412f3d",
+        "latest_transition_id": "d03e8d97cb01efd6f547",
         "occurrences": {
+          "d03e8d97cb01efd6f547": 1,
           "ee9a1c9e140f6b412f3d": 1
         }
       },
@@ -22299,7 +22428,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "98997d254b5dfdda4b93",
+        "latest_transition_id": "252e3c33201e3823a27b",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
@@ -22308,7 +22437,7 @@
           "1c1fff4679ee3bdf92aa": 4,
           "23f1bba4701f42a76948": 3,
           "24c8ece9cda1e0831632": 1,
-          "252e3c33201e3823a27b": 7,
+          "252e3c33201e3823a27b": 8,
           "26e57ec40c3a4d347fd1": 4,
           "2a4df22568bb28e34e01": 1,
           "3239caa8063fc29c89d0": 1,
