@@ -1,7 +1,47 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-27T07:39:17Z",
+  "updated_at": "2026-09-27T08:04:51Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-09-27T08:04:51Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 1784,
+          "Coverage": "2967/3023 (98.1%), 56 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 1544,
+          "Coverage": "2971/3023 (98.3%), 52 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 1784,
+          "after": 1544
+        },
+        {
+          "field": "Coverage",
+          "before": "2967/3023 (98.1%), 56 unavailable",
+          "after": "2971/3023 (98.3%), 52 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "285cde76ec76983e7aee",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "54e96aa769c98a301fc7"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -21913,12 +21953,13 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "597b5f61e2e836b13c25",
+        "latest_transition_id": "285cde76ec76983e7aee",
         "occurrences": {
           "115ecbdf7edd8b04fc52": 1,
           "1ab8e0fbb8680e92c68d": 1,
           "1c7f262ce9ab4a1ccc5f": 1,
           "2505bfbc794de3ef7e1b": 1,
+          "285cde76ec76983e7aee": 1,
           "2c9cfaa8dc40d88a2308": 1,
           "2d4ce67bacad8f77cc37": 1,
           "3d07ff7f35ab35cde0d8": 1,
