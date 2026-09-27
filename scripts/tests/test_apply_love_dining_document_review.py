@@ -116,3 +116,61 @@ def test_second_baseline_clears_review_queue_and_rejects_hash_only_event():
     assert len(source_events) == 1
     assert source_events[0]["status"] == "rejected"
     assert "no retroactive clause-level change" in source_events[0]["review_note"]
+
+
+RESTAURANT_HASH = "a" * 64
+HOTEL_HASH = "b" * 64
+OLD_HOTEL_HASH = "c" * 64
+
+
+def split_source_event(event_id: str, field: str, after: str) -> dict:
+    return {
+        "id": event_id,
+        "program_id": "love-dining",
+        "kind": "source_updated",
+        "status": "review_required",
+        "changes": [
+            {"field": "Record count", "before": 82, "after": 81},
+            {"field": field, "before": "0" * 12, "after": after[:12]},
+        ],
+    }
+
+
+def split_ledger_case() -> tuple[dict, dict, dict]:
+    meta = {
+        "terms_hashes": {"restaurants": RESTAURANT_HASH, "hotels": HOTEL_HASH},
+        "reviewed_terms_hashes": {"restaurants": RESTAURANT_HASH, "hotels": OLD_HOTEL_HASH},
+        "terms_reviewed_at_by_document": {"restaurants": "2026-09-27T04:30:00Z"},
+        "major_change_reasons": ["Love Dining T&C PDF changed: hotels"],
+    }
+    ledger = {
+        "updates": [
+            split_source_event("restaurant-event", "Restaurant T&C PDF hash", RESTAURANT_HASH),
+            split_source_event("hotel-event", "Hotel T&C PDF hash", HOTEL_HASH),
+        ]
+    }
+    reviewed = {
+        "document_id": "love-dining-hotel-terms",
+        "raw_sha256": HOTEL_HASH,
+        "review_status": "current_baseline",
+        "reviewed_at": "2026-09-27T04:30:00Z",
+        "lineage": {"previous_observed_sha256": OLD_HOTEL_HASH},
+    }
+    return meta, ledger, reviewed
+
+
+def test_second_baseline_accepts_hashes_split_across_source_events():
+    meta, ledger, reviewed = split_ledger_case()
+
+    updated_meta, updated_ledger = apply_review.apply_baseline(meta, ledger, "hotels", reviewed)
+
+    assert updated_meta["manual_review_required"] is False
+    assert {event["status"] for event in updated_ledger["updates"]} == {"rejected"}
+
+
+def test_second_baseline_rejects_split_events_missing_one_hash():
+    meta, ledger, reviewed = split_ledger_case()
+    ledger["updates"].pop(0)
+
+    with pytest.raises(ValueError, match="source review event is missing"):
+        apply_review.apply_baseline(meta, ledger, "hotels", reviewed)

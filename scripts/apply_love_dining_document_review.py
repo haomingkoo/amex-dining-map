@@ -73,32 +73,37 @@ def apply_baseline(meta: dict, ledger: dict, key: str, reviewed: dict):
             "Restaurant T&C PDF hash": updated_meta["terms_hashes"]["restaurants"][:12],
             "Hotel T&C PDF hash": updated_meta["terms_hashes"]["hotels"][:12],
         }
+        # Each document's hash may arrive in its own source event; together they must cover both.
         candidates = []
+        covered: set[str] = set()
         for event in updated_ledger.get("updates") or []:
             after = {
                 change.get("field"): change.get("after")
                 for change in event.get("changes") or []
                 if isinstance(change, dict)
             }
+            present = expected.keys() & after.keys()
             if (
                 event.get("program_id") == "love-dining"
                 and event.get("kind") == "source_updated"
-                and all(after.get(field) == value for field, value in expected.items())
+                and present
+                and all(after[field] == expected[field] for field in present)
             ):
                 candidates.append(event)
-        if len(candidates) != 1 or candidates[0].get("status") not in {
-            "review_required",
-            "rejected",
-        }:
+                covered |= present
+        if covered != expected.keys() or any(
+            event.get("status") not in {"review_required", "rejected"}
+            for event in candidates
+        ):
             raise ValueError("matching Love Dining source review event is missing")
-        source_event = candidates[0]
-        source_event["status"] = "rejected"
-        source_event["reviewed_at"] = updated_meta["terms_reviewed_at"]
-        source_event["review_note"] = (
-            "Roster changes were superseded by reviewed correction events. Current "
-            "T&C versions are approved as baselines only; prior PDF content was not "
-            "retained, so no retroactive clause-level change is claimed."
-        )
+        for source_event in candidates:
+            source_event["status"] = "rejected"
+            source_event["reviewed_at"] = updated_meta["terms_reviewed_at"]
+            source_event["review_note"] = (
+                "Roster changes were superseded by reviewed correction events. Current "
+                "T&C versions are approved as baselines only; prior PDF content was not "
+                "retained, so no retroactive clause-level change is claimed."
+            )
         updated_ledger["updated_at"] = updated_meta["terms_reviewed_at"]
     return updated_meta, updated_ledger
 
