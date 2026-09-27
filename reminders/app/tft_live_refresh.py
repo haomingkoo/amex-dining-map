@@ -25,11 +25,13 @@ from typing import Callable
 
 PROJECT = "AMEXPlatSG"
 API_BASE = "https://api.diningcity.asia/public"
-DEFAULT_CATALOG_PATH = Path(__file__).with_name("tft_guide_catalog.json")
 MAX_VENUES = 50
 MAX_WORKERS = 6
 MAX_DATES_PER_VENUE = 62
 MAX_SLOTS_PER_MEAL = 512
+# Meal names as the published TFT data spells them; DiningCity varies the case.
+MEALS = ("Lunch", "Dinner", "All-day Dining", "Afternoon Tea")
+_MEAL_BY_KEY = {meal.lower(): meal for meal in MEALS}
 MAX_SNAPSHOT_BYTES = 2_000_000
 MAX_UPSTREAM_BYTES = 5_000_000
 REQUEST_TIMEOUT_SECONDS = 12
@@ -154,10 +156,6 @@ def _active_catalog_venues(catalog: object) -> list[dict[str, str]]:
     return sorted(venues, key=lambda item: item["id"])
 
 
-def load_catalog(path: Path = DEFAULT_CATALOG_PATH) -> list[dict[str, str]]:
-    return _active_catalog_venues(json.loads(path.read_text(encoding="utf-8")))
-
-
 def _membership_ids(payload: object) -> set[str]:
     if not isinstance(payload, list) or not payload:
         raise ValueError("membership response is invalid")
@@ -199,7 +197,7 @@ def _rows(payload: object) -> list[dict]:
 
 
 def _meals(rows: list[dict]) -> list[dict]:
-    buckets: dict[str, dict[tuple[str, str], int]] = {"Lunch": {}, "Dinner": {}}
+    buckets: dict[str, dict[tuple[str, str], int]] = {meal: {} for meal in MEALS}
     for row in rows:
         date = str(row.get("date") or "")
         if not _DATE_RE.fullmatch(date):
@@ -211,7 +209,7 @@ def _meals(rows: list[dict]) -> list[dict]:
             if not isinstance(slot, dict):
                 continue
             raw_meal = str(slot.get("meal_type_text") or slot.get("meal_type") or "")
-            meal = raw_meal.strip().title()
+            meal = _MEAL_BY_KEY.get(raw_meal.strip().lower())
             slot_time = str(slot.get("time") or "")[:5]
             seats = min(max(_max_seats(slot), 0), 10)
             if meal not in buckets or not _TIME_RE.fullmatch(slot_time) or seats < 2:
@@ -219,7 +217,7 @@ def _meals(rows: list[dict]) -> list[dict]:
             key = (date, slot_time)
             buckets[meal][key] = max(buckets[meal].get(key, 0), seats)
     result = []
-    for meal in ("Lunch", "Dinner"):
+    for meal in MEALS:
         slots = [
             {"date": date, "time": slot_time, "max_seats": seats}
             for (date, slot_time), seats in sorted(buckets[meal].items())[
@@ -289,13 +287,13 @@ def _bounded_prior_venue(raw: object) -> dict | None:
     ):
         return None
     meals = raw.get("meals")
-    if not isinstance(meals, list) or len(meals) > 2:
+    if not isinstance(meals, list) or len(meals) > len(MEALS):
         return None
     bounded_meals = []
     for meal in meals:
         if (
             not isinstance(meal, dict)
-            or meal.get("meal") not in {"Lunch", "Dinner"}
+            or meal.get("meal") not in MEALS
             or meal.get("status") != "available"
         ):
             return None
@@ -450,14 +448,14 @@ class TFTLiveRefresher:
 
     def __init__(
         self,
-        catalog_path: Path,
+        catalog: Callable[[], object],
         snapshot_path: Path,
         *,
         fetcher: Fetcher = _default_fetch,
         clock: Clock = _now,
         max_workers: int = MAX_WORKERS,
     ) -> None:
-        self.catalog_path = Path(catalog_path)
+        self.catalog = catalog
         self.snapshot_path = Path(snapshot_path)
         self.fetcher = fetcher
         self.clock = clock
@@ -479,7 +477,7 @@ class TFTLiveRefresher:
 
     def _refresh_locked(self) -> dict:
         attempted_at = _timestamp(self.clock)
-        catalog = load_catalog(self.catalog_path)
+        catalog = _active_catalog_venues(self.catalog())
         prior = load_snapshot(self.snapshot_path) or {}
         prior_by_id = {
             str(row.get("id")): row
