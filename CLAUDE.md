@@ -160,9 +160,6 @@ enrich_from_web_search.py        ← fetch Michelin inspector descriptions (Algo
         │
         ▼
 derive_global_source_tags.py     ← derive known_for/signature tags + summary_official
-        │
-        ▼
-generate_global_descriptions.py  ← generate AI descriptions (Groq) for remaining records
 ```
 
 ### Michelin Enrichment (`enrich_from_web_search.py`)
