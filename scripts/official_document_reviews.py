@@ -17,9 +17,11 @@ from pypdf import PdfReader
 from scripts import source_change_alert
 
 
-EXTRACTOR = "pypdf 6.16.2 extract_text normalized-whitespace-v1"
+PYPDF_VERSION = "6.19.0"
+EXTRACTOR = f"pypdf {PYPDF_VERSION} extract_text normalized-whitespace-v1"
 SUPPORTED_EXTRACTORS = {
     EXTRACTOR,
+    "pypdf 6.16.2 extract_text normalized-whitespace-v1",
     "pypdf 6.15.0 extract_text normalized-whitespace-v1",
 }
 MAX_PDF_BYTES = 5 * 1024 * 1024
@@ -73,8 +75,8 @@ def _official_url(value: Any, expected: str) -> str:
 
 
 def pdf_page_hashes(pdf_bytes: bytes) -> list[str]:
-    if pypdf.__version__ != "6.16.2":
-        raise ValueError(f"expected pypdf 6.16.2, found {pypdf.__version__}")
+    if pypdf.__version__ != PYPDF_VERSION:
+        raise ValueError(f"expected pypdf {PYPDF_VERSION}, found {pypdf.__version__}")
     if len(pdf_bytes) > MAX_PDF_BYTES or not pdf_bytes.startswith(b"%PDF"):
         raise ValueError("official document is not a bounded PDF")
     reader = PdfReader(io.BytesIO(pdf_bytes), strict=True)
