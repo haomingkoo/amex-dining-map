@@ -43,7 +43,7 @@ class TableForTwoDataTests(unittest.TestCase):
             "Estate": "buffet_no_menu_expected",
             "Peppermint": "buffet_no_menu_expected",
             "Ginger": "buffet_no_menu_expected",
-            "One-Ninety": "no_pdf_found",
+            "One-Ninety": "buffet_no_menu_expected",
         }
         for name, status in expected.items():
             if name in by_name:

@@ -10,8 +10,10 @@ from typing import Any
 
 try:
     from scripts.jsonio import load_json, save_json
+    from scripts.tft_roster_reviews import NOT_ON_DININGCITY
 except ImportError:  # running as `python3 scripts/<file>.py`
     from jsonio import load_json, save_json
+    from tft_roster_reviews import NOT_ON_DININGCITY
 
 
 
@@ -51,7 +53,7 @@ def tft_catalog_projection(table_for_two: dict) -> dict:
     diningcity_ids = [
         str(venue.get("dining_city_id") or "")
         for venue in venues
-        if isinstance(venue, dict)
+        if isinstance(venue, dict) and venue.get("dining_city_listing") != NOT_ON_DININGCITY
     ]
     if len(ids) != len(venues) or len(set(ids)) != len(ids):
         raise ValueError("Table for Two venue ids must be present and unique")

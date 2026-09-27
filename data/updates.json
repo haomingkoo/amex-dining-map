@@ -1,7 +1,181 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-27T15:03:21Z",
+  "updated_at": "2026-09-27T15:23:18Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_review_cleared",
+      "subject": "Table for Two roster",
+      "detected_at": "2026-09-27T15:23:18Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 1,
+          "Coverage": "31/31 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 0,
+          "Coverage": "32/32 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "review_required",
+          "after": "current"
+        },
+        {
+          "field": "Review",
+          "before": "required",
+          "after": "clear"
+        },
+        {
+          "field": "Review items",
+          "before": 1,
+          "after": 0
+        },
+        {
+          "field": "Coverage",
+          "before": "31/31 (100%), 0 unavailable",
+          "after": "32/32 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "2de1bd408e24ff985c8f",
+      "stream_id": "66129efc1226a46f5069",
+      "occurrence": 1,
+      "id": "d8eeb4cee119e739ac14"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_review_cleared",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-09-27T15:23:18Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 10,
+          "Coverage": "20/31 (64.5%), 11 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 8,
+          "Coverage": "19/32 (59.4%), 13 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "review_required",
+          "after": "current"
+        },
+        {
+          "field": "Review",
+          "before": "required",
+          "after": "clear"
+        },
+        {
+          "field": "Review items",
+          "before": 10,
+          "after": 8
+        },
+        {
+          "field": "Coverage",
+          "before": "20/31 (64.5%), 11 unavailable",
+          "after": "19/32 (59.4%), 13 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "11d1c483b0fa14eaab39",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "571c09c1e2ee3646d1a2"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-09-27T15:23:18Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "28/29 (96.6%), 1 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "30/30 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "28/29 (96.6%), 1 unavailable",
+          "after": "30/30 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "f650b99e3a635665ca66",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "2d0ca0ae35966fb4a2b9"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-09-27T15:23:18Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2971/3023 (98.3%), 52 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2970/3024 (98.2%), 54 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "2971/3023 (98.3%), 52 unavailable",
+          "after": "2970/3024 (98.2%), 54 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "0487850cfd076512beed",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "1adf92314aa21486d3e8"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -295,6 +469,292 @@
       "stream_id": "d03cc6f867310ca61cf7",
       "occurrence": 1,
       "id": "062460f641ef984d316a"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "added",
+      "subject": "Kuriya Dining",
+      "detected_at": "2026-09-27T06:30:00Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Kuriya Dining",
+          "Category": "restaurant",
+          "Address": "1 Kim Seng Promenade, #01-127 Great World, Singapore 237994",
+          "Booking channel": "Amex Experiences App"
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/kuriya_dining",
+      "transition_id": "fef44f3b73d9441a3dbd",
+      "stream_id": "8db1b670d73682b8fe54",
+      "occurrence": 1,
+      "id": "de271cb9c8fbe9d15064",
+      "reviewed_at": "2026-09-27T06:30:00Z",
+      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source."
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "details_updated",
+      "subject": "Brewerkz East Coast Park",
+      "detected_at": "2026-09-27T06:30:00Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Brewerkz East Coast Park",
+          "Category": "restaurant",
+          "Address": "920 East Coast Parkway, #01-20/24, Singapore 449875",
+          "Booking channel": "Amex Experiences App"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Brewerkz East Coast Park",
+          "Category": "cafe",
+          "Address": "920 East Coast Parkway, #01-20/24, Singapore 449875",
+          "Booking channel": "Amex Experiences App"
+        }
+      },
+      "changes": [
+        {
+          "field": "Category",
+          "before": "restaurant",
+          "after": "cafe"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/brewerkz_eastcoast",
+      "transition_id": "ee7b9aa769184442a35e",
+      "stream_id": "23536599609c38bae956",
+      "occurrence": 1,
+      "id": "bec560dcf3475965f48f",
+      "reviewed_at": "2026-09-27T06:30:00Z",
+      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source."
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "added",
+      "subject": "Zui Yu Xuan Teochew Cuisine",
+      "detected_at": "2026-09-27T06:30:00Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Zui Yu Xuan Teochew Cuisine",
+          "Category": "restaurant",
+          "Address": "130/131 Amoy Street, Far East Square, Singapore 049959",
+          "Booking channel": "Amex Experiences App"
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "a18f6ba38a25d86a2808",
+      "stream_id": "ab726279faf42df8d6d2",
+      "occurrence": 1,
+      "id": "8c63b1377d53b4ee23a2",
+      "reviewed_at": "2026-09-27T06:30:00Z",
+      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source."
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "details_updated",
+      "subject": "One-Ninety",
+      "detected_at": "2026-09-27T06:30:00Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "One-Ninety",
+          "Category": "restaurant",
+          "Address": "Four Seasons Hotel Singapore, Lobby Level, 190 Orchard Boulevard, Singapore 248646",
+          "Booking channel": "Amex Experiences App"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "One-Ninety",
+          "Category": "buffet",
+          "Address": "Four Seasons Hotel Singapore, Lobby Level, 190 Orchard Boulevard, Singapore 248646",
+          "Booking channel": "Amex Experiences App"
+        }
+      },
+      "changes": [
+        {
+          "field": "Category",
+          "before": "restaurant",
+          "after": "buffet"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/one-ninety_restaurant",
+      "transition_id": "8b9cc08e6bb00ae30b4d",
+      "stream_id": "2e755479632f9b13715c",
+      "occurrence": 1,
+      "id": "815616083dc8878479d8",
+      "reviewed_at": "2026-09-27T06:30:00Z",
+      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source."
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "removed",
+      "subject": "Osteria Mozza",
+      "detected_at": "2026-09-27T06:30:00Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Osteria Mozza",
+          "Category": "restaurant",
+          "Address": "Hilton Singapore Orchard, Level 5, 333 Orchard Road, Singapore 238867",
+          "Booking channel": "Amex Experiences App",
+          "Menu file": "Osteria-Mozza-Menu_Platinum.pdf",
+          "Menu version": "3347607d4108",
+          "Platinum menu file": "Osteria-Mozza-Menu_Platinum.pdf",
+          "Platinum menu version": "3347607d4108",
+          "Centurion menu file": "Osteria-Mozza-Menu-Centurion.pdf",
+          "Centurion menu version": "2b7fd9a097fa"
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Osteria-Mozza-Menu_Platinum.pdf",
+      "transition_id": "74a774a958ccbfa3ccfa",
+      "stream_id": "1005828a82ddd143feea",
+      "occurrence": 1,
+      "id": "76ae4f55c7c78afb9c1e",
+      "reviewed_at": "2026-09-27T06:30:00Z",
+      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source."
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "details_updated",
+      "subject": "Brewerkz Riverside Point",
+      "detected_at": "2026-09-27T06:30:00Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Brewerkz Riverside Point",
+          "Category": "restaurant",
+          "Address": "30 Merchant Road, #01-07 Riverside Point, Singapore 058282",
+          "Booking channel": "Amex Experiences App"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Brewerkz Riverside Point",
+          "Category": "cafe",
+          "Address": "30 Merchant Road, #01-07 Riverside Point, Singapore 058282",
+          "Booking channel": "Amex Experiences App"
+        }
+      },
+      "changes": [
+        {
+          "field": "Category",
+          "before": "restaurant",
+          "after": "cafe"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/brewerkz_riversidepoint",
+      "transition_id": "d28c1f750c5b17d21a95",
+      "stream_id": "70920b298a51d80c2521",
+      "occurrence": 1,
+      "id": "4de401a17cc3e9ae34ce",
+      "reviewed_at": "2026-09-27T06:30:00Z",
+      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source."
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "details_updated",
+      "subject": "The Feather Blade",
+      "detected_at": "2026-09-27T06:30:00Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "The Feather Blade",
+          "Category": "restaurant",
+          "Address": "61 Tanjong Pagar Road, Singapore 088482",
+          "Booking channel": "Amex Experiences App",
+          "Menu file": "Feather-Blade_Menu.pdf",
+          "Menu version": "0f1a63a10718",
+          "Platinum menu file": "Feather-Blade_Menu.pdf",
+          "Platinum menu version": "0f1a63a10718"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "The Feather Blade",
+          "Category": "cafe",
+          "Address": "61 Tanjong Pagar Road, Singapore 088482",
+          "Booking channel": "Amex Experiences App",
+          "Menu file": "Feather-Blade_Menu.pdf",
+          "Menu version": "0f1a63a10718",
+          "Platinum menu file": "Feather-Blade_Menu.pdf",
+          "Platinum menu version": "0f1a63a10718"
+        }
+      },
+      "changes": [
+        {
+          "field": "Category",
+          "before": "restaurant",
+          "after": "cafe"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Feather-Blade_Menu.pdf",
+      "transition_id": "a1e1dc5cdb90a07cea9e",
+      "stream_id": "2cf28a85f27a48d31c6b",
+      "occurrence": 1,
+      "id": "2e178267e01feee4f93a",
+      "reviewed_at": "2026-09-27T06:30:00Z",
+      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source."
     },
     {
       "program": "Table for Two",
@@ -21504,6 +21964,12 @@
           "d2b204be307fdb85a99b": 1
         }
       },
+      "1005828a82ddd143feea": {
+        "latest_transition_id": "74a774a958ccbfa3ccfa",
+        "occurrences": {
+          "74a774a958ccbfa3ccfa": 1
+        }
+      },
       "11418aeacbe8cfe013ba": {
         "latest_transition_id": "ada19a1cfbcd4cb575f9",
         "occurrences": {
@@ -21647,10 +22113,11 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "876a8d4c7a2af4684659",
+        "latest_transition_id": "11d1c483b0fa14eaab39",
         "occurrences": {
           "02261b7ecfcb8fa754fa": 1,
           "04d54fb5e6257f646c0f": 1,
+          "11d1c483b0fa14eaab39": 1,
           "3b5940a9580f44e06104": 1,
           "3ca8bc01ebe918e43e16": 1,
           "3e2a836daab0dde1d10d": 1,
@@ -21708,9 +22175,10 @@
         }
       },
       "23536599609c38bae956": {
-        "latest_transition_id": "3f8657632ba8c8766e8f",
+        "latest_transition_id": "ee7b9aa769184442a35e",
         "occurrences": {
-          "3f8657632ba8c8766e8f": 1
+          "3f8657632ba8c8766e8f": 1,
+          "ee7b9aa769184442a35e": 1
         }
       },
       "273e2725dcd75e6aa23b": {
@@ -21754,6 +22222,18 @@
         "latest_transition_id": "091c6f830bebddc73dec",
         "occurrences": {
           "091c6f830bebddc73dec": 1
+        }
+      },
+      "2cf28a85f27a48d31c6b": {
+        "latest_transition_id": "a1e1dc5cdb90a07cea9e",
+        "occurrences": {
+          "a1e1dc5cdb90a07cea9e": 1
+        }
+      },
+      "2e755479632f9b13715c": {
+        "latest_transition_id": "8b9cc08e6bb00ae30b4d",
+        "occurrences": {
+          "8b9cc08e6bb00ae30b4d": 1
         }
       },
       "2f9f796ad767a92c7ab2": {
@@ -21951,12 +22431,13 @@
         }
       },
       "66129efc1226a46f5069": {
-        "latest_transition_id": "965aa906dc470efbc7bb",
+        "latest_transition_id": "2de1bd408e24ff985c8f",
         "occurrences": {
           "083081096cbb3c8c1c76": 1,
           "0b5afd558ebf89b84ac5": 1,
           "13c352bff48c50b6832d": 1,
           "1c5d2ed58c6c8667c40a": 1,
+          "2de1bd408e24ff985c8f": 1,
           "2f1ca3a47249fa24a63c": 1,
           "46ab8b1ef9cfe57b0575": 1,
           "48c6897c6752df3fd28d": 1,
@@ -22009,9 +22490,10 @@
         }
       },
       "70920b298a51d80c2521": {
-        "latest_transition_id": "75e236ee2f0533a4b40b",
+        "latest_transition_id": "d28c1f750c5b17d21a95",
         "occurrences": {
-          "75e236ee2f0533a4b40b": 1
+          "75e236ee2f0533a4b40b": 1,
+          "d28c1f750c5b17d21a95": 1
         }
       },
       "74755a6c5148fbefa8d1": {
@@ -22021,8 +22503,9 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "285cde76ec76983e7aee",
+        "latest_transition_id": "0487850cfd076512beed",
         "occurrences": {
+          "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
           "1ab8e0fbb8680e92c68d": 1,
           "1c7f262ce9ab4a1ccc5f": 1,
@@ -22142,6 +22625,12 @@
           "908a85c142bc3b150979": 1
         }
       },
+      "8db1b670d73682b8fe54": {
+        "latest_transition_id": "fef44f3b73d9441a3dbd",
+        "occurrences": {
+          "fef44f3b73d9441a3dbd": 1
+        }
+      },
       "90bc637f9775de626f91": {
         "latest_transition_id": "0a4a4aa540164506ebb4",
         "occurrences": {
@@ -22224,6 +22713,12 @@
         "latest_transition_id": "5b741b3c6bf6f000f0fc",
         "occurrences": {
           "5b741b3c6bf6f000f0fc": 1
+        }
+      },
+      "ab726279faf42df8d6d2": {
+        "latest_transition_id": "a18f6ba38a25d86a2808",
+        "occurrences": {
+          "a18f6ba38a25d86a2808": 1
         }
       },
       "ad2c04886d3be666fd13": {
@@ -22532,7 +23027,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "98997d254b5dfdda4b93",
+        "latest_transition_id": "f650b99e3a635665ca66",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
@@ -22594,6 +23089,7 @@
           "ea379dab4a7dc9d7f236": 1,
           "f1df936d6ee3b6ab351e": 15,
           "f3c1045e9b3a8d8861f1": 4,
+          "f650b99e3a635665ca66": 1,
           "f9da06e92487f100242e": 1
         }
       }

@@ -46,7 +46,7 @@ OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card
 TERMS_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf"
 FAQ_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TableforTwo_FAQ.pdf"
 KNOWN_PARTICIPATING_SHA256 = "5a2c3eb79ad86ee737b8aa125bcdfffa3195954ccfcfd4ced5d86aa649398ec5"
-KNOWN_CYCLES_SHA256 = "58fe005ae32d9a294f0064677bf96c7c8bcc035a108a6ab9318e201672326696"
+KNOWN_CYCLES_SHA256 = "327019c9016978dede3a58911f6f7b7cca338f0f47390bf19468428607f11bc8"
 KNOWN_TERMS_SHA256 = "7ba815581e6c0cb0c50775e6db642f81b040a65ff5568a70f6aeb4ed4cc0a7ec"
 KNOWN_FAQ_SHA256 = "cbd8a1604459abd632a8e409ee603f9652a5907e60bb72a517c919cbb4aaeb93"
 DININGCITY_API_BASE = "https://api.diningcity.asia/public"
@@ -404,7 +404,11 @@ def _auto_venue_from_membership(record: dict, streak: dict, checked_at: str) -> 
 
 def _validate_published_roster(records: list[dict]) -> None:
     venue_ids = [str(venue.get("id") or "") for venue in records]
-    diningcity_ids = [str(venue.get("dining_city_id") or "") for venue in records]
+    diningcity_ids = [
+        str(venue.get("dining_city_id") or "")
+        for venue in records
+        if venue.get("dining_city_listing") != tft_roster_reviews.NOT_ON_DININGCITY
+    ]
     normalized_names = [_normalized_name(venue.get("name")) for venue in records]
     if "" in venue_ids or len(venue_ids) != len(set(venue_ids)):
         raise ValueError("published Table for Two roster has missing or duplicate venue IDs")

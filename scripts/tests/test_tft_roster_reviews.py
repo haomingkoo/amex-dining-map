@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import apply_tft_roster_review, source_change_alert, tft_roster_reviews
+from scripts import apply_tft_roster_review, scrape_table_for_two, source_change_alert, tft_roster_reviews
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -118,6 +118,8 @@ def changed_manifest() -> dict:
 def reviewed_data() -> dict:
     data = copy.deepcopy(DATA)
     data["source_images"]["participating_merchants_sha256"] = "e" * 64
+    # Roster tests: the voucher image is not under review, whatever cycle is current.
+    data["source_images"]["voucher_cycles_sha256"] = scrape_table_for_two.KNOWN_CYCLES_SHA256
     data["participating_merchants_image_url"] = (
         "https://www.americanexpress.com/content/dam/reviewed-next.png"
     )
@@ -403,4 +405,33 @@ def test_manifest_rejects_images_that_do_not_fingerprint_to_its_hash():
     manifest["manifest_sha256"] = tft_roster_reviews.manifest_sha256(manifest)
 
     with pytest.raises(ValueError, match="fingerprint"):
+        tft_roster_reviews.validate_manifest(manifest)
+
+
+def manifest_with_second_venue(**fields) -> dict:
+    manifest = copy.deepcopy(MANIFEST)
+    manifest["venues"][1].update(fields)
+    manifest["manifest_sha256"] = tft_roster_reviews.manifest_sha256(manifest)
+    return manifest
+
+
+def test_manifest_accepts_marked_venue_without_diningcity_id():
+    manifest = manifest_with_second_venue(
+        dining_city_id=None, dining_city_listing=tft_roster_reviews.NOT_ON_DININGCITY
+    )
+
+    tft_roster_reviews.validate_manifest(manifest)
+
+
+def test_manifest_rejects_missing_diningcity_id_without_marker():
+    manifest = manifest_with_second_venue(dining_city_id=None)
+
+    with pytest.raises(ValueError, match="not_on_diningcity"):
+        tft_roster_reviews.validate_manifest(manifest)
+
+
+def test_manifest_rejects_marker_on_venue_with_diningcity_id():
+    manifest = manifest_with_second_venue(dining_city_listing=tft_roster_reviews.NOT_ON_DININGCITY)
+
+    with pytest.raises(ValueError, match="not both"):
         tft_roster_reviews.validate_manifest(manifest)
