@@ -595,3 +595,10 @@ def test_cli_recovers_after_data_first_event_failure(tmp_path, monkeypatch):
     assert apply_tft_menu_review.main() == 0
     assert json.loads(updates_path.read_text())["updates"][0]["status"] == "published"
     assert catalog_path.exists()
+
+
+def test_only_missing_menus_do_not_require_review():
+    missing = [{"kind": "missing_venue_menu", "venue_id": "tft-a"}]
+
+    assert tft_menu_reviews.queue_needs_review(missing) is False
+    assert tft_menu_reviews.queue_needs_review(missing + [{"kind": "ambiguous_exact_match"}]) is True

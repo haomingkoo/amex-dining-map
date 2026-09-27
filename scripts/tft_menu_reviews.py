@@ -11,6 +11,13 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 from urllib.parse import urlparse
 
+# Missing menus stay queued for the page warning but carry no PDF a reviewer can act on.
+UNREVIEWABLE_QUEUE_KINDS = frozenset({"missing_venue_menu"})
+
+
+def queue_needs_review(queue: list[dict]) -> bool:
+    return any(item.get("kind") not in UNREVIEWABLE_QUEUE_KINDS for item in queue)
+
 
 MAX_PDF_BYTES = 20 * 1024 * 1024
 DECIDABLE_KINDS = {"changed_or_new_venue_menu", "ambiguous_exact_match"}
@@ -365,7 +372,7 @@ def apply_review(
             if entry.get("kind") == "missing_venue_menu" and entry.get("venue_id")
         }
     )
-    source["review_required"] = bool(source["review_queue"] or source.get("venues_review"))
+    source["review_required"] = queue_needs_review(source["review_queue"])
     return updated, event
 
 

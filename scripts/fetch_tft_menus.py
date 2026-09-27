@@ -820,7 +820,7 @@ def main() -> int:
         "review_queue": review_queue,
         "review_queue_count": len(review_queue),
         "review_queue_sha256": review_queue_sha256(review_queue),
-        "review_required": bool(review_count or review_queue),
+        "review_required": tft_menu_reviews.queue_needs_review(review_queue),
         "review_decisions": review_decisions,
     }
 
