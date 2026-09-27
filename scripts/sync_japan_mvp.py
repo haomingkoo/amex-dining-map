@@ -239,14 +239,17 @@ def post_json(url: str, payload: dict, retries: int = 4) -> dict:
 
 
 def source_record_projection(record: dict) -> dict:
-    ignored = {"lat", "lng", "search_text", "external_signals"}
+    # last_verified_at changes every run, so hashing it would alert on every refresh.
+    ignored = {"lat", "lng", "search_text", "external_signals", "last_verified_at"}
     return {key: value for key, value in record.items() if key not in ignored}
 
 
 def build_source_meta(records: list[dict], fetched_at: str) -> dict:
     mapped = sum(1 for record in records if record.get("lat") is not None and record.get("lng") is not None)
     cities = sorted({record["city"] for record in records if record.get("city")})
-    source_projection = [source_record_projection(record) for record in records]
+    source_projection = [
+        source_record_projection(record) for record in sorted(records, key=lambda record: record["id"])
+    ]
     source_hash = hashlib.sha256(
         json.dumps(source_projection, ensure_ascii=False, sort_keys=True).encode("utf-8")
     ).hexdigest()
