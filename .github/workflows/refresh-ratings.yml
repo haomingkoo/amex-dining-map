@@ -84,6 +84,7 @@ jobs:
           MUST_STAGE: |
             data/google-maps-ratings.json
             data/source-health.json
+            data/updates.json
           KEEP_LOCAL_ON_CONFLICT: data/google-maps-ratings.json
         run: |
           git config user.name "github-actions[bot]"
