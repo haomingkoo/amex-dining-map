@@ -1,0 +1,1710 @@
+{
+  "schema_version": 4,
+  "source": "data/table-for-two.json",
+  "program": "American Express Table for Two by Platinum",
+  "official_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+  "roster_checked_at": "2026-09-22T23:57:21Z",
+  "menu_source": {
+    "checked_at": "2026-09-22T23:58:56Z",
+    "review_required": true,
+    "review_queue_count": 10
+  },
+  "release_source": {
+    "source": "data/table-for-two-release-history.json",
+    "project": "AMEXPlatSG",
+    "updated_at": "2026-09-23T22:05:14+00:00",
+    "observation_count": 3924
+  },
+  "slot_source": {
+    "url": "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json",
+    "project": "AMEXPlatSG",
+    "stale_after_minutes": 30
+  },
+  "manual_review_required": false,
+  "documents": [
+    {
+      "id": "tft-terms",
+      "kind": "terms",
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf",
+      "raw_sha256": "7ba815581e6c0cb0c50775e6db642f81b040a65ff5568a70f6aeb4ed4cc0a7ec",
+      "observed_sha256": "7ba815581e6c0cb0c50775e6db642f81b040a65ff5568a70f6aeb4ed4cc0a7ec",
+      "captured_at": "2026-05-07T12:23:44Z",
+      "review_required": false,
+      "review_status": "current_baseline",
+      "clauses": [
+        {
+          "id": "eligibility",
+          "title": "Eligibility",
+          "page": 1,
+          "page_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "evidence_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "topics": [
+            "eligibility",
+            "eligible",
+            "qualify",
+            "card",
+            "card required",
+            "card is required",
+            "centurion card",
+            "supplementary",
+            "basic"
+          ],
+          "summary": "The program covers Basic and Supplementary members of the Singapore-issued Platinum Card. This document scope does not determine whether a particular person or card qualifies."
+        },
+        {
+          "id": "benefit-cycle",
+          "title": "Benefit cycle",
+          "page": 1,
+          "page_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "evidence_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "topics": [
+            "benefit",
+            "offer",
+            "cycle",
+            "voucher",
+            "carry forward",
+            "six",
+            "complimentary"
+          ],
+          "summary": "One complimentary dining offer is made available every two months, up to six times in 2026. An unused offer does not carry into a later cycle."
+        },
+        {
+          "id": "shared-account",
+          "title": "Shared Card Account",
+          "page": 1,
+          "page_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "evidence_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "topics": [
+            "shared",
+            "account",
+            "supplementary voucher",
+            "one per card",
+            "redeemed",
+            "used"
+          ],
+          "summary": "Basic and Supplementary members can see the offer, but it is usable once per Card Account in each redemption cycle."
+        },
+        {
+          "id": "guests",
+          "title": "Guests and additional diners",
+          "page": 1,
+          "page_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "evidence_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "topics": [
+            "guest",
+            "guests",
+            "diner",
+            "diners",
+            "party",
+            "additional",
+            "children",
+            "child"
+          ],
+          "summary": "The offer is for two people and at least one diner must be an eligible Card Member. Additional diners must be declared in the booking portal, remain subject to merchant availability, and incur additional cost paid with the eligible card. The program terms do not state how children are counted."
+        },
+        {
+          "id": "solo-takeaway",
+          "title": "Solo dining and takeaway",
+          "page": 1,
+          "page_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "evidence_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "topics": [
+            "solo",
+            "alone",
+            "takeaway",
+            "take away",
+            "dine in"
+          ],
+          "summary": "A solo diner still receives food intended for two, and offer food is dine-in only rather than available for takeaway."
+        },
+        {
+          "id": "booking-confirmation",
+          "title": "Booking and confirmation",
+          "page": 1,
+          "page_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "evidence_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "topics": [
+            "booking",
+            "book",
+            "book directly",
+            "reservation",
+            "confirmed",
+            "confirmation",
+            "sms",
+            "guarantee",
+            "availability"
+          ],
+          "summary": "A valid booking must be made through the Experiences App. Capacity is first-come, first-served; confirmation requires a successful merchant-site reservation and merchant SMS. American Express does not guarantee a booking or availability."
+        },
+        {
+          "id": "menu-and-costs",
+          "title": "Menus and additional costs",
+          "page": 1,
+          "page_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "evidence_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "topics": [
+            "menu",
+            "price",
+            "cost",
+            "additional diner",
+            "voucher redeemed"
+          ],
+          "summary": "Displayed menu prices cover additional diners beyond the standard two and extra costs must be paid with the eligible card. If the cycle voucher was already redeemed, the document says the diner may instead pay the merchant directly using the eligible card and choose the curated or regular menu. Actual dishes must be checked in the current menu."
+        },
+        {
+          "id": "merchant-changes-blackouts",
+          "title": "Merchant changes and blackout dates",
+          "page": 1,
+          "page_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "evidence_text_sha256": "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+          "topics": [
+            "blackout",
+            "merchant",
+            "restaurant change",
+            "participating",
+            "public holiday"
+          ],
+          "summary": "Participating merchants can change by cycle without notice, merchant blackout dates may apply, and the document lists public holidays and their eves as program-wide blackout dates."
+        },
+        {
+          "id": "cancellation",
+          "title": "Cancellation and no-show policies",
+          "page": 2,
+          "page_text_sha256": "d0a2104700134f87df586fb2f496ba066534a9606da41c30513739c5d40e3d5f",
+          "evidence_text_sha256": "d0a2104700134f87df586fb2f496ba066534a9606da41c30513739c5d40e3d5f",
+          "topics": [
+            "cancel",
+            "cancellation",
+            "no show",
+            "no-show",
+            "fee",
+            "refund"
+          ],
+          "summary": "Each merchant sets its own cancellation policy. Card Members must review it before booking, and American Express says it is not liable for fees caused by a policy violation. The program document does not provide a venue-specific fee or deadline."
+        },
+        {
+          "id": "offer-combination",
+          "title": "Combining the offer",
+          "page": 2,
+          "page_text_sha256": "d0a2104700134f87df586fb2f496ba066534a9606da41c30513739c5d40e3d5f",
+          "evidence_text_sha256": "d0a2104700134f87df586fb2f496ba066534a9606da41c30513739c5d40e3d5f",
+          "topics": [
+            "combine",
+            "promotion",
+            "discount",
+            "cash",
+            "exchange",
+            "stack"
+          ],
+          "summary": "The offer cannot be exchanged for cash or in-kind and cannot be combined with other offers, promotions, privileges, or discounts unless stated otherwise."
+        }
+      ],
+      "title": "Table for Two - Platinum Edition Terms and Conditions",
+      "page_count": 3,
+      "page_text_sha256": [
+        "12b324ac27e34506f073535703ddc3d70734a4d0e3175f6b532a96652b58ac2d",
+        "d0a2104700134f87df586fb2f496ba066534a9606da41c30513739c5d40e3d5f",
+        "8f5cba4caf5ce077412319d31cb80a4f0b066d06cde9cbc9ba72f42840163186"
+      ],
+      "extractor": "pypdf 6.15.0 extract_text normalized-whitespace-v1",
+      "lexical_index_version": "reviewed-topics-v1",
+      "reviewed_at": "2026-08-30T04:52:00Z"
+    },
+    {
+      "id": "tft-faq",
+      "kind": "faq",
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TableforTwo_FAQ.pdf",
+      "raw_sha256": "cbd8a1604459abd632a8e409ee603f9652a5907e60bb72a517c919cbb4aaeb93",
+      "observed_sha256": "cbd8a1604459abd632a8e409ee603f9652a5907e60bb72a517c919cbb4aaeb93",
+      "captured_at": "2026-07-01T23:08:50Z",
+      "review_required": false,
+      "review_status": "current_baseline",
+      "clauses": [
+        {
+          "id": "voucher-dates",
+          "title": "Voucher issue dates and cycles",
+          "page": 1,
+          "page_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+          "evidence_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+          "topics": [
+            "voucher",
+            "receive",
+            "cycle",
+            "date",
+            "when",
+            "redemption period"
+          ],
+          "summary": "The Experiences App provides one voucher for each two-month cycle beginning 1 January, March, May, July, September, and November. Each voucher must be used within its own cycle."
+        },
+        {
+          "id": "unavailable-dates",
+          "title": "Why a date is unavailable",
+          "page": 1,
+          "page_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+          "evidence_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+          "topics": [
+            "unavailable",
+            "date unavailable",
+            "dates unavailable",
+            "sold out",
+            "not released",
+            "open reservations",
+            "availability"
+          ],
+          "summary": "A date can be unavailable because all seats were booked or because the restaurant has not opened reservations for that date. The FAQ recommends trying another restaurant or checking again later; this is not a current seat claim."
+        },
+        {
+          "id": "guest-selector",
+          "title": "Guest selector and even-numbered capacity",
+          "page": 1,
+          "page_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+          "evidence_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+          "topics": [
+            "guest selector",
+            "party size",
+            "number of guests",
+            "odd seat",
+            "one seat",
+            "even numbers"
+          ],
+          "summary": "If a party-size option is missing, the remaining capacity may be too small. The FAQ says slots are released in even numbers, while odd-sized bookings can leave an odd number of seats. Try another time or date for a larger party."
+        },
+        {
+          "id": "otp-locked",
+          "title": "OTP attempts and locked access",
+          "page": 1,
+          "page_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+          "evidence_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+          "topics": [
+            "otp",
+            "locked",
+            "account is locked",
+            "sms",
+            "whatsapp",
+            "voice call",
+            "login code"
+          ],
+          "summary": "OTP attempts proceed by SMS, then WhatsApp, then automated voice call, with two minutes between attempts. If access remains blocked, the FAQ directs users to DiningCity support or the number on the back of the Card. Never send credentials or an OTP to this bot."
+        },
+        {
+          "id": "reservation-confirmed",
+          "title": "Reservation confirmation",
+          "page": 1,
+          "page_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+          "evidence_text_sha256": "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+          "topics": [
+            "confirmed",
+            "confirmation",
+            "reservation is confirmed",
+            "reservation code",
+            "sms booking",
+            "manage reservation"
+          ],
+          "summary": "DiningCity sends an SMS with the confirmation and reservation code after a completed booking. The link in that message manages the reservation; missing messages should be raised with DiningCity support."
+        },
+        {
+          "id": "voucher-used",
+          "title": "Voucher already marked used",
+          "page": 2,
+          "page_text_sha256": "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e",
+          "evidence_text_sha256": "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e",
+          "topics": [
+            "voucher used",
+            "voucher is used",
+            "voucher redeemed",
+            "already used",
+            "reinstated",
+            "supplementary"
+          ],
+          "summary": "A voucher marked used may have been redeemed by another Basic or Supplementary member on the shared Card Account. The FAQ suggests reinstalling and signing in again, then calling the number on the back of the Card if the issue continues. An unused voucher can be reinstated after verification."
+        },
+        {
+          "id": "myca-login",
+          "title": "MYCA authentication",
+          "page": 2,
+          "page_text_sha256": "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e",
+          "evidence_text_sha256": "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e",
+          "topics": [
+            "myca",
+            "log in again",
+            "login again",
+            "authentication",
+            "existing user"
+          ],
+          "summary": "The FAQ says all users, including existing app users, must complete MYCA authentication again. Do not send credentials to this bot."
+        },
+        {
+          "id": "face-id",
+          "title": "Biometric login after 90 days",
+          "page": 2,
+          "page_text_sha256": "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e",
+          "evidence_text_sha256": "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e",
+          "topics": [
+            "face id",
+            "biometric",
+            "90 days"
+          ],
+          "summary": "After 90 days, the app requires MYCA credentials again before biometric login can continue. Do not send credentials to this bot."
+        }
+      ],
+      "title": "Table for Two - Frequently Asked Questions",
+      "page_count": 2,
+      "page_text_sha256": [
+        "e163bb61bfe4226a701e22c98b356d37b2209700809cdc986d916664ba666205",
+        "3cb6b4d387fe93d55a791552536d7857c4ab9b62ace0048fe76e6c6f1bb52c2e"
+      ],
+      "extractor": "pypdf 6.15.0 extract_text normalized-whitespace-v1",
+      "lexical_index_version": "reviewed-topics-v1",
+      "reviewed_at": "2026-08-30T04:52:00Z"
+    }
+  ],
+  "venues": [
+    {
+      "id": "tft-15-stamford-restaurant",
+      "name": "15 Stamford Restaurant",
+      "dining_city_id": "2055188",
+      "dining_city_name": "15 Stamford Restaurant",
+      "category": "restaurant",
+      "address": "15 Stamford Road, Singapore 178906",
+      "aliases": [
+        "15 Stamford"
+      ],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/15Stamford-Menu_Centurion.pdf",
+          "filename": "15Stamford-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "7fecd9d4f8453003dba57239f38526e2f3147d8f6b208d2c6b05bb4d7f3391e7"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/15Stamford-Menu_Platinum.pdf",
+          "filename": "15Stamford-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "b2458951e5aa7168adf37d215482a0bd32a68916eedf1b8724dd57a874efa4bc"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 20,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.3,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 17,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.29,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-15-stamford-restaurant"
+    },
+    {
+      "id": "tft-baes-cocktail-club",
+      "name": "Bae's Cocktail Club",
+      "dining_city_id": "205194844",
+      "dining_city_name": "Bae's Cocktail Club",
+      "category": "restaurant",
+      "address": "21 Tanjong Pagar Road, #01-04/05, Singapore 088444",
+      "aliases": [],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Baes-Menu_Centurion.pdf",
+          "filename": "Baes-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "890f1bcc888eb30792754d3c6dd8260a5cbd9ccf3509ee8632ce6b044dc7b8bc"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Baes-Menu_Platinum.pdf",
+          "filename": "Baes-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "84893b90ec4f378f71bb9a44058d3c65b9071c2f1d7e1cec7c0f9b31da22015a"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 27,
+          "median_lead_days": 29.0,
+          "lead_days_min": 28,
+          "lead_days_max": 29,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.3,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T18:52:15Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-baes-cocktail-club"
+    },
+    {
+      "id": "tft-brewerkz-east-coast-park",
+      "name": "Brewerkz East Coast Park",
+      "dining_city_id": "205196412",
+      "dining_city_name": "Brewerkz East Coast Park",
+      "category": "restaurant",
+      "address": "920 East Coast Parkway, #01-20/24, Singapore 449875",
+      "aliases": [],
+      "menus": {
+        "default": {
+          "status": "no_pdf_found",
+          "checked_at": "2026-09-22T23:58:56Z"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "All-day Dining",
+          "observation_count": 74,
+          "median_lead_days": 49.5,
+          "lead_days_min": 3,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "06:30",
+          "typical_time_observation_share": 0.95,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-06T16:17:37Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-brewerkz-east-coast-park"
+    },
+    {
+      "id": "tft-brewerkz-riverside-point",
+      "name": "Brewerkz Riverside Point",
+      "dining_city_id": "205196414",
+      "dining_city_name": "Brewerkz Riverside Point",
+      "category": "restaurant",
+      "address": "30 Merchant Road, #01-07 Riverside Point, Singapore 058282",
+      "aliases": [],
+      "menus": {
+        "default": {
+          "status": "no_pdf_found",
+          "checked_at": "2026-09-22T23:58:56Z"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "All-day Dining",
+          "observation_count": 87,
+          "median_lead_days": 49.0,
+          "lead_days_min": 3,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "06:30",
+          "typical_time_observation_share": 0.94,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-brewerkz-riverside-point"
+    },
+    {
+      "id": "tft-colony",
+      "name": "Colony",
+      "dining_city_id": "205191500",
+      "dining_city_name": "Colony",
+      "category": "buffet",
+      "address": "The Ritz-Carlton, Millenia Singapore, 7 Raffles Avenue, Singapore 039799",
+      "aliases": [
+        "Colony at the Ritz Carlton",
+        "Colony Ritz Carlton"
+      ],
+      "menus": {
+        "default": {
+          "status": "buffet_no_menu_expected",
+          "checked_at": "2026-09-22T23:58:56Z"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 39,
+          "median_lead_days": 48.0,
+          "lead_days_min": 3,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.26,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T14:48:58Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 34,
+          "median_lead_days": 59.5,
+          "lead_days_min": 7,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.35,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T05:12:40Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-colony"
+    },
+    {
+      "id": "tft-cultivate",
+      "name": "Cultivate",
+      "dining_city_id": "205194002",
+      "dining_city_name": "Cultivate Café",
+      "category": "restaurant",
+      "address": "2 Cook Street, Maxwell Reserve, Singapore 078857",
+      "aliases": [
+        "Cultivate Cafe"
+      ],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Cultivate-Menu_Centurion.pdf",
+          "filename": "Cultivate-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "840ed156f6b32e11792cea1ae5db89ae2e8d40ffe0bda236e452f77cacd4d2a3"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Cultivate-Menu_Platinum.pdf",
+          "filename": "Cultivate-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "84b2392cd088b51b1cec840bc96f204ea468150fb712041efdffd271b293b8a6"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 21,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.33,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 21,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.33,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-cultivate"
+    },
+    {
+      "id": "tft-estate",
+      "name": "Estate",
+      "dining_city_id": "205195358",
+      "dining_city_name": "Estate",
+      "category": "buffet",
+      "address": "Hilton Singapore Orchard, Level 5, 333 Orchard Road, Singapore 238867",
+      "aliases": [],
+      "menus": {
+        "default": {
+          "status": "buffet_no_menu_expected",
+          "checked_at": "2026-09-22T23:58:56Z"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Afternoon Tea",
+          "observation_count": 23,
+          "median_lead_days": 61.0,
+          "lead_days_min": 59,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.22,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-20T06:41:59Z"
+        },
+        {
+          "meal": "Dinner",
+          "observation_count": 27,
+          "median_lead_days": 61.0,
+          "lead_days_min": 7,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.3,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-22T11:01:44Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 23,
+          "median_lead_days": 61.0,
+          "lead_days_min": 59,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.22,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-20T06:41:59Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-estate"
+    },
+    {
+      "id": "tft-forage",
+      "name": "Forage",
+      "dining_city_id": "205193590",
+      "dining_city_name": "Forage",
+      "category": "restaurant",
+      "address": "60 Mandai Lake Road, Singapore 729979",
+      "aliases": [],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Forage-Menu_Centurion.pdf",
+          "filename": "Forage-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "cf8f3c26ca57769df8e9b845d76afe7cec261f23625b77930f4aced51b9fc127"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Forage-Menu_Platinium.pdf",
+          "filename": "Forage-Menu_Platinium.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-02T22:48:18Z",
+          "last_seen_at": "2026-09-02T22:48:18Z",
+          "sha256": "72c0b83a7423c846dfca177ed203329ac81ae211979ca37557885be8090ed62d"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 73,
+          "median_lead_days": 39.0,
+          "lead_days_min": 0,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": "06:00",
+          "typical_time_observation_share": 0.77,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T14:48:58Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-forage"
+    },
+    {
+      "id": "tft-ginger",
+      "name": "Ginger",
+      "dining_city_id": "205195398",
+      "dining_city_name": "Ginger at Park Royal",
+      "category": "buffet",
+      "address": "PARKROYAL on Beach Road, 7500 Beach Road, Singapore 199591",
+      "aliases": [
+        "Ginger at Park Royal"
+      ],
+      "menus": {
+        "default": {
+          "status": "buffet_no_menu_expected",
+          "checked_at": "2026-09-22T23:58:56Z"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 17,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 91,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.24,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 17,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 91,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.24,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-ginger"
+    },
+    {
+      "id": "tft-grand-cru-wine-bar",
+      "name": "Grand Cru Wine Bar",
+      "dining_city_id": "205195660",
+      "dining_city_name": "Grand Cru Wine Bar",
+      "category": "restaurant",
+      "address": "252 North Bridge Road, #01-44B Raffles City Shopping Centre, Singapore 179103",
+      "aliases": [],
+      "menus": {
+        "default": {
+          "status": "no_pdf_found",
+          "checked_at": "2026-09-22T23:58:56Z"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 74,
+          "median_lead_days": 48.5,
+          "lead_days_min": 3,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "06:30",
+          "typical_time_observation_share": 0.95,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-grand-cru-wine-bar"
+    },
+    {
+      "id": "tft-highhouse",
+      "name": "HighHouse",
+      "dining_city_id": "205194016",
+      "dining_city_name": "HighHouse",
+      "category": "restaurant",
+      "address": "1 Raffles Place, Level 61-62, Singapore 048616",
+      "aliases": [],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/HighHouse-Menu_Centurion.pdf",
+          "filename": "HighHouse-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "988388d5cd4de95b0688c9ea4a4f874c444f4ea4ac8624d58c6b909bea1affff"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/HighHouse-Menu_Platinum.pdf",
+          "filename": "HighHouse-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "e4b9865c94f3fa05fe893465a756cabd8c28b7a5e42b60bf4cf676d933e8b794"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 27,
+          "median_lead_days": 29.0,
+          "lead_days_min": 6,
+          "lead_days_max": 29,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.33,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T18:52:15Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-highhouse"
+    },
+    {
+      "id": "tft-kaya-at-the-standard",
+      "name": "Kaya at The Standard",
+      "dining_city_id": "205192104",
+      "dining_city_name": "Kaya at The Standard",
+      "category": "restaurant",
+      "address": "The Standard, Singapore, 2nd Floor, 12 Orange Grove Road, Singapore 258353",
+      "aliases": [],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Kaya-Menu_Centurion.pdf",
+          "filename": "Kaya-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "d2157e2ccc5b5bb4ef8bb81c4673daa871a412ac4e1ccc14924537704d91c91c"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Kaya-Menu_Platinum.pdf",
+          "filename": "Kaya-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "a2b447bf6a3d8c82fb7175ec7ad1d28744cbae4a0fd73482b959ac7ebfb320fc"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 21,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.33,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 15,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.33,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-kaya-at-the-standard"
+    },
+    {
+      "id": "tft-kees",
+      "name": "Kee's",
+      "dining_city_id": "205194842",
+      "dining_city_name": "Kee's",
+      "category": "cafe",
+      "address": "21 Carpenter Street, Singapore 059984",
+      "aliases": [
+        "Kees"
+      ],
+      "menus": {
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Kees-Menu.pdf",
+          "filename": "Kees-Menu.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "b23f3d03b26133c35e5c5722051cdcd968fc87b7426a9f6a2be1df51dbd7f03f"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Afternoon Tea",
+          "observation_count": 37,
+          "median_lead_days": 61.0,
+          "lead_days_min": 59,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.22,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T18:52:15Z"
+        },
+        {
+          "meal": "Dinner",
+          "observation_count": 38,
+          "median_lead_days": 61.0,
+          "lead_days_min": 5,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.24,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T18:52:15Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 36,
+          "median_lead_days": 61.0,
+          "lead_days_min": 59,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.22,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T05:12:40Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-kees"
+    },
+    {
+      "id": "tft-la-brasserie",
+      "name": "La Brasserie",
+      "dining_city_id": "205173372",
+      "dining_city_name": "La Brasserie",
+      "category": "restaurant",
+      "address": "80 Collyer Quay, The Fullerton Bay Hotel, Singapore 049326",
+      "aliases": [],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/La-Brasserie-Menu_Centurion.pdf",
+          "filename": "La-Brasserie-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "5867da0aee8ce1ce6b241b2f1895302cf3a68be80af18b5dd630a95ceed53d05"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/La-Brasserie-Menu_Platinum.pdf",
+          "filename": "La-Brasserie-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "724283b946af4a4f4d7d83cea4d36e0bd8211fe9802771a482d16450d28a79f7"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 35,
+          "median_lead_days": 60.0,
+          "lead_days_min": 60,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.26,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T18:52:15Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 26,
+          "median_lead_days": 60.0,
+          "lead_days_min": 60,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.23,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T18:52:15Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-la-brasserie"
+    },
+    {
+      "id": "tft-latido",
+      "name": "Latido",
+      "dining_city_id": "205195352",
+      "dining_city_name": "Latido",
+      "category": "restaurant",
+      "address": "40 Tras Street, Singapore 078979",
+      "aliases": [],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Latido-Menu_Centurion.pdf",
+          "filename": "Latido-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "33d9f7f4f446b5b83bfa8c7febe97eebb663a68563e333b392df6ae24dd07401"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Latido-Menu_Platinum.pdf",
+          "filename": "Latido-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "e71475b254c01b21f3d6371d55c9765f5c1b032d2f9ea351ea7a541ce63cf541"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Afternoon Tea",
+          "observation_count": 5,
+          "median_lead_days": 61.0,
+          "lead_days_min": 60,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.2,
+          "confidence": "early",
+          "latest_observation_at": "2026-09-21T18:19:26Z"
+        },
+        {
+          "meal": "Dinner",
+          "observation_count": 32,
+          "median_lead_days": 61.0,
+          "lead_days_min": 4,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.16,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T18:52:15Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 25,
+          "median_lead_days": 61.0,
+          "lead_days_min": 59,
+          "lead_days_max": 61,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.24,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-21T18:19:26Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-latido"
+    },
+    {
+      "id": "tft-one-ninety",
+      "name": "One-Ninety",
+      "dining_city_id": "205174978",
+      "dining_city_name": "One-Ninety Restaurant",
+      "category": "restaurant",
+      "address": "Four Seasons Hotel Singapore, Lobby Level, 190 Orchard Boulevard, Singapore 248646",
+      "aliases": [
+        "One Ninety",
+        "One Ninety Restaurant"
+      ],
+      "menus": {
+        "default": {
+          "status": "no_pdf_found",
+          "checked_at": "2026-09-22T23:58:56Z"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Lunch",
+          "observation_count": 6,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.33,
+          "confidence": "medium",
+          "latest_observation_at": "2026-09-06T16:17:37Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-one-ninety"
+    },
+    {
+      "id": "tft-oso-ristorante",
+      "name": "OSO Ristorante",
+      "dining_city_id": "2056126",
+      "dining_city_name": "OSO Ristorante",
+      "category": "restaurant",
+      "address": "100 Peck Seah Street, Level 27 Oasia Hotel Downtown, Singapore 079333",
+      "aliases": [],
+      "menus": {
+        "default": {
+          "status": "no_pdf_found",
+          "checked_at": "2026-09-22T23:58:56Z"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 67,
+          "median_lead_days": 48.0,
+          "lead_days_min": 5,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "06:30",
+          "typical_time_observation_share": 0.94,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-18T05:00:14Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 61,
+          "median_lead_days": 48.0,
+          "lead_days_min": 4,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "06:30",
+          "typical_time_observation_share": 0.97,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-oso-ristorante"
+    },
+    {
+      "id": "tft-park90",
+      "name": "Park90",
+      "dining_city_id": "205196438",
+      "dining_city_name": "Park90",
+      "category": "restaurant",
+      "address": "Pan Pacific Orchard, 10 Claymore Rd, Level 11 Garden Terrace, 229540",
+      "aliases": [],
+      "menus": {
+        "default": {
+          "status": "no_pdf_found",
+          "checked_at": "2026-09-22T23:58:56Z"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "All-day Dining",
+          "observation_count": 87,
+          "median_lead_days": 49.0,
+          "lead_days_min": 3,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "06:30",
+          "typical_time_observation_share": 0.94,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-park90"
+    },
+    {
+      "id": "tft-peppermint",
+      "name": "Peppermint",
+      "dining_city_id": "205194942",
+      "dining_city_name": "Peppermint",
+      "category": "buffet",
+      "address": "PARKROYAL COLLECTION Marina Bay, Level 4, 6 Raffles Boulevard, Singapore 039594",
+      "aliases": [],
+      "menus": {
+        "default": {
+          "status": "buffet_no_menu_expected",
+          "checked_at": "2026-09-22T23:58:56Z"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 13,
+          "median_lead_days": 90.0,
+          "lead_days_min": 73,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.23,
+          "confidence": "medium",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 20,
+          "median_lead_days": 90.0,
+          "lead_days_min": 50,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.3,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-peppermint"
+    },
+    {
+      "id": "tft-polo-bar-steakhouse",
+      "name": "Polo Bar Steakhouse",
+      "dining_city_id": "205194006",
+      "dining_city_name": "Polo Bar Steakhouse",
+      "category": "restaurant",
+      "address": "2 Cook Street, Maxwell Reserve, Singapore 078857",
+      "aliases": [],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Polo-Bar-Steakhouse-Menu_Centurion.pdf",
+          "filename": "Polo-Bar-Steakhouse-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "e34b56543d3f596f6146b4cb72d63d935d909f6fcc86d68e4fb4946ae2b38849"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Polo-Bar-Steakhouse-Menu_Platinum.pdf",
+          "filename": "Polo-Bar-Steakhouse-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "e1d25e056435f37135bc82e2e2ec1570d3f0b54399b0d86625ef548fbf5af4af"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 16,
+          "median_lead_days": 90.0,
+          "lead_days_min": 8,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.31,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-05T17:10:02Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-polo-bar-steakhouse"
+    },
+    {
+      "id": "tft-rappu",
+      "name": "Rappu",
+      "dining_city_id": "205194830",
+      "dining_city_name": "RAPPU",
+      "category": "restaurant",
+      "address": "52 Duxton Road, Singapore 089516",
+      "aliases": [],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/RAPPU-Menu_Centurion.pdf",
+          "filename": "RAPPU-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "275796d28251e1794942868c381806037e752d9a9d813afa166cd6d7ec0defad"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/RAPPU-Menu_Platinum.pdf",
+          "filename": "RAPPU-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "0e19116a5e3cf529b63beb1e7b9924a3765a7ed0aab030f103a1d915f5398e96"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 22,
+          "median_lead_days": 90.0,
+          "lead_days_min": 3,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.36,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 18,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.39,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-06T16:17:37Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-rappu"
+    },
+    {
+      "id": "tft-sarai",
+      "name": "Sarai",
+      "dining_city_id": "205178290",
+      "dining_city_name": "Sarai",
+      "category": "restaurant",
+      "address": "163 Tanglin Road, #03-122 Tanglin Mall, Singapore 247933",
+      "aliases": [],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/SARAI-Menu_Centurion.pdf",
+          "filename": "SARAI-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "cc9e564f58b424e5042e608d7ee274eb542e0778569d5487cf85dd28c818c4df"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/SARAI-Menu_Platinum.pdf",
+          "filename": "SARAI-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "5857fdba14b0a4f28d30dbb0ea38b228c10198d6824285cadcf9e5dc726b1506"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 21,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 91,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.29,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 21,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 91,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.29,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-sarai"
+    },
+    {
+      "id": "tft-sarnies",
+      "name": "Sarnies",
+      "dining_city_id": "205195658",
+      "dining_city_name": "Sarnies",
+      "category": "cafe",
+      "address": "136 Telok Ayer Street, Singapore 068601",
+      "aliases": [],
+      "menus": {
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Sarnies-Menu.pdf",
+          "filename": "Sarnies-Menu.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "3c1a4122d5d589755dce2fb4aaa677385edf65ccc0cc412681023a811ce03f95"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "All-day Dining",
+          "observation_count": 76,
+          "median_lead_days": 40.5,
+          "lead_days_min": 3,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": "06:30",
+          "typical_time_observation_share": 0.76,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T18:52:15Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-sarnies"
+    },
+    {
+      "id": "tft-tanoke",
+      "name": "TANOKE",
+      "dining_city_id": "205174962",
+      "dining_city_name": "TANOKE",
+      "category": "restaurant",
+      "address": "7 Purvis Street, Level 2, Singapore 188586",
+      "aliases": [],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/TANOKE-Menu_Centurion.pdf",
+          "filename": "TANOKE-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "3ca593018e6eaaa50c21678760ad63f9cc880e62c0c0e8dd4e20aa16f5b5d7aa"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TANOKE-Menu_Platinum.pdf",
+          "filename": "TANOKE-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "5534395e0358365f5380e822013cff7100fd20bcc312e347859fbfd07d43da27"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 35,
+          "median_lead_days": 60.0,
+          "lead_days_min": 60,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.26,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T18:52:15Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 35,
+          "median_lead_days": 60.0,
+          "lead_days_min": 60,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.26,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T18:52:15Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-tanoke"
+    },
+    {
+      "id": "tft-the-feather-blade",
+      "name": "The Feather Blade",
+      "dining_city_id": "205194812",
+      "dining_city_name": "The Feather Blade",
+      "category": "restaurant",
+      "address": "61 Tanjong Pagar Road, Singapore 088482",
+      "aliases": [],
+      "menus": {
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Feather-Blade_Menu.pdf",
+          "filename": "Feather-Blade_Menu.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "0f1a63a10718e0fdedc345f4cd9c1ae9569e1428665adaebba16c04f267fb23f"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 21,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.33,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 15,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.33,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-06T18:31:37Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-the-feather-blade"
+    },
+    {
+      "id": "tft-the-plump-frenchman",
+      "name": "The Plump Frenchman",
+      "dining_city_id": "205194944",
+      "dining_city_name": "The Plump Frenchman",
+      "category": "cafe",
+      "address": "20 Tan Quee Lan Street, #01-20 Guoco Midtown II, Singapore 188107",
+      "aliases": [],
+      "menus": {
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Plump-Frenchman_Menu.pdf",
+          "filename": "Plump-Frenchman_Menu.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "58babbd93831e14c3deb27cac1c1b9e1ba499aa0df587fc8903c7ba300e6b0dc"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 21,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 91,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.29,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 21,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 91,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.29,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-the-plump-frenchman"
+    },
+    {
+      "id": "tft-vineyard",
+      "name": "Vineyard",
+      "dining_city_id": "2055283",
+      "dining_city_name": "Vineyard @ Hort Park",
+      "category": "restaurant",
+      "address": "33 Hyderabad Road, #02-02 HortPark, Singapore 119578",
+      "aliases": [
+        "Vineyard at Hort Park"
+      ],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Vineyard-Menu_Centurion.pdf",
+          "filename": "Vineyard-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "9e9afb4caf3f9d9a7728d524c945404bd932e6b59d4d00061b04ef28e94f6afc"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Vineyard-Menu_Platinum.pdf",
+          "filename": "Vineyard-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "195c43a9657a987f0416383887c9492b2eb72e407848d85fec1dd1a1348c3920"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 21,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.33,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 21,
+          "median_lead_days": 90.0,
+          "lead_days_min": 90,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.33,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-07T19:20:05Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-vineyard"
+    },
+    {
+      "id": "tft-vue",
+      "name": "VUE",
+      "dining_city_id": "205194014",
+      "dining_city_name": "VUE",
+      "category": "restaurant",
+      "address": "OUE Bayfront, 50 Collyer Quay, Rooftop Level 19, Singapore 049321",
+      "aliases": [],
+      "menus": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/VUE-Menu_Centurion.pdf",
+          "filename": "VUE-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "0fffc06470d048cf87d212e5dfb9c69f0c7d951e0e696998734d262dd88164e6"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/VUE-Menu_Platinum.pdf",
+          "filename": "VUE-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-09-22T23:58:56Z",
+          "last_seen_at": "2026-09-22T23:58:56Z",
+          "sha256": "af9a1807f718b52711a8dbf27388e5f3a0c5e4a1a108d432c21ca36112b1b868"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 22,
+          "median_lead_days": 60.0,
+          "lead_days_min": 9,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.23,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T18:52:15Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 23,
+          "median_lead_days": 60.0,
+          "lead_days_min": 8,
+          "lead_days_max": 60,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.26,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-23T18:52:15Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-vue"
+    },
+    {
+      "id": "tft-xing-yue-xuan",
+      "name": "Xing Yue Xuan",
+      "dining_city_id": "205195622",
+      "dining_city_name": "Xing Yue Xuan",
+      "category": "restaurant",
+      "address": "26 Sentosa Gateway, B1-201 Resorts World Sentosa WEAVE, 098138",
+      "aliases": [],
+      "menus": {
+        "default": {
+          "status": "no_pdf_found",
+          "checked_at": "2026-09-22T23:58:56Z"
+        }
+      },
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 82,
+          "median_lead_days": 43.5,
+          "lead_days_min": 3,
+          "lead_days_max": 87,
+          "typical_first_seen_sgt": "18:00",
+          "typical_time_observation_share": 1.0,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-11T10:01:03Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 81,
+          "median_lead_days": 44.0,
+          "lead_days_min": 4,
+          "lead_days_max": 87,
+          "typical_first_seen_sgt": "18:00",
+          "typical_time_observation_share": 1.0,
+          "confidence": "high",
+          "latest_observation_at": "2026-09-11T10:01:03Z"
+        }
+      ],
+      "explorer_route": "#/table-for-two?venue=tft-xing-yue-xuan"
+    }
+  ]
+}
