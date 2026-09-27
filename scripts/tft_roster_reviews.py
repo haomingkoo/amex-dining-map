@@ -35,6 +35,8 @@ RUNTIME_FIELDS = {
 }
 # Official roster images in page order; the fingerprint binds all of them.
 ROSTER_IMAGE_KEYS = ("participating_merchants_sha256", "cafe_buffet_merchants_sha256")
+# Official roster venues with no DiningCity record carry this explicit marker instead of an ID.
+NOT_ON_DININGCITY = "not_on_diningcity"
 REQUIRED_VENUE_FIELDS = {
     "id",
     "name",
@@ -171,9 +173,15 @@ def validate_manifest(manifest: dict[str, Any], path: Path | None = None) -> Non
             raise ValueError("reviewed venue IDs must be unique stable tft-* IDs")
         identifiers.add(venue_id)
         diningcity_id = str(venue.get("dining_city_id") or "")
-        if not diningcity_id or diningcity_id in diningcity_ids:
+        not_on_diningcity = venue.get("dining_city_listing") == NOT_ON_DININGCITY
+        if not_on_diningcity != (not diningcity_id):
+            raise ValueError(
+                "reviewed venues need a DiningCity ID or the not_on_diningcity marker, not both"
+            )
+        if diningcity_id in diningcity_ids:
             raise ValueError("reviewed DiningCity IDs must be present and unique")
-        diningcity_ids.add(diningcity_id)
+        if diningcity_id:
+            diningcity_ids.add(diningcity_id)
         normalized_name = " ".join(str(venue.get("name") or "").casefold().split())
         if not normalized_name or normalized_name in names:
             raise ValueError("reviewed venue names must be present and unique")

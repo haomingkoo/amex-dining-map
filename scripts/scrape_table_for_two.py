@@ -404,7 +404,11 @@ def _auto_venue_from_membership(record: dict, streak: dict, checked_at: str) -> 
 
 def _validate_published_roster(records: list[dict]) -> None:
     venue_ids = [str(venue.get("id") or "") for venue in records]
-    diningcity_ids = [str(venue.get("dining_city_id") or "") for venue in records]
+    diningcity_ids = [
+        str(venue.get("dining_city_id") or "")
+        for venue in records
+        if venue.get("dining_city_listing") != tft_roster_reviews.NOT_ON_DININGCITY
+    ]
     normalized_names = [_normalized_name(venue.get("name")) for venue in records]
     if "" in venue_ids or len(venue_ids) != len(set(venue_ids)):
         raise ValueError("published Table for Two roster has missing or duplicate venue IDs")

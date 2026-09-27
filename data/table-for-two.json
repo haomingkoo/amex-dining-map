@@ -11,7 +11,8 @@
   "voucher_cycles_image_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/table-for-two/VoucherCycles_SEPOCT.png",
   "source_images": {
     "participating_merchants_sha256": "b70fbc97e9f8e64397f24cf75b20b0a8b2e94997ef8ba2cbc619eca06ff515b4",
-    "voucher_cycles_sha256": "327019c9016978dede3a58911f6f7b7cca338f0f47390bf19468428607f11bc8"
+    "voucher_cycles_sha256": "327019c9016978dede3a58911f6f7b7cca338f0f47390bf19468428607f11bc8",
+    "cafe_buffet_merchants_sha256": "e44d7e4e85cd212c5d847d78edeffb3ac24e12f85ccbc8fee86098c1f8a4a877"
   },
   "source_documents": {
     "terms_sha256": "7ba815581e6c0cb0c50775e6db642f81b040a65ff5568a70f6aeb4ed4cc0a7ec",
@@ -41,21 +42,13 @@
   },
   "manual_review_required": true,
   "roster_source": {
-    "status": "review_required",
-    "review_required": true,
-    "observed_participating_sha256": "b70fbc97e9f8e64397f24cf75b20b0a8b2e94997ef8ba2cbc619eca06ff515b4",
-    "approved_participating_sha256": "5a2c3eb79ad86ee737b8aa125bcdfffa3195954ccfcfd4ced5d86aa649398ec5",
-    "approved_manifest_sha256": "18d89ac7ccd2ea6abd51cdad57551782f63ad25e43120c15ccced5409dafeecc",
-    "reviewed_at": "2026-08-30T00:00:00Z",
-    "review_item": {
-      "source_id": "table-for-two-roster",
-      "kind": "unknown_participating_image",
-      "detected_at": "2026-09-27T00:07:19Z",
-      "official_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
-      "participating_image_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/table-for-two/AmexTFT_SepOct_ChicRestaurant.png",
-      "observed_participating_sha256": "b70fbc97e9f8e64397f24cf75b20b0a8b2e94997ef8ba2cbc619eca06ff515b4",
-      "approved_participating_sha256": "5a2c3eb79ad86ee737b8aa125bcdfffa3195954ccfcfd4ced5d86aa649398ec5"
-    }
+    "status": "approved",
+    "review_required": false,
+    "observed_participating_sha256": "5d274b0c3d5eacd3209f498ad3e39333e49d1448e9e53881c8821e7d7a6bf9a0",
+    "approved_participating_sha256": "5d274b0c3d5eacd3209f498ad3e39333e49d1448e9e53881c8821e7d7a6bf9a0",
+    "approved_manifest_sha256": "2b9c01391e2a3220b038a1dd8dd8a8e42a32eee68076da1c41c3c5da8b737ffd",
+    "reviewed_at": "2026-09-27T06:30:00Z",
+    "review_item": null
   },
   "booking_project_source": {
     "type": "diningcity_booking_project_membership",
@@ -18874,98 +18867,6 @@
         "sha256": "724283b946af4a4f4d7d83cea4d36e0bd8211fe9802771a482d16450d28a79f7",
         "bytes": 231119,
         "aem_created": "Tue Jun 30 2026 02:39:39 GMT-0700",
-        "changed_at": null
-      }
-    },
-    {
-      "id": "tft-osteria-mozza",
-      "name": "Osteria Mozza",
-      "category": "restaurant",
-      "dining_city_id": "205194420",
-      "dining_city_name": "Osteria Mozza",
-      "dining_city_public_url": "https://www.diningcity.sg/singapore/Osteria_Mozza",
-      "address": "Hilton Singapore Orchard, Level 5, 333 Orchard Road, Singapore 238867",
-      "lat": 1.302064505560855,
-      "lng": 103.8363409534752,
-      "coordinate_confidence": "address_geocoded",
-      "map_pin_source": "Singapore OneMap address geocode",
-      "map_pin_note": "Pin is address-geocoded from the official Hilton Singapore Orchard address; confirm the exact restaurant entrance before visiting.",
-      "venue_source_url": "https://osteriamozza.com.sg/",
-      "booking_channel": "Amex Experiences App",
-      "booking_project_status": "not_listed",
-      "slot_source_status": "not_currently_in_project",
-      "availability": {
-        "status": "not_currently_in_project",
-        "source": "DiningCity booking project AMEXPlatSG",
-        "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
-        "project": "AMEXPlatSG",
-        "project_title": "AMEX Platinum SG",
-        "captured_at": "2026-09-27T13:19:32Z",
-        "checked_at": "2026-09-27T13:19:32Z",
-        "confidence": "diningcity_project_membership_missing",
-        "visible_dates": [],
-        "summary": "Osteria Mozza is not currently listed in the DiningCity AMEXPlatSG booking project.",
-        "meals": [],
-        "notes": [
-          "This is a booking-project membership signal. The retained Amex roster record remains historical evidence until the official roster changes."
-        ]
-      },
-      "dining_city_profile": {
-        "source": "DiningCity public restaurant detail API",
-        "source_url": "https://api.diningcity.asia/public/restaurants/205194420?project=AMEXPlatSG",
-        "captured_at": "2026-09-27T00:07:19Z",
-        "description": "Step into Osteria Mozza at Hilton Singapore Orchard, where sophistication meets comfort in a warmly lit, elegant setting. The centerpiece, a stunning white Carrara marble Mozzarella Bar, sets the stage for a delightful Italian journey.\n\nThe essence of the cuisine is Californian-Italian, celebrated for its focus on fresh ingredients and bold flavors. Indulge in housemade fresh pastas and show-stopping pizzas from the wood-burning ovens, complemented by exquisite choices from the dedicated Mozzarella Bar.\n\nParking is available at Hilton Singapore Orchard, accessible via the Main Lobby on 333 Orchard Road or the Grange Road entrance at Mandarin Gallery. Its primary culinary style is Italian, specializing in its unique Mozzarella Bar and wood-burning oven preparations.",
-        "cover_url": "https://static-assets.diningcity.asia/f1o7zbkc0j9dis0d0grdi1325qvo?",
-        "landmarks": [
-          "Orchard "
-        ],
-        "location": "Central Singapore",
-        "avg_price": "S$72",
-        "opening_hour": "Monday 12–2:30 pm, 3–10 pm\nTuesday 12–2:30 pm, 3–10 pm\nWednesday 12–2:30 pm, 3–10 pm\nThursday 12–2:30 pm, 3–10 pm\nFriday12–2:30 pm, 3–10 pm\nSaturday 12–2:30 pm, 5–10 pm\nSunday 12–2:30 pm, 5–10 pm",
-        "website_detail_url": "https://www.diningcity.sg/singapore/Osteria_Mozza"
-      },
-      "menu_pdfs": {
-        "platinum": {
-          "status": "published",
-          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Osteria-Mozza-Menu_Platinum.pdf",
-          "filename": "Osteria-Mozza-Menu_Platinum.pdf",
-          "card": "platinum",
-          "label": "Platinum",
-          "checked_at": "2026-09-27T00:09:02Z",
-          "first_seen_at": "2026-07-18T02:12:29Z",
-          "last_seen_at": "2026-09-27T00:09:02Z",
-          "sha256": "3347607d410858391fc27cd26bed019c981fdca45b1fe50f8666a5d08eeb22d9",
-          "bytes": 109793,
-          "aem_created": "Thu Feb 05 2026 00:36:18 GMT-0700",
-          "changed_at": null
-        },
-        "centurion": {
-          "status": "published",
-          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Osteria-Mozza-Menu-Centurion.pdf",
-          "filename": "Osteria-Mozza-Menu-Centurion.pdf",
-          "card": "centurion",
-          "label": "Centurion",
-          "checked_at": "2026-09-27T00:09:02Z",
-          "first_seen_at": "2026-07-18T02:12:29Z",
-          "last_seen_at": "2026-09-27T00:09:02Z",
-          "sha256": "2b7fd9a097fa4d7aa81034b333d4083d8550e282a75aa355400e682303df86db",
-          "bytes": 2747511,
-          "aem_created": "Sun Jul 12 2026 21:00:56 GMT-0700",
-          "changed_at": null
-        }
-      },
-      "menu_pdf": {
-        "status": "published",
-        "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Osteria-Mozza-Menu_Platinum.pdf",
-        "filename": "Osteria-Mozza-Menu_Platinum.pdf",
-        "card": "platinum",
-        "label": "Platinum",
-        "checked_at": "2026-09-27T00:09:02Z",
-        "first_seen_at": "2026-07-18T02:12:29Z",
-        "last_seen_at": "2026-09-27T00:09:02Z",
-        "sha256": "3347607d410858391fc27cd26bed019c981fdca45b1fe50f8666a5d08eeb22d9",
-        "bytes": 109793,
-        "aem_created": "Thu Feb 05 2026 00:36:18 GMT-0700",
         "changed_at": null
       }
     },
@@ -40723,7 +40624,7 @@
     {
       "id": "tft-the-feather-blade",
       "name": "The Feather Blade",
-      "category": "restaurant",
+      "category": "cafe",
       "dining_city_id": "205194812",
       "dining_city_name": "The Feather Blade",
       "dining_city_public_url": "https://www.diningcity.sg/singapore/The_Feather_Blade",
@@ -51909,7 +51810,7 @@
     {
       "id": "tft-one-ninety",
       "name": "One-Ninety",
-      "category": "restaurant",
+      "category": "buffet",
       "dining_city_id": "205174978",
       "dining_city_name": "One-Ninety Restaurant",
       "dining_city_public_url": "https://www.diningcity.sg/singapore/one-ninety_restaurant",
@@ -87918,15 +87819,6 @@
       "coordinate_confidence": "diningcity_place_matched",
       "map_pin_source": "DiningCity public restaurant detail",
       "map_pin_note": "Pin is from the current DiningCity booking-project venue profile.",
-      "roster_basis": "diningcity_booking_project_confirmed",
-      "roster_evidence": {
-        "source": "DiningCity AMEXPlatSG booking-project membership",
-        "source_url": "https://www.diningcity.sg/singapore/foragebanyantree",
-        "first_seen_at": "2026-09-02T22:40:59Z",
-        "confirmed_at": "2026-09-04T21:37:07Z",
-        "confirmation_count": 3,
-        "record_sha256": "cac7d6b4ea995809d1f94650a5f12301f7e9a2eab9b11ddb87d87c552b11bd0f"
-      },
       "booking_channel": "Amex Experiences App",
       "booking_project_status": "active",
       "slot_source_status": "diningcity_amex_platinum_project",
@@ -89817,15 +89709,6 @@
       "coordinate_confidence": "diningcity_place_matched",
       "map_pin_source": "DiningCity AMEXPlatSG booking-project membership",
       "map_pin_note": "Pin is from the current DiningCity AMEXPlatSG booking-project record.",
-      "roster_basis": "diningcity_booking_project_confirmed",
-      "roster_evidence": {
-        "source": "DiningCity AMEXPlatSG booking-project membership",
-        "source_url": "https://www.diningcity.sg/singapore/Xing_Yue_Xuan",
-        "first_seen_at": "2026-09-11T05:38:20Z",
-        "confirmed_at": "2026-09-11T10:01:03Z",
-        "confirmation_count": 2,
-        "record_sha256": "b7b85f60ac68b0dde10530fd0c3eb2f437334cc588d206dcb0b9fa825ceb2950"
-      },
       "booking_project_status": "active",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -97400,13 +97283,7 @@
       "coordinate_confidence": "diningcity_place_matched",
       "map_pin_source": "DiningCity public restaurant detail",
       "map_pin_note": "Pin is from the current DiningCity booking-project venue profile.",
-      "roster_basis": "diningcity_booking_project_confirmed",
       "booking_channel": "Amex Experiences App",
-      "roster_evidence": {
-        "source": "DiningCity AMEXPlatSG booking-project membership",
-        "source_url": "https://www.diningcity.sg/singapore/Sarnies",
-        "record_sha256": "47e8231b5306a2c1d291148d81e531c2badee9e921ea780bd562ff2e7ed9c271"
-      },
       "booking_project_status": "active",
       "slot_source_status": "app_handoff_required",
       "availability": {
@@ -97481,13 +97358,7 @@
       "coordinate_confidence": "diningcity_place_matched",
       "map_pin_source": "DiningCity public restaurant detail",
       "map_pin_note": "Pin is from the current DiningCity booking-project venue profile.",
-      "roster_basis": "diningcity_booking_project_confirmed",
       "booking_channel": "Amex Experiences App",
-      "roster_evidence": {
-        "source": "DiningCity AMEXPlatSG booking-project membership",
-        "source_url": "https://www.diningcity.sg/singapore/VivinoWineShop",
-        "record_sha256": "314e17321476d0633ff685e0a2393a8c7c12c2912d3c862c981a5f41ddc5d0cb"
-      },
       "booking_project_status": "active",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -99538,7 +99409,7 @@
     {
       "id": "tft-brewerkz-east-coast-park",
       "name": "Brewerkz East Coast Park",
-      "category": "restaurant",
+      "category": "cafe",
       "dining_city_id": "205196412",
       "dining_city_name": "Brewerkz East Coast Park",
       "dining_city_public_url": "https://www.diningcity.sg/singapore/brewerkz_eastcoast",
@@ -99548,13 +99419,7 @@
       "coordinate_confidence": "diningcity_place_matched",
       "map_pin_source": "DiningCity public restaurant detail",
       "map_pin_note": "Pin is from the current DiningCity booking-project venue profile.",
-      "roster_basis": "diningcity_booking_project_confirmed",
       "booking_channel": "Amex Experiences App",
-      "roster_evidence": {
-        "source": "DiningCity AMEXPlatSG booking-project membership",
-        "source_url": "https://www.diningcity.sg/singapore/brewerkz_eastcoast",
-        "record_sha256": "551452eaac4873da3145350f3af81e80333f377dc2ddd580165d04a6bc24e798"
-      },
       "booking_project_status": "active",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -108746,7 +108611,7 @@
     {
       "id": "tft-brewerkz-riverside-point",
       "name": "Brewerkz Riverside Point",
-      "category": "restaurant",
+      "category": "cafe",
       "dining_city_id": "205196414",
       "dining_city_name": "Brewerkz Riverside Point",
       "dining_city_public_url": "https://www.diningcity.sg/singapore/brewerkz_riversidepoint",
@@ -108756,13 +108621,7 @@
       "coordinate_confidence": "diningcity_place_matched",
       "map_pin_source": "DiningCity public restaurant detail",
       "map_pin_note": "Pin is from the current DiningCity booking-project venue profile.",
-      "roster_basis": "diningcity_booking_project_confirmed",
       "booking_channel": "Amex Experiences App",
-      "roster_evidence": {
-        "source": "DiningCity AMEXPlatSG booking-project membership",
-        "source_url": "https://www.diningcity.sg/singapore/brewerkz_riversidepoint",
-        "record_sha256": "ca925b2de417655bd3d94705c635cd6b1e14d13bd15e886db198c1b75cede12c"
-      },
       "booking_project_status": "active",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -118911,15 +118770,6 @@
       "coordinate_confidence": "diningcity_place_matched",
       "map_pin_source": "DiningCity AMEXPlatSG booking-project membership",
       "map_pin_note": "Pin is from the current DiningCity AMEXPlatSG booking-project record.",
-      "roster_basis": "diningcity_booking_project_confirmed",
-      "roster_evidence": {
-        "source": "DiningCity AMEXPlatSG booking-project membership",
-        "source_url": "https://www.diningcity.sg/singapore/park90",
-        "first_seen_at": "2026-09-02T22:40:59Z",
-        "confirmed_at": "2026-09-21T12:38:41Z",
-        "confirmation_count": 2,
-        "record_sha256": "1e28c2a0313abc1769c145a42746cd9ec5489147c637389a51dddaae84e85f5e"
-      },
       "booking_project_status": "active",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -126106,13 +125956,7 @@
       "coordinate_confidence": "diningcity_place_matched",
       "map_pin_source": "DiningCity public restaurant detail",
       "map_pin_note": "Pin is from the current DiningCity booking-project venue profile.",
-      "roster_basis": "diningcity_booking_project_confirmed",
       "booking_channel": "Amex Experiences App",
-      "roster_evidence": {
-        "source": "DiningCity AMEXPlatSG booking-project membership",
-        "source_url": "https://www.diningcity.sg/singapore/oso_ristorante",
-        "record_sha256": "539714d18adfb81e63f374584d7adb90d37abb372805ce72a073b909083bd898"
-      },
       "booking_project_status": "active",
       "slot_source_status": "diningcity_amex_platinum_project",
       "availability": {
@@ -127236,6 +127080,36 @@
         "aem_created": null,
         "changed_at": null
       }
+    },
+    {
+      "id": "tft-kuriya-dining",
+      "name": "Kuriya Dining",
+      "category": "restaurant",
+      "booking_channel": "Amex Experiences App",
+      "dining_city_id": "205196436",
+      "dining_city_name": "Kuriya Dining",
+      "dining_city_public_url": "https://www.diningcity.sg/singapore/kuriya_dining",
+      "address": "1 Kim Seng Promenade, #01-127 Great World, Singapore 237994",
+      "lat": 1.2931553,
+      "lng": 103.8326079,
+      "coordinate_confidence": "diningcity_place_matched",
+      "map_pin_source": "DiningCity public restaurant search",
+      "map_pin_note": "Pin is from DiningCity public restaurant search and matches the venue name."
+    },
+    {
+      "id": "tft-zui-yu-xuan",
+      "name": "Zui Yu Xuan Teochew Cuisine",
+      "category": "restaurant",
+      "booking_channel": "Amex Experiences App",
+      "dining_city_id": null,
+      "dining_city_listing": "not_on_diningcity",
+      "venue_source_url": "https://zuiyuxuan.zui-teochewcuisine.com/en/home",
+      "address": "130/131 Amoy Street, Far East Square, Singapore 049959",
+      "lat": 1.283157699456954,
+      "lng": 103.8482289466338,
+      "coordinate_confidence": "address_geocoded",
+      "map_pin_source": "Singapore OneMap address geocode",
+      "map_pin_note": "Pin is address-geocoded from Zui Yu Xuan's published Far East Square address; confirm the exact entrance before visiting."
     }
   ],
   "menu_source": {
@@ -127919,5 +127793,6 @@
         }
       }
     ]
-  }
+  },
+  "cafe_buffet_merchants_image_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/table-for-two/AmexTFT_SepOct_CafeBuffet.png"
 }
