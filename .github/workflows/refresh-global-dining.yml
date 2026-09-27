@@ -82,22 +82,6 @@ jobs:
             --changelog data/changelog-global-dining.md \
             --updates data/updates.json
 
-      - name: Commit updated data
-        env:
-          COMMIT_MESSAGE: "chore: refresh global dining data"
-          MUST_STAGE: |
-            data/global-restaurants.json
-            data/global-dining-source.json
-            data/global-dining-geocode-cache.json
-            data/changelog-global-dining.md
-            data/updates.json
-          KEEP_LOCAL_ON_CONFLICT: |
-            data/global-dining-geocode-cache.json
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          bash scripts/commit_and_push.sh
-
       - name: Finalize source health
         if: always()
         run: |
@@ -108,8 +92,26 @@ jobs:
           fi
           python3 scripts/build_source_health.py --source global-dining --attempt-outcome "$outcome"
 
+      - name: Commit updated data
+        env:
+          COMMIT_MESSAGE: "chore: refresh global dining data"
+          MUST_STAGE: |
+            data/global-restaurants.json
+            data/global-dining-source.json
+            data/global-dining-geocode-cache.json
+            data/changelog-global-dining.md
+            data/updates.json
+            data/source-health.json
+          KEEP_LOCAL_ON_CONFLICT: |
+            data/global-dining-geocode-cache.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          bash scripts/commit_and_push.sh
+
       - name: Commit source health
-        if: always()
+        # Success paths ship health in the data commit; this records failed runs.
+        if: failure()
         env:
           COMMIT_MESSAGE: "chore: record global dining source health"
           MUST_STAGE: |
