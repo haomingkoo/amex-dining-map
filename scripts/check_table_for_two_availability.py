@@ -9,13 +9,12 @@ data/table-for-two.json without committing user/session-specific app data.
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 
 try:
-    from scripts.jsonio import load_json
+    from scripts.jsonio import load_json, save_json
 except ImportError:  # running as `python3 scripts/<file>.py`
-    from jsonio import load_json
+    from jsonio import load_json, save_json
 
 
 try:
@@ -23,10 +22,6 @@ try:
 except ImportError:  # running as `python3 scripts/<file>.py`
     from timeutil import iso_now
 
-
-
-def write_json(path: Path, payload: dict) -> None:
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def parse_times(value: str) -> list[str]:
@@ -83,7 +78,7 @@ def main() -> int:
         ],
     }
     payload["availability_last_checked_at"] = args.captured_at
-    write_json(data_path, payload)
+    save_json(data_path, payload)
     print(f"Updated {venue.get('name')} availability: {venue['availability']['summary']}")
     return 0
 

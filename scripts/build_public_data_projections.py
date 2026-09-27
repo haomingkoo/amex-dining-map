@@ -5,14 +5,13 @@ from __future__ import annotations
 
 import argparse
 import copy
-import json
 from pathlib import Path
 from typing import Any
 
 try:
-    from scripts.jsonio import load_json
+    from scripts.jsonio import load_json, save_json
 except ImportError:  # running as `python3 scripts/<file>.py`
-    from jsonio import load_json
+    from jsonio import load_json, save_json
 
 
 
@@ -74,11 +73,6 @@ def release_history_summary(history: dict) -> dict:
     return {key: history[key] for key in RELEASE_SUMMARY_KEYS}
 
 
-def write_json(path: Path, payload: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--table-for-two", type=Path, required=True)
@@ -96,9 +90,9 @@ def main() -> int:
         load_json(args.ratings),
     )
     release_summary = release_history_summary(load_json(args.release_history))
-    write_json(args.tft_catalog_output, tft_catalog)
-    write_json(args.tft_ratings_output, tft_ratings)
-    write_json(args.release_summary_output, release_summary)
+    save_json(args.tft_catalog_output, tft_catalog)
+    save_json(args.tft_ratings_output, tft_ratings)
+    save_json(args.release_summary_output, release_summary)
     print(
         f"Public projections: {len(tft_catalog['venues'])} TFT venues, "
         f"{len(tft_ratings)} TFT ratings, "

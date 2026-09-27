@@ -13,21 +13,16 @@ import json
 from datetime import date
 from pathlib import Path
 
+try:
+    from scripts.promote_tabelog_matches import honest_stars
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from promote_tabelog_matches import honest_stars
+
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
 RESULTS_PATH = DATA_DIR / "tabelog-match-results.json"
 SIGNALS_PATH = DATA_DIR / "restaurant-quality-signals.json"
 OUTPUT_PATH = DATA_DIR / "review-promotion-batch.json"
-
-
-def honest_stars(score_raw: float) -> float:
-    if score_raw >= 4.0: return 5
-    if score_raw >= 3.5: return 4.5
-    if score_raw >= 3.4: return 4
-    if score_raw >= 3.3: return 3.5
-    if score_raw >= 3.1: return 3
-    if score_raw >= 3.0: return 2
-    return 1
 
 
 def main() -> None:

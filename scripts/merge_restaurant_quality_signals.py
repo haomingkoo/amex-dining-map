@@ -3,13 +3,12 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 try:
-    from scripts.jsonio import save_json
+    from scripts.jsonio import load_json_or, save_json
 except ImportError:  # running as `python3 scripts/<file>.py`
-    from jsonio import save_json
+    from jsonio import load_json_or, save_json
 
 
 
@@ -20,20 +19,14 @@ GEOJSON_PATH = DATA_DIR / "japan-restaurants.geojson"
 QUALITY_SIGNALS_PATH = DATA_DIR / "restaurant-quality-signals.json"
 
 
-def load_json(path: Path, default):
-    if not path.exists():
-        return default
-    return json.loads(path.read_text())
-
-
 def apply_signals(record: dict, signals_by_id: dict) -> None:
     record["external_signals"] = signals_by_id.get(record["id"], {})
 
 
 def main() -> None:
-    signals_by_id = load_json(QUALITY_SIGNALS_PATH, {})
-    restaurants = load_json(JSON_PATH, [])
-    geojson = load_json(GEOJSON_PATH, {"type": "FeatureCollection", "features": []})
+    signals_by_id = load_json_or(QUALITY_SIGNALS_PATH, {})
+    restaurants = load_json_or(JSON_PATH, [])
+    geojson = load_json_or(GEOJSON_PATH, {"type": "FeatureCollection", "features": []})
 
     for record in restaurants:
         apply_signals(record, signals_by_id)

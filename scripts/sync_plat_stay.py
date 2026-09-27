@@ -8,7 +8,6 @@ import hashlib
 import html
 import http.client
 import json
-import math
 import os
 import re
 import socket
@@ -24,9 +23,13 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 
 try:
-    from scripts.jsonio import save_json
+    from scripts.jsonio import load_json_or, save_json
 except ImportError:  # running as `python3 scripts/<file>.py`
-    from jsonio import save_json
+    from jsonio import load_json_or, save_json
+try:
+    from scripts.geo import distance_km
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from geo import distance_km
 
 
 
@@ -149,12 +152,6 @@ class ParsedBlock:
     reservation_mode: str
 
 
-def load_json(path: Path, default):
-    if not path.exists():
-        return default
-    return json.loads(path.read_text())
-
-
 def slugify(value: str) -> str:
     value = value.lower()
     value = re.sub(r"[^a-z0-9]+", "-", value)
@@ -164,7 +161,7 @@ def slugify(value: str) -> str:
 
 def previous_resolved_source_url() -> str | None:
     try:
-        previous_meta = load_json(SOURCE_META_PATH, {})
+        previous_meta = load_json_or(SOURCE_META_PATH, {})
     except (OSError, json.JSONDecodeError):
         return None
     resolved_url = previous_meta.get("resolved_url")
@@ -376,19 +373,6 @@ def within_country_bounds(country: str | None, lat: float | None, lng: float | N
         return True
     min_lat, max_lat, min_lng, max_lng = bounds
     return min_lat <= lat <= max_lat and min_lng <= lng <= max_lng
-
-
-def distance_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
-    radius = 6371.0
-    phi1 = math.radians(lat1)
-    phi2 = math.radians(lat2)
-    d_phi = math.radians(lat2 - lat1)
-    d_lambda = math.radians(lng2 - lng1)
-    a = (
-        math.sin(d_phi / 2) ** 2
-        + math.cos(phi1) * math.cos(phi2) * math.sin(d_lambda / 2) ** 2
-    )
-    return 2 * radius * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
 def parse_google_map_coordinates(url: str | None) -> tuple[float | None, float | None]:
@@ -1455,14 +1439,14 @@ def main() -> None:
 
     records = build_records(pdf_bytes, resolved_url, fetched_at, page_count)
 
-    manual_overrides = load_json(MANUAL_OVERRIDE_PATH, {})
+    manual_overrides = load_json_or(MANUAL_OVERRIDE_PATH, {})
     for record in records:
         apply_manual_override(record, manual_overrides)
 
-    geocode_cache = load_json(GEOCODE_CACHE_PATH, {})
-    geoapify_cache = load_json(GEOAPIFY_CACHE_PATH, {})
-    tomtom_cache = load_json(TOMTOM_CACHE_PATH, {})
-    google_ratings = load_json(GOOGLE_RATINGS_PATH, {})
+    geocode_cache = load_json_or(GEOCODE_CACHE_PATH, {})
+    geoapify_cache = load_json_or(GEOAPIFY_CACHE_PATH, {})
+    tomtom_cache = load_json_or(TOMTOM_CACHE_PATH, {})
+    google_ratings = load_json_or(GOOGLE_RATINGS_PATH, {})
     for record in records:
         geocode_record(record, geocode_cache)
         if record.get("coordinate_confidence") not in {"manual_verified"}:

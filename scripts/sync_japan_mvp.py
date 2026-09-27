@@ -12,13 +12,16 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import UTC, datetime
-from math import asin, cos, radians, sin, sqrt
 from pathlib import Path
 
 try:
-    from scripts.jsonio import save_json
+    from scripts.jsonio import load_json_or, save_json
 except ImportError:  # running as `python3 scripts/<file>.py`
-    from jsonio import save_json
+    from jsonio import load_json_or, save_json
+try:
+    from scripts.geo import distance_km
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from geo import distance_km
 
 
 
@@ -233,12 +236,6 @@ def post_json(url: str, payload: dict, retries: int = 4) -> dict:
             raise
 
     return {}
-
-
-def load_json(path: Path, default):
-    if not path.exists():
-        return default
-    return json.loads(path.read_text())
 
 
 def source_record_projection(record: dict) -> dict:
@@ -744,14 +741,6 @@ def official_site_map_coordinates(website_url: str | None, cache: dict) -> dict 
     return result
 
 
-def distance_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
-    radius = 6371.0
-    d_lat = radians(lat2 - lat1)
-    d_lng = radians(lng2 - lng1)
-    a = sin(d_lat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(d_lng / 2) ** 2
-    return 2 * radius * asin(sqrt(a))
-
-
 def geocode_record(record: dict, cache: dict) -> None:
     queries = []
     if record.get("source_localized_address"):
@@ -1051,9 +1040,9 @@ def write_kml_outputs(records: list[dict]) -> None:
 def main() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     fetched_at = datetime.now(UTC).isoformat()
-    geocode_cache = load_json(CACHE_PATH, {})
-    detail_cache = load_json(DETAIL_CACHE_PATH, {})
-    quality_signals = load_json(QUALITY_SIGNALS_PATH, {})
+    geocode_cache = load_json_or(CACHE_PATH, {})
+    detail_cache = load_json_or(DETAIL_CACHE_PATH, {})
+    quality_signals = load_json_or(QUALITY_SIGNALS_PATH, {})
 
     areas = select_target_areas(fetch_search_properties())
     deduped: dict[str, dict] = {}
@@ -1085,7 +1074,7 @@ def main() -> None:
 
     save_json(JSON_PATH, normalized)
     source_meta = build_source_meta(normalized, fetched_at)
-    previous_source_meta = load_json(SOURCE_PATH, {})
+    previous_source_meta = load_json_or(SOURCE_PATH, {})
     for key in ("manual_review_required", "major_change_reasons"):
         if previous_source_meta.get(key):
             source_meta[key] = previous_source_meta[key]

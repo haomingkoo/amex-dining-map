@@ -26,9 +26,9 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 try:
-    from scripts.jsonio import load_json
+    from scripts.jsonio import load_json, save_json
 except ImportError:  # running as `python3 scripts/<file>.py`
-    from jsonio import load_json
+    from jsonio import load_json, save_json
 
 
 try:
@@ -83,12 +83,6 @@ def normalize_header(value: str) -> str:
 
 def normalize_venue_key(value: Any) -> str:
     return re.sub(r"[^a-z0-9]+", "", str(value or "").casefold())
-
-
-def write_json(path: str | Path, payload: Any) -> None:
-    output = Path(path)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def split_values(value: Any) -> list[str]:
@@ -643,7 +637,7 @@ def send_messages(
         _send_resend_message(message, config, sent_key)
         timestamp = iso_now()
         sent_keys[sent_key] = timestamp
-        write_json(sent_log_path, {"updated_at": timestamp, "sent_keys": sent_keys})
+        save_json(sent_log_path, {"updated_at": timestamp, "sent_keys": sent_keys})
 
 
 def fetch_api_subscriptions(

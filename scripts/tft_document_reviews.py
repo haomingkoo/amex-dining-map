@@ -5,10 +5,14 @@ from __future__ import annotations
 
 import copy
 import hashlib
-import json
 import re
 from pathlib import Path
 from typing import Any
+
+try:
+    from scripts.jsonio import manifest_sha256
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from jsonio import manifest_sha256
 
 PROGRAM = "Table for Two"
 PROGRAM_ID = "table-for-two"
@@ -32,11 +36,6 @@ DOCUMENTS = {
         "hash_key": "faq_sha256",
     },
 }
-
-
-def manifest_sha256(manifest: dict[str, Any]) -> str:
-    canonical = json.dumps(manifest, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(canonical.encode()).hexdigest()
 
 
 def spec(source: dict[str, Any], document_id: str) -> Any:
