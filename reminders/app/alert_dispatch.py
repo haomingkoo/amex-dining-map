@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+from http import HTTPStatus
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
@@ -12,11 +13,11 @@ from typing import Callable
 logger = logging.getLogger(__name__)
 
 GITHUB_API = "https://api.github.com"
+GITHUB_REPO = "haomingkoo/amex-dining-map"
 ALERT_WORKFLOW = "table-for-two-alerts.yml"
 # Matches the workflow's intended "every 15 minutes" cron.
 DISPATCH_INTERVAL_SECONDS = 900
 REQUEST_TIMEOUT_SECONDS = 10
-HTTP_NO_CONTENT = 204
 
 last_dispatch: dict[str, str | int | None] = {"at": None, "status": None, "error": None}
 
@@ -42,7 +43,7 @@ def dispatch_and_record(token: str, repo: str, opener: Callable = urllib.request
     try:
         status = dispatch(token, repo, opener)
         last_dispatch.update(at=at, status=status, error=None)
-        if status != HTTP_NO_CONTENT:
+        if status != HTTPStatus.NO_CONTENT:
             logger.warning("alert_dispatch unexpected_status=%s", status)
     except urllib.error.HTTPError as exc:
         last_dispatch.update(at=at, status=exc.code, error="http_error")

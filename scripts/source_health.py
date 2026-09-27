@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+from jsonio import load_json_or as load_json
 from source_change_alert import append_updates, assign_event_identity
 
 
@@ -48,13 +49,6 @@ def format_time(value: datetime | None) -> str | None:
         return None
     value = value.astimezone(timezone.utc).replace(microsecond=0)
     return value.isoformat().replace("+00:00", "Z")
-
-
-def load_json(path: Path, fallback: Any) -> Any:
-    """Missing file -> fallback (reported as unavailable). Corrupt JSON raises."""
-    if not path.exists():
-        return fallback
-    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _times(values: Iterable[Any]) -> list[datetime]:

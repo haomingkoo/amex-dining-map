@@ -35,9 +35,7 @@ jobs:
           # inside the 90-day RATINGS_STALE_HOURS limit.
           WEEKLY_VENUE_BUDGET: "200"
         run: |
-          python3 scripts/refresh_tabelog_ratings.py \
-            --limit "$WEEKLY_VENUE_BUDGET" \
-            --report /tmp/tabelog-unchanged.json
+          python3 scripts/refresh_tabelog_ratings.py --limit "$WEEKLY_VENUE_BUDGET"
           python3 scripts/merge_restaurant_quality_signals.py
 
       - name: Finalize source health

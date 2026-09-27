@@ -7,6 +7,7 @@ import difflib
 import hashlib
 import html
 import http.client
+from http import HTTPStatus
 import json
 import os
 import re
@@ -56,7 +57,6 @@ MIN_PDF_BYTES = 1024
 NOMINATIM_ATTEMPTS = 4
 NOMINATIM_TIMEOUT_SECONDS = 30
 NOMINATIM_BACKOFF_SECONDS = 30
-HTTP_TOO_MANY_REQUESTS = 429
 
 COUNTRY_ALIASES = {
     "singapore": "Singapore",
@@ -739,7 +739,7 @@ def geocode_query(query: str) -> dict | None:
                 payload = json.loads(response.read().decode("utf-8"))
             return payload[0] if payload else None
         except urllib.error.HTTPError as exc:
-            if exc.code != HTTP_TOO_MANY_REQUESTS or attempt == NOMINATIM_ATTEMPTS:
+            if exc.code != HTTPStatus.TOO_MANY_REQUESTS or attempt == NOMINATIM_ATTEMPTS:
                 raise
             wait = NOMINATIM_BACKOFF_SECONDS * (2 ** (attempt - 1))
             print(f"  Nominatim 429, waiting {wait}s before attempt {attempt + 1}/{NOMINATIM_ATTEMPTS}...")

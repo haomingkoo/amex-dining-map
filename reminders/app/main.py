@@ -73,32 +73,17 @@ async def run_live_refresh_loop(
         await sleep(interval_seconds)
 
 
-async def run_catalog_refresh_loop(
-    url: str,
+async def run_periodically(
     interval_seconds: int,
-    *,
+    call: Callable[..., Any],
+    *args: Any,
     to_thread: Callable[..., Awaitable[Any]] = asyncio.to_thread,
     sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
 ) -> None:
-    """Adopt the published catalogue on a fixed cadence, off the event loop."""
+    """Run a blocking call on a fixed cadence, off the event loop."""
 
     while True:
-        await to_thread(tft_guide.adopt_published_catalog, url)
-        await sleep(interval_seconds)
-
-
-async def run_alert_dispatch_loop(
-    token: str,
-    repo: str,
-    interval_seconds: int,
-    *,
-    to_thread: Callable[..., Awaitable[Any]] = asyncio.to_thread,
-    sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
-) -> None:
-    """Trigger the alerts workflow on a fixed cadence, off the event loop."""
-
-    while True:
-        await to_thread(alert_dispatch.dispatch_and_record, token, repo)
+        await to_thread(call, *args)
         await sleep(interval_seconds)
 
 
@@ -121,19 +106,21 @@ async def lifespan(_: FastAPI):
     if settings.public_base_url.startswith("https://"):
         tasks.append(
             asyncio.create_task(
-                run_catalog_refresh_loop(
-                    PUBLISHED_CATALOG_URL,
+                run_periodically(
                     CATALOG_REFRESH_INTERVAL_SECONDS,
+                    tft_guide.adopt_published_catalog,
+                    PUBLISHED_CATALOG_URL,
                 )
             )
         )
     if settings.github_dispatch_token:
         tasks.append(
             asyncio.create_task(
-                run_alert_dispatch_loop(
-                    settings.github_dispatch_token,
-                    settings.github_repo,
+                run_periodically(
                     alert_dispatch.DISPATCH_INTERVAL_SECONDS,
+                    alert_dispatch.dispatch_and_record,
+                    settings.github_dispatch_token,
+                    alert_dispatch.GITHUB_REPO,
                 )
             )
         )

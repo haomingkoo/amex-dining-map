@@ -12,7 +12,6 @@ import argparse
 import time
 import urllib.error
 from datetime import date
-from pathlib import Path
 
 try:
     from scripts.jsonio import load_json, save_json
@@ -54,7 +53,6 @@ def oldest_checked_first(signals: dict, current_ids: set[str]) -> list[str]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--report", type=Path, required=True, help="JSON file listing unchanged venues")
     parser.add_argument("--limit", type=int, help="Only refresh the N least recently checked venues")
     args = parser.parse_args()
 
@@ -62,7 +60,7 @@ def main() -> None:
     current_ids = {record["id"] for record in load_json(JAPAN_PATH)}
     ids = oldest_checked_first(signals, current_ids)[: args.limit]
     today = date.today().isoformat()
-    unchanged: list[dict] = []
+    unchanged: list[str] = []
     consecutive_failures = 0
 
     for count, rid in enumerate(ids, 1):
@@ -82,8 +80,8 @@ def main() -> None:
         except (urllib.error.URLError, TimeoutError) as error:
             reason = f"network: {error}"
         if signal is None:
-            unchanged.append({"id": rid, "url": old["url"], "reason": reason})
-            save_json(args.report, unchanged)
+            unchanged.append(rid)
+            print(f"  unchanged {rid} ({reason}): {old['url']}", flush=True)
             consecutive_failures += 1
             if consecutive_failures >= MAX_CONSECUTIVE_FAILURES:
                 raise SystemExit(f"{MAX_CONSECUTIVE_FAILURES} failures in a row at {old['url']}; likely blocked.")
@@ -94,8 +92,7 @@ def main() -> None:
         print(f"[{count}/{len(ids)}] {rid}", flush=True)
         time.sleep(PAUSE_SECONDS)
 
-    save_json(args.report, unchanged)
-    print(f"Done: {len(ids)} venues, {len(unchanged)} unchanged this run, see {args.report}")
+    print(f"Done: {len(ids)} venues, {len(unchanged)} unchanged this run")
 
 
 if __name__ == "__main__":

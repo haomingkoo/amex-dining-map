@@ -4,19 +4,9 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 
 const app = fs.readFileSync("web/app.js", "utf8");
+const { extractFunction: extractFrom } = require("./extract_function");
+const extractFunction = (name) => extractFrom(app, name);
 
-function extractFunction(name) {
-  const start = app.indexOf(`function ${name}(`);
-  assert.ok(start >= 0, `Missing ${name}`);
-  const bodyStart = app.indexOf("{", start);
-  let depth = 0;
-  for (let index = bodyStart; index < app.length; index += 1) {
-    if (app[index] === "{") depth += 1;
-    if (app[index] === "}") depth -= 1;
-    if (depth === 0) return app.slice(start, index + 1);
-  }
-  throw new Error(`Unclosed ${name}`);
-}
 
 const constants = app.match(/const DININGCITY_IMAGE_HOST[\s\S]*?const TABLE_FOR_TWO_PHOTO_WIDTH_PX = \d+;/)[0];
 const context = { URL };

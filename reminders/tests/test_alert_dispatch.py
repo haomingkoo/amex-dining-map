@@ -58,7 +58,9 @@ def test_dispatch_loop_runs_then_waits_the_interval():
 
     async def scenario():
         with pytest.raises(asyncio.CancelledError):
-            await main.run_alert_dispatch_loop("tok", "owner/repo", 900, to_thread=fake_to_thread, sleep=fake_sleep)
+            await main.run_periodically(
+                900, alert_dispatch.dispatch_and_record, "tok", "owner/repo", to_thread=fake_to_thread, sleep=fake_sleep
+            )
 
     asyncio.run(scenario())
 
