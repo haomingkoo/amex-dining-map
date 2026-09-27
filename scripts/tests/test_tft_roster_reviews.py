@@ -10,7 +10,10 @@ from scripts import apply_tft_roster_review, source_change_alert, tft_roster_rev
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DATA = json.loads((ROOT / "data/table-for-two.json").read_text(encoding="utf-8"))
+# Pinned reviewed snapshot: a pending live source review must not fail these tests.
+DATA = json.loads(
+    (ROOT / "scripts/tests/fixtures/table-for-two-2026-09-24.json").read_text(encoding="utf-8")
+)
 IMAGE_SHA = DATA["source_images"]["participating_merchants_sha256"]
 MANIFEST_PATH = ROOT / "data/reviews/table-for-two-roster" / f"{IMAGE_SHA}.json"
 MANIFEST = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))

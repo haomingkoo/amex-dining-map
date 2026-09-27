@@ -12,7 +12,9 @@ from app import tft_guide
 
 
 ROOT = Path(__file__).resolve().parents[2]
-_CATALOG = tft_guide.load_catalog()
+# Pinned reviewed snapshot: a pending live source review must not fail these tests.
+_FIXTURE = Path(__file__).parent / "fixtures" / "tft_guide_catalog-2026-09-24.json"
+_CATALOG = json.loads(_FIXTURE.read_text(encoding="utf-8"))
 NOW = max(
     datetime.fromisoformat(value.replace("Z", "+00:00"))
     for value in (
@@ -24,7 +26,7 @@ NOW = max(
 
 
 def _catalog() -> dict:
-    return tft_guide.load_catalog()
+    return copy.deepcopy(_CATALOG)
 
 
 def _buffet_venue(catalog: dict) -> dict:
@@ -47,10 +49,11 @@ def test_generated_catalog_matches_current_tft_source():
     assert spec.loader
     spec.loader.exec_module(module)
     source = json.loads((ROOT / "data" / "table-for-two.json").read_text())
+    live = tft_guide.load_catalog()
 
-    assert module.build_catalog(source) == _catalog()
-    assert _catalog()["schema_version"] == 4
-    assert [(item["id"], item["review_status"]) for item in _catalog()["documents"]] == [
+    assert module.build_catalog(source) == live
+    assert live["schema_version"] == 4
+    assert [(item["id"], item["review_status"]) for item in live["documents"]] == [
         ("tft-terms", "current_baseline"),
         ("tft-faq", "current_baseline"),
     ]
@@ -58,7 +61,7 @@ def test_generated_catalog_matches_current_tft_source():
         venue.get("booking_project_status") != "not_listed"
         for venue in source["venues"]
     )
-    assert len(_catalog()["venues"]) == active_count
+    assert len(live["venues"]) == active_count
 
 
 def test_vue_platinum_natural_query_is_exact_and_cited():
