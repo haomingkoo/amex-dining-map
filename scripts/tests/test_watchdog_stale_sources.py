@@ -80,16 +80,16 @@ def test_a_retry_older_than_the_window_dispatches_again() -> None:
     assert plans[0].action is watchdog.Action.DISPATCH
 
 
-def test_only_the_declared_manual_sources_lack_an_owning_workflow() -> None:
+def test_every_source_has_an_owning_workflow() -> None:
     health = json.loads((ROOT / "data/source-health.json").read_text())
 
     unowned = {s["id"] for s in health["sources"] if s["id"] not in watchdog.SOURCE_WORKFLOWS}
 
-    assert unowned == watchdog.UNOWNED_SOURCES
+    assert unowned == set()
 
 
 def test_a_source_no_workflow_can_refresh_is_named_in_the_issue() -> None:
-    stale = [source("tabelog-ratings", freshness="stale")]
+    stale = [source("unmapped-source", freshness="stale")]
 
     plans = watchdog.plan_actions(stale, {}, NOW)
     body = watchdog.issue_body(stale, plans, NOW)

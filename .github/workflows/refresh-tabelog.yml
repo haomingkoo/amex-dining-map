@@ -1,0 +1,96 @@
+name: Refresh Tabelog Ratings
+
+on:
+  schedule:
+    # Wednesdays 03:00 UTC, away from the Sunday Google ratings run.
+    - cron: "0 3 * * 3"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: source-ledger-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh-tabelog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Refresh least recently checked Tabelog ratings
+        env:
+          # About 45 minutes at one request per 3 s; ~775 venues rotate every 4 weeks,
+          # inside the 90-day RATINGS_STALE_HOURS limit.
+          WEEKLY_VENUE_BUDGET: "200"
+        run: |
+          python3 scripts/refresh_tabelog_ratings.py \
+            --limit "$WEEKLY_VENUE_BUDGET" \
+            --report /tmp/tabelog-unchanged.json
+          python3 scripts/merge_restaurant_quality_signals.py
+
+      - name: Finalize source health
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            outcome=success
+          else
+            outcome=failure
+          fi
+          python3 scripts/build_source_health.py --source tabelog-ratings --attempt-outcome "$outcome"
+
+      - name: Commit refreshed Tabelog ratings
+        env:
+          COMMIT_MESSAGE: "chore: refresh tabelog ratings"
+          MUST_STAGE: |
+            data/restaurant-quality-signals.json
+            data/japan-restaurants.json
+            data/japan-restaurants.geojson
+            data/source-health.json
+            data/updates.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash scripts/commit_and_push.sh
+
+      - name: Commit source health
+        # Success paths ship health in the data commit; this records failed runs.
+        if: failure()
+        env:
+          COMMIT_MESSAGE: "chore: record tabelog source health"
+          MUST_STAGE: |
+            data/source-health.json
+            data/updates.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash scripts/commit_and_push.sh
+
+      - name: Dispatch published owner updates
+        if: always()
+        id: owner_dispatch
+        env:
+          OWNER_ALERT_INGEST_URL: ${{ secrets.OWNER_ALERT_INGEST_URL }}
+          OWNER_ALERT_INGEST_TOKEN: ${{ secrets.OWNER_ALERT_INGEST_TOKEN }}
+        run: python3 scripts/dispatch_owner_updates.py
+
+      - name: Commit owner delivery receipts
+        if: always() && steps.owner_dispatch.outcome != 'skipped'
+        env:
+          COMMIT_MESSAGE: "chore: record owner alert delivery"
+          MUST_STAGE: data/updates.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash scripts/commit_and_push.sh

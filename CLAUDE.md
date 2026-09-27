@@ -312,8 +312,9 @@ on it:
 - If a retry already ran inside that window and the source is still degraded, the watchdog
   opens a single `source-health` issue. Only one is open at a time, so the 30-minute
   cadence cannot spam it.
-- `tabelog-ratings` is intentionally unmapped. `Match Tabelog Candidates` is
-  dispatch-only and commits nothing, so no retry can clear it. It escalates instead.
+- `tabelog-ratings` is owned by `Refresh Tabelog Ratings`, a weekly oldest-first
+  rotation (`scripts/refresh_tabelog_ratings.py`). It stops on HTTP 403/429, so a
+  Tabelog block surfaces as a failed run and then an issue.
 
 `review_required` is a human review flag, not staleness, and never triggers the watchdog.
 

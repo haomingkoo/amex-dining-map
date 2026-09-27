@@ -28,9 +28,6 @@ ISSUE_TITLE = "Source data is stale: refresh needs attention"
 ISSUE_LABEL = "source-health"
 
 # A source is refreshed by exactly one workflow. Several sources can share one.
-# `tabelog-ratings` is deliberately absent: Match Tabelog Candidates uploads a
-# candidate artifact and commits nothing, so a retry cannot clear its staleness.
-# It escalates to the issue instead, where a human runs the promote/merge steps.
 SOURCE_WORKFLOWS = {
     "global-dining": "Refresh Global Dining Data",
     "japan-dining": "Refresh Data",
@@ -40,8 +37,8 @@ SOURCE_WORKFLOWS = {
     "table-for-two-menus": "Refresh Table for Two",
     "table-for-two-availability": "Table for Two Alerts",
     "google-maps-ratings": "Refresh Google Maps Ratings",
+    "tabelog-ratings": "Refresh Tabelog Ratings",
 }
-UNOWNED_SOURCES = {"tabelog-ratings"}
 
 
 class Action(str, Enum):
@@ -114,7 +111,7 @@ def issue_body(sources: list[dict], plans: list[Plan], now: datetime) -> str:
     lines += ["", "Watchdog decisions:", ""]
     for plan in plans:
         lines.append(f"- `{plan.workflow}` -> {plan.action.value} ({plan.reason})")
-    for source_id in sorted(str(s.get("id")) for s in sources if s.get("id") in UNOWNED_SOURCES):
+    for source_id in sorted(str(s.get("id")) for s in sources if s.get("id") not in SOURCE_WORKFLOWS):
         lines.append(f"- `{source_id}` -> no workflow refreshes this; it needs a manual run")
     lines += [
         "",
