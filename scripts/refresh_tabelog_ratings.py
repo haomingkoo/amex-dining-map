@@ -47,15 +47,20 @@ def refreshed_signal(old: dict, detail: dict, today: str) -> dict | None:
     return signal
 
 
+def oldest_checked_first(signals: dict, current_ids: set[str]) -> list[str]:
+    ids = [rid for rid in signals if rid in current_ids and "tabelog" in signals[rid]]
+    return sorted(ids, key=lambda rid: (str(signals[rid]["tabelog"].get("last_checked_at") or ""), rid))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", type=Path, required=True, help="JSON file listing unchanged venues")
-    parser.add_argument("--limit", type=int, help="Only refresh the first N venues")
+    parser.add_argument("--limit", type=int, help="Only refresh the N least recently checked venues")
     args = parser.parse_args()
 
     signals = load_json(QUALITY_SIGNALS_PATH)
     current_ids = {record["id"] for record in load_json(JAPAN_PATH)}
-    ids = sorted(rid for rid in signals if rid in current_ids and "tabelog" in signals[rid])[: args.limit]
+    ids = oldest_checked_first(signals, current_ids)[: args.limit]
     today = date.today().isoformat()
     unchanged: list[dict] = []
     consecutive_failures = 0

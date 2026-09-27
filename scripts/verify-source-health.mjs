@@ -50,6 +50,7 @@ for (const path of [
   ".github/workflows/refresh-global-dining.yml",
   ".github/workflows/refresh-love-dining.yml",
   ".github/workflows/refresh-ratings.yml",
+  ".github/workflows/refresh-tabelog.yml",
   ".github/workflows/refresh-table-for-two.yml",
 ]) {
   const workflow = read(path);
