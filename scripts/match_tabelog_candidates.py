@@ -604,33 +604,6 @@ def record_address_anchor(record: dict) -> str:
     return (record.get("source_localized_address") or record.get("address") or "").strip()
 
 
-def record_location_terms(record: dict) -> list[str]:
-    terms: list[str] = []
-    seen: set[str] = set()
-
-    def add_term(value: str) -> None:
-        value = (value or "").strip()
-        if not value:
-            return
-        key = normalize_unicode(value) if JP_CHAR_RE.search(value) else normalize_ascii(value)
-        if not key or key in seen:
-            return
-        seen.add(key)
-        terms.append(value)
-
-    for key in ["district", "city", "prefecture"]:
-        add_term(record.get(key) or "")
-
-    station_hint = extract_station_hint(record.get("nearest_stations_text") or "")
-    add_term(station_hint)
-
-    for keyword in record.get("_native_keywords") or []:
-        if looks_like_location_keyword(keyword):
-            add_term(keyword)
-
-    return terms
-
-
 def search_alias_terms(record: dict) -> list[str]:
     aliases: list[str] = []
     seen: set[str] = set()

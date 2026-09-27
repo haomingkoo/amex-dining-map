@@ -229,13 +229,6 @@ def algolia_search(query: str, app_id: str, api_key: str, limit: int = 3) -> lis
     return data.get("results", [{}])[0].get("hits", [])
 
 
-def city_name(hit: dict) -> str:
-    city = hit.get("city") or {}
-    if isinstance(city, dict):
-        return city.get("name") or ""
-    return str(city)
-
-
 def country_name(hit: dict) -> str:
     country = hit.get("country") or {}
     if isinstance(country, dict):
