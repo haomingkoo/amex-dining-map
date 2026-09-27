@@ -4,21 +4,11 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 
 const app = fs.readFileSync("web/app.js", "utf8");
+const { extractFunction: extractFrom } = require("./extract_function");
+const extractFunction = (name) => extractFrom(app, name);
 const css = fs.readFileSync("web/styles.css", "utf8");
 const html = fs.readFileSync("web/index.html", "utf8");
 
-function extractFunction(name) {
-  const start = app.indexOf(`function ${name}(`);
-  assert.ok(start >= 0, `Missing ${name}`);
-  const bodyStart = app.indexOf("{", start);
-  let depth = 0;
-  for (let index = bodyStart; index < app.length; index += 1) {
-    if (app[index] === "{") depth += 1;
-    if (app[index] === "}") depth -= 1;
-    if (depth === 0) return app.slice(start, index + 1);
-  }
-  throw new Error(`Unclosed ${name}`);
-}
 
 const names = ["tableForTwoYearSuffix", "tableForTwoDateOptionLabel", "tableForTwoShortDate", "tableForTwoDateRangeSummary"];
 // Pin "today" so the year rule is deterministic.

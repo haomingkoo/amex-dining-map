@@ -95,8 +95,8 @@ def test_catalog_refresh_loop_adopts_off_the_event_loop_then_waits():
 
     async def scenario():
         with pytest.raises(asyncio.CancelledError):
-            await main.run_catalog_refresh_loop(
-                url, 900, to_thread=fake_to_thread, sleep=fake_sleep
+            await main.run_periodically(
+                900, tft_guide.adopt_published_catalog, url, to_thread=fake_to_thread, sleep=fake_sleep
             )
 
     asyncio.run(scenario())
