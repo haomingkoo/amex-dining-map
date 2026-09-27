@@ -44,6 +44,8 @@ class Settings:
     tft_live_refresh_interval_seconds: int = 600
     tft_live_snapshot_path: Path = Path("tft-live-slots.json")
     tft_live_single_replica_confirmed: bool = False
+    github_dispatch_token: str = ""
+    github_repo: str = "haomingkoo/amex-dining-map"
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -104,6 +106,8 @@ def load_settings() -> Settings:
         subscribe_email_limit=int(os.getenv("SUBSCRIBE_EMAIL_LIMIT", "5")),
         subscribe_global_limit=int(os.getenv("SUBSCRIBE_GLOBAL_LIMIT", "200")),
         owner_alerts_enabled=_env_bool("OWNER_ALERTS_ENABLED"),
+        github_dispatch_token=os.getenv("GITHUB_DISPATCH_TOKEN", "").strip(),
+        github_repo=os.getenv("GITHUB_REPO", "haomingkoo/amex-dining-map").strip(),
         owner_alert_ingest_token=os.getenv("OWNER_ALERT_INGEST_TOKEN", "").strip(),
         telegram_bot_token=os.getenv("TELEGRAM_BOT_TOKEN", "").strip(),
         telegram_owner_chat_id=_env_int("TELEGRAM_OWNER_CHAT_ID"),

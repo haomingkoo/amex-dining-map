@@ -23,6 +23,7 @@ from app import (
     tft_guide,
     tft_live_api,
 )
+from app import alert_dispatch
 from app.config import load_settings
 from app.owner_alert_routes import router as owner_alert_router
 from app.observability import configure_logging
@@ -86,6 +87,21 @@ async def run_catalog_refresh_loop(
         await sleep(interval_seconds)
 
 
+async def run_alert_dispatch_loop(
+    token: str,
+    repo: str,
+    interval_seconds: int,
+    *,
+    to_thread: Callable[..., Awaitable[Any]] = asyncio.to_thread,
+    sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+) -> None:
+    """Trigger the alerts workflow on a fixed cadence, off the event loop."""
+
+    while True:
+        await to_thread(alert_dispatch.dispatch_and_record, token, repo)
+        await sleep(interval_seconds)
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     tasks: list[asyncio.Task[None]] = []
@@ -108,6 +124,16 @@ async def lifespan(_: FastAPI):
                 run_catalog_refresh_loop(
                     PUBLISHED_CATALOG_URL,
                     CATALOG_REFRESH_INTERVAL_SECONDS,
+                )
+            )
+        )
+    if settings.github_dispatch_token:
+        tasks.append(
+            asyncio.create_task(
+                run_alert_dispatch_loop(
+                    settings.github_dispatch_token,
+                    settings.github_repo,
+                    alert_dispatch.DISPATCH_INTERVAL_SECONDS,
                 )
             )
         )
@@ -214,7 +240,9 @@ def healthz() -> dict[str, Any]:
             "telegram_guide_enabled": settings.telegram_guide_enabled,
             "telegram_reminders_enabled": settings.telegram_reminders_enabled,
             "tft_live_refresh_enabled": settings.tft_live_refresh_enabled,
+            "alert_dispatch_enabled": bool(settings.github_dispatch_token),
         },
+        "alert_dispatch": dict(alert_dispatch.last_dispatch),
     }
     response.update(catalog_health())
     response["tft_live"] = tft_live_api.snapshot_health(
