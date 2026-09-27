@@ -33,6 +33,8 @@ RUNTIME_FIELDS = {
     "operational_status_source_url",
     "slot_source_status",
 }
+# Official roster images in page order; the fingerprint binds all of them.
+ROSTER_IMAGE_KEYS = ("participating_merchants_sha256", "cafe_buffet_merchants_sha256")
 REQUIRED_VENUE_FIELDS = {
     "id",
     "name",
@@ -47,6 +49,39 @@ REQUIRED_VENUE_FIELDS = {
 def canonical_sha256(value: Any) -> str:
     raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def roster_fingerprint(image_hashes: list[str]) -> str:
+    # A single image keeps its own hash so single-image manifests stay addressable.
+    return image_hashes[0] if len(image_hashes) == 1 else canonical_sha256(image_hashes)
+
+
+def observed_roster_fingerprint(data: dict[str, Any]) -> str | None:
+    images = data.get("source_images") or {}
+    hashes = [images[key] for key in ROSTER_IMAGE_KEYS if images.get(key)]
+    return roster_fingerprint(hashes) if hashes else None
+
+
+def _validate_roster_images(source: dict[str, Any]) -> None:
+    images = source.get("images")
+    if images is None:
+        return
+    if not isinstance(images, list) or len(images) != len(ROSTER_IMAGE_KEYS):
+        raise ValueError("manifest source.images must list every official roster image")
+    for image in images:
+        if (
+            not isinstance(image, dict)
+            or not str(image.get("url") or "").startswith("https://www.americanexpress.com/")
+            or not isinstance(image.get("sha256"), str)
+            or len(image["sha256"]) != 64
+        ):
+            raise ValueError("manifest source.images entries need an official URL and SHA-256")
+    if images[0]["url"] != source.get("participating_image_url"):
+        raise ValueError("manifest source.images must start with the participating image")
+    if roster_fingerprint([image["sha256"] for image in images]) != source.get(
+        "participating_image_sha256"
+    ):
+        raise ValueError("manifest participating-image SHA-256 must fingerprint source.images")
 
 
 def manifest_sha256(manifest: dict[str, Any]) -> str:
@@ -92,6 +127,7 @@ def validate_manifest(manifest: dict[str, Any], path: Path | None = None) -> Non
         raise ValueError("manifest must bind the official participating-image URL")
     if not isinstance(image_sha, str) or len(image_sha) != 64:
         raise ValueError("manifest participating-image SHA-256 is invalid")
+    _validate_roster_images(source)
     if path is not None and path.stem != image_sha:
         raise ValueError("manifest filename must equal the participating-image SHA-256")
     captured_at = _parse_timestamp(source.get("captured_at"), "source.captured_at")
@@ -174,10 +210,7 @@ def review_state(
         existing_source.get("approved_manifest_sha256") == loaded[0]["manifest_sha256"]
         or (
             existing_source.get("approved_manifest_sha256") is None
-            and (existing_payload.get("source_images") or {}).get(
-                "participating_merchants_sha256"
-            )
-            == image_sha256
+            and observed_roster_fingerprint(existing_payload) == image_sha256
         )
     )
     if manifest_is_applied:
@@ -199,9 +232,7 @@ def review_state(
     approved_image = prior.get("approved_participating_sha256")
     approved_manifest = prior.get("approved_manifest_sha256")
     if not approved_image:
-        approved_image = (existing_payload.get("source_images") or {}).get(
-            "participating_merchants_sha256"
-        )
+        approved_image = observed_roster_fingerprint(existing_payload)
     return [stable_venue(record) for record in existing], {
         "status": "review_required",
         "review_required": True,
@@ -226,8 +257,7 @@ def apply_manifest(
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     validate_manifest(manifest)
     source = manifest["source"]
-    observed = (data.get("source_images") or {}).get("participating_merchants_sha256")
-    if observed != source["participating_image_sha256"]:
+    if observed_roster_fingerprint(data) != source["participating_image_sha256"]:
         raise ValueError("current observed roster image does not match the review")
     if data.get("official_url") != source["official_url"]:
         raise ValueError("current official roster URL does not match the review")

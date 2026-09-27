@@ -70,6 +70,7 @@ META_FIELD_LABELS = {
     "menu_source.review_queue_count": "Menu review queue count",
     "menu_source.review_queue_sha256": "Menu review queue fingerprint",
     "source_images.participating_merchants_sha256": "Participating merchants image hash",
+    "source_images.cafe_buffet_merchants_sha256": "Cafe and buffet image hash",
     "roster_source.status": "Roster review status",
     "roster_source.observed_participating_sha256": "Observed roster image hash",
     "roster_source.approved_participating_sha256": "Approved roster image hash",
