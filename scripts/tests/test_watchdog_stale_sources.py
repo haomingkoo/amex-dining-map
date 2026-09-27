@@ -144,3 +144,17 @@ def test_tabelog_candidates_is_dispatch_only_with_usable_defaults() -> None:
     assert "workflow_dispatch:" in workflow
     for field, default in (("offset", "0"), ("limit", "50"), ("top", "5"), ("pause", "0.2")):
         assert f"inputs.{field} || '{default}'" in workflow
+
+
+def test_mostly_stale_mixed_age_source_is_degraded() -> None:
+    ratings = {**source("google-maps-ratings", freshness="mixed_age"),
+               "coverage": {"covered": 3860}, "stale_record_count": 2403}
+
+    assert watchdog.is_degraded(ratings) is True
+
+
+def test_mixed_age_source_with_few_stale_records_is_not_degraded() -> None:
+    tabelog = {**source("tabelog-ratings", freshness="mixed_age"),
+               "coverage": {"covered": 775}, "stale_record_count": 19}
+
+    assert watchdog.is_degraded(tabelog) is False

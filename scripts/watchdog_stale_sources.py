@@ -24,6 +24,8 @@ except ImportError:  # running as `python3 scripts/<file>.py`
 DEFAULT_HEALTH_PATH = Path("data/source-health.json")
 RETRY_WINDOW_HOURS = 6
 DEGRADED_FRESHNESS = {"stale", "unavailable"}
+# A mixed_age source past this share of stale records needs a refresh, not just a note.
+MAX_STALE_RECORD_SHARE = 0.25
 ISSUE_TITLE = "Source data is stale: refresh needs attention"
 ISSUE_LABEL = "source-health"
 
@@ -54,6 +56,12 @@ class Plan:
     reason: str
 
 
+def stale_record_share(source: dict) -> float:
+    """Share of covered records past the limit; 0 for sources without per-record ages."""
+    covered = int((source.get("coverage") or {}).get("covered") or 0)
+    return int(source.get("stale_record_count") or 0) / covered if covered else 0.0
+
+
 def is_degraded(source: dict) -> bool:
     """A source needs attention when it is past its own freshness limit or failing.
 
@@ -61,6 +69,7 @@ def is_degraded(source: dict) -> bool:
     """
     return (
         source.get("freshness_state") in DEGRADED_FRESHNESS
+        or stale_record_share(source) > MAX_STALE_RECORD_SHARE
         or source.get("failure_state") not in (None, "clear")
     )
 
