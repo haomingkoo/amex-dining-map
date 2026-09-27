@@ -110,6 +110,8 @@ const TABLE_FOR_TWO_LIVE_SNAPSHOT_URL = `${REMINDERS_API_BASE}/api/tft/slots`;
 const TABLE_FOR_TWO_LIVE_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 const TABLE_FOR_TWO_DATA_REVALIDATE_INTERVAL_MS = 5 * 60 * 1000;
 const TABLE_FOR_TWO_FETCH_TIMEOUT_MS = 12 * 1000;
+// Fallback for when the map never fires moveend after a fly-to.
+const MARKER_POPUP_OPEN_DELAY_MS = 900;
 const TABLE_FOR_TWO_DEFAULT_PARTY_SIZE = 2;
 const TABLE_FOR_TWO_MAX_TIMES = 12;
 const TABLE_FOR_TWO_TIME_WINDOW_MINUTES = 60;
@@ -568,6 +570,7 @@ const state = {
   tableForTwoLiveRefreshInFlight: false,
   tableForTwoLiveRefreshAt: null,
   tableForTwoLiveRefreshTimer: null,
+  tableForTwoLiveRefreshFailed: false,
   googleRatings: {},
   googleRatingsLoaded: false,
   tableForTwoGoogleRatingsLoaded: false,
@@ -700,7 +703,7 @@ function openMarkerPopupAfterMove(mapInstance, marker) {
     marker.openPopup?.();
     return;
   }
-  const timer = window.setTimeout(() => marker.openPopup?.(), 900);
+  const timer = window.setTimeout(() => marker.openPopup?.(), MARKER_POPUP_OPEN_DELAY_MS);
   mapInstance.once("moveend", () => {
     window.clearTimeout(timer);
     marker.openPopup?.();
@@ -1350,10 +1353,6 @@ function hasCoordinates(record) {
 function latLngForRecord(record) {
   if (!hasCoordinates(record)) return null;
   return [record.lat, recordLongitude(record)];
-}
-
-function hasSourceCoordinates(record) {
-  return record.lat != null && record.lng != null && record.coordinate_confidence === "source";
 }
 
 function hasVerifiedCoordinates(record) {
@@ -2531,19 +2530,6 @@ function currentJourneyId(route = currentRoute()) {
   if (route.programId === "love-dining" || route.programId === "table-for-two") return "singapore";
   if (route.programId === "alerts") return "alerts";
   return null;
-}
-
-function visibleProgramIdsForJourney(journeyId) {
-  if (journeyId === "travel") {
-    return ["dining", "stays"];
-  }
-  if (journeyId === "singapore") {
-    return ["love-dining", "table-for-two"];
-  }
-  if (journeyId === "alerts") {
-    return ["alerts"];
-  }
-  return ["dining", "stays", "love-dining", "table-for-two"];
 }
 
 function formatTimestamp(value) {
@@ -5417,27 +5403,26 @@ async function refreshTableForTwoLiveAvailability({ force = false } = {}) {
   if (!force && state.tableForTwoLiveRefreshAt && now - state.tableForTwoLiveRefreshAt < 60 * 1000) return;
 
   state.tableForTwoLiveRefreshInFlight = true;
-  const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), TABLE_FOR_TWO_FETCH_TIMEOUT_MS);
   try {
     const response = await fetch(TABLE_FOR_TWO_LIVE_SNAPSHOT_URL, {
       cache: "no-store",
       headers: { Accept: "application/json" },
-      signal: controller.signal,
+      signal: AbortSignal.timeout(TABLE_FOR_TWO_FETCH_TIMEOUT_MS),
     });
-    if (!response.ok) return;
-    const payload = await response.json();
-    if (!applyTableForTwoLiveSnapshot(payload)) return;
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!applyTableForTwoLiveSnapshot(await response.json())) throw new Error("invalid live snapshot");
     state.tableForTwoLiveRefreshAt = now;
-    if (isTableForTwoRoute()) {
-      refreshTableForTwoDateOptions();
-      filterTableForTwo();
-    }
-  } catch (_error) {
-    // Static roster and last published availability remain the honest fallback.
+    state.tableForTwoLiveRefreshFailed = false;
+  } catch (error) {
+    // The published snapshot stays on screen; the freshness panel says the live check failed.
+    console.warn("Table for Two live availability check failed:", error);
+    state.tableForTwoLiveRefreshFailed = true;
   } finally {
-    window.clearTimeout(timeout);
     state.tableForTwoLiveRefreshInFlight = false;
+  }
+  if (isTableForTwoRoute()) {
+    refreshTableForTwoDateOptions();
+    filterTableForTwo();
   }
 }
 
@@ -6031,7 +6016,7 @@ function renderTableForTwoFreshnessDetails(payload, venues, selectedRecord = nul
   tableForTwoFreshnessContent.innerHTML = `
     <div class="tft-freshness-row">
       <strong>Availability</strong>
-      <span>${escapeHtml(availabilitySubject)}${escapeHtml(availabilityCheckedAt ? `Checked ${formatTimestamp(availabilityCheckedAt)}.` : "Check pending.")} Cached from ${escapeHtml(payload.availability_source?.project || "AMEXPlatSG")}; confirm in the Amex Experiences App.</span>
+      <span>${escapeHtml(availabilitySubject)}${escapeHtml(availabilityCheckedAt ? `Checked ${formatTimestamp(availabilityCheckedAt)}.` : "Check pending.")}${state.tableForTwoLiveRefreshFailed ? " Latest live check unavailable; showing the published snapshot." : ""} Cached from ${escapeHtml(payload.availability_source?.project || "AMEXPlatSG")}; confirm in the Amex Experiences App.</span>
     </div>
     <div class="tft-freshness-row">
       <strong>Official roster</strong>
@@ -6531,12 +6516,6 @@ function tableForTwoAvailabilityIsStale(record) {
   const ageMs = Date.now() - capturedDate.getTime();
   if (ageMs < -5 * 60 * 1000) return true;
   return ageMs > TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES * 60 * 1000;
-}
-
-function tableForTwoDateListSummary(dates, prefix = "Dates") {
-  if (!dates.length) return "";
-  if (dates.length <= 4) return `${prefix}: ${dates.join(", ")}`;
-  return `${prefix}: ${dates.length} dates from ${dates[0]} to ${dates[dates.length - 1]}`;
 }
 
 function tableForTwoDateSummary(record, filters = state.tableForTwoCurrentFilters || {}) {
@@ -7482,16 +7461,6 @@ function loveDiningLocationNote(record) {
     return "This Love Dining entry bundles multiple outlets into one record, so the map pin and branch-specific Google rating are hidden until the locations are split cleanly.";
   }
   return "This Love Dining entry includes additional outlet details in the same record. Double-check the branch before booking or travelling.";
-}
-
-function loveDiningSourceDescription(record, benefit) {
-  const type = record.type === "hotel"
-    ? `hotel outlet${record.hotel ? ` at ${record.hotel}` : ""}`
-    : "standalone restaurant";
-  const cuisine = record.cuisine ? `${record.cuisine} ` : "";
-  const location = record.address || record.area || record.hotel || "Singapore";
-  const booking = loveDiningBookingLabel(record).toLowerCase();
-  return `${record.name} is a Love Dining ${type} listed for ${cuisine}dining at ${location}. The cached terms show ${benefit.savingsLabel.toLowerCase()} for eligible cardmembers, with ${benefit.appliesLabel.toLowerCase()} and ${booking}.`;
 }
 
 function refreshLoveDiningCuisineOptions() {
