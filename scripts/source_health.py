@@ -58,10 +58,10 @@ def format_time(value: datetime | None) -> str | None:
 
 
 def load_json(path: Path, fallback: Any) -> Any:
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (FileNotFoundError, json.JSONDecodeError, OSError):
+    """Missing file -> fallback (reported as unavailable). Corrupt JSON raises."""
+    if not path.exists():
         return fallback
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _times(values: Iterable[Any]) -> list[datetime]:

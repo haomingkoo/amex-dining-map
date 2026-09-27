@@ -53,6 +53,10 @@ GEOAPIFY_API_KEY = os.environ.get("GEOAPIFY_API_KEY")
 TOMTOM_API_KEY = os.environ.get("TOMTOM_API_KEY")
 PDF_FETCH_TIMEOUTS = (30, 60, 90)
 MIN_PDF_BYTES = 1024
+NOMINATIM_ATTEMPTS = 4
+NOMINATIM_TIMEOUT_SECONDS = 30
+NOMINATIM_BACKOFF_SECONDS = 30
+HTTP_TOO_MANY_REQUESTS = 429
 
 COUNTRY_ALIASES = {
     "singapore": "Singapore",
@@ -729,20 +733,18 @@ def geocode_query(query: str) -> dict | None:
             "Accept-Language": "en-US,en;q=0.9",
         },
     )
-    for attempt in range(4):
+    for attempt in range(1, NOMINATIM_ATTEMPTS + 1):
         try:
-            with urllib.request.urlopen(request, timeout=30) as response:
+            with urllib.request.urlopen(request, timeout=NOMINATIM_TIMEOUT_SECONDS) as response:
                 payload = json.loads(response.read().decode("utf-8"))
             return payload[0] if payload else None
         except urllib.error.HTTPError as exc:
-            if exc.code == 429:
-                wait = 30 * (2 ** attempt)
-                print(f"  Nominatim 429 — waiting {wait}s before retry {attempt + 1}/3...")
-                time.sleep(wait)
-            else:
+            if exc.code != HTTP_TOO_MANY_REQUESTS or attempt == NOMINATIM_ATTEMPTS:
                 raise
-    print(f"  Nominatim giving up after retries for: {query!r}")
-    return None
+            wait = NOMINATIM_BACKOFF_SECONDS * (2 ** (attempt - 1))
+            print(f"  Nominatim 429, waiting {wait}s before attempt {attempt + 1}/{NOMINATIM_ATTEMPTS}...")
+            time.sleep(wait)
+    raise AssertionError("unreachable: the final attempt returns or raises")
 
 
 def country_code_for_name(country: str | None) -> str | None:

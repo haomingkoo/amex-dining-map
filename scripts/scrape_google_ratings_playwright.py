@@ -48,6 +48,9 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
 RATINGS_PATH = DATA_DIR / "google-maps-ratings.json"
+PAGE_LOAD_TIMEOUT_MS = 30_000
+RATING_SELECTOR_TIMEOUT_MS = 12_000
+PLACE_CARD_SETTLE_SECONDS = 3
 
 UA = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -134,14 +137,17 @@ async def scrape_one(page, target: str, rid: str) -> dict | None:
         search_url = target
     else:
         search_url = f"https://www.google.com/maps/search/{target.replace(' ', '+')}"
+    from playwright.async_api import Error as PlaywrightError
+    from playwright.async_api import TimeoutError as PlaywrightTimeoutError
+
     try:
-        await page.goto(search_url, wait_until="commit", timeout=30000)
-        # Wait for place card rating to appear
+        await page.goto(search_url, wait_until="commit", timeout=PAGE_LOAD_TIMEOUT_MS)
+        # A missing rating span is expected for search-result pages; extraction below decides.
         try:
-            await page.wait_for_selector('span[aria-hidden="true"]', timeout=12000)
-        except Exception:
-            pass
-        await asyncio.sleep(3)
+            await page.wait_for_selector('span[aria-hidden="true"]', timeout=RATING_SELECTOR_TIMEOUT_MS)
+        except PlaywrightTimeoutError:
+            print(f"    {rid}: no rating span after {RATING_SELECTOR_TIMEOUT_MS}ms, continuing")
+        await asyncio.sleep(PLACE_CARD_SETTLE_SECONDS)
 
         # Hotel cards often spend a few more seconds on a transient /search/ URL
         # before resolving to the real place page.
@@ -166,8 +172,8 @@ async def scrape_one(page, target: str, rid: str) -> dict | None:
                         if h1_text and h1_text.lower() != "results":
                             break
                     current_url = page.url
-            except Exception:
-                pass
+            except PlaywrightError as exc:
+                print(f"    WARNING {rid}: could not open first search result: {exc}")
 
         maps_url = current_url if "google.com/maps" in current_url else None
 

@@ -27,6 +27,10 @@ try:
     from scripts.timeutil import iso_now
 except ImportError:  # running as `python3 scripts/<file>.py`
     from timeutil import iso_now
+try:
+    from scripts.netutil import NETWORK_ERRORS
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from netutil import NETWORK_ERRORS
 
 
 if TYPE_CHECKING:
@@ -57,6 +61,13 @@ CLOSING_NOTES: dict[str, str] = {
 }
 
 PRESERVED_ENRICHMENT_FIELDS = ("lat", "lng")
+HTTP_TIMEOUT_SECONDS = 30
+GEOCODE_TIMEOUT_SECONDS = 10
+NOMINATIM_PAUSE_SECONDS = 1.1
+PAGE_LOAD_TIMEOUT_MS = 30_000
+PAGE_SETTLE_MS = 5_000
+DETAILS_CLICK_SETTLE_MS = 150
+DETAILS_EXPAND_SETTLE_MS = 2_000
 
 
 def normalize_inline_text(value: str | None) -> str:
@@ -65,7 +76,7 @@ def normalize_inline_text(value: str | None) -> str:
 
 def fetch_bytes(url: str) -> bytes:
     request = urllib.request.Request(url, headers={"User-Agent": CONTEXT_OPTS["user_agent"]})
-    with urllib.request.urlopen(request, timeout=30) as response:
+    with urllib.request.urlopen(request, timeout=HTTP_TIMEOUT_SECONDS) as response:
         return response.read()
 
 
@@ -300,19 +311,25 @@ def build_meta(
 
 def load_and_expand(page: Page, url: str) -> str:
     """Load a listing page, click all Details buttons, return full page text."""
+    from playwright.sync_api import Error as PlaywrightError
+
     print(f"  Loading {url}")
-    page.goto(url, wait_until="domcontentloaded", timeout=30_000)
-    page.wait_for_timeout(5_000)
+    page.goto(url, wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS)
+    page.wait_for_timeout(PAGE_SETTLE_MS)
 
     details_buttons = page.query_selector_all("text=Details")
     print(f"  Expanding {len(details_buttons)} sections...")
+    failed_clicks = 0
     for btn in details_buttons:
         try:
             btn.click()
-            page.wait_for_timeout(150)
-        except Exception:
-            pass
-    page.wait_for_timeout(2_000)
+            page.wait_for_timeout(DETAILS_CLICK_SETTLE_MS)
+        except PlaywrightError as exc:
+            failed_clicks += 1
+            print(f"  WARNING: could not expand a Details section: {exc}")
+    if failed_clicks:
+        print(f"  WARNING: {failed_clicks}/{len(details_buttons)} Details sections stayed collapsed")
+    page.wait_for_timeout(DETAILS_EXPAND_SETTLE_MS)
     return page.inner_text("body")
 
 
@@ -565,14 +582,11 @@ def parse_hotels(text: str) -> list[dict]:
 def _nominatim(query: str) -> tuple[float, float] | None:
     encoded = urllib.parse.quote(query)
     url = f"https://nominatim.openstreetmap.org/search?q={encoded}&format=json&limit=1&countrycodes=sg"
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "amex-dining-map/1.0"})
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read())
-        if data:
-            return float(data[0]["lat"]), float(data[0]["lon"])
-    except Exception:
-        pass
+    req = urllib.request.Request(url, headers={"User-Agent": "amex-dining-map/1.0"})
+    with urllib.request.urlopen(req, timeout=GEOCODE_TIMEOUT_SECONDS) as resp:
+        data = json.loads(resp.read())
+    if data:
+        return float(data[0]["lat"]), float(data[0]["lon"])
     return None
 
 
@@ -597,7 +611,7 @@ def geocode_address(address: str, cache: dict) -> tuple[float, float] | None:
         if result:
             cache[address] = list(result)
             return result
-        time.sleep(1.1)
+        time.sleep(NOMINATIM_PAUSE_SECONDS)
 
     # Strategy 2: take only the first address block (before second location)
     # Multi-location addresses have two addresses concatenated
@@ -607,7 +621,7 @@ def geocode_address(address: str, cache: dict) -> tuple[float, float] | None:
         if result:
             cache[address] = list(result)
             return result
-        time.sleep(1.1)
+        time.sleep(NOMINATIM_PAUSE_SECONDS)
 
     # Strategy 3: full address
     result = _nominatim(f"{address}, Singapore")
@@ -645,14 +659,19 @@ def geocode_all(records: list[dict], skip: bool = False) -> list[dict]:
             print(f"  [{i}/{total}] {rec['name']} — no address, skipping geocode")
             continue
 
-        result = geocode_address(addr, cache)
+        try:
+            result = geocode_address(addr, cache)
+        except NETWORK_ERRORS as exc:
+            # Not cached, so the next run retries instead of remembering a false miss.
+            print(f"  [{i}/{total}] {rec['name']} WARNING: geocode request failed: {exc!r}")
+            continue
         if result:
             rec["lat"] = result[0]
             rec["lng"] = result[1]
             print(f"  [{i}/{total}] {rec['name']} → {result[0]:.4f}, {result[1]:.4f}")
         else:
             print(f"  [{i}/{total}] {rec['name']} — geocode failed for: {addr}")
-        time.sleep(1.1)  # Nominatim rate limit: 1 req/sec
+        time.sleep(NOMINATIM_PAUSE_SECONDS)  # Nominatim rate limit: 1 req/sec
 
     GEOCODE_CACHE_PATH.write_text(json.dumps(cache, indent=2, ensure_ascii=False) + "\n")
     return records

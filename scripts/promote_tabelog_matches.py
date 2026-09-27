@@ -19,20 +19,13 @@ DATA_DIR = ROOT / "data"
 QUALITY_SIGNALS_PATH = DATA_DIR / "restaurant-quality-signals.json"
 
 
+# (minimum Tabelog score, star rating), highest first.
+HONEST_STAR_CUTOFFS = ((4.0, 5), (3.5, 4.5), (3.4, 4), (3.3, 3.5), (3.1, 3), (3.0, 2))
+HONEST_STARS_FLOOR = 1
+
+
 def honest_stars(score_raw: float) -> float:
-    if score_raw >= 4.0:
-        return 5
-    if score_raw >= 3.5:
-        return 4.5
-    if score_raw >= 3.4:
-        return 4
-    if score_raw >= 3.3:
-        return 3.5
-    if score_raw >= 3.1:
-        return 3
-    if score_raw >= 3.0:
-        return 2
-    return 1
+    return next((stars for cutoff, stars in HONEST_STAR_CUTOFFS if score_raw >= cutoff), HONEST_STARS_FLOOR)
 
 
 def normalize_review_entry(entry: dict) -> tuple[str, dict]:
@@ -49,7 +42,7 @@ def normalize_review_entry(entry: dict) -> tuple[str, dict]:
 
     signal = {
         "score_raw": float(score_raw),
-        "honest_stars": entry.get("honest_stars", honest_stars(float(score_raw))),
+        "honest_stars": honest_stars(float(score_raw)),
         "review_count": int(review_count),
         "url": url,
         "match_confidence": entry.get("match_confidence", "reviewed_batch"),

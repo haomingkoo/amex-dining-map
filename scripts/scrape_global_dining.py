@@ -40,6 +40,10 @@ try:
     from scripts.geo import distance_km
 except ImportError:  # running as `python3 scripts/<file>.py`
     from geo import distance_km
+try:
+    from scripts.netutil import NETWORK_ERRORS
+except ImportError:  # running as `python3 scripts/<file>.py`
+    from netutil import NETWORK_ERRORS
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -65,6 +69,9 @@ SKIP_COUNTRIES = {"japan"}
 SKIP_COUNTRY_CODES = {"JP"}
 
 HTTP_BACKOFF_BASE = 1.5
+GEOCODE_TIMEOUT_SECONDS = 15
+NOMINATIM_PAUSE_SECONDS = 1.1
+SHORT_URL_TIMEOUT_SECONDS = 5
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
@@ -152,21 +159,23 @@ def geocode_query(query: str) -> dict[str, Any] | None:
     params = urllib.parse.urlencode({"q": query, "format": "jsonv2", "limit": 1})
     url = f"https://nominatim.openstreetmap.org/search?{params}"
     req = urllib.request.Request(url, headers={"User-Agent": "amex-dining-map/1.0"})
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read())
-        return data[0] if data else None
-    except Exception:
-        return None
+    with urllib.request.urlopen(req, timeout=GEOCODE_TIMEOUT_SECONDS) as resp:
+        data = json.loads(resp.read())
+    return data[0] if data else None
 
 
 def geocode_with_cache(query: str, cache: dict[str, Any]) -> dict[str, Any] | None:
     if query in cache:
         return cache[query]
-    result = geocode_query(query)
+    try:
+        result = geocode_query(query)
+    except NETWORK_ERRORS as exc:
+        # Not cached, so the next run retries instead of remembering a false miss.
+        print(f"  WARNING: geocode failed for {query!r}: {exc!r}")
+        return None
     cache[query] = result
     save_json(GEOCODE_CACHE_PATH, cache)
-    time.sleep(1.1)
+    time.sleep(NOMINATIM_PAUSE_SECONDS)
     return result
 
 
@@ -183,12 +192,12 @@ def parse_google_map_coordinates(
     if should_resolve:
         try:
             req = urllib.request.Request(url, headers=HEADERS)
-            with urllib.request.urlopen(req, timeout=5) as resp:
+            with urllib.request.urlopen(req, timeout=SHORT_URL_TIMEOUT_SECONDS) as resp:
                 redirected = resp.geturl()
             if redirected and redirected not in candidates:
                 candidates.insert(0, redirected)
-        except Exception:
-            pass
+        except NETWORK_ERRORS as exc:
+            print(f"  WARNING: could not resolve short map URL {url}: {exc!r}")
 
     for candidate in candidates:
         decoded = urllib.parse.unquote(candidate)
