@@ -33,8 +33,8 @@ def test_document_verifier_installs_the_patched_pypdf_version() -> None:
         "Refresh and retain official menu versions",
     )
 
-    assert "pypdf==6.16.2" in block
-    assert "pypdf==6.15.0" not in block
+    assert "pypdf==6.19.0" in block
+    assert "pypdf==6.16.2" not in block
 
 
 def test_independent_observations_continue_after_a_failure() -> None:

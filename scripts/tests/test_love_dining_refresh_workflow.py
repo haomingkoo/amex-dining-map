@@ -17,5 +17,5 @@ def test_document_verifier_runs_as_a_module() -> None:
 def test_workflow_installs_the_verifiers_pypdf_version() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
 
-    assert "pypdf==6.16.2" in text
-    assert "pypdf==6.15.0" not in text
+    assert "pypdf==6.19.0" in text
+    assert "pypdf==6.16.2" not in text

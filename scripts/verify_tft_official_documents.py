@@ -16,7 +16,7 @@ import pypdf
 from pypdf import PdfReader
 
 from scripts import tft_document_reviews
-from scripts.official_document_reviews import manifest_sha256, verify_version
+from scripts.official_document_reviews import PYPDF_VERSION, manifest_sha256, verify_version
 
 
 SOURCE = Path("data/table-for-two.json")
@@ -80,8 +80,8 @@ def verify(
     pdf_dir: Path | None,
     approved_pdf_root: Path = tft_document_reviews.PDF_ROOT,
 ) -> int:
-    if pypdf.__version__ != "6.16.2":
-        raise ValueError(f"expected pypdf 6.16.2, found {pypdf.__version__}")
+    if pypdf.__version__ != PYPDF_VERSION:
+        raise ValueError(f"expected pypdf {PYPDF_VERSION}, found {pypdf.__version__}")
     source = json.loads(source_path.read_text())
     source_hashes = source.get("source_documents") or {}
     pending = 0

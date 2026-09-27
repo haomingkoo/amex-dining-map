@@ -117,6 +117,7 @@ def _valid_document(document: dict, now: datetime) -> bool:
         in {
             "pypdf 6.15.0 extract_text normalized-whitespace-v1",
             "pypdf 6.16.2 extract_text normalized-whitespace-v1",
+            "pypdf 6.19.0 extract_text normalized-whitespace-v1",
         }
         and document.get("lexical_index_version") == "reviewed-topics-v1"
         and _trusted_amex_url(document.get("source_url")) is not None

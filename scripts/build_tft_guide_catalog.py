@@ -178,6 +178,7 @@ def _document_projection(source: dict, review_root: Path) -> list[dict]:
             or decision.get("extractor") not in {
                 "pypdf 6.15.0 extract_text normalized-whitespace-v1",
                 "pypdf 6.16.2 extract_text normalized-whitespace-v1",
+                "pypdf 6.19.0 extract_text normalized-whitespace-v1",
             }
             or decision.get("lexical_index_version") != "reviewed-topics-v1"
             or decision.get("title") != title
