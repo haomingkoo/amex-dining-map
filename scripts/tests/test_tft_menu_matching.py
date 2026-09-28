@@ -245,3 +245,27 @@ def test_failed_observation_does_not_advance_previous_freshness():
 
 if __name__ == "__main__":
     main()
+
+
+def test_same_bytes_under_another_amex_spelling_is_not_a_menu_change():
+    import hashlib
+
+    pdf = b"%PDF reviewed forage menu"
+    previous = {
+        "status": "published",
+        "filename": "Forage-Menu_Platinium.pdf",
+        "url": "https://www.americanexpress.com/content/dam/Forage-Menu_Platinium.pdf",
+        "card": "platinum",
+        "sha256": hashlib.sha256(pdf).hexdigest(),
+        "review_manifest_sha256": "m" * 64,
+    }
+    entry = {
+        "filename": "Forage-Menu_Platinum.pdf",
+        "url": "https://www.americanexpress.com/content/dam/Forage-Menu_Platinum.pdf",
+        "card_key": "platinum",
+    }
+
+    info = menus.venue_menu_info({"name": "Forage"}, entry, pdf, "2026-09-28T00:00:00Z", previous)
+
+    assert info["status"] == "published"
+    assert (info["url"], info["review_manifest_sha256"]) == (previous["url"], "m" * 64)

@@ -407,6 +407,9 @@ def venue_menu_info(
         and previous.get("url") == listing_entry.get("url")
         and previous.get("card") == listing_entry.get("card_key")
     )
+    # Amex hosts some menus under two spellings; identical bytes are the reviewed menu.
+    if previous.get("status") == "published" and prev_sha == sha256 and not same_identity:
+        return {**previous, "checked_at": checked_at, "last_seen_at": checked_at}
     if not same_identity or prev_sha != sha256:
         return {
             "status": "review_required",
