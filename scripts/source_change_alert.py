@@ -37,6 +37,10 @@ IGNORED_RECORD_FIELDS = {
     "lat",
     "lon",
     "lng",
+    # How a map pin was geocoded; derived by us like lat/lng, never Amex source data.
+    "coordinate_confidence",
+    "coordinate_source",
+    "map_pin_note",
     "search_text",
     "summary_ai",
     "last_synced_at",
