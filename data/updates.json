@@ -1,7 +1,192 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-28T22:27:27Z",
+  "updated_at": "2026-09-29T00:51:23Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-09-29T00:51:23Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "853/853 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "854/854 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "853/853 (100%), 0 unavailable",
+          "after": "854/854 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "183b5921d88cdc2b1048",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "e4fb8cdd40484d762691"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-09-29T00:51:23Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "775/853 (90.9%), 78 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "775/854 (90.7%), 79 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "775/853 (90.9%), 78 unavailable",
+          "after": "775/854 (90.7%), 79 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "1373702923712cbf4100",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "c7b397dc528eabb9ba60"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-09-29T00:51:23Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3017/3024 (99.8%), 7 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3017/3025 (99.7%), 8 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3017/3024 (99.8%), 7 unavailable",
+          "after": "3017/3025 (99.7%), 8 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "d753c5ceeb9220c51bf2",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "67b501fb5a83da090a25"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-09-29T00:51:21Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 853,
+          "Mapped count": 853,
+          "Official records SHA-256": "b41a8f9a84fe"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 854,
+          "Mapped count": 854,
+          "Official records SHA-256": "fdaf611a0c00"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 853,
+          "after": 854
+        },
+        {
+          "field": "Mapped count",
+          "before": 853,
+          "after": 854
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "b41a8f9a84fe",
+          "after": "fdaf611a0c00"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "13d4c2a8f5927f024200",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "f1d7898dbc0a79787a84"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Kikunoi Niku Unshu / Kyoto",
+      "detected_at": "2026-09-29T00:51:21Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Kikunoi Niku Unshu",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Kyoto",
+          "District": "Shimokawaracho",
+          "Address": "2F, 463-30, Shimokawaracho, Higashiyama-ku, Kyoto-shi, Kyoto",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245689/",
+      "transition_id": "b97d6bfd830c4dfe9397",
+      "stream_id": "a684d9d77b6abeb4840f",
+      "occurrence": 1,
+      "id": "d27cf00f41c7734a71ac"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -22525,9 +22710,10 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "c984a26a88d6eb9d7bd4",
+        "latest_transition_id": "1373702923712cbf4100",
         "occurrences": {
           "0e86b64ab05f97a7ae46": 1,
+          "1373702923712cbf4100": 1,
           "21e13cd6db6f8de0e836": 1,
           "3527ca050b470473e393": 1,
           "40041d19ddaed47164da": 1,
@@ -22551,9 +22737,10 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "69f7b6a77ae16bd0118b",
+        "latest_transition_id": "13d4c2a8f5927f024200",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
+          "13d4c2a8f5927f024200": 1,
           "16046de0225f04d3667c": 1,
           "1bdc1625c55bcf38ea77": 1,
           "26b7a44003d30867579d": 1,
@@ -22718,10 +22905,11 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "5b416ddace2ab713a3d8",
+        "latest_transition_id": "183b5921d88cdc2b1048",
         "occurrences": {
           "0024ea21d692def9b91b": 1,
           "09984113ccd7320c1c13": 1,
+          "183b5921d88cdc2b1048": 1,
           "2d4b3f4db6023af12f75": 1,
           "3481ce6d2f15d2493728": 1,
           "411a7dbbcc8e1fe4a3d9": 1,
@@ -23033,7 +23221,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "dfb369daa65ada9da16d",
+        "latest_transition_id": "d753c5ceeb9220c51bf2",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -23064,6 +23252,7 @@
           "c659536cfbf89d1dd8c1": 1,
           "c953012ca0f18c444179": 1,
           "d0735dd662b564b1d23c": 1,
+          "d753c5ceeb9220c51bf2": 1,
           "dfb369daa65ada9da16d": 1,
           "ecb804c7aa8649ff67ed": 1,
           "f1130c410a7ffb37b21d": 1,
@@ -23244,6 +23433,12 @@
         "latest_transition_id": "5b741b3c6bf6f000f0fc",
         "occurrences": {
           "5b741b3c6bf6f000f0fc": 1
+        }
+      },
+      "a684d9d77b6abeb4840f": {
+        "latest_transition_id": "b97d6bfd830c4dfe9397",
+        "occurrences": {
+          "b97d6bfd830c4dfe9397": 1
         }
       },
       "ab726279faf42df8d6d2": {

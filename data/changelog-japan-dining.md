@@ -449,3 +449,11 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - Funaokayama Shimizu / Kyoto
+
+<!-- source-change:76f442cc509bcbf0a9aa4c1a636260270f02b5c1b93c04d42c477bba3829a449 -->
+## 2026-09-29 00:51 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Kikunoi Niku Unshu / Kyoto
