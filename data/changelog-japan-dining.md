@@ -457,3 +457,11 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - Kikunoi Niku Unshu / Kyoto
+
+<!-- source-change:a3c0d057764a1aee854ea6a1690c56c77fcae43a81dc8075184cfc3e5fc70d7f -->
+## 2026-09-30 00:10 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Nidaime Ebi Sushi / Nagoya
