@@ -42497,9 +42497,79 @@
       "first_seen_at": "2026-10-01T11:06:19Z",
       "first_seen_sgt": "2026-10-01 19:06",
       "lead_days": 64
+    },
+    {
+      "id": "f13cf0c6159bbd71f20d",
+      "venue_id": "tft-baes-cocktail-club",
+      "venue_name": "Bae's Cocktail Club",
+      "meal": "Dinner",
+      "slot_date": "2026-10-31",
+      "first_seen_at": "2026-10-01T17:22:34Z",
+      "first_seen_sgt": "2026-10-02 01:22",
+      "lead_days": 29
+    },
+    {
+      "id": "512258422d1dfe441e07",
+      "venue_id": "tft-highhouse",
+      "venue_name": "HighHouse",
+      "meal": "Dinner",
+      "slot_date": "2026-10-31",
+      "first_seen_at": "2026-10-01T17:22:34Z",
+      "first_seen_sgt": "2026-10-02 01:22",
+      "lead_days": 29
+    },
+    {
+      "id": "b6f5f1ea337d22c99840",
+      "venue_id": "tft-la-brasserie",
+      "venue_name": "La Brasserie",
+      "meal": "Lunch",
+      "slot_date": "2026-12-01",
+      "first_seen_at": "2026-10-01T17:22:34Z",
+      "first_seen_sgt": "2026-10-02 01:22",
+      "lead_days": 60
+    },
+    {
+      "id": "f3cfb3aecadb91b9e239",
+      "venue_id": "tft-la-brasserie",
+      "venue_name": "La Brasserie",
+      "meal": "Dinner",
+      "slot_date": "2026-12-01",
+      "first_seen_at": "2026-10-01T17:22:34Z",
+      "first_seen_sgt": "2026-10-02 01:22",
+      "lead_days": 60
+    },
+    {
+      "id": "861d3b5fce78ba6331b7",
+      "venue_id": "tft-tanoke",
+      "venue_name": "TANOKE",
+      "meal": "Lunch",
+      "slot_date": "2026-12-01",
+      "first_seen_at": "2026-10-01T17:22:34Z",
+      "first_seen_sgt": "2026-10-02 01:22",
+      "lead_days": 60
+    },
+    {
+      "id": "d12f60c48fe4e9bc37cb",
+      "venue_id": "tft-tanoke",
+      "venue_name": "TANOKE",
+      "meal": "Dinner",
+      "slot_date": "2026-12-01",
+      "first_seen_at": "2026-10-01T17:22:34Z",
+      "first_seen_sgt": "2026-10-02 01:22",
+      "lead_days": 60
+    },
+    {
+      "id": "a6895d8e6e15e17af959",
+      "venue_id": "tft-sarnies",
+      "venue_name": "Sarnies",
+      "meal": "All-day Dining",
+      "slot_date": "2026-12-01",
+      "first_seen_at": "2026-10-01T17:22:34Z",
+      "first_seen_sgt": "2026-10-02 01:22",
+      "lead_days": 60
     }
   ],
-  "updated_at": "2026-10-01T11:06:19+00:00",
+  "updated_at": "2026-10-01T17:22:34+00:00",
   "patterns": [
     {
       "venue_id": "tft-15-stamford-restaurant",
@@ -42529,12 +42599,12 @@
       "venue_id": "tft-baes-cocktail-club",
       "venue_name": "Bae's Cocktail Club",
       "meal": "Dinner",
-      "observation_count": 32,
+      "observation_count": 33,
       "median_lead_days": 29.0,
       "lead_days_min": 28,
       "lead_days_max": 29,
       "typical_first_seen_sgt": null,
-      "typical_time_observation_share": 0.28,
+      "typical_time_observation_share": 0.27,
       "confidence": "high"
     },
     {
@@ -42697,12 +42767,12 @@
       "venue_id": "tft-highhouse",
       "venue_name": "HighHouse",
       "meal": "Dinner",
-      "observation_count": 32,
+      "observation_count": 33,
       "median_lead_days": 29.0,
       "lead_days_min": 6,
       "lead_days_max": 29,
       "typical_first_seen_sgt": null,
-      "typical_time_observation_share": 0.31,
+      "typical_time_observation_share": 0.3,
       "confidence": "high"
     },
     {
@@ -42769,24 +42839,24 @@
       "venue_id": "tft-la-brasserie",
       "venue_name": "La Brasserie",
       "meal": "Dinner",
-      "observation_count": 42,
+      "observation_count": 43,
       "median_lead_days": 60.0,
       "lead_days_min": 60,
       "lead_days_max": 60,
       "typical_first_seen_sgt": null,
-      "typical_time_observation_share": 0.24,
+      "typical_time_observation_share": 0.23,
       "confidence": "high"
     },
     {
       "venue_id": "tft-la-brasserie",
       "venue_name": "La Brasserie",
       "meal": "Lunch",
-      "observation_count": 31,
+      "observation_count": 32,
       "median_lead_days": 60.0,
       "lead_days_min": 60,
       "lead_days_max": 60,
       "typical_first_seen_sgt": null,
-      "typical_time_observation_share": 0.23,
+      "typical_time_observation_share": 0.22,
       "confidence": "high"
     },
     {
@@ -42961,36 +43031,36 @@
       "venue_id": "tft-sarnies",
       "venue_name": "Sarnies",
       "meal": "All-day Dining",
-      "observation_count": 83,
-      "median_lead_days": 44.0,
+      "observation_count": 84,
+      "median_lead_days": 44.5,
       "lead_days_min": 3,
       "lead_days_max": 60,
       "typical_first_seen_sgt": "06:30",
-      "typical_time_observation_share": 0.7,
+      "typical_time_observation_share": 0.69,
       "confidence": "high"
     },
     {
       "venue_id": "tft-tanoke",
       "venue_name": "TANOKE",
       "meal": "Dinner",
-      "observation_count": 42,
+      "observation_count": 43,
       "median_lead_days": 60.0,
       "lead_days_min": 60,
       "lead_days_max": 60,
       "typical_first_seen_sgt": null,
-      "typical_time_observation_share": 0.24,
+      "typical_time_observation_share": 0.23,
       "confidence": "high"
     },
     {
       "venue_id": "tft-tanoke",
       "venue_name": "TANOKE",
       "meal": "Lunch",
-      "observation_count": 42,
+      "observation_count": 43,
       "median_lead_days": 60.0,
       "lead_days_min": 60,
       "lead_days_max": 60,
       "typical_first_seen_sgt": null,
-      "typical_time_observation_share": 0.24,
+      "typical_time_observation_share": 0.23,
       "confidence": "high"
     },
     {
