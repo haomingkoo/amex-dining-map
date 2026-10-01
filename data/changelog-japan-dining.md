@@ -465,3 +465,11 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - Nidaime Ebi Sushi / Nagoya
+
+<!-- source-change:543cafdcb46dbd3b9f8f8de281c722fe42d541578b8b1b846aee77cb5702574c -->
+## 2026-10-01 00:23 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Shoryu / Minamioguni
