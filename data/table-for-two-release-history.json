@@ -42417,9 +42417,89 @@
       "first_seen_at": "2026-10-01T04:23:06Z",
       "first_seen_sgt": "2026-10-01 12:23",
       "lead_days": 61
+    },
+    {
+      "id": "6d5838bc0814a650995d",
+      "venue_id": "tft-latido",
+      "venue_name": "Latido",
+      "meal": "Dinner",
+      "slot_date": "2026-12-01",
+      "first_seen_at": "2026-10-01T11:06:19Z",
+      "first_seen_sgt": "2026-10-01 19:06",
+      "lead_days": 61
+    },
+    {
+      "id": "b0a9f2710c425b897363",
+      "venue_id": "tft-kees",
+      "venue_name": "Kee's",
+      "meal": "Dinner",
+      "slot_date": "2026-12-01",
+      "first_seen_at": "2026-10-01T11:06:19Z",
+      "first_seen_sgt": "2026-10-01 19:06",
+      "lead_days": 61
+    },
+    {
+      "id": "2f717622f83081f572a3",
+      "venue_id": "tft-kees",
+      "venue_name": "Kee's",
+      "meal": "Afternoon Tea",
+      "slot_date": "2026-12-01",
+      "first_seen_at": "2026-10-01T11:06:19Z",
+      "first_seen_sgt": "2026-10-01 19:06",
+      "lead_days": 61
+    },
+    {
+      "id": "ce03d70e6216ff6ef02f",
+      "venue_id": "tft-forage",
+      "venue_name": "Forage",
+      "meal": "Dinner",
+      "slot_date": "2026-12-01",
+      "first_seen_at": "2026-10-01T11:06:19Z",
+      "first_seen_sgt": "2026-10-01 19:06",
+      "lead_days": 61
+    },
+    {
+      "id": "c7028ca86379a25097b8",
+      "venue_id": "tft-oso-ristorante",
+      "venue_name": "OSO Ristorante",
+      "meal": "Lunch",
+      "slot_date": "2026-12-02",
+      "first_seen_at": "2026-10-01T11:06:19Z",
+      "first_seen_sgt": "2026-10-01 19:06",
+      "lead_days": 62
+    },
+    {
+      "id": "126bd5461abe5e20cc27",
+      "venue_id": "tft-oso-ristorante",
+      "venue_name": "OSO Ristorante",
+      "meal": "Lunch",
+      "slot_date": "2026-12-04",
+      "first_seen_at": "2026-10-01T11:06:19Z",
+      "first_seen_sgt": "2026-10-01 19:06",
+      "lead_days": 64
+    },
+    {
+      "id": "997c193d605bbb8d89bd",
+      "venue_id": "tft-oso-ristorante",
+      "venue_name": "OSO Ristorante",
+      "meal": "Dinner",
+      "slot_date": "2026-12-02",
+      "first_seen_at": "2026-10-01T11:06:19Z",
+      "first_seen_sgt": "2026-10-01 19:06",
+      "lead_days": 62
+    },
+    {
+      "id": "0718012642f65ac43f06",
+      "venue_id": "tft-oso-ristorante",
+      "venue_name": "OSO Ristorante",
+      "meal": "Dinner",
+      "slot_date": "2026-12-04",
+      "first_seen_at": "2026-10-01T11:06:19Z",
+      "first_seen_sgt": "2026-10-01 19:06",
+      "lead_days": 64
     }
   ],
-  "updated_at": "2026-10-01T04:23:06+00:00",
+  "updated_at": "2026-10-01T11:06:19+00:00",
   "patterns": [
     {
       "venue_id": "tft-15-stamford-restaurant",
@@ -42569,12 +42649,12 @@
       "venue_id": "tft-forage",
       "venue_name": "Forage",
       "meal": "Dinner",
-      "observation_count": 79,
-      "median_lead_days": 42.0,
+      "observation_count": 80,
+      "median_lead_days": 42.5,
       "lead_days_min": 0,
       "lead_days_max": 61,
       "typical_first_seen_sgt": "06:00",
-      "typical_time_observation_share": 0.71,
+      "typical_time_observation_share": 0.7,
       "confidence": "high"
     },
     {
@@ -42653,19 +42733,19 @@
       "venue_id": "tft-kees",
       "venue_name": "Kee's",
       "meal": "Afternoon Tea",
-      "observation_count": 43,
+      "observation_count": 44,
       "median_lead_days": 61.0,
       "lead_days_min": 59,
       "lead_days_max": 61,
       "typical_first_seen_sgt": null,
-      "typical_time_observation_share": 0.19,
+      "typical_time_observation_share": 0.18,
       "confidence": "high"
     },
     {
       "venue_id": "tft-kees",
       "venue_name": "Kee's",
       "meal": "Dinner",
-      "observation_count": 44,
+      "observation_count": 45,
       "median_lead_days": 61.0,
       "lead_days_min": 5,
       "lead_days_max": 61,
@@ -42725,12 +42805,12 @@
       "venue_id": "tft-latido",
       "venue_name": "Latido",
       "meal": "Dinner",
-      "observation_count": 38,
+      "observation_count": 39,
       "median_lead_days": 61.0,
       "lead_days_min": 4,
       "lead_days_max": 61,
       "typical_first_seen_sgt": null,
-      "typical_time_observation_share": 0.16,
+      "typical_time_observation_share": 0.15,
       "confidence": "high"
     },
     {
@@ -42761,24 +42841,24 @@
       "venue_id": "tft-oso-ristorante",
       "venue_name": "OSO Ristorante",
       "meal": "Dinner",
-      "observation_count": 67,
-      "median_lead_days": 48.0,
+      "observation_count": 69,
+      "median_lead_days": 49.0,
       "lead_days_min": 5,
       "lead_days_max": 90,
       "typical_first_seen_sgt": "06:30",
-      "typical_time_observation_share": 0.94,
+      "typical_time_observation_share": 0.91,
       "confidence": "high"
     },
     {
       "venue_id": "tft-oso-ristorante",
       "venue_name": "OSO Ristorante",
       "meal": "Lunch",
-      "observation_count": 61,
-      "median_lead_days": 48.0,
+      "observation_count": 63,
+      "median_lead_days": 49.0,
       "lead_days_min": 4,
       "lead_days_max": 90,
       "typical_first_seen_sgt": "06:30",
-      "typical_time_observation_share": 0.97,
+      "typical_time_observation_share": 0.94,
       "confidence": "high"
     },
     {
