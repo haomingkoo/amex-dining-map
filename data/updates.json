@@ -1,7 +1,186 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-02T00:30:42Z",
+  "updated_at": "2026-10-02T01:06:36Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-02T01:06:36Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3014/3024 (99.7%), 10 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3013/3023 (99.7%), 10 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3014/3024 (99.7%), 10 unavailable",
+          "after": "3013/3023 (99.7%), 10 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "94325f8b95b5af31f14c",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "cd8e6905bdbd6ec536c4"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_review_required",
+      "subject": "Love Dining",
+      "detected_at": "2026-10-02T01:06:36Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 0,
+          "Coverage": "81/81 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 2,
+          "Coverage": "80/80 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "review_required"
+        },
+        {
+          "field": "Review",
+          "before": "clear",
+          "after": "required"
+        },
+        {
+          "field": "Review items",
+          "before": 0,
+          "after": 2
+        },
+        {
+          "field": "Coverage",
+          "before": "81/81 (100%), 0 unavailable",
+          "after": "80/80 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "36eb17b495facd558088",
+      "stream_id": "325506f85300a0ec65a3",
+      "occurrence": 1,
+      "id": "6eec766bec61e420cd88"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "removed",
+      "subject": "Mosella / Singapore",
+      "detected_at": "2026-10-02T01:06:35Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Mosella",
+          "Hotel": "Pan Pacific Orchard, Singapore",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "10 Claymore Road, Singapore 229540",
+          "Cuisine": "Modern Mediterranean",
+          "Opening hours": "Lunch:; Mon – Fri: 12PM – 2.30PM; Dinner:; Sun – Thu: 6PM – 10PM; Fri & Sat: 6PM – 10.30PM"
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+      "transition_id": "f448adc1edb6d6dcaa16",
+      "stream_id": "62ffb17eba5e37f8acae",
+      "occurrence": 1,
+      "id": "c0a1654c20fd98c6fa2f"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_updated",
+      "subject": "Love Dining source",
+      "detected_at": "2026-10-02T01:06:35Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 81,
+          "Hotel outlet count": 51,
+          "Official records SHA-256": "cb38eb4460a3",
+          "Hotel T&C PDF hash": "30a6a4fa0684"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 80,
+          "Hotel outlet count": 50,
+          "Official records SHA-256": "94419f071c5b",
+          "Hotel T&C PDF hash": "5b9a7e525dae"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 81,
+          "after": 80
+        },
+        {
+          "field": "Hotel outlet count",
+          "before": 51,
+          "after": 50
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "cb38eb4460a3",
+          "after": "94419f071c5b"
+        },
+        {
+          "field": "Hotel T&C PDF hash",
+          "before": "30a6a4fa0684",
+          "after": "5b9a7e525dae"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "e94f1e64d26636b508c7",
+      "stream_id": "915d672147e8dd8f713f",
+      "occurrence": 1,
+      "id": "afa8b46a40122ee8c5db"
+    },
     {
       "program": "Plat Stay",
       "program_id": "plat-stay",
@@ -24258,9 +24437,10 @@
         }
       },
       "325506f85300a0ec65a3": {
-        "latest_transition_id": "494c890d5cec9722be8e",
+        "latest_transition_id": "36eb17b495facd558088",
         "occurrences": {
           "1721cde76de73061427b": 1,
+          "36eb17b495facd558088": 1,
           "3d93a8994faef3d34eef": 1,
           "494c890d5cec9722be8e": 1,
           "6d25cfe12d49db98b041": 1,
@@ -24433,6 +24613,12 @@
           "a9fa523838f2babfee03": 1
         }
       },
+      "62ffb17eba5e37f8acae": {
+        "latest_transition_id": "f448adc1edb6d6dcaa16",
+        "occurrences": {
+          "f448adc1edb6d6dcaa16": 1
+        }
+      },
       "65d363713c3518f2f606": {
         "latest_transition_id": "a570e4b840eba6b363ca",
         "occurrences": {
@@ -24512,7 +24698,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "b5b5d8f52e794d1fe3a3",
+        "latest_transition_id": "94325f8b95b5af31f14c",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -24536,6 +24722,7 @@
           "773cfd96350cd8793f78": 1,
           "7fd508a38f1b1c135b6a": 1,
           "932d45bbb211ea91be6c": 1,
+          "94325f8b95b5af31f14c": 1,
           "9b20e2012d24b98c912c": 1,
           "9ed6d46a5813888cc394": 1,
           "a488b1b9472205b79e52": 1,
@@ -24662,6 +24849,12 @@
         "latest_transition_id": "0a4a4aa540164506ebb4",
         "occurrences": {
           "0a4a4aa540164506ebb4": 1
+        }
+      },
+      "915d672147e8dd8f713f": {
+        "latest_transition_id": "e94f1e64d26636b508c7",
+        "occurrences": {
+          "e94f1e64d26636b508c7": 1
         }
       },
       "92472e860fb874b35365": {

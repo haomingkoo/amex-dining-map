@@ -75,3 +75,11 @@ Source: `data/love-dining.json`
 
 - **Removed (1)**
   - Escape Restaurant / Singapore
+
+<!-- source-change:ef9da43c6d51b3ae0e46919a6574f250cc2ea3b30418407d8bf48af5707aab4a -->
+## 2026-10-02 01:06 UTC — Love Dining
+
+Source: `data/love-dining.json`
+
+- **Removed (1)**
+  - Mosella / Singapore
