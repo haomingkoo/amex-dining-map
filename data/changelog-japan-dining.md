@@ -473,3 +473,11 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - Shoryu / Minamioguni
+
+<!-- source-change:b3bc621be2ac034d74bc0820438361788f89d2960744b1389520090488c59a4e -->
+## 2026-10-02 00:30 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - DEN / Tokyo

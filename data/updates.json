@@ -1,7 +1,355 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-01T21:56:30Z",
+  "updated_at": "2026-10-02T00:30:42Z",
   "updates": [
+    {
+      "program": "Plat Stay",
+      "program_id": "plat-stay",
+      "route": "#/stays",
+      "kind": "removed",
+      "subject": "Fraser Place Antasya, Istanbul / Turkey / Istanbul",
+      "detected_at": "2026-10-02T00:30:42Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Fraser Place Antasya, Istanbul / Turkey",
+          "Country": "Turkey",
+          "City": "Istanbul",
+          "Address": "Saray Mah Kucuksu Cad, No 64A Umraniye, Istanbul, Turkey, 34768",
+          "Eligible room": "One Bedroom Executive",
+          "Breakfast included": true,
+          "Blackout dates": "Subject to Availability",
+          "Reservations": "Reserve your room here"
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://go.amex/platstay",
+      "transition_id": "e8d22ceabac046d5509b",
+      "stream_id": "855e4e4629d9b2224f75",
+      "occurrence": 1,
+      "id": "d0956040129958d49ef9"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-10-02T00:30:42Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "775/856 (90.5%), 81 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "774/855 (90.5%), 81 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "775/856 (90.5%), 81 unavailable",
+          "after": "774/855 (90.5%), 81 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "5df9a88a98f2b6ae09ad",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "d00d103fa9655855ee32"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-02T00:30:42Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 613,
+          "Coverage": "3017/3027 (99.7%), 10 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 612,
+          "Coverage": "3014/3024 (99.7%), 10 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 613,
+          "after": 612
+        },
+        {
+          "field": "Coverage",
+          "before": "3017/3027 (99.7%), 10 unavailable",
+          "after": "3014/3024 (99.7%), 10 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "b5b5d8f52e794d1fe3a3",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "a21bce3e7dddd9032e88"
+    },
+    {
+      "program": "Plat Stay",
+      "program_id": "plat-stay",
+      "route": "#/stays",
+      "kind": "source_updated",
+      "subject": "Plat Stay source",
+      "detected_at": "2026-10-02T00:30:42Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 76,
+          "Source page count": 22,
+          "Source SHA-256": "46ff09aee73a"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 74,
+          "Source page count": 21,
+          "Source SHA-256": "e25e109c8fad"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 76,
+          "after": 74
+        },
+        {
+          "field": "Source page count",
+          "before": 22,
+          "after": 21
+        },
+        {
+          "field": "Source SHA-256",
+          "before": "46ff09aee73a",
+          "after": "e25e109c8fad"
+        }
+      ],
+      "source_url": "https://go.amex/platstay",
+      "transition_id": "5342fab38a57d78f02f8",
+      "stream_id": "09e5d455ee8189b8134e",
+      "occurrence": 1,
+      "id": "980661712d36349c4eef"
+    },
+    {
+      "program": "Plat Stay",
+      "program_id": "plat-stay",
+      "route": "#/stays",
+      "kind": "source_health_changed",
+      "subject": "Plat Stay",
+      "detected_at": "2026-10-02T00:30:42Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "76/76 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "74/74 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "76/76 (100%), 0 unavailable",
+          "after": "74/74 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/platstay.pdf?extlink=SG",
+      "transition_id": "f15c6e6f2bca88dd357e",
+      "stream_id": "81f43cf088be994e2ef7",
+      "occurrence": 1,
+      "id": "7d99cb82925a6269fddf"
+    },
+    {
+      "program": "Plat Stay",
+      "program_id": "plat-stay",
+      "route": "#/stays",
+      "kind": "removed",
+      "subject": "Fraser Place Anthill, Istanbul / Turkey / Küçükçekmece",
+      "detected_at": "2026-10-02T00:30:42Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Fraser Place Anthill, Istanbul / Turkey",
+          "Country": "Turkey",
+          "City": "Küçükçekmece",
+          "Address": "Cumhuriyet Mahallesi, Incirlidede Caddesi, Bomonti - Sisli., Istanbul, Turkey, 34380",
+          "Eligible room": "One Bedroom Executive",
+          "Breakfast included": true,
+          "Blackout dates": "Subject to Availability",
+          "Reservations": "Reserve your room here"
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://go.amex/platstay",
+      "transition_id": "179ab9d85203521fdb78",
+      "stream_id": "13b28a2cac720763a87b",
+      "occurrence": 1,
+      "id": "5833a4038823aa50cb51"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-10-02T00:30:42Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "856/856 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "855/855 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "856/856 (100%), 0 unavailable",
+          "after": "855/855 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "adcf8ebe1fc9c53286d8",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "0c209c784328cff38b81"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-10-02T00:30:41Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 856,
+          "Mapped count": 856,
+          "Official records SHA-256": "ad02d6eb670c"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 855,
+          "Mapped count": 855,
+          "Official records SHA-256": "ecd8f7ef6376"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 856,
+          "after": 855
+        },
+        {
+          "field": "Mapped count",
+          "before": 856,
+          "after": 855
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "ad02d6eb670c",
+          "after": "ecd8f7ef6376"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "bf82c69c69cc6c52a28f",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "f7978f1d6c0aa00d9c13"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": "DEN / Tokyo",
+      "detected_at": "2026-10-02T00:30:41Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "DEN",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Jingumae",
+          "Address": "Architect house hall JIA, 2-3-18, Jingumae, Shibuya-ku, Tokyo",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/244822/",
+      "transition_id": "d488b44369cdc012f6f3",
+      "stream_id": "ef6d5fd265fe96dcfe42",
+      "occurrence": 1,
+      "id": "b0c090f70dfc9316dc7b"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -23583,6 +23931,12 @@
           "e4392f968cb8a74acce5": 1
         }
       },
+      "09e5d455ee8189b8134e": {
+        "latest_transition_id": "5342fab38a57d78f02f8",
+        "occurrences": {
+          "5342fab38a57d78f02f8": 1
+        }
+      },
       "0cf8628816cfb74215fd": {
         "latest_transition_id": "cfe3590dfa5cf83b5406",
         "occurrences": {
@@ -23631,7 +23985,7 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "fb9f3c0184a38cbcca21",
+        "latest_transition_id": "5df9a88a98f2b6ae09ad",
         "occurrences": {
           "0e86b64ab05f97a7ae46": 1,
           "1373702923712cbf4100": 1,
@@ -23640,6 +23994,7 @@
           "40041d19ddaed47164da": 1,
           "4dd69dc8a805967651d8": 1,
           "50b49b2093693100bcfa": 1,
+          "5df9a88a98f2b6ae09ad": 1,
           "6a8bbc10984738ed7d1d": 1,
           "81469570479e26998d74": 1,
           "865267d7376e2a047f1f": 1,
@@ -23653,6 +24008,12 @@
           "fb9f3c0184a38cbcca21": 1
         }
       },
+      "13b28a2cac720763a87b": {
+        "latest_transition_id": "179ab9d85203521fdb78",
+        "occurrences": {
+          "179ab9d85203521fdb78": 1
+        }
+      },
       "13f20ec0ad6e5a0dd612": {
         "latest_transition_id": "610d8b3b4efdc371513a",
         "occurrences": {
@@ -23660,7 +24021,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "a7efbfcdb7e20f38fa23",
+        "latest_transition_id": "bf82c69c69cc6c52a28f",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
           "13d4c2a8f5927f024200": 1,
@@ -23690,6 +24051,7 @@
           "af667c9a723df3e47a14": 1,
           "b9acef5ccde9cc17c509": 1,
           "be63932baeeb2ff4892b": 1,
+          "bf82c69c69cc6c52a28f": 1,
           "c1d28318da2111657e70": 1,
           "cad0b78553f798df3101": 1,
           "cc1ab665fa1a52273279": 1,
@@ -23831,7 +24193,7 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "951fc017d5e31f520818",
+        "latest_transition_id": "adcf8ebe1fc9c53286d8",
         "occurrences": {
           "0024ea21d692def9b91b": 1,
           "09984113ccd7320c1c13": 1,
@@ -23847,6 +24209,7 @@
           "951fc017d5e31f520818": 1,
           "a3fe4bea4f38e3ac4033": 1,
           "a5618f6621d57dfec25d": 1,
+          "adcf8ebe1fc9c53286d8": 1,
           "d23603c301d18a4a78e1": 1,
           "ecee01e4770cfc076669": 1,
           "f93dfeef3a1deed1cca7": 1
@@ -24149,7 +24512,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "4fc17cb16c0e54f69535",
+        "latest_transition_id": "b5b5d8f52e794d1fe3a3",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -24176,6 +24539,7 @@
           "9b20e2012d24b98c912c": 1,
           "9ed6d46a5813888cc394": 1,
           "a488b1b9472205b79e52": 1,
+          "b5b5d8f52e794d1fe3a3": 1,
           "bc3ecb671dd6eb49653d": 1,
           "c1951243a662d64e4486": 1,
           "c659536cfbf89d1dd8c1": 1,
@@ -24251,16 +24615,23 @@
         }
       },
       "81f43cf088be994e2ef7": {
-        "latest_transition_id": "6f53e26ddf6cc842e76c",
+        "latest_transition_id": "f15c6e6f2bca88dd357e",
         "occurrences": {
           "06d66f94fa73a9e62815": 1,
-          "6f53e26ddf6cc842e76c": 1
+          "6f53e26ddf6cc842e76c": 1,
+          "f15c6e6f2bca88dd357e": 1
         }
       },
       "82cf12b07abc7392c6ad": {
         "latest_transition_id": "f1b74c592d63df610792",
         "occurrences": {
           "f1b74c592d63df610792": 1
+        }
+      },
+      "855e4e4629d9b2224f75": {
+        "latest_transition_id": "e8d22ceabac046d5509b",
+        "occurrences": {
+          "e8d22ceabac046d5509b": 1
         }
       },
       "87aebe727231bca3824b": {
@@ -24632,6 +25003,12 @@
         "latest_transition_id": "e6d8cfe83144ac8d212c",
         "occurrences": {
           "e6d8cfe83144ac8d212c": 1
+        }
+      },
+      "ef6d5fd265fe96dcfe42": {
+        "latest_transition_id": "d488b44369cdc012f6f3",
+        "occurrences": {
+          "d488b44369cdc012f6f3": 1
         }
       },
       "f016760f3ade2de88ca1": {
