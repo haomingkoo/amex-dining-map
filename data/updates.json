@@ -1,7 +1,171 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-02T19:10:28Z",
+  "updated_at": "2026-10-03T00:17:34Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-03T00:17:34Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 612
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 613
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 612,
+          "after": 613
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "82f4e4a87ef4e3e3127d",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "fb6a234da12eacec03d0"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "details_updated",
+      "subject": "Sushi Sugaya / Tokyo",
+      "detected_at": "2026-10-03T00:17:33Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sugaya",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Higashiazabu",
+          "Address": "1F, Higashi Azabu 296Building, 1-29-15, Higashiazabu, Minato-ku, Tokyo",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sushi Sugaya",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Higashiazabu",
+          "Address": "1F, Higashi Azabu 296Building, 1-29-15, Higashiazabu, Minato-ku, Tokyo",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Name",
+          "before": "Sugaya",
+          "after": "Sushi Sugaya"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/244670/",
+      "transition_id": "a4295d55685378cbd433",
+      "stream_id": "6f89a21c3992deab335f",
+      "occurrence": 1,
+      "id": "ab6db07f04fdc10f7b8c"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-10-03T00:17:33Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "ecd8f7ef6376"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "c48a5a7f730f"
+        }
+      },
+      "changes": [
+        {
+          "field": "Official records SHA-256",
+          "before": "ecd8f7ef6376",
+          "after": "c48a5a7f730f"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "81d9cbc1f34569e1cf16",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "211dc2677d2e24689d30"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "details_updated",
+      "subject": "Sushi Noge no Onikai / Yokohama",
+      "detected_at": "2026-10-03T00:17:33Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Noge no Onikai",
+          "Country": "Japan",
+          "Region": "Yokohama/Kawasaki",
+          "City": "Yokohama",
+          "District": "Noge-machi",
+          "Address": "203, 2-79, Noge-machi, Naka-ku, Yokohama-shi, Kanagawa",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sushi Noge no Onikai",
+          "Country": "Japan",
+          "Region": "Yokohama/Kawasaki",
+          "City": "Yokohama",
+          "District": "Noge-machi",
+          "Address": "203, 2-79, Noge-machi, Naka-ku, Yokohama-shi, Kanagawa",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Name",
+          "before": "Noge no Onikai",
+          "after": "Sushi Noge no Onikai"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245561/",
+      "transition_id": "c7018aa9fb960b24939f",
+      "stream_id": "87e94ba3308b28228912",
+      "occurrence": 1,
+      "id": "0216853ad1ca1b16649b"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -24581,7 +24745,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "bf82c69c69cc6c52a28f",
+        "latest_transition_id": "81d9cbc1f34569e1cf16",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
           "13d4c2a8f5927f024200": 1,
@@ -24601,6 +24765,7 @@
           "6e90385f86895882df7f": 1,
           "74682b8a640073f04137": 1,
           "7a077e08d6622c1d2181": 1,
+          "81d9cbc1f34569e1cf16": 1,
           "827885cc967f7e007f12": 1,
           "8edeee16126633a3ea28": 1,
           "935e84b29e318238bec4": 1,
@@ -25066,6 +25231,12 @@
           "68c209ce5cbac2ae252d": 1
         }
       },
+      "6f89a21c3992deab335f": {
+        "latest_transition_id": "a4295d55685378cbd433",
+        "occurrences": {
+          "a4295d55685378cbd433": 1
+        }
+      },
       "70920b298a51d80c2521": {
         "latest_transition_id": "d28c1f750c5b17d21a95",
         "occurrences": {
@@ -25080,7 +25251,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "94325f8b95b5af31f14c",
+        "latest_transition_id": "82f4e4a87ef4e3e3127d",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -25103,6 +25274,7 @@
           "6f692e210315547883d9": 1,
           "773cfd96350cd8793f78": 1,
           "7fd508a38f1b1c135b6a": 1,
+          "82f4e4a87ef4e3e3127d": 1,
           "932d45bbb211ea91be6c": 1,
           "94325f8b95b5af31f14c": 1,
           "9b20e2012d24b98c912c": 1,
@@ -25207,6 +25379,12 @@
         "latest_transition_id": "db6c952590d8d5f3a469",
         "occurrences": {
           "db6c952590d8d5f3a469": 1
+        }
+      },
+      "87e94ba3308b28228912": {
+        "latest_transition_id": "c7018aa9fb960b24939f",
+        "occurrences": {
+          "c7018aa9fb960b24939f": 1
         }
       },
       "8960b55649d633db7744": {
