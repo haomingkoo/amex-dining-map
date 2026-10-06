@@ -481,3 +481,13 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - DEN / Tokyo
+
+<!-- source-change:3aef660a2c1f8673d3172cdd06e9f0d47591fe327ee32cb525a7afef1b765826 -->
+## 2026-10-06 01:49 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Sushi Senpachi  / Fukuoka
+- **Removed (1)**
+  - Nukumi / Sapporo

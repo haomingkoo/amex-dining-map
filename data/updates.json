@@ -1,7 +1,283 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-06T00:59:52Z",
+  "updated_at": "2026-10-06T01:49:26Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-06T01:49:26Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 25
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 26
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 25,
+          "after": 26
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "c01a46f372f5a09dff8a",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "e3e5240eeccc52af6a28"
+    },
+    {
+      "program": "Plat Stay",
+      "program_id": "plat-stay",
+      "route": "#/stays",
+      "kind": "source_updated",
+      "subject": "Plat Stay source",
+      "detected_at": "2026-10-06T01:49:26Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Source SHA-256": "e25e109c8fad"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Source SHA-256": "a801d8ec4394"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source SHA-256",
+          "before": "e25e109c8fad",
+          "after": "a801d8ec4394"
+        }
+      ],
+      "source_url": "https://go.amex/platstay",
+      "transition_id": "9e0cd8c20110725e6215",
+      "stream_id": "09e5d455ee8189b8134e",
+      "occurrence": 1,
+      "id": "70a042701c7c3471e491"
+    },
+    {
+      "program": "Plat Stay",
+      "program_id": "plat-stay",
+      "route": "#/stays",
+      "kind": "details_updated",
+      "subject": "Pan Pacific Orchard Singapore / Singapore",
+      "detected_at": "2026-10-06T01:49:26Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Pan Pacific Orchard Singapore",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "10 Claymore Road, Singapore 229540",
+          "Eligible room": "Deluxe Room with a complimentary bottle of wine, inclusive of breakfast for two. Eligible Card Members may upgrade to the Club Room with a complimentary champagne with a S$100++ top-up",
+          "Breakfast included": false,
+          "Blackout dates": "• 10, 11, 16 March 2026 | • 21 – 23 April 2026 | • 1 – 3 August 2026 | • 1 – 13 October 2026 | • 18 – 19 November 2026 | • 17 – 31 December 2026",
+          "Reservations": "reserve.ppsor@panpacific.com"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Pan Pacific Orchard Singapore",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "10 Claymore Road, Singapore 229540",
+          "Eligible room": "Deluxe Room with a complimentary bottle of wine, inclusive of breakfast for two. Eligible Card Members may upgrade to the Club Room with a complimentary champagne with a S$100++ top-up.",
+          "Breakfast included": false,
+          "Blackout dates": "• 2 – 13 October 2026 | • 18 – 19 November 2026 | • 17 – 31 December 2026 | • 5 – 13 February 2026",
+          "Reservations": "reserve.ppsor@panpacific.com"
+        }
+      },
+      "changes": [
+        {
+          "field": "Eligible room",
+          "before": "Deluxe Room with a complimentary bottle of wine, inclusive of breakfast for two. Eligible Card Members may upgrade to the Club Room with a complimentary champagne with a S$100++ top-up",
+          "after": "Deluxe Room with a complimentary bottle of wine, inclusive of breakfast for two. Eligible Card Members may upgrade to the Club Room with a complimentary champagne with a S$100++ top-up."
+        },
+        {
+          "field": "Blackout dates",
+          "before": "• 10, 11, 16 March 2026 | • 21 – 23 April 2026 | • 1 – 3 August 2026 | • 1 – 13 October 2026 | • 18 – 19 November 2026 | • 17 – 31 December 2026",
+          "after": "• 2 – 13 October 2026 | • 18 – 19 November 2026 | • 17 – 31 December 2026 | • 5 – 13 February 2026"
+        }
+      ],
+      "source_url": "https://go.amex/platstay",
+      "transition_id": "e28b7ecfa18baa917e8b",
+      "stream_id": "cd510955457dc7a4cdf9",
+      "occurrence": 1,
+      "id": "51625d1e120248d47903"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_stale",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-10-06T01:49:26Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Source state": "mixed_age",
+          "Freshness": "mixed_age",
+          "Stale records": 1
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "mixed_age"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "mixed_age"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 1
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "a99a7d69a18906e35bb6",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "0197aed53e7757cfd61d"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Sushi Senpachi  / Fukuoka",
+      "detected_at": "2026-10-06T01:49:25Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sushi Senpachi ",
+          "Country": "Japan",
+          "Region": "Kyushu/Okinawa",
+          "City": "Fukuoka",
+          "District": "Takasago",
+          "Address": "MGH TAKASAGO B1F, 2-19-4, Takasago, Chuo-ku, Fukuoka-shi, Fukuoka",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/244433/",
+      "transition_id": "d187d0c70d27ec694d8e",
+      "stream_id": "39ee8250e5fa9809dbd8",
+      "occurrence": 2,
+      "id": "e788059064eff17c4f8a"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": "Nukumi / Sapporo",
+      "detected_at": "2026-10-06T01:49:25Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Nukumi",
+          "Country": "Japan",
+          "Region": "Hokkaido",
+          "City": "Sapporo",
+          "District": "Minami10-jonishi",
+          "Address": "6-3-2, Minami10-jonishi, Chuo-ku, Sapporo-shi, Hokkaido",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/244580/",
+      "transition_id": "02856df0c0fe23376af5",
+      "stream_id": "caf476f3faac6f6cbb2b",
+      "occurrence": 1,
+      "id": "74f123baeda2beb52d00"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-10-06T01:49:25Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "c48a5a7f730f"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "c05348dd758b"
+        }
+      },
+      "changes": [
+        {
+          "field": "Official records SHA-256",
+          "before": "c48a5a7f730f",
+          "after": "c05348dd758b"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "4e505240640c1eefc3dd",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "11cfaecea31c86e6e1bd"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -25792,9 +26068,10 @@
         }
       },
       "09e5d455ee8189b8134e": {
-        "latest_transition_id": "5342fab38a57d78f02f8",
+        "latest_transition_id": "9e0cd8c20110725e6215",
         "occurrences": {
-          "5342fab38a57d78f02f8": 1
+          "5342fab38a57d78f02f8": 1,
+          "9e0cd8c20110725e6215": 1
         }
       },
       "0cf8628816cfb74215fd": {
@@ -25846,7 +26123,7 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "5df9a88a98f2b6ae09ad",
+        "latest_transition_id": "a99a7d69a18906e35bb6",
         "occurrences": {
           "0e86b64ab05f97a7ae46": 1,
           "1373702923712cbf4100": 1,
@@ -25861,6 +26138,7 @@
           "865267d7376e2a047f1f": 1,
           "928bfaa65eced79f9ca2": 1,
           "a7b8231070342f91601d": 1,
+          "a99a7d69a18906e35bb6": 1,
           "be2c6f6034c3a6c73f80": 1,
           "be8786bcd58599df6c59": 1,
           "bf2d43448230e25274b0": 1,
@@ -25882,7 +26160,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "81d9cbc1f34569e1cf16",
+        "latest_transition_id": "4e505240640c1eefc3dd",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
           "13d4c2a8f5927f024200": 1,
@@ -25894,6 +26172,7 @@
           "36c0c3c0c034ae3cd067": 1,
           "38187411348a7313bb86": 1,
           "3bda87f3d7165ef0aed7": 1,
+          "4e505240640c1eefc3dd": 1,
           "521fd5f7344a85cb5626": 1,
           "586c1281b071e05f9d61": 1,
           "61cf1a02215ab24844e7": 1,
@@ -26142,10 +26421,10 @@
         }
       },
       "39ee8250e5fa9809dbd8": {
-        "latest_transition_id": "56c426688b75f4fe4ff1",
+        "latest_transition_id": "d187d0c70d27ec694d8e",
         "occurrences": {
           "56c426688b75f4fe4ff1": 1,
-          "d187d0c70d27ec694d8e": 1
+          "d187d0c70d27ec694d8e": 2
         }
       },
       "3b00a3ef0760f219f68f": {
@@ -26390,7 +26669,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "7d29900cac256e260858",
+        "latest_transition_id": "c01a46f372f5a09dff8a",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -26422,6 +26701,7 @@
           "a488b1b9472205b79e52": 1,
           "b5b5d8f52e794d1fe3a3": 1,
           "bc3ecb671dd6eb49653d": 1,
+          "c01a46f372f5a09dff8a": 1,
           "c1951243a662d64e4486": 1,
           "c659536cfbf89d1dd8c1": 1,
           "c953012ca0f18c444179": 1,
@@ -26748,6 +27028,18 @@
         "latest_transition_id": "d87698bd2a8b34fb409d",
         "occurrences": {
           "d87698bd2a8b34fb409d": 1
+        }
+      },
+      "caf476f3faac6f6cbb2b": {
+        "latest_transition_id": "02856df0c0fe23376af5",
+        "occurrences": {
+          "02856df0c0fe23376af5": 1
+        }
+      },
+      "cd510955457dc7a4cdf9": {
+        "latest_transition_id": "e28b7ecfa18baa917e8b",
+        "occurrences": {
+          "e28b7ecfa18baa917e8b": 1
         }
       },
       "d03cc6f867310ca61cf7": {
