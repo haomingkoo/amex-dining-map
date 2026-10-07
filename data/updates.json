@@ -1,7 +1,54 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-07T02:28:45Z",
+  "updated_at": "2026-10-07T10:16:13Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_recovered",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-10-07T10:16:13Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Source state": "mixed_age",
+          "Freshness": "mixed_age",
+          "Stale records": 1
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "mixed_age",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "mixed_age",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 1,
+          "after": 0
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "1f8ff4070cf35b4b4a5f",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "28af12029e9e212d8340"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -26605,10 +26652,11 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "a99a7d69a18906e35bb6",
+        "latest_transition_id": "1f8ff4070cf35b4b4a5f",
         "occurrences": {
           "0e86b64ab05f97a7ae46": 1,
           "1373702923712cbf4100": 1,
+          "1f8ff4070cf35b4b4a5f": 1,
           "21e13cd6db6f8de0e836": 1,
           "3527ca050b470473e393": 1,
           "40041d19ddaed47164da": 1,
