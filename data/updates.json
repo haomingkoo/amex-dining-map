@@ -1,7 +1,272 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-08T07:27:07Z",
+  "updated_at": "2026-10-09T00:56:30Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-09T00:56:30Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3015/3023 (99.7%), 8 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3015/3024 (99.7%), 9 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3015/3023 (99.7%), 8 unavailable",
+          "after": "3015/3024 (99.7%), 9 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "2e0896223097482f8813",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "f4e6b2629aad2e06132c"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-10-09T00:56:30Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "774/855 (90.5%), 81 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "774/856 (90.4%), 82 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "774/855 (90.5%), 81 unavailable",
+          "after": "774/856 (90.4%), 82 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "7b13a4aa17c3a8b51663",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "d005a9bd278838a46315"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-10-09T00:56:30Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "855/855 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "856/856 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "855/855 (100%), 0 unavailable",
+          "after": "856/856 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "951fc017d5e31f520818",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 2,
+      "id": "3e74efd00ae00d285fdf"
+    },
+    {
+      "program": "Plat Stay",
+      "program_id": "plat-stay",
+      "route": "#/stays",
+      "kind": "source_updated",
+      "subject": "Plat Stay source",
+      "detected_at": "2026-10-09T00:56:29Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Source SHA-256": "a801d8ec4394"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Source SHA-256": "b0641e7a69ec"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source SHA-256",
+          "before": "a801d8ec4394",
+          "after": "b0641e7a69ec"
+        }
+      ],
+      "source_url": "https://go.amex/platstay",
+      "transition_id": "fb3c5f0e7015503730cf",
+      "stream_id": "09e5d455ee8189b8134e",
+      "occurrence": 1,
+      "id": "e1a68fd81012218ba2b2"
+    },
+    {
+      "program": "Plat Stay",
+      "program_id": "plat-stay",
+      "route": "#/stays",
+      "kind": "details_updated",
+      "subject": "Pan Pacific Orchard Singapore / Singapore",
+      "detected_at": "2026-10-09T00:56:29Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Pan Pacific Orchard Singapore",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "10 Claymore Road, Singapore 229540",
+          "Eligible room": "Deluxe Room with a complimentary bottle of wine, inclusive of breakfast for two. Eligible Card Members may upgrade to the Club Room with a complimentary champagne with a S$100++ top-up.",
+          "Breakfast included": false,
+          "Blackout dates": "• 2 – 13 October 2026 | • 18 – 19 November 2026 | • 17 – 31 December 2026 | • 5 – 13 February 2026",
+          "Reservations": "reserve.ppsor@panpacific.com"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Pan Pacific Orchard Singapore",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "10 Claymore Road, Singapore 229540",
+          "Eligible room": "Deluxe Room with a complimentary bottle of wine, inclusive of breakfast for two. Eligible Card Members may upgrade to the Club Room with a complimentary champagne with a S$100++ top-up.",
+          "Breakfast included": false,
+          "Blackout dates": "• 2 – 13 October 2026 | • 18 – 19 November 2026 | • 17 – 31 December 2026 | • 5 – 13 February 2027",
+          "Reservations": "reserve.ppsor@panpacific.com"
+        }
+      },
+      "changes": [
+        {
+          "field": "Blackout dates",
+          "before": "• 2 – 13 October 2026 | • 18 – 19 November 2026 | • 17 – 31 December 2026 | • 5 – 13 February 2026",
+          "after": "• 2 – 13 October 2026 | • 18 – 19 November 2026 | • 17 – 31 December 2026 | • 5 – 13 February 2027"
+        }
+      ],
+      "source_url": "https://go.amex/platstay",
+      "transition_id": "8b7b188d51ba6b26cef4",
+      "stream_id": "cd510955457dc7a4cdf9",
+      "occurrence": 1,
+      "id": "dfe2c56651b2cf7e83b8"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": " ETHICA / Tokyo",
+      "detected_at": "2026-10-09T00:56:28Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": " ETHICA",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Ginza",
+          "Address": "1F, 1-3-3, Ginza, Chuo-ku, Tokyo",
+          "Cuisine": [
+            "French"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245675/",
+      "transition_id": "c48c011dff55692efc37",
+      "stream_id": "ea75bc70ac208ccdbca1",
+      "occurrence": 1,
+      "id": "ca3a904c5c73a24ec4b2"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-10-09T00:56:28Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 855,
+          "Mapped count": 855,
+          "Official records SHA-256": "e0ff9d4ae617"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 856,
+          "Mapped count": 856,
+          "Official records SHA-256": "e1bb7f837d42"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 855,
+          "after": 856
+        },
+        {
+          "field": "Mapped count",
+          "before": 855,
+          "after": 856
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "e0ff9d4ae617",
+          "after": "e1bb7f837d42"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "a8d8ccc3568ee52a7f4f",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "09a9825cb74d777d35d8"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -26795,10 +27060,11 @@
         }
       },
       "09e5d455ee8189b8134e": {
-        "latest_transition_id": "9e0cd8c20110725e6215",
+        "latest_transition_id": "fb3c5f0e7015503730cf",
         "occurrences": {
           "5342fab38a57d78f02f8": 1,
-          "9e0cd8c20110725e6215": 1
+          "9e0cd8c20110725e6215": 1,
+          "fb3c5f0e7015503730cf": 1
         }
       },
       "0cf8628816cfb74215fd": {
@@ -26850,7 +27116,7 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "1f8ff4070cf35b4b4a5f",
+        "latest_transition_id": "7b13a4aa17c3a8b51663",
         "occurrences": {
           "0e86b64ab05f97a7ae46": 1,
           "1373702923712cbf4100": 1,
@@ -26862,6 +27128,7 @@
           "50b49b2093693100bcfa": 1,
           "5df9a88a98f2b6ae09ad": 1,
           "6a8bbc10984738ed7d1d": 1,
+          "7b13a4aa17c3a8b51663": 1,
           "81469570479e26998d74": 1,
           "865267d7376e2a047f1f": 1,
           "928bfaa65eced79f9ca2": 1,
@@ -26888,7 +27155,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "910626fba4e9c94678da",
+        "latest_transition_id": "a8d8ccc3568ee52a7f4f",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
           "13d4c2a8f5927f024200": 1,
@@ -26918,6 +27185,7 @@
           "a4d8fc4959b0de7deb1e": 1,
           "a69f057f2f92477028c8": 1,
           "a7efbfcdb7e20f38fa23": 1,
+          "a8d8ccc3568ee52a7f4f": 1,
           "af667c9a723df3e47a14": 1,
           "b9acef5ccde9cc17c509": 1,
           "be63932baeeb2ff4892b": 1,
@@ -27067,7 +27335,7 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "adcf8ebe1fc9c53286d8",
+        "latest_transition_id": "951fc017d5e31f520818",
         "occurrences": {
           "0024ea21d692def9b91b": 1,
           "09984113ccd7320c1c13": 1,
@@ -27080,7 +27348,7 @@
           "630fba426215e10e413a": 1,
           "76df09d58e4670fbd1c9": 1,
           "8c661fda8625deb97e56": 1,
-          "951fc017d5e31f520818": 1,
+          "951fc017d5e31f520818": 2,
           "a3fe4bea4f38e3ac4033": 1,
           "a5618f6621d57dfec25d": 1,
           "adcf8ebe1fc9c53286d8": 1,
@@ -27399,7 +27667,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "c01a46f372f5a09dff8a",
+        "latest_transition_id": "2e0896223097482f8813",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -27409,6 +27677,7 @@
           "285cde76ec76983e7aee": 1,
           "2c9cfaa8dc40d88a2308": 1,
           "2d4ce67bacad8f77cc37": 1,
+          "2e0896223097482f8813": 1,
           "3d07ff7f35ab35cde0d8": 1,
           "3f69c4d5e73544c80c60": 1,
           "4258225d5117a5d79957": 1,
@@ -27767,8 +28036,9 @@
         }
       },
       "cd510955457dc7a4cdf9": {
-        "latest_transition_id": "e28b7ecfa18baa917e8b",
+        "latest_transition_id": "8b7b188d51ba6b26cef4",
         "occurrences": {
+          "8b7b188d51ba6b26cef4": 1,
           "e28b7ecfa18baa917e8b": 1
         }
       },
@@ -27894,6 +28164,12 @@
         "latest_transition_id": "8cfd283dd40f2203c621",
         "occurrences": {
           "8cfd283dd40f2203c621": 1
+        }
+      },
+      "ea75bc70ac208ccdbca1": {
+        "latest_transition_id": "c48c011dff55692efc37",
+        "occurrences": {
+          "c48c011dff55692efc37": 1
         }
       },
       "ebf4bc78e02efc91f85b": {

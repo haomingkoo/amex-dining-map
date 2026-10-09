@@ -491,3 +491,11 @@ Source: `data/japan-restaurants.json`
   - Sushi Senpachi  / Fukuoka
 - **Removed (1)**
   - Nukumi / Sapporo
+
+<!-- source-change:3b5e9fa2f10881ef262e4e2a0dfc869dde1c3e8234cf9847839a557305ee9ce1 -->
+## 2026-10-09 00:56 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  -  ETHICA / Tokyo
