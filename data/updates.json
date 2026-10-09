@@ -1,7 +1,112 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-09T06:30:54Z",
+  "updated_at": "2026-10-09T13:39:53Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_review_required",
+      "subject": "Table for Two roster",
+      "detected_at": "2026-10-09T13:39:53Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 0
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 1
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "review_required"
+        },
+        {
+          "field": "Review",
+          "before": "clear",
+          "after": "required"
+        },
+        {
+          "field": "Review items",
+          "before": 0,
+          "after": 1
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "c78e0d1715c927df1196",
+      "stream_id": "66129efc1226a46f5069",
+      "occurrence": 2,
+      "id": "6dd3004cb5cb4145512d"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_updated",
+      "subject": "Table for Two source",
+      "detected_at": "2026-10-09T13:39:52Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Booking-project venue count": 29,
+          "Booking-project membership fingerprint": "c64578a0667d",
+          "Booking-project candidates added": [],
+          "Booking-project identity conflicts": null
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Booking-project venue count": 30,
+          "Booking-project membership fingerprint": "d2244687c5f7",
+          "Booking-project candidates added": [
+            "Zui Yu Xuan"
+          ],
+          "Booking-project identity conflicts": 1
+        }
+      },
+      "changes": [
+        {
+          "field": "Booking-project venue count",
+          "before": 29,
+          "after": 30
+        },
+        {
+          "field": "Booking-project membership fingerprint",
+          "before": "c64578a0667d",
+          "after": "d2244687c5f7"
+        },
+        {
+          "field": "Booking-project candidates added",
+          "before": [],
+          "after": [
+            "Zui Yu Xuan"
+          ]
+        },
+        {
+          "field": "Booking-project identity conflicts",
+          "before": null,
+          "after": 1
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "bd10dcf28211254538e8",
+      "stream_id": "5a285967ca2795c90124",
+      "occurrence": 1,
+      "id": "f95d6ea83bdb5562804b"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -27632,7 +27737,7 @@
         }
       },
       "5a285967ca2795c90124": {
-        "latest_transition_id": "f6a2789274aed0ca7342",
+        "latest_transition_id": "bd10dcf28211254538e8",
         "occurrences": {
           "1fd9e02b2a3042318396": 1,
           "295d64447a5b74ace553": 1,
@@ -27642,6 +27747,7 @@
           "8cab75cfec2f74ea1ec4": 1,
           "b52d191286d1bfb2d8cf": 1,
           "b96af3cb39f05bdecfac": 1,
+          "bd10dcf28211254538e8": 1,
           "c4c12d214e7857dd00d3": 3,
           "de3459eea0f029902049": 1,
           "f6a2789274aed0ca7342": 4,
@@ -27709,7 +27815,7 @@
         }
       },
       "66129efc1226a46f5069": {
-        "latest_transition_id": "2de1bd408e24ff985c8f",
+        "latest_transition_id": "c78e0d1715c927df1196",
         "occurrences": {
           "083081096cbb3c8c1c76": 1,
           "0b5afd558ebf89b84ac5": 1,
@@ -27722,7 +27828,7 @@
           "65a1e1a667c0fd353b6c": 2,
           "965aa906dc470efbc7bb": 1,
           "ade51a08e8177d88ab76": 1,
-          "c78e0d1715c927df1196": 1
+          "c78e0d1715c927df1196": 2
         }
       },
       "6620b8c2ca1366e2fed3": {
