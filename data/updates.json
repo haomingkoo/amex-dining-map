@@ -1,7 +1,94 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-10T01:18:23Z",
+  "updated_at": "2026-10-10T01:28:45Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-10-10T01:28:45Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "28/29 (96.6%), 1 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "29/29 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "28/29 (96.6%), 1 unavailable",
+          "after": "29/29 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "252e3c33201e3823a27b",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 20,
+      "id": "58fd4e77a7ff992c58f8"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_review_cleared",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-10-10T01:28:45Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 9,
+          "Coverage": "18/32 (56.2%), 14 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 8,
+          "Coverage": "19/32 (59.4%), 13 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "review_required",
+          "after": "current"
+        },
+        {
+          "field": "Review",
+          "before": "required",
+          "after": "clear"
+        },
+        {
+          "field": "Review items",
+          "before": 9,
+          "after": 8
+        },
+        {
+          "field": "Coverage",
+          "before": "18/32 (56.2%), 14 unavailable",
+          "after": "19/32 (59.4%), 13 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "cd3443b63e258552d868",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 2,
+      "id": "1f8c8911741706185326"
+    },
     {
       "program": "Love Dining",
       "program_id": "love-dining",
@@ -27941,7 +28028,7 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "c5c7f91644c25ddef5b1",
+        "latest_transition_id": "cd3443b63e258552d868",
         "occurrences": {
           "02261b7ecfcb8fa754fa": 1,
           "04d54fb5e6257f646c0f": 1,
@@ -27966,7 +28053,7 @@
           "b8f51ade08c9e7395ef0": 1,
           "c361b418789cf5e76c4b": 1,
           "c5c7f91644c25ddef5b1": 2,
-          "cd3443b63e258552d868": 1,
+          "cd3443b63e258552d868": 2,
           "e07e7a37b6c17e4c2b32": 1,
           "e6dfbd32b7d837b21146": 1,
           "f2db1926f1478e742f67": 1
@@ -28980,7 +29067,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "98997d254b5dfdda4b93",
+        "latest_transition_id": "252e3c33201e3823a27b",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
@@ -28992,7 +29079,7 @@
           "22378f3f85673e1124f4": 1,
           "23f1bba4701f42a76948": 3,
           "24c8ece9cda1e0831632": 1,
-          "252e3c33201e3823a27b": 19,
+          "252e3c33201e3823a27b": 20,
           "26e57ec40c3a4d347fd1": 5,
           "27107d43711ead16b664": 1,
           "2a4df22568bb28e34e01": 1,
