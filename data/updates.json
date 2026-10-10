@@ -1,7 +1,309 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-10T00:05:29Z",
+  "updated_at": "2026-10-10T00:32:34Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-10-10T00:32:34Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "856/856 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "860/860 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "856/856 (100%), 0 unavailable",
+          "after": "860/860 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "2c631570ffcb1ddf6ff0",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "f948521f77dd25192285"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-10T00:32:34Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3015/3024 (99.7%), 9 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3015/3028 (99.6%), 13 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3015/3024 (99.7%), 9 unavailable",
+          "after": "3015/3028 (99.6%), 13 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "c014707b0b686ef76154",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "90a981f8ed565df16582"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-10-10T00:32:34Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "774/856 (90.4%), 82 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "774/860 (90%), 86 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "774/856 (90.4%), 82 unavailable",
+          "after": "774/860 (90%), 86 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "2988498f4c17e4f22ac3",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "3cf79dbbf3a2dc7de370"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Tempura Riki / Osaka",
+      "detected_at": "2026-10-10T00:32:32Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Tempura Riki",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Osaka",
+          "District": "Fukushima",
+          "Address": "1-2-4, Fukushima, Fukushima-ku, Osaka-shi, Osaka",
+          "Cuisine": [
+            "Tempura"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245680/",
+      "transition_id": "649c7ae94218e7cf2032",
+      "stream_id": "0c15f481266972ae55a8",
+      "occurrence": 1,
+      "id": "f026471138adf73c9708"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Ajigen Yamamoto / Matsuyama",
+      "detected_at": "2026-10-10T00:32:32Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Ajigen Yamamoto",
+          "Country": "Japan",
+          "Region": "Chugoku/Shikoku",
+          "City": "Matsuyama",
+          "District": "Iwaidani",
+          "Address": "5-3-33, Iwaidani, Matsuyama-shi, Ehime",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245684/",
+      "transition_id": "4f2915f671e54380e565",
+      "stream_id": "9051a1b6699c4e193904",
+      "occurrence": 1,
+      "id": "cd6aae6f96fe3c232bb4"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Konno / Kyoto",
+      "detected_at": "2026-10-10T00:32:32Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Konno",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Kyoto",
+          "District": "Yumiya cho",
+          "Address": "1F, 38, Yumiya cho, Higashiyama-ku, Kyoto-shi, Kyoto",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245693/",
+      "transition_id": "8474ff3f280aa15c3c4f",
+      "stream_id": "c1566c0ba2ffee0edcbc",
+      "occurrence": 1,
+      "id": "b1de26dba2ed58be802d"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-10-10T00:32:32Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 856,
+          "Mapped count": 856,
+          "Official records SHA-256": "e1bb7f837d42"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 860,
+          "Mapped count": 860,
+          "Official records SHA-256": "33f7915876d8"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 856,
+          "after": 860
+        },
+        {
+          "field": "Mapped count",
+          "before": 856,
+          "after": 860
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "e1bb7f837d42",
+          "after": "33f7915876d8"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "cad2db3c1df050a555fb",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "6c7e016651b5e6c35ac6"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Ginza Kosui  / Tokyo",
+      "detected_at": "2026-10-10T00:32:32Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Ginza Kosui ",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Ginza",
+          "Address": "8F, 6-12-14, Ginza, Chuo-ku, Tokyo",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245695/",
+      "transition_id": "5e5b8a291cfc7a881f23",
+      "stream_id": "46d2d64ee4b9729ae4a8",
+      "occurrence": 1,
+      "id": "35fca692cc274d45592d"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -27358,6 +27660,12 @@
           "fb3c5f0e7015503730cf": 1
         }
       },
+      "0c15f481266972ae55a8": {
+        "latest_transition_id": "649c7ae94218e7cf2032",
+        "occurrences": {
+          "649c7ae94218e7cf2032": 1
+        }
+      },
       "0cf8628816cfb74215fd": {
         "latest_transition_id": "cfe3590dfa5cf83b5406",
         "occurrences": {
@@ -27407,12 +27715,13 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "7b13a4aa17c3a8b51663",
+        "latest_transition_id": "2988498f4c17e4f22ac3",
         "occurrences": {
           "0e86b64ab05f97a7ae46": 1,
           "1373702923712cbf4100": 1,
           "1f8ff4070cf35b4b4a5f": 1,
           "21e13cd6db6f8de0e836": 1,
+          "2988498f4c17e4f22ac3": 1,
           "3527ca050b470473e393": 1,
           "40041d19ddaed47164da": 1,
           "4dd69dc8a805967651d8": 1,
@@ -27446,7 +27755,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "a8d8ccc3568ee52a7f4f",
+        "latest_transition_id": "cad2db3c1df050a555fb",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
           "13d4c2a8f5927f024200": 1,
@@ -27483,6 +27792,7 @@
           "bf82c69c69cc6c52a28f": 1,
           "c1d28318da2111657e70": 1,
           "cad0b78553f798df3101": 1,
+          "cad2db3c1df050a555fb": 1,
           "cc1ab665fa1a52273279": 1,
           "cdd40254aaa0087e8392": 1,
           "d52044651992113ac576": 1,
@@ -27626,11 +27936,12 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "951fc017d5e31f520818",
+        "latest_transition_id": "2c631570ffcb1ddf6ff0",
         "occurrences": {
           "0024ea21d692def9b91b": 1,
           "09984113ccd7320c1c13": 1,
           "183b5921d88cdc2b1048": 1,
+          "2c631570ffcb1ddf6ff0": 1,
           "2d4b3f4db6023af12f75": 1,
           "3481ce6d2f15d2493728": 1,
           "411a7dbbcc8e1fe4a3d9": 1,
@@ -27751,6 +28062,12 @@
         "latest_transition_id": "de3144d45997baadecec",
         "occurrences": {
           "de3144d45997baadecec": 1
+        }
+      },
+      "46d2d64ee4b9729ae4a8": {
+        "latest_transition_id": "5e5b8a291cfc7a881f23",
+        "occurrences": {
+          "5e5b8a291cfc7a881f23": 1
         }
       },
       "478a109a1f7c3b3f3106": {
@@ -27959,7 +28276,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "28926c4025a7e045954e",
+        "latest_transition_id": "c014707b0b686ef76154",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -27993,6 +28310,7 @@
           "a488b1b9472205b79e52": 1,
           "b5b5d8f52e794d1fe3a3": 1,
           "bc3ecb671dd6eb49653d": 1,
+          "c014707b0b686ef76154": 1,
           "c01a46f372f5a09dff8a": 1,
           "c1951243a662d64e4486": 1,
           "c659536cfbf89d1dd8c1": 1,
@@ -28115,6 +28433,12 @@
         "latest_transition_id": "fef44f3b73d9441a3dbd",
         "occurrences": {
           "fef44f3b73d9441a3dbd": 1
+        }
+      },
+      "9051a1b6699c4e193904": {
+        "latest_transition_id": "4f2915f671e54380e565",
+        "occurrences": {
+          "4f2915f671e54380e565": 1
         }
       },
       "90bc637f9775de626f91": {
@@ -28295,6 +28619,12 @@
         "latest_transition_id": "612e6b295c395a27398b",
         "occurrences": {
           "612e6b295c395a27398b": 1
+        }
+      },
+      "c1566c0ba2ffee0edcbc": {
+        "latest_transition_id": "8474ff3f280aa15c3c4f",
+        "occurrences": {
+          "8474ff3f280aa15c3c4f": 1
         }
       },
       "c696d469b4fc6c601973": {

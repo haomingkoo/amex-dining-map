@@ -499,3 +499,14 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   -  ETHICA / Tokyo
+
+<!-- source-change:de039a7a0468e3b9b0e4b14d97b7adb5699a9427c607cfc2a91ad7d0e6a42e0a -->
+## 2026-10-10 00:32 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (4)**
+  - Ajigen Yamamoto / Matsuyama
+  - Ginza Kosui  / Tokyo
+  - Konno / Kyoto
+  - Tempura Riki / Osaka
