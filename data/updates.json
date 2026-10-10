@@ -1,7 +1,93 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-10T00:32:34Z",
+  "updated_at": "2026-10-10T01:18:23Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "details_updated",
+      "subject": "Sen Of Japan / Singapore",
+      "detected_at": "2026-10-10T01:18:23Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sen Of Japan",
+          "Type": "restaurant",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "2 Bayfront Avenue, #01-86, The Shoppes at Marina Bay Sands, Singapore 018972",
+          "Cuisine": "Japanese",
+          "Cuisine category": "Asian",
+          "Notes": "Please note that Sen of Japan will reopen on 15 July 2026, and Love Dining privileges will resume on the same date."
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sen Of Japan",
+          "Type": "restaurant",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "2 Bayfront Avenue, #01-86, The Shoppes at Marina Bay Sands, Singapore 018972",
+          "Cuisine": "Japanese",
+          "Cuisine category": "Asian"
+        }
+      },
+      "changes": [
+        {
+          "field": "Notes",
+          "before": "Please note that Sen of Japan will reopen on 15 July 2026, and Love Dining privileges will resume on the same date.",
+          "after": null
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "f7828e2b82d669030d6b",
+      "stream_id": "9856ec8d800bc82e9b08",
+      "occurrence": 1,
+      "id": "c7ffe0dcc5f8c57e9150"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_updated",
+      "subject": "Love Dining source",
+      "detected_at": "2026-10-10T01:18:23Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "94419f071c5b",
+          "Restaurant T&C PDF hash": "96bcb8d099fc"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "a6c2f7d8e4a7",
+          "Restaurant T&C PDF hash": "2c24a1636347"
+        }
+      },
+      "changes": [
+        {
+          "field": "Official records SHA-256",
+          "before": "94419f071c5b",
+          "after": "a6c2f7d8e4a7"
+        },
+        {
+          "field": "Restaurant T&C PDF hash",
+          "before": "96bcb8d099fc",
+          "after": "2c24a1636347"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "a0a9bd6099c50e729407",
+      "stream_id": "915d672147e8dd8f713f",
+      "occurrence": 1,
+      "id": "bb6a87aa33ccf48ccf58"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -28448,8 +28534,9 @@
         }
       },
       "915d672147e8dd8f713f": {
-        "latest_transition_id": "e94f1e64d26636b508c7",
+        "latest_transition_id": "a0a9bd6099c50e729407",
         "occurrences": {
+          "a0a9bd6099c50e729407": 1,
           "e94f1e64d26636b508c7": 1
         }
       },
@@ -28481,6 +28568,13 @@
         "latest_transition_id": "cfd1f6930c920c7bcd16",
         "occurrences": {
           "cfd1f6930c920c7bcd16": 1
+        }
+      },
+      "9856ec8d800bc82e9b08": {
+        "latest_transition_id": "f7828e2b82d669030d6b",
+        "occurrences": {
+          "039a01fd1a1b4d242c83": 1,
+          "f7828e2b82d669030d6b": 1
         }
       },
       "98776f9676eceb42f395": {
