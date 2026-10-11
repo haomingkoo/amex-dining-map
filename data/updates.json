@@ -1,7 +1,61 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-11T18:09:56Z",
+  "updated_at": "2026-10-11T18:55:50Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-10-11T18:55:50Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 29,
+          "Coverage": "29/29 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0,
+          "Coverage": "28/29 (96.6%), 1 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 29,
+          "after": 0
+        },
+        {
+          "field": "Coverage",
+          "before": "29/29 (100%), 0 unavailable",
+          "after": "28/29 (96.6%), 1 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "9ca0c3a9819c6e281d37",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 3,
+      "id": "138f631843f3b3ef27c5"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -29602,7 +29656,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "7a0c2ed47a14576abcae",
+        "latest_transition_id": "9ca0c3a9819c6e281d37",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
@@ -29648,7 +29702,7 @@
           "957cb551d4d32c436358": 10,
           "96bb235b6966032395ba": 1,
           "98997d254b5dfdda4b93": 21,
-          "9ca0c3a9819c6e281d37": 2,
+          "9ca0c3a9819c6e281d37": 3,
           "9d9d155296d216fc8107": 1,
           "a0e5d9c3222307d148c0": 1,
           "a35a007cefa6ec723d14": 1,
