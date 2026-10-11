@@ -1,7 +1,47 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-11T07:17:17Z",
+  "updated_at": "2026-10-11T08:35:33Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-11T08:35:33Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 30,
+          "Coverage": "3015/3028 (99.6%), 13 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 15,
+          "Coverage": "3021/3028 (99.8%), 7 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 30,
+          "after": 15
+        },
+        {
+          "field": "Coverage",
+          "before": "3015/3028 (99.6%), 13 unavailable",
+          "after": "3021/3028 (99.8%), 7 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "5ff54655f7197bc32812",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "297ec7494f97d1bc6c5a"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -28769,7 +28809,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "c014707b0b686ef76154",
+        "latest_transition_id": "5ff54655f7197bc32812",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -28787,6 +28827,7 @@
           "4fc17cb16c0e54f69535": 1,
           "503524f40cdf0c1d8ac8": 1,
           "597b5f61e2e836b13c25": 1,
+          "5ff54655f7197bc32812": 1,
           "60dc180f760c021d210c": 1,
           "63a5bd704752e39cbb00": 1,
           "6788d36d5c8844e749a7": 1,
