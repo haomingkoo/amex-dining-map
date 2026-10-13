@@ -1,7 +1,719 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-13T02:30:37Z",
+  "updated_at": "2026-10-13T02:40:28Z",
   "updates": [
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "ALEX Augsburg / Augsburg",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "ALEX Augsburg",
+          "Country": "Germany",
+          "Region": "Augsburg",
+          "City": "Augsburg",
+          "Address": "ANNASTRASSE 3, Augsburg, 86150, Germany",
+          "Cuisine": [
+            "Modern"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "3ff2678d77eacba678af",
+      "stream_id": "13f20ec0ad6e5a0dd612",
+      "occurrence": 1,
+      "id": "fb4e425b99a8f7ad2311"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "details_updated",
+      "subject": "Web Christel / Westerland / Sylt",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "WEB CHRISTEL",
+          "Country": "Germany",
+          "Region": "Westerland / Sylt",
+          "City": "Westerland / Sylt",
+          "Address": "SÜDERSTR 11, Westerland / Sylt, 25980, Germany",
+          "Cuisine": [
+            "German"
+          ]
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Web Christel",
+          "Country": "Germany",
+          "Region": "Westerland / Sylt",
+          "City": "Westerland / Sylt",
+          "Address": "Süderstr 11, Westerland / Sylt, 25980, Germany",
+          "Cuisine": [
+            "German"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Name",
+          "before": "WEB CHRISTEL",
+          "after": "Web Christel"
+        },
+        {
+          "field": "Address",
+          "before": "SÜDERSTR 11, Westerland / Sylt, 25980, Germany",
+          "after": "Süderstr 11, Westerland / Sylt, 25980, Germany"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "a19fd93695bd1785693b",
+      "stream_id": "77fb46d70893f1232efb",
+      "occurrence": 1,
+      "id": "d97f78ecd65e032f84d6"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Vinothek by Geisel / München",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Vinothek by Geisel",
+          "Country": "Germany",
+          "Region": "München",
+          "City": "München",
+          "Address": "Schützenstr 11, München, 80335, Germany",
+          "Cuisine": [
+            "Wine Bar"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "708514c6fa66e3bafa4c",
+      "stream_id": "a11fee71bbb695865cf5",
+      "occurrence": 1,
+      "id": "ca835e710f62de1f5975"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "details_updated",
+      "subject": "Restaurante Martin Berasategui / Lasarte Oria (Guipuzcoa)",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Restaurante Martin Berasategui",
+          "Country": "Spain",
+          "Region": "Lasarte Oria (Guipuzcoa)",
+          "City": "Lasarte Oria (Guipuzcoa)",
+          "Address": "Loidi Kalea 4, Lasarte Oria (Guipuzcoa), 20160, Spain",
+          "Cuisine": [
+            "Rest Basque/Navarra"
+          ]
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Restaurante Martin Berasategui",
+          "Country": "Spain",
+          "Region": "Lasarte Oria (Guipuzcoa)",
+          "City": "Lasarte Oria (Guipuzcoa)",
+          "Address": "Loidi Kalea 4, Lasarte Oria (Guipuzcoa), 20160, Spain",
+          "Cuisine": [
+            "Rest Basque"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Cuisine",
+          "before": [
+            "Rest Basque/Navarra"
+          ],
+          "after": [
+            "Rest Basque"
+          ]
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "47ded738478fdecea6c4",
+      "stream_id": "3bdef019e316af648b10",
+      "occurrence": 1,
+      "id": "c70365a1befd89219fdf"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Global Dining",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "1982/1982 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "1970/1970 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "1982/1982 (100%), 0 unavailable",
+          "after": "1970/1970 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "a20ff02a298973b75640",
+      "stream_id": "d03cc6f867310ca61cf7",
+      "occurrence": 1,
+      "id": "bce6a8454d65c9656e46"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Park Cafe München / München",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Park Cafe München",
+          "Country": "Germany",
+          "Region": "München",
+          "City": "München",
+          "Address": "Sophienstraße 7, München, 80333, Germany",
+          "Cuisine": [
+            "German"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "e0129f31263a84ee0c93",
+      "stream_id": "204479ee2c7dbe83d5bf",
+      "occurrence": 1,
+      "id": "981f6714028feb29df25"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Tribeca Grill / New York",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Tribeca Grill",
+          "Country": "United States",
+          "Region": "New York",
+          "City": "New York",
+          "Address": "375 Greenwich Street, New York, 10013, United States",
+          "Cuisine": [
+            "New American"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "17a205ece5267fe41079",
+      "stream_id": "24d8dd9e97a131c5041b",
+      "occurrence": 1,
+      "id": "72bbe92e302558da52c6"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Loring Place / New York",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Loring Place",
+          "Country": "United States",
+          "Region": "New York",
+          "City": "New York",
+          "Address": "21 West 8th Street, New York, 10011, United States",
+          "Cuisine": [
+            "American"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "c1da0329d7867a554fe3",
+      "stream_id": "cebb4d8cb802a08e66d8",
+      "occurrence": 1,
+      "id": "6813a24987458322bebb"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Bentley Restaurant & Bar / New South Wales",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Bentley Restaurant & Bar",
+          "Country": "Australia",
+          "Region": "New South Wales",
+          "City": "New South Wales",
+          "Address": "27 O'Connell St, Sydney, New South Wales, 2000, Australia",
+          "Cuisine": [
+            "Australian"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "33c0ca8e5da72e57ab74",
+      "stream_id": "ce2891f29e1ac97e27ce",
+      "occurrence": 1,
+      "id": "6669707c5290ea24e525"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Mido / Paris",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Mido",
+          "Country": "France",
+          "Region": "Paris",
+          "City": "Paris",
+          "Address": "64 Avenue Marceau, Paris, 75008, France",
+          "Cuisine": [
+            "Fusion"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "c649251f3b61e9177829",
+      "stream_id": "2ad6e9da53a81d346c5e",
+      "occurrence": 1,
+      "id": "5d2c596a9027050d2c61"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "details_updated",
+      "subject": "JIM BLOCK / Berlin",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "JIM BLOCK",
+          "Country": "Germany",
+          "Region": "Berlin",
+          "City": "Berlin",
+          "Address": "Wilmersdorfer Str. 115 - 118, Berlin, 10627, Germany",
+          "Cuisine": [
+            "Steakhouse"
+          ]
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "JIM BLOCK",
+          "Country": "Germany",
+          "Region": "Berlin",
+          "City": "Berlin",
+          "Address": "Budapester Str. 42-50, Berlin, 10787, Germany",
+          "Cuisine": [
+            "Steakhouse"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Address",
+          "before": "Wilmersdorfer Str. 115 - 118, Berlin, 10627, Germany",
+          "after": "Budapester Str. 42-50, Berlin, 10787, Germany"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "a642c2c6acab760554b7",
+      "stream_id": "9448af30155f6c64355a",
+      "occurrence": 1,
+      "id": "534abe30773d78c73956"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Roots Pizza - South Loop / Chicago",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Roots Pizza - South Loop",
+          "Country": "United States",
+          "Region": "Chicago",
+          "City": "Chicago",
+          "Address": "744 South Dearborn Street, Chicago, 60605, United States",
+          "Cuisine": [
+            "American"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "6eddfacc772b60371f30",
+      "stream_id": "667bab5873c286713778",
+      "occurrence": 1,
+      "id": "4cf82869ff6c1bc31c66"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3021/3028 (99.8%), 7 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3009/3016 (99.8%), 7 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3021/3028 (99.8%), 7 unavailable",
+          "after": "3009/3016 (99.8%), 7 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "37ba731247907465333f",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "4c34ab6e4b653a4fdd99"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "JIM BLOCK / Berlin",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "JIM BLOCK",
+          "Country": "Germany",
+          "Region": "Berlin",
+          "City": "Berlin",
+          "Address": "Budapester Str. 42-50, Berlin, 10787, Germany",
+          "Cuisine": [
+            "Steakhouse"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "b53175c467f58ef4c9f7",
+      "stream_id": "f3418d88422d8d418981",
+      "occurrence": 1,
+      "id": "374b9b3332b2f1694513"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Olbrick / Darmstadt",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Olbrick",
+          "Country": "Germany",
+          "Region": "Darmstadt",
+          "City": "Darmstadt",
+          "Address": "Frankfurter Str. 67, Darmstadt, 64293, Germany",
+          "Cuisine": [
+            "Asian"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "1d1ef17fb386c7273b0d",
+      "stream_id": "1c77bf3db4b27cf1a996",
+      "occurrence": 1,
+      "id": "347db6f058444cd5ad3d"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Saké Restaurant & Bar Double Bay / New South Wales",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Saké Restaurant & Bar Double Bay",
+          "Country": "Australia",
+          "Region": "New South Wales",
+          "City": "New South Wales",
+          "Address": "The Intercontinental Hotel, 33 Cross St, Double Bay, New South Wales, 2028, Australia",
+          "Cuisine": [
+            "Japanese"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "e775464414be7c80ceb2",
+      "stream_id": "47d4124071af218c1610",
+      "occurrence": 1,
+      "id": "33b47ff6a187482cb28f"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_updated",
+      "subject": "Global Dining source",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 1982,
+          "Mapped count": 1923
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 1970,
+          "Mapped count": 1912
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 1982,
+          "after": 1970
+        },
+        {
+          "field": "Mapped count",
+          "before": 1923,
+          "after": 1912
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "44a7b1e2dc2c865eba80",
+      "stream_id": "128d0d698ba4426680b0",
+      "occurrence": 1,
+      "id": "0d032f44d951588d3338"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "ALEX Dortmund / Dortmund",
+      "detected_at": "2026-10-13T02:40:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "ALEX Dortmund",
+          "Country": "Germany",
+          "Region": "Dortmund",
+          "City": "Dortmund",
+          "Address": "Ostenhellweg 18-21, Dortmund, 44135, Germany",
+          "Cuisine": [
+            "Modern"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "96db796a6ddf736c67e7",
+      "stream_id": "abea11794e2e959a6344",
+      "occurrence": 1,
+      "id": "0258fe4835fbcb9b9a7a"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -28806,9 +29518,10 @@
         }
       },
       "128d0d698ba4426680b0": {
-        "latest_transition_id": "0e729905cd142da50a20",
+        "latest_transition_id": "44a7b1e2dc2c865eba80",
         "occurrences": {
           "0e729905cd142da50a20": 1,
+          "44a7b1e2dc2c865eba80": 1,
           "7fdc71a5a4f3bb71f791": 1,
           "872e22a3410e4ca5cbb8": 1,
           "a4db0856a25b145eb59d": 1,
@@ -28858,8 +29571,9 @@
         }
       },
       "13f20ec0ad6e5a0dd612": {
-        "latest_transition_id": "610d8b3b4efdc371513a",
+        "latest_transition_id": "3ff2678d77eacba678af",
         "occurrences": {
+          "3ff2678d77eacba678af": 1,
           "610d8b3b4efdc371513a": 1
         }
       },
@@ -28952,6 +29666,12 @@
           "c81e06cd4e264de84bb3": 1
         }
       },
+      "1c77bf3db4b27cf1a996": {
+        "latest_transition_id": "1d1ef17fb386c7273b0d",
+        "occurrences": {
+          "1d1ef17fb386c7273b0d": 1
+        }
+      },
       "1c814cc336643f590249": {
         "latest_transition_id": "fe4a8fc85b356e4cff7e",
         "occurrences": {
@@ -29014,6 +29734,12 @@
           "9ce492884763b2cd02ed": 1
         }
       },
+      "204479ee2c7dbe83d5bf": {
+        "latest_transition_id": "e0129f31263a84ee0c93",
+        "occurrences": {
+          "e0129f31263a84ee0c93": 1
+        }
+      },
       "206c9813b0f079b63000": {
         "latest_transition_id": "3c76fc864e0d57b31c7f",
         "occurrences": {
@@ -29037,6 +29763,12 @@
         "occurrences": {
           "3f8657632ba8c8766e8f": 1,
           "ee7b9aa769184442a35e": 1
+        }
+      },
+      "24d8dd9e97a131c5041b": {
+        "latest_transition_id": "17a205ece5267fe41079",
+        "occurrences": {
+          "17a205ece5267fe41079": 1
         }
       },
       "273e2725dcd75e6aa23b": {
@@ -29073,6 +29805,12 @@
         "latest_transition_id": "c65c96b11d0de35b1732",
         "occurrences": {
           "c65c96b11d0de35b1732": 1
+        }
+      },
+      "2ad6e9da53a81d346c5e": {
+        "latest_transition_id": "c649251f3b61e9177829",
+        "occurrences": {
+          "c649251f3b61e9177829": 1
         }
       },
       "2b17bfd5ef9f811b2c9f": {
@@ -29144,8 +29882,9 @@
         }
       },
       "3bdef019e316af648b10": {
-        "latest_transition_id": "e10e2b35a284c71705b9",
+        "latest_transition_id": "47ded738478fdecea6c4",
         "occurrences": {
+          "47ded738478fdecea6c4": 1,
           "e10e2b35a284c71705b9": 1
         }
       },
@@ -29184,6 +29923,12 @@
         "latest_transition_id": "c8c6cb21fca7e24b9961",
         "occurrences": {
           "c8c6cb21fca7e24b9961": 1
+        }
+      },
+      "47d4124071af218c1610": {
+        "latest_transition_id": "e775464414be7c80ceb2",
+        "occurrences": {
+          "e775464414be7c80ceb2": 1
         }
       },
       "4a59f3fc16b9b302af4f": {
@@ -29330,6 +30075,12 @@
           "2a8d374b6891fc627046": 1
         }
       },
+      "667bab5873c286713778": {
+        "latest_transition_id": "6eddfacc772b60371f30",
+        "occurrences": {
+          "6eddfacc772b60371f30": 1
+        }
+      },
       "6984e03dd7bd4525020b": {
         "latest_transition_id": "00ddcc0c67cfaf7c3fdc",
         "occurrences": {
@@ -29386,7 +30137,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "5ff54655f7197bc32812",
+        "latest_transition_id": "37ba731247907465333f",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -29398,6 +30149,7 @@
           "2c9cfaa8dc40d88a2308": 1,
           "2d4ce67bacad8f77cc37": 1,
           "2e0896223097482f8813": 1,
+          "37ba731247907465333f": 1,
           "3d07ff7f35ab35cde0d8": 1,
           "3f69c4d5e73544c80c60": 1,
           "4258225d5117a5d79957": 1,
@@ -29455,8 +30207,9 @@
         }
       },
       "77fb46d70893f1232efb": {
-        "latest_transition_id": "ff50046675e55faab723",
+        "latest_transition_id": "a19fd93695bd1785693b",
         "occurrences": {
+          "a19fd93695bd1785693b": 1,
           "ff50046675e55faab723": 1
         }
       },
@@ -29589,6 +30342,12 @@
           "edeadf9e1d8699e36fae": 1
         }
       },
+      "9448af30155f6c64355a": {
+        "latest_transition_id": "a642c2c6acab760554b7",
+        "occurrences": {
+          "a642c2c6acab760554b7": 1
+        }
+      },
       "94895633c28328b273bb": {
         "latest_transition_id": "cfd1f6930c920c7bcd16",
         "occurrences": {
@@ -29638,6 +30397,12 @@
           "92bf0bdd72a0a80f2134": 1
         }
       },
+      "a11fee71bbb695865cf5": {
+        "latest_transition_id": "708514c6fa66e3bafa4c",
+        "occurrences": {
+          "708514c6fa66e3bafa4c": 1
+        }
+      },
       "a56a4ceca4fc97f6e975": {
         "latest_transition_id": "7dbd319df522d3f39075",
         "occurrences": {
@@ -29660,6 +30425,12 @@
         "latest_transition_id": "a18f6ba38a25d86a2808",
         "occurrences": {
           "a18f6ba38a25d86a2808": 1
+        }
+      },
+      "abea11794e2e959a6344": {
+        "latest_transition_id": "96db796a6ddf736c67e7",
+        "occurrences": {
+          "96db796a6ddf736c67e7": 1
         }
       },
       "ad2c04886d3be666fd13": {
@@ -29784,9 +30555,22 @@
           "e28b7ecfa18baa917e8b": 1
         }
       },
-      "d03cc6f867310ca61cf7": {
-        "latest_transition_id": "d03e8d97cb01efd6f547",
+      "ce2891f29e1ac97e27ce": {
+        "latest_transition_id": "33c0ca8e5da72e57ab74",
         "occurrences": {
+          "33c0ca8e5da72e57ab74": 1
+        }
+      },
+      "cebb4d8cb802a08e66d8": {
+        "latest_transition_id": "c1da0329d7867a554fe3",
+        "occurrences": {
+          "c1da0329d7867a554fe3": 1
+        }
+      },
+      "d03cc6f867310ca61cf7": {
+        "latest_transition_id": "a20ff02a298973b75640",
+        "occurrences": {
+          "a20ff02a298973b75640": 1,
           "d03e8d97cb01efd6f547": 1,
           "ee9a1c9e140f6b412f3d": 1
         }
@@ -29954,6 +30738,12 @@
         "latest_transition_id": "eddda1f47d661e630477",
         "occurrences": {
           "eddda1f47d661e630477": 1
+        }
+      },
+      "f3418d88422d8d418981": {
+        "latest_transition_id": "b53175c467f58ef4c9f7",
+        "occurrences": {
+          "b53175c467f58ef4c9f7": 1
         }
       },
       "f4dd24e33b178bf8591e": {

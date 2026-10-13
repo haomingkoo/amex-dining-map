@@ -212,3 +212,22 @@ Source: `data/global-restaurants.json`
   - Hari1090 by Kumar’s Kitchen / Wien
   - Loma Linda / Mexico
   - Wild Blue / Whistler
+
+<!-- source-change:59066b7d9bb642cdcdc4fc35d285c67d32d1abd8d1b3b74ec2634992241e1b82 -->
+## 2026-10-13 02:40 UTC — Global Dining
+
+Source: `data/global-restaurants.json`
+
+- **Removed (12)**
+  - ALEX Augsburg / Augsburg
+  - ALEX Dortmund / Dortmund
+  - Bentley Restaurant & Bar / New South Wales
+  - JIM BLOCK / Berlin
+  - Loring Place / New York
+  - Mido / Paris
+  - Olbrick / Darmstadt
+  - Park Cafe München / München
+  - Roots Pizza - South Loop / Chicago
+  - Saké Restaurant & Bar Double Bay / New South Wales
+  - Tribeca Grill / New York
+  - Vinothek by Geisel / München
