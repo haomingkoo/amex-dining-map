@@ -1,7 +1,195 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-13T02:40:28Z",
+  "updated_at": "2026-10-13T02:51:00Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_updated",
+      "subject": "Table for Two source",
+      "detected_at": "2026-10-13T02:51:00Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Participating merchants image hash": "b70fbc97e9f8",
+          "Cafe and buffet image hash": "e44d7e4e85cd",
+          "Roster review status": "approved",
+          "Observed roster image hash": "5d274b0c3d5e",
+          "Roster review item": null,
+          "Voucher cycles image hash": "327019c90169"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Participating merchants image hash": "fbb8279facf3",
+          "Cafe and buffet image hash": "649714fc8797",
+          "Roster review status": "review_required",
+          "Observed roster image hash": "5bf02b3ff3f5",
+          "Roster review item": "unknown_participating_image",
+          "Voucher cycles image hash": "12d930ae819e"
+        }
+      },
+      "changes": [
+        {
+          "field": "Participating merchants image hash",
+          "before": "b70fbc97e9f8",
+          "after": "fbb8279facf3"
+        },
+        {
+          "field": "Cafe and buffet image hash",
+          "before": "e44d7e4e85cd",
+          "after": "649714fc8797"
+        },
+        {
+          "field": "Roster review status",
+          "before": "approved",
+          "after": "review_required"
+        },
+        {
+          "field": "Observed roster image hash",
+          "before": "5d274b0c3d5e",
+          "after": "5bf02b3ff3f5"
+        },
+        {
+          "field": "Roster review item",
+          "before": null,
+          "after": "unknown_participating_image"
+        },
+        {
+          "field": "Voucher cycles image hash",
+          "before": "327019c90169",
+          "after": "12d930ae819e"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "3ff80c44f12b2c1a3d01",
+      "stream_id": "5a285967ca2795c90124",
+      "occurrence": 1,
+      "id": "e856ec9af531a7adee5e"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two roster",
+      "detected_at": "2026-10-13T02:51:00Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 1
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 2
+        }
+      },
+      "changes": [
+        {
+          "field": "Review items",
+          "before": 1,
+          "after": 2
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "31a6503c8396700d6e51",
+      "stream_id": "66129efc1226a46f5069",
+      "occurrence": 1,
+      "id": "2ea0f83b262fd1f9330b"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_review_required",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-10-13T02:51:00Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 8,
+          "Coverage": "19/32 (59.4%), 13 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 9,
+          "Coverage": "18/32 (56.2%), 14 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "review_required"
+        },
+        {
+          "field": "Review",
+          "before": "clear",
+          "after": "required"
+        },
+        {
+          "field": "Review items",
+          "before": 8,
+          "after": 9
+        },
+        {
+          "field": "Coverage",
+          "before": "19/32 (59.4%), 13 unavailable",
+          "after": "18/32 (56.2%), 14 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "c5c7f91644c25ddef5b1",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 4,
+      "id": "2be189f76160a7ca7bfb"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-10-13T02:51:00Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "29/29 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "27/29 (93.1%), 2 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "29/29 (100%), 0 unavailable",
+          "after": "27/29 (93.1%), 2 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "a3b730cd421c75db1b85",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 9,
+      "id": "0861c26daa9972143a7a"
+    },
     {
       "program": "Global Dining",
       "program_id": "global-dining",
@@ -29685,7 +29873,7 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "cd3443b63e258552d868",
+        "latest_transition_id": "c5c7f91644c25ddef5b1",
         "occurrences": {
           "02261b7ecfcb8fa754fa": 1,
           "04d54fb5e6257f646c0f": 1,
@@ -29709,7 +29897,7 @@
           "b7194678b771b7d798a7": 2,
           "b8f51ade08c9e7395ef0": 1,
           "c361b418789cf5e76c4b": 1,
-          "c5c7f91644c25ddef5b1": 3,
+          "c5c7f91644c25ddef5b1": 4,
           "cd3443b63e258552d868": 3,
           "e07e7a37b6c17e4c2b32": 1,
           "e6dfbd32b7d837b21146": 1,
@@ -29975,10 +30163,11 @@
         }
       },
       "5a285967ca2795c90124": {
-        "latest_transition_id": "bd10dcf28211254538e8",
+        "latest_transition_id": "3ff80c44f12b2c1a3d01",
         "occurrences": {
           "1fd9e02b2a3042318396": 1,
           "295d64447a5b74ace553": 1,
+          "3ff80c44f12b2c1a3d01": 1,
           "70e4c572a36d9428cfc6": 1,
           "725f4d41dd42c33eadb5": 1,
           "81ed566b466b25c9b9bd": 1,
@@ -30053,7 +30242,7 @@
         }
       },
       "66129efc1226a46f5069": {
-        "latest_transition_id": "c78e0d1715c927df1196",
+        "latest_transition_id": "31a6503c8396700d6e51",
         "occurrences": {
           "083081096cbb3c8c1c76": 1,
           "0b5afd558ebf89b84ac5": 1,
@@ -30061,6 +30250,7 @@
           "1c5d2ed58c6c8667c40a": 1,
           "2de1bd408e24ff985c8f": 1,
           "2f1ca3a47249fa24a63c": 1,
+          "31a6503c8396700d6e51": 1,
           "46ab8b1ef9cfe57b0575": 1,
           "48c6897c6752df3fd28d": 1,
           "65a1e1a667c0fd353b6c": 2,
@@ -30795,7 +30985,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "093e9a40b7d75a526207",
+        "latest_transition_id": "a3b730cd421c75db1b85",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
@@ -30845,7 +31035,7 @@
           "9d9d155296d216fc8107": 1,
           "a0e5d9c3222307d148c0": 1,
           "a35a007cefa6ec723d14": 1,
-          "a3b730cd421c75db1b85": 8,
+          "a3b730cd421c75db1b85": 9,
           "aae2a9dbc6f70d8fea97": 1,
           "abd0d873ffb7ec99245b": 1,
           "b65d58034636a5fc38a8": 1,
