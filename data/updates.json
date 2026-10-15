@@ -1,7 +1,227 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-15T23:34:42Z",
+  "updated_at": "2026-10-15T23:45:26Z",
   "updates": [
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "added",
+      "subject": "ALEX Hamburg am Rothenbaum / Hamburg",
+      "detected_at": "2026-10-15T23:45:26Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "ALEX Hamburg am Rothenbaum",
+          "Country": "Germany",
+          "Region": "Hamburg",
+          "City": "Hamburg",
+          "Address": "Rothenbaumchaussee 78-80, Hamburg, 20148, Germany",
+          "Cuisine": [
+            "Modern"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "d157dc8d6ce258f245f3",
+      "stream_id": "a4d8ab8019c64c3fee66",
+      "occurrence": 1,
+      "id": "facdb660e879c3e0bdf6"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "added",
+      "subject": "ALEX Augsburg / Augsburg",
+      "detected_at": "2026-10-15T23:45:26Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "ALEX Augsburg",
+          "Country": "Germany",
+          "Region": "Augsburg",
+          "City": "Augsburg",
+          "Address": "Annastraße 3, Augsburg, 86150, Germany",
+          "Cuisine": [
+            "Modern"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "620efbde593953eddd11",
+      "stream_id": "13f20ec0ad6e5a0dd612",
+      "occurrence": 1,
+      "id": "ec8c0f852dc0c9c707d8"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_updated",
+      "subject": "Global Dining source",
+      "detected_at": "2026-10-15T23:45:26Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 1970,
+          "Mapped count": 1912
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 1973,
+          "Mapped count": 1915
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 1970,
+          "after": 1973
+        },
+        {
+          "field": "Mapped count",
+          "before": 1912,
+          "after": 1915
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "169e0a4cd65f0463852d",
+      "stream_id": "128d0d698ba4426680b0",
+      "occurrence": 1,
+      "id": "c9c600a23180a41fc1af"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "added",
+      "subject": "Armenio's Modern Grandma / Bangkok",
+      "detected_at": "2026-10-15T23:45:26Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Armenio's Modern Grandma",
+          "Country": "Thailand",
+          "Region": "Bangkok",
+          "City": "Bangkok",
+          "Address": "48 Saphan Khu Alley, Thung Maha Mek, Sathon, Bangkok, 10120, Thailand",
+          "Cuisine": [
+            "Italian"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "caa8ed1cfd0d5ab2927d",
+      "stream_id": "ee1b6af54648e8478d93",
+      "occurrence": 1,
+      "id": "b1fa432f1f6e48b58ab4"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-15T23:45:26Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3009/3017 (99.7%), 8 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3010/3020 (99.7%), 10 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3009/3017 (99.7%), 8 unavailable",
+          "after": "3010/3020 (99.7%), 10 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "d9636d4adea01248432e",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "9b2cc876ab607ed6422e"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Global Dining",
+      "detected_at": "2026-10-15T23:45:26Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "1970/1970 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "1973/1973 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "1970/1970 (100%), 0 unavailable",
+          "after": "1973/1973 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "faa16f7c83a868d1e87f",
+      "stream_id": "d03cc6f867310ca61cf7",
+      "occurrence": 1,
+      "id": "20517e26b34891c2e51c"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -30454,9 +30674,10 @@
         }
       },
       "128d0d698ba4426680b0": {
-        "latest_transition_id": "44a7b1e2dc2c865eba80",
+        "latest_transition_id": "169e0a4cd65f0463852d",
         "occurrences": {
           "0e729905cd142da50a20": 1,
+          "169e0a4cd65f0463852d": 1,
           "44a7b1e2dc2c865eba80": 1,
           "7fdc71a5a4f3bb71f791": 1,
           "872e22a3410e4ca5cbb8": 1,
@@ -30508,10 +30729,11 @@
         }
       },
       "13f20ec0ad6e5a0dd612": {
-        "latest_transition_id": "3ff2678d77eacba678af",
+        "latest_transition_id": "620efbde593953eddd11",
         "occurrences": {
           "3ff2678d77eacba678af": 1,
-          "610d8b3b4efdc371513a": 1
+          "610d8b3b4efdc371513a": 1,
+          "620efbde593953eddd11": 1
         }
       },
       "144a07273fbc23853124": {
@@ -31081,7 +31303,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "5f2bd18453dc87008d58",
+        "latest_transition_id": "d9636d4adea01248432e",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -31126,6 +31348,7 @@
           "d0735dd662b564b1d23c": 1,
           "d753c5ceeb9220c51bf2": 1,
           "d8aa9d2b3fe7415b684d": 1,
+          "d9636d4adea01248432e": 1,
           "dfb369daa65ada9da16d": 1,
           "ecb804c7aa8649ff67ed": 1,
           "f1130c410a7ffb37b21d": 1,
@@ -31354,6 +31577,12 @@
           "708514c6fa66e3bafa4c": 1
         }
       },
+      "a4d8ab8019c64c3fee66": {
+        "latest_transition_id": "d157dc8d6ce258f245f3",
+        "occurrences": {
+          "d157dc8d6ce258f245f3": 1
+        }
+      },
       "a56a4ceca4fc97f6e975": {
         "latest_transition_id": "7dbd319df522d3f39075",
         "occurrences": {
@@ -31519,11 +31748,12 @@
         }
       },
       "d03cc6f867310ca61cf7": {
-        "latest_transition_id": "a20ff02a298973b75640",
+        "latest_transition_id": "faa16f7c83a868d1e87f",
         "occurrences": {
           "a20ff02a298973b75640": 1,
           "d03e8d97cb01efd6f547": 1,
-          "ee9a1c9e140f6b412f3d": 1
+          "ee9a1c9e140f6b412f3d": 1,
+          "faa16f7c83a868d1e87f": 1
         }
       },
       "d22372bccbd73d4167e3": {
@@ -31671,6 +31901,12 @@
         "latest_transition_id": "e6d8cfe83144ac8d212c",
         "occurrences": {
           "e6d8cfe83144ac8d212c": 1
+        }
+      },
+      "ee1b6af54648e8478d93": {
+        "latest_transition_id": "caa8ed1cfd0d5ab2927d",
+        "occurrences": {
+          "caa8ed1cfd0d5ab2927d": 1
         }
       },
       "ef6d5fd265fe96dcfe42": {

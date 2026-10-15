@@ -231,3 +231,13 @@ Source: `data/global-restaurants.json`
   - Saké Restaurant & Bar Double Bay / New South Wales
   - Tribeca Grill / New York
   - Vinothek by Geisel / München
+
+<!-- source-change:bf518729864e0d0802a132c33e3450c7bb27ce9e894f351b72a079c4d2360956 -->
+## 2026-10-15 23:45 UTC — Global Dining
+
+Source: `data/global-restaurants.json`
+
+- **Added (3)**
+  - ALEX Augsburg / Augsburg
+  - ALEX Hamburg am Rothenbaum / Hamburg
+  - Armenio's Modern Grandma / Bangkok
