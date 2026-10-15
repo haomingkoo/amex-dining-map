@@ -510,3 +510,11 @@ Source: `data/japan-restaurants.json`
   - Ginza Kosui  / Tokyo
   - Konno / Kyoto
   - Tempura Riki / Osaka
+
+<!-- source-change:67043eb6761ff91c31f3ce41fc87d7615921b607c24d8541dc01d1a877b2d611 -->
+## 2026-10-15 23:34 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - IL LUPINO PRIME / Tokyo
