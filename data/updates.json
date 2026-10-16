@@ -1,7 +1,91 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-16T23:45:23Z",
+  "updated_at": "2026-10-16T23:55:47Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "details_updated",
+      "subject": "L'Angélus / Singapore",
+      "detected_at": "2026-10-16T23:55:47Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "L'Angélus",
+          "Type": "restaurant",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "85 Club Street, Singapore 069453",
+          "Cuisine category": "Western"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "L'Angélus",
+          "Type": "restaurant",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "85 Club Street, Singapore 069453",
+          "Cuisine category": "Western",
+          "Notes": "Please note that L'Angélus will be closed for a private event on 24 October 2026. Love Dining privileges will not be available on this day."
+        }
+      },
+      "changes": [
+        {
+          "field": "Notes",
+          "before": null,
+          "after": "Please note that L'Angélus will be closed for a private event on 24 October 2026. Love Dining privileges will not be available on this day."
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "23c18b5cc2d02e775d05",
+      "stream_id": "ea9a9f09e91183be3749",
+      "occurrence": 1,
+      "id": "9cfbfe5db96114211e80"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_updated",
+      "subject": "Love Dining source",
+      "detected_at": "2026-10-16T23:55:47Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "a6c2f7d8e4a7",
+          "Restaurant T&C PDF hash": "2c24a1636347"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "aa13699762e3",
+          "Restaurant T&C PDF hash": "49f4de7d1980"
+        }
+      },
+      "changes": [
+        {
+          "field": "Official records SHA-256",
+          "before": "a6c2f7d8e4a7",
+          "after": "aa13699762e3"
+        },
+        {
+          "field": "Restaurant T&C PDF hash",
+          "before": "2c24a1636347",
+          "after": "49f4de7d1980"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "e84cc285cf3a411e0d24",
+      "stream_id": "915d672147e8dd8f713f",
+      "occurrence": 1,
+      "id": "738db6186ab2ba2bcb27"
+    },
     {
       "program": "Global Dining",
       "program_id": "global-dining",
@@ -31917,9 +32001,10 @@
         }
       },
       "915d672147e8dd8f713f": {
-        "latest_transition_id": "a0a9bd6099c50e729407",
+        "latest_transition_id": "e84cc285cf3a411e0d24",
         "occurrences": {
           "a0a9bd6099c50e729407": 1,
+          "e84cc285cf3a411e0d24": 1,
           "e94f1e64d26636b508c7": 1
         }
       },
@@ -32315,6 +32400,12 @@
         "latest_transition_id": "c48c011dff55692efc37",
         "occurrences": {
           "c48c011dff55692efc37": 1
+        }
+      },
+      "ea9a9f09e91183be3749": {
+        "latest_transition_id": "23c18b5cc2d02e775d05",
+        "occurrences": {
+          "23c18b5cc2d02e775d05": 1
         }
       },
       "ebf4bc78e02efc91f85b": {
