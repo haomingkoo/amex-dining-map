@@ -1,7 +1,198 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-16T23:16:47Z",
+  "updated_at": "2026-10-16T23:45:23Z",
   "updates": [
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "La Bauhinia / Paris",
+      "detected_at": "2026-10-16T23:45:23Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "La Bauhinia",
+          "Country": "France",
+          "Region": "Paris",
+          "City": "Paris",
+          "Address": "10 avenue d'Iéna, Paris, 75116, France",
+          "Cuisine": [
+            "Asian"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "7e9b872575136d8c6d8d",
+      "stream_id": "658e3e009b4b1b077dec",
+      "occurrence": 1,
+      "id": "cab57a610f69f06af797"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-16T23:45:23Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3010/3020 (99.7%), 10 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3008/3019 (99.6%), 11 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3010/3020 (99.7%), 10 unavailable",
+          "after": "3008/3019 (99.6%), 11 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "cf7528ce578d3065a967",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "c21d21e2e2e637b35069"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Global Dining",
+      "detected_at": "2026-10-16T23:45:23Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "1973/1973 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "1972/1972 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "1973/1973 (100%), 0 unavailable",
+          "after": "1972/1972 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "45857e201fb52728e322",
+      "stream_id": "d03cc6f867310ca61cf7",
+      "occurrence": 1,
+      "id": "9c667bfce32ae5c78a09"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "renamed",
+      "subject": "Maison Roland / Paris",
+      "detected_at": "2026-10-16T23:45:23Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "La Bauhinia",
+          "Country": "France",
+          "Region": "Paris",
+          "City": "Paris",
+          "Address": "Hotel Shangri La, 10 avenue d'Iena, Paris, 75116, France",
+          "Cuisine": [
+            "French"
+          ]
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Maison Roland",
+          "Country": "France",
+          "Region": "Paris",
+          "City": "Paris",
+          "Address": "Hotel Shangri La, 10 avenue d'Iena, Paris, 75116, France",
+          "Cuisine": [
+            "French"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Name",
+          "before": "La Bauhinia",
+          "after": "Maison Roland"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "82f6a29ef980c4ab90b0",
+      "stream_id": "24ea04d58bcae8d3b91e",
+      "occurrence": 1,
+      "id": "4b327be2ae4494fa72f7"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_updated",
+      "subject": "Global Dining source",
+      "detected_at": "2026-10-16T23:45:23Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 1973,
+          "Mapped count": 1915
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 1972,
+          "Mapped count": 1914
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 1973,
+          "after": 1972
+        },
+        {
+          "field": "Mapped count",
+          "before": 1915,
+          "after": 1914
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "bd27f3f0c5b774d75975",
+      "stream_id": "128d0d698ba4426680b0",
+      "occurrence": 1,
+      "id": "3bb1102eb4605722d413"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -30905,7 +31096,7 @@
         }
       },
       "128d0d698ba4426680b0": {
-        "latest_transition_id": "169e0a4cd65f0463852d",
+        "latest_transition_id": "bd27f3f0c5b774d75975",
         "occurrences": {
           "0e729905cd142da50a20": 1,
           "169e0a4cd65f0463852d": 1,
@@ -30914,6 +31105,7 @@
           "872e22a3410e4ca5cbb8": 1,
           "a4db0856a25b145eb59d": 1,
           "b690b59d043ca5d8cadc": 1,
+          "bd27f3f0c5b774d75975": 1,
           "d9b28eaccaf9f5a2a3a0": 1,
           "fd925bbdada65e97399b": 1
         }
@@ -31164,6 +31356,12 @@
         "latest_transition_id": "17a205ece5267fe41079",
         "occurrences": {
           "17a205ece5267fe41079": 1
+        }
+      },
+      "24ea04d58bcae8d3b91e": {
+        "latest_transition_id": "82f6a29ef980c4ab90b0",
+        "occurrences": {
+          "82f6a29ef980c4ab90b0": 1
         }
       },
       "273e2725dcd75e6aa23b": {
@@ -31443,6 +31641,12 @@
           "f448adc1edb6d6dcaa16": 1
         }
       },
+      "658e3e009b4b1b077dec": {
+        "latest_transition_id": "7e9b872575136d8c6d8d",
+        "occurrences": {
+          "7e9b872575136d8c6d8d": 1
+        }
+      },
       "65d363713c3518f2f606": {
         "latest_transition_id": "a570e4b840eba6b363ca",
         "occurrences": {
@@ -31535,7 +31739,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "d9636d4adea01248432e",
+        "latest_transition_id": "cf7528ce578d3065a967",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -31577,6 +31781,7 @@
           "c1951243a662d64e4486": 1,
           "c659536cfbf89d1dd8c1": 1,
           "c953012ca0f18c444179": 1,
+          "cf7528ce578d3065a967": 1,
           "d0735dd662b564b1d23c": 1,
           "d753c5ceeb9220c51bf2": 1,
           "d8aa9d2b3fe7415b684d": 1,
@@ -31980,8 +32185,9 @@
         }
       },
       "d03cc6f867310ca61cf7": {
-        "latest_transition_id": "faa16f7c83a868d1e87f",
+        "latest_transition_id": "45857e201fb52728e322",
         "occurrences": {
+          "45857e201fb52728e322": 1,
           "a20ff02a298973b75640": 1,
           "d03e8d97cb01efd6f547": 1,
           "ee9a1c9e140f6b412f3d": 1,

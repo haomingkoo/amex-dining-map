@@ -241,3 +241,11 @@ Source: `data/global-restaurants.json`
   - ALEX Augsburg / Augsburg
   - ALEX Hamburg am Rothenbaum / Hamburg
   - Armenio's Modern Grandma / Bangkok
+
+<!-- source-change:066456e1afaffe94e159ef37fd4b26ed5af674f8846d20500d1567113e5c714b -->
+## 2026-10-16 23:45 UTC — Global Dining
+
+Source: `data/global-restaurants.json`
+
+- **Removed (1)**
+  - La Bauhinia / Paris
