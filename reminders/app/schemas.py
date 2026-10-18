@@ -2,30 +2,16 @@
 
 from __future__ import annotations
 
-import json
 from datetime import date, timedelta
-from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
+from app import tft_guide
 from app.db import SubscriberInput
 from app.tft_live_refresh import MEALS
 
 MAX_HORIZON_DAYS = 120
-VENUES_PATH = Path(__file__).parent / "venues.json"
-
-
-def load_known_venues(path: Path = VENUES_PATH) -> set[str]:
-    """Lowercased set of acceptable venue names; empty if the bundle is missing."""
-    try:
-        names = json.loads(Path(path).read_text())
-    except (OSError, ValueError):
-        return set()
-    return {str(name).strip().lower() for name in names if str(name).strip()}
-
-
-_KNOWN_VENUES = load_known_venues()
 
 
 class SubscribeRequest(BaseModel):
@@ -68,10 +54,10 @@ class SubscribeRequest(BaseModel):
             raise ValueError("pick at least one venue")
         if any(item.lower() == "any" for item in cleaned):
             return ["any"]
-        if _KNOWN_VENUES:
-            unknown = [item for item in cleaned if item.lower() not in _KNOWN_VENUES]
-            if unknown:
-                raise ValueError(f"unknown venue(s): {', '.join(unknown)}")
+        known = {name.lower() for name in tft_guide.venue_names()}
+        unknown = [item for item in cleaned if item.lower() not in known]
+        if unknown:
+            raise ValueError(f"unknown venue(s): {', '.join(unknown)}")
         return list(dict.fromkeys(cleaned))
 
     @field_validator("dates")

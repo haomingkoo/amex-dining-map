@@ -72,6 +72,11 @@ def load_catalog() -> dict:
     return catalog_in_use().payload
 
 
+def venue_names() -> list[str]:
+    """Names the site offers in the alert form; follows the adopted catalogue."""
+    return sorted(venue["name"] for venue in load_catalog()["venues"])
+
+
 def use_baked_catalog() -> None:
     """Drop any adopted copy so the next read reloads the baked file."""
 

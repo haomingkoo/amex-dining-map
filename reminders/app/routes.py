@@ -14,12 +14,12 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from pydantic import ValidationError
 
-from app import db
+from app import db, tft_guide
 from app.availability import open_tables_exist
 from app.config import Settings, load_settings
 from app.emailer import EmailDeliveryError, confirm_email_html, send_email
 from app.observability import log_event
-from app.schemas import VENUES_PATH, SubscribeRequest
+from app.schemas import SubscribeRequest
 from app.tft_live_refresh import MEALS
 
 router = APIRouter()
@@ -249,10 +249,7 @@ def unsubscribe(
 
 
 def _venue_names() -> list[str]:
-    try:
-        return sorted(json.loads(VENUES_PATH.read_text()))
-    except (OSError, ValueError):
-        return []
+    return tft_guide.venue_names()
 
 
 _MANAGE_TEMPLATE = """<!doctype html>
