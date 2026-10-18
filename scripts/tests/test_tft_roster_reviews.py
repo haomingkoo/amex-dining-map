@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import apply_tft_roster_review, scrape_table_for_two, source_change_alert, tft_roster_reviews
+from scripts import apply_tft_roster_review, source_change_alert, tft_roster_reviews
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -118,8 +118,6 @@ def changed_manifest() -> dict:
 def reviewed_data() -> dict:
     data = copy.deepcopy(DATA)
     data["source_images"]["participating_merchants_sha256"] = "e" * 64
-    # Roster tests: the voucher image is not under review, whatever cycle is current.
-    data["source_images"]["voucher_cycles_sha256"] = scrape_table_for_two.KNOWN_CYCLES_SHA256
     data["participating_merchants_image_url"] = (
         "https://www.americanexpress.com/content/dam/reviewed-next.png"
     )

@@ -87,7 +87,6 @@ META_FIELD_LABELS = {
     "booking_project_source.added_vs_reviewed_roster": "Booking-project candidates added",
     "booking_project_source.missing_vs_reviewed_roster": "Reviewed venues missing from booking project",
     "booking_project_source.identity_mismatch_count": "Booking-project identity conflicts",
-    "source_images.voucher_cycles_sha256": "Voucher cycles image hash",
     "source_documents.terms_sha256": "Table for Two T&C PDF hash",
     "source_documents.faq_sha256": "Table for Two FAQ PDF hash",
     "document_reviews.tft-terms.status": "T&C review status",

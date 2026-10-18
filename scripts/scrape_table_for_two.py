@@ -46,7 +46,6 @@ OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card
 TERMS_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf"
 FAQ_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TableforTwo_FAQ.pdf"
 KNOWN_PARTICIPATING_SHA256 = "5a2c3eb79ad86ee737b8aa125bcdfffa3195954ccfcfd4ced5d86aa649398ec5"
-KNOWN_CYCLES_SHA256 = "327019c9016978dede3a58911f6f7b7cca338f0f47390bf19468428607f11bc8"
 KNOWN_TERMS_SHA256 = "7ba815581e6c0cb0c50775e6db642f81b040a65ff5568a70f6aeb4ed4cc0a7ec"
 KNOWN_FAQ_SHA256 = "cbd8a1604459abd632a8e409ee603f9652a5907e60bb72a517c919cbb4aaeb93"
 DININGCITY_API_BASE = "https://api.diningcity.asia/public"
@@ -1212,11 +1211,9 @@ def build_payload(
     }
     html = fetch_bytes(OFFICIAL_URL).decode("utf-8", errors="replace")
     participating_url = extract_image_url(html, "Participating Merchants")
-    cycles_url = extract_image_url(html, "Voucher Cycles 2026")
     cafe_buffet_url = extract_image_url(html, "TFT Participating Cafe and Buffet")
     participating_hash = hashlib.sha256(fetch_bytes(participating_url)).hexdigest()
     cafe_buffet_hash = hashlib.sha256(fetch_bytes(cafe_buffet_url)).hexdigest()
-    cycles_hash = hashlib.sha256(fetch_bytes(cycles_url)).hexdigest()
     terms_bytes = fetch_bytes(TERMS_URL)
     faq_bytes = fetch_bytes(FAQ_URL)
     terms_hash, _ = tft_document_reviews.retain_observed_pdf(
@@ -1241,7 +1238,6 @@ def build_payload(
     )
     manual_review_required = (
         roster_source["review_required"]
-        or cycles_hash != KNOWN_CYCLES_SHA256
         or any(state["review_required"] for state in document_reviews.values())
     )
     booking_project_source = fetch_booking_project_membership(
@@ -1283,11 +1279,9 @@ def build_payload(
         "faq_url": FAQ_URL,
         "participating_merchants_image_url": participating_url,
         "cafe_buffet_merchants_image_url": cafe_buffet_url,
-        "voucher_cycles_image_url": cycles_url,
         "source_images": {
             "participating_merchants_sha256": participating_hash,
             "cafe_buffet_merchants_sha256": cafe_buffet_hash,
-            "voucher_cycles_sha256": cycles_hash,
         },
         "source_documents": observed_documents,
         "document_reviews": document_reviews,
