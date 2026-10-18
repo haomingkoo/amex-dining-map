@@ -141,6 +141,9 @@ MONTHS = {
 
 GOOGLE_PLACE_ALIGNMENT_KM = 1.5
 GOOGLE_NAME_ONLY_ALIGNMENT_KM = 25.0
+NAME_COLUMN_END = 16
+BLACKOUT_NOTE_PREFIXES = ("subject to", "rooms are subject to")
+SINGAPORE_BREAKFAST_PHRASE = "inclusive of breakfast"
 
 
 @dataclass
@@ -317,23 +320,31 @@ def split_property_blocks(text: str) -> list[list[str]]:
     table_lines = lines[start_index:end_index]
     blocks: list[list[str]] = []
     current: list[str] = []
+
+    def flush() -> None:
+        # A block with nothing in the name column continues the previous property.
+        if blocks and not any(start < NAME_COLUMN_END for start, _ in line_segments(current[0])):
+            blocks[-1].extend(current)
+        else:
+            blocks.append(current)
+
     for line in table_lines:
         if re.fullmatch(r"\s*\d+\s*", line):
             continue
         if not line.strip():
             if current:
-                blocks.append(current)
+                flush()
                 current = []
             continue
         # When a new hotel header line appears inside an existing block (no blank separator),
         # flush the current block and start a new one.
         if current and is_hotel_header_line(line):
-            blocks.append(current)
+            flush()
             current = []
         current.append(line.rstrip())
 
     if current:
-        blocks.append(current)
+        flush()
     return blocks
 
 
@@ -489,7 +500,7 @@ def collapse_blackout_items(lines: list[str]) -> list[str]:
         line = clean_whitespace(raw_line)
         if not line:
             continue
-        if line.startswith("•") or not items:
+        if line.startswith("•") or line.lower().startswith(BLACKOUT_NOTE_PREFIXES) or not items:
             items.append(line)
         else:
             items[-1] = clean_whitespace(f"{items[-1]} {line}")
@@ -557,6 +568,15 @@ def parse_block(block_lines: list[str]) -> ParsedBlock:
         reservation_email=reservation_email,
         reservation_mode=reservation_mode,
     )
+
+
+def breakfast_fields(country: str | None, eligible_room_type: str) -> tuple[bool | None, str]:
+    # The PDF says overseas properties include breakfast; Singapore rows state it per room.
+    if country == "Singapore":
+        if SINGAPORE_BREAKFAST_PHRASE in eligible_room_type.lower():
+            return True, "Breakfast for two is included with the eligible room."
+        return False, "Room only. Breakfast is not included for Singapore properties."
+    return (True if country else None), "Breakfast for 2 is available at overseas properties only."
 
 
 def infer_country(address: str, name: str) -> str | None:
@@ -1092,12 +1112,10 @@ def geocode_record(record: dict, cache: dict) -> None:
             or record.get("city")
         )
         record["map_pin_note"] = "Pin is approximate and based on public geocoding. Confirm the official property address before booking or arrival."
-        if record.get("breakfast_included") is None and record.get("country"):
-            record["breakfast_included"] = record["country"] != "Singapore"
-        if record.get("country") == "Singapore":
-            record["breakfast_note"] = "Room only. Breakfast is not included for Singapore properties."
-        elif record.get("country"):
-            record["breakfast_note"] = "Breakfast for 2 is available at overseas properties only."
+        if record.get("country"):
+            record["breakfast_included"], record["breakfast_note"] = breakfast_fields(
+                record["country"], record["eligible_room_type"]
+            )
         break
 
     if record.get("coordinate_confidence") in {"manual_verified", "poi_matched", "poi_address_matched"}:
@@ -1326,11 +1344,7 @@ def build_records(pdf_bytes: bytes, resolved_url: str, fetched_at: str, page_cou
 
         exact_blackouts, blackout_notes = blackout_structures(parsed.blackout_items)
         country = infer_country(parsed.address, parsed.name)
-        breakfast_included = country != "Singapore" if country else None
-        if country == "Singapore":
-            breakfast_note = "Room only. Breakfast is not included for Singapore properties."
-        else:
-            breakfast_note = "Breakfast for 2 is available at overseas properties only."
+        breakfast_included, breakfast_note = breakfast_fields(country, parsed.eligible_room_type)
 
         availability_mode = "listed_blackout_dates" if exact_blackouts else "subject_to_availability"
         if parsed.blackout_items and all(item.lower().startswith("subject to availability") for item in parsed.blackout_items):
