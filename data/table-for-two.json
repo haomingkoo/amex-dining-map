@@ -98641,51 +98641,11 @@
         "detected_at": "2026-10-17T23:44:04Z",
         "first_detected_at": "2026-10-17T23:44:04Z",
         "candidate_id": "aca1a91dd0c83c9e8a52b33a16c6b8bf7e28510aeed229101baf86e0a9533f5a"
-      },
-      {
-        "status": "review_required",
-        "kind": "ambiguous_exact_match",
-        "card": "platinum",
-        "filename": "VUE-Menu_Platinum.pdf",
-        "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/VUE-Menu_Platinum.pdf",
-        "aem_created": "Thu Apr 30 2026 00:37:23 GMT-0700",
-        "aem_uuid": "93b2e503-0f46-40d9-b3fa-2858f4173a7f",
-        "classification": "current_venue_duplicate",
-        "candidate_venue_id": "tft-vue",
-        "candidate_venue_ids": [
-          "tft-vue"
-        ],
-        "review_status": "review_required",
-        "detected_at": "2026-10-17T23:44:04Z",
-        "sha256": "af9a1807f718b52711a8dbf27388e5f3a0c5e4a1a108d432c21ca36112b1b868",
-        "bytes": 1060252,
-        "active_filename": "VUE-Menu_Platinium.pdf",
-        "active_sha256": "559b3b04c699f5d725a2dbd96aed19cad522c1c1318bdbe511bd6e054c1ee18f",
-        "previous": {
-          "status": "published",
-          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/VUE-Menu_Platinium.pdf",
-          "filename": "VUE-Menu_Platinium.pdf",
-          "card": "platinum",
-          "label": "Platinum",
-          "checked_at": "2026-10-17T23:44:04Z",
-          "first_seen_at": "2026-09-26T00:21:45Z",
-          "last_seen_at": "2026-10-17T23:44:04Z",
-          "sha256": "559b3b04c699f5d725a2dbd96aed19cad522c1c1318bdbe511bd6e054c1ee18f",
-          "bytes": 169039,
-          "aem_created": "Tue Jun 30 2026 02:39:26 GMT-0700",
-          "changed_at": "2026-09-27T15:03:07Z",
-          "review_manifest_sha256": "36bdd6648037f0de674c9906a85afc2fa2bcc77c287cf867e8a786b193bd520a",
-          "reviewed_at": "2026-09-27T15:03:07Z"
-        },
-        "roster_sha256": "fbb8279facf3c59a2c6db422c7ada6f2cd34a10fea713d1a46a512511514438e",
-        "listing_sha256": "be70d8b764511d41ecce8ce09c211fc87a3988a09fee57dac1fc4e730a66513e",
-        "first_detected_at": "2026-10-17T23:44:04Z",
-        "candidate_id": "3963143232d43efac754dfd3443e171f89a916a0a3cbebf47809e62598fe5ce3"
       }
     ],
-    "review_queue_count": 9,
-    "review_queue_sha256": "528497a11e0debc681087fcdf74d6f597e67109db680cd52b89fdfd8df0a1bc6",
-    "review_required": true,
+    "review_queue_count": 8,
+    "review_queue_sha256": "40a683593e7efce58e5d4aef462ef323a068720750845a71f225c79e57b3022e",
+    "review_required": false,
     "review_decisions": [
       {
         "candidate_id": "a55e035a98246946f5d75546f2eddc45b2ff898b07080f3996d06af140de5f83",
@@ -99243,6 +99203,103 @@
           "review_note": "Forage-Menu_Platinium.pdf changed at the same URL: new courses (Hokkaido scallop, king salmon, duck, white chocolate) replacing the caviar, chutoro, black cod and pork menu, with unchanged Table for Two terms. Approved as the active Platinum menu.",
           "entity_key": "record:tft-forage:menu:platinum"
         }
+      },
+      {
+        "candidate_id": "3963143232d43efac754dfd3443e171f89a916a0a3cbebf47809e62598fe5ce3",
+        "decision": "rejected",
+        "manifest_sha256": "02703b2ac9eed52ef8fde8ffd0bc6f8d5cc0b237f1f4a0632f16c62f074c43fc",
+        "reviewed_at": "2026-10-18T14:11:52Z",
+        "reviewed_by": "Claude, owner-authorized",
+        "review_note": "VUE-Menu_Platinum.pdf is the April 2026 VUE menu. Amex replaced it with VUE-Menu_Platinium.pdf (2026-06-30), which is approved and active; the old file is still hosted under the correct spelling.",
+        "candidate": {
+          "kind": "ambiguous_exact_match",
+          "venue_id": "tft-vue",
+          "card": "platinum",
+          "filename": "VUE-Menu_Platinum.pdf",
+          "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/VUE-Menu_Platinum.pdf",
+          "asset_sha256": "af9a1807f718b52711a8dbf27388e5f3a0c5e4a1a108d432c21ca36112b1b868",
+          "bytes": 1060252,
+          "aem_uuid": "93b2e503-0f46-40d9-b3fa-2858f4173a7f",
+          "roster_sha256": "fbb8279facf3c59a2c6db422c7ada6f2cd34a10fea713d1a46a512511514438e",
+          "listing_sha256": "be70d8b764511d41ecce8ce09c211fc87a3988a09fee57dac1fc4e730a66513e",
+          "previous": {
+            "status": "published",
+            "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/VUE-Menu_Platinium.pdf",
+            "filename": "VUE-Menu_Platinium.pdf",
+            "card": "platinum",
+            "label": "Platinum",
+            "checked_at": "2026-10-17T23:44:04Z",
+            "first_seen_at": "2026-09-26T00:21:45Z",
+            "last_seen_at": "2026-10-17T23:44:04Z",
+            "sha256": "559b3b04c699f5d725a2dbd96aed19cad522c1c1318bdbe511bd6e054c1ee18f",
+            "bytes": 169039,
+            "aem_created": "Tue Jun 30 2026 02:39:26 GMT-0700",
+            "changed_at": "2026-09-27T15:03:07Z",
+            "review_manifest_sha256": "36bdd6648037f0de674c9906a85afc2fa2bcc77c287cf867e8a786b193bd520a",
+            "reviewed_at": "2026-09-27T15:03:07Z"
+          }
+        },
+        "candidate_item": {
+          "status": "review_required",
+          "kind": "ambiguous_exact_match",
+          "card": "platinum",
+          "filename": "VUE-Menu_Platinum.pdf",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/VUE-Menu_Platinum.pdf",
+          "aem_created": "Thu Apr 30 2026 00:37:23 GMT-0700",
+          "aem_uuid": "93b2e503-0f46-40d9-b3fa-2858f4173a7f",
+          "classification": "current_venue_duplicate",
+          "candidate_venue_id": "tft-vue",
+          "candidate_venue_ids": [
+            "tft-vue"
+          ],
+          "review_status": "review_required",
+          "detected_at": "2026-10-17T23:44:04Z",
+          "sha256": "af9a1807f718b52711a8dbf27388e5f3a0c5e4a1a108d432c21ca36112b1b868",
+          "bytes": 1060252,
+          "active_filename": "VUE-Menu_Platinium.pdf",
+          "active_sha256": "559b3b04c699f5d725a2dbd96aed19cad522c1c1318bdbe511bd6e054c1ee18f",
+          "previous": {
+            "status": "published",
+            "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/VUE-Menu_Platinium.pdf",
+            "filename": "VUE-Menu_Platinium.pdf",
+            "card": "platinum",
+            "label": "Platinum",
+            "checked_at": "2026-10-17T23:44:04Z",
+            "first_seen_at": "2026-09-26T00:21:45Z",
+            "last_seen_at": "2026-10-17T23:44:04Z",
+            "sha256": "559b3b04c699f5d725a2dbd96aed19cad522c1c1318bdbe511bd6e054c1ee18f",
+            "bytes": 169039,
+            "aem_created": "Tue Jun 30 2026 02:39:26 GMT-0700",
+            "changed_at": "2026-09-27T15:03:07Z",
+            "review_manifest_sha256": "36bdd6648037f0de674c9906a85afc2fa2bcc77c287cf867e8a786b193bd520a",
+            "reviewed_at": "2026-09-27T15:03:07Z"
+          },
+          "roster_sha256": "fbb8279facf3c59a2c6db422c7ada6f2cd34a10fea713d1a46a512511514438e",
+          "listing_sha256": "be70d8b764511d41ecce8ce09c211fc87a3988a09fee57dac1fc4e730a66513e",
+          "first_detected_at": "2026-10-17T23:44:04Z",
+          "candidate_id": "3963143232d43efac754dfd3443e171f89a916a0a3cbebf47809e62598fe5ce3"
+        },
+        "manifest": {
+          "schema_version": 1,
+          "program_id": "table-for-two",
+          "review_queue_sha256": "528497a11e0debc681087fcdf74d6f597e67109db680cd52b89fdfd8df0a1bc6",
+          "candidate_id": "3963143232d43efac754dfd3443e171f89a916a0a3cbebf47809e62598fe5ce3",
+          "decision": "rejected",
+          "kind": "ambiguous_exact_match",
+          "venue_id": "tft-vue",
+          "card": "platinum",
+          "filename": "VUE-Menu_Platinum.pdf",
+          "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/VUE-Menu_Platinum.pdf",
+          "asset_sha256": "af9a1807f718b52711a8dbf27388e5f3a0c5e4a1a108d432c21ca36112b1b868",
+          "bytes": 1060252,
+          "aem_uuid": "93b2e503-0f46-40d9-b3fa-2858f4173a7f",
+          "roster_sha256": "fbb8279facf3c59a2c6db422c7ada6f2cd34a10fea713d1a46a512511514438e",
+          "listing_sha256": "be70d8b764511d41ecce8ce09c211fc87a3988a09fee57dac1fc4e730a66513e",
+          "reviewed_at": "2026-10-18T14:11:52Z",
+          "reviewed_by": "Claude, owner-authorized",
+          "review_note": "VUE-Menu_Platinum.pdf is the April 2026 VUE menu. Amex replaced it with VUE-Menu_Platinium.pdf (2026-06-30), which is approved and active; the old file is still hosted under the correct spelling."
+        },
+        "owner_event": null
       }
     ]
   }
