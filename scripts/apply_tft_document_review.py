@@ -46,15 +46,9 @@ def _atomic_write_bytes(path: Path, payload: bytes) -> None:
 
 
 def _recompute_manual_review(source: dict[str, Any]) -> bool:
-    from scripts import scrape_table_for_two
-
     roster_review = bool((source.get("roster_source") or {}).get("review_required"))
     document_review = tft_document_reviews.source_review_required(source)
-    cycle_review = (
-        (source.get("source_images") or {}).get("voucher_cycles_sha256")
-        != scrape_table_for_two.KNOWN_CYCLES_SHA256
-    )
-    return roster_review or document_review or cycle_review
+    return roster_review or document_review
 
 
 def _catalog_projection(

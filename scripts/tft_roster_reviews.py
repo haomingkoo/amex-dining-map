@@ -359,12 +359,6 @@ def apply_manifest(
     except ModuleNotFoundError:
         import scrape_table_for_two as scraper
     other_source_review = any(
-        (data.get("source_images") or {}).get(key) != expected
-        for key, expected in {
-            "voucher_cycles_sha256": scraper.KNOWN_CYCLES_SHA256,
-        }.items()
-    )
-    other_source_review = other_source_review or any(
         (data.get("source_documents") or {}).get(key) != expected
         for key, expected in {
             "terms_sha256": scraper.KNOWN_TERMS_SHA256,

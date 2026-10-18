@@ -73,7 +73,6 @@ def source() -> dict:
         "terms_url": SOURCE_URL,
         "faq_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/TableforTwo_FAQ.pdf",
         "source_documents": {"terms_sha256": AFTER_SHA, "faq_sha256": "f" * 64},
-        "source_images": {"voucher_cycles_sha256": "a" * 64},
         "roster_source": {"review_required": False},
         "document_reviews": {
             DOCUMENT_ID: {
