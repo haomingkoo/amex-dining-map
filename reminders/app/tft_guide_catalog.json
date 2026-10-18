@@ -12,8 +12,8 @@
   "release_source": {
     "source": "data/table-for-two-release-history.json",
     "project": "AMEXPlatSG",
-    "updated_at": "2026-10-18T09:38:00+00:00",
-    "observation_count": 4217
+    "updated_at": "2026-10-18T13:34:53+00:00",
+    "observation_count": 4274
   },
   "slot_source": {
     "url": "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json",
@@ -1048,14 +1048,14 @@
         },
         {
           "meal": "Dinner",
-          "observation_count": 53,
+          "observation_count": 54,
           "median_lead_days": 61.0,
           "lead_days_min": 4,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
           "typical_time_observation_share": 0.11,
           "confidence": "high",
-          "latest_observation_at": "2026-10-17T13:13:32Z"
+          "latest_observation_at": "2026-10-18T13:34:53Z"
         },
         {
           "meal": "Lunch",
@@ -1731,7 +1731,30 @@
           "checked_at": "2026-10-17T23:44:04Z"
         }
       },
-      "release_patterns": [],
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 24,
+          "median_lead_days": 29.5,
+          "lead_days_min": 4,
+          "lead_days_max": 50,
+          "typical_first_seen_sgt": "21:30",
+          "typical_time_observation_share": 1.0,
+          "confidence": "high",
+          "latest_observation_at": "2026-10-18T13:34:53Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 32,
+          "median_lead_days": 27.5,
+          "lead_days_min": 4,
+          "lead_days_max": 50,
+          "typical_first_seen_sgt": "21:30",
+          "typical_time_observation_share": 1.0,
+          "confidence": "high",
+          "latest_observation_at": "2026-10-18T13:34:53Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-zui-yu-xuan"
     }
   ]

@@ -1,7 +1,134 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-18T14:10:00Z",
+  "updated_at": "2026-10-18T13:36:17Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-10-18T13:36:17Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "28/29 (96.6%), 1 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "28/30 (93.3%), 2 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "28/29 (96.6%), 1 unavailable",
+          "after": "28/30 (93.3%), 2 unavailable"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "71b133a447e4d841e9e7",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "dbc73b9f8941af96e9ff"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_review_cleared",
+      "subject": "Love Dining",
+      "detected_at": "2026-10-18T13:36:17Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 2
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "review_required",
+          "after": "current"
+        },
+        {
+          "field": "Review",
+          "before": "required",
+          "after": "clear"
+        },
+        {
+          "field": "Review items",
+          "before": 2,
+          "after": 0
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "494c890d5cec9722be8e",
+      "stream_id": "325506f85300a0ec65a3",
+      "occurrence": 2,
+      "id": "cde4e0dae1e845e11a97"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_review_cleared",
+      "subject": "Table for Two roster",
+      "detected_at": "2026-10-18T13:36:17Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 2
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "review_required",
+          "after": "current"
+        },
+        {
+          "field": "Review",
+          "before": "required",
+          "after": "clear"
+        },
+        {
+          "field": "Review items",
+          "before": 2,
+          "after": 0
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "93012796121a4e0d9419",
+      "stream_id": "66129efc1226a46f5069",
+      "occurrence": 1,
+      "id": "39d71358c5880f2ecc16"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -443,48 +570,6 @@
       "id": "9cfbfe5db96114211e80",
       "reviewed_at": "2026-10-18T14:10:00Z",
       "review_note": "Checked against the official pages on 2026-10-18. The hotels page says Mosella is not eligible from 1 Oct 2026 and the October hotel T&C drops Pan Pacific Orchard. L'Angélus shows its 24 Oct 2026 private-event closure on the page and in the T&C, and Sen of Japan no longer carries its July reopening note."
-    },
-    {
-      "program": "Love Dining",
-      "program_id": "love-dining",
-      "route": "#/love-dining",
-      "kind": "source_updated",
-      "subject": "Love Dining source",
-      "detected_at": "2026-10-16T23:55:47Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "a6c2f7d8e4a7",
-          "Restaurant T&C PDF hash": "2c24a1636347"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "aa13699762e3",
-          "Restaurant T&C PDF hash": "49f4de7d1980"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "a6c2f7d8e4a7",
-          "after": "aa13699762e3"
-        },
-        {
-          "field": "Restaurant T&C PDF hash",
-          "before": "2c24a1636347",
-          "after": "49f4de7d1980"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
-      "transition_id": "e84cc285cf3a411e0d24",
-      "stream_id": "915d672147e8dd8f713f",
-      "occurrence": 1,
-      "id": "738db6186ab2ba2bcb27",
-      "reviewed_at": "2026-10-18T14:00:00Z",
-      "review_note": "Roster changes were superseded by reviewed correction events. Current T&C versions are approved as baselines only; prior PDF content was not retained, so no retroactive clause-level change is claimed."
     },
     {
       "program": "Global Dining",
@@ -3846,48 +3931,6 @@
       "id": "c7ffe0dcc5f8c57e9150",
       "reviewed_at": "2026-10-18T14:10:00Z",
       "review_note": "Checked against the official pages on 2026-10-18. The hotels page says Mosella is not eligible from 1 Oct 2026 and the October hotel T&C drops Pan Pacific Orchard. L'Angélus shows its 24 Oct 2026 private-event closure on the page and in the T&C, and Sen of Japan no longer carries its July reopening note."
-    },
-    {
-      "program": "Love Dining",
-      "program_id": "love-dining",
-      "route": "#/love-dining",
-      "kind": "source_updated",
-      "subject": "Love Dining source",
-      "detected_at": "2026-10-10T01:18:23Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "94419f071c5b",
-          "Restaurant T&C PDF hash": "96bcb8d099fc"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "a6c2f7d8e4a7",
-          "Restaurant T&C PDF hash": "2c24a1636347"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "94419f071c5b",
-          "after": "a6c2f7d8e4a7"
-        },
-        {
-          "field": "Restaurant T&C PDF hash",
-          "before": "96bcb8d099fc",
-          "after": "2c24a1636347"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
-      "transition_id": "a0a9bd6099c50e729407",
-      "stream_id": "915d672147e8dd8f713f",
-      "occurrence": 1,
-      "id": "bb6a87aa33ccf48ccf58",
-      "reviewed_at": "2026-10-18T14:10:00Z",
-      "review_note": "Superseded by the reviewed record events."
     },
     {
       "program": "Japan Dining",
@@ -7557,62 +7600,6 @@
       "id": "c0a1654c20fd98c6fa2f",
       "reviewed_at": "2026-10-18T14:10:00Z",
       "review_note": "Checked against the official pages on 2026-10-18. The hotels page says Mosella is not eligible from 1 Oct 2026 and the October hotel T&C drops Pan Pacific Orchard. L'Angélus shows its 24 Oct 2026 private-event closure on the page and in the T&C, and Sen of Japan no longer carries its July reopening note."
-    },
-    {
-      "program": "Love Dining",
-      "program_id": "love-dining",
-      "route": "#/love-dining",
-      "kind": "source_updated",
-      "subject": "Love Dining source",
-      "detected_at": "2026-10-02T01:06:35Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Record count": 81,
-          "Hotel outlet count": 51,
-          "Official records SHA-256": "cb38eb4460a3",
-          "Hotel T&C PDF hash": "30a6a4fa0684"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Record count": 80,
-          "Hotel outlet count": 50,
-          "Official records SHA-256": "94419f071c5b",
-          "Hotel T&C PDF hash": "5b9a7e525dae"
-        }
-      },
-      "changes": [
-        {
-          "field": "Record count",
-          "before": 81,
-          "after": 80
-        },
-        {
-          "field": "Hotel outlet count",
-          "before": 51,
-          "after": 50
-        },
-        {
-          "field": "Official records SHA-256",
-          "before": "cb38eb4460a3",
-          "after": "94419f071c5b"
-        },
-        {
-          "field": "Hotel T&C PDF hash",
-          "before": "30a6a4fa0684",
-          "after": "5b9a7e525dae"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
-      "transition_id": "e94f1e64d26636b508c7",
-      "stream_id": "915d672147e8dd8f713f",
-      "occurrence": 1,
-      "id": "afa8b46a40122ee8c5db",
-      "reviewed_at": "2026-10-18T14:00:00Z",
-      "review_note": "Roster changes were superseded by reviewed correction events. Current T&C versions are approved as baselines only; prior PDF content was not retained, so no retroactive clause-level change is claimed."
     },
     {
       "program": "Plat Stay",
@@ -31937,12 +31924,12 @@
         }
       },
       "325506f85300a0ec65a3": {
-        "latest_transition_id": "36eb17b495facd558088",
+        "latest_transition_id": "494c890d5cec9722be8e",
         "occurrences": {
           "1721cde76de73061427b": 1,
           "36eb17b495facd558088": 1,
           "3d93a8994faef3d34eef": 1,
-          "494c890d5cec9722be8e": 1,
+          "494c890d5cec9722be8e": 2,
           "6d25cfe12d49db98b041": 1,
           "cea2d37ee2da89ff16c6": 2,
           "f07cb3104e4317089870": 1,
@@ -32147,7 +32134,7 @@
         }
       },
       "66129efc1226a46f5069": {
-        "latest_transition_id": "31a6503c8396700d6e51",
+        "latest_transition_id": "93012796121a4e0d9419",
         "occurrences": {
           "083081096cbb3c8c1c76": 1,
           "0b5afd558ebf89b84ac5": 1,
@@ -32159,6 +32146,7 @@
           "46ab8b1ef9cfe57b0575": 1,
           "48c6897c6752df3fd28d": 1,
           "65a1e1a667c0fd353b6c": 2,
+          "93012796121a4e0d9419": 1,
           "965aa906dc470efbc7bb": 1,
           "ade51a08e8177d88ab76": 1,
           "c78e0d1715c927df1196": 2
@@ -32921,7 +32909,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "98997d254b5dfdda4b93",
+        "latest_transition_id": "71b133a447e4d841e9e7",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
@@ -32953,6 +32941,7 @@
           "69ee8827e7535e6e03ce": 7,
           "6b0a8f0fbbc4c84ab912": 12,
           "6ba961eb0afc692e2138": 12,
+          "71b133a447e4d841e9e7": 1,
           "73f1934e9c3fa739f5ff": 1,
           "7534d4dfbcb2bb5568de": 2,
           "76601cc403e616114c7f": 11,
