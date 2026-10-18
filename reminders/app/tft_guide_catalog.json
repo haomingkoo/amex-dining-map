@@ -12,8 +12,8 @@
   "release_source": {
     "source": "data/table-for-two-release-history.json",
     "project": "AMEXPlatSG",
-    "updated_at": "2026-10-18T05:10:48+00:00",
-    "observation_count": 4177
+    "updated_at": "2026-10-18T09:38:00+00:00",
+    "observation_count": 4217
   },
   "slot_source": {
     "url": "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json",
@@ -1168,6 +1168,17 @@
           "typical_time_observation_share": 0.94,
           "confidence": "high",
           "latest_observation_at": "2026-09-07T19:20:05Z"
+        },
+        {
+          "meal": "Dinner",
+          "observation_count": 40,
+          "median_lead_days": 30.5,
+          "lead_days_min": 3,
+          "lead_days_max": 50,
+          "typical_first_seen_sgt": "17:30",
+          "typical_time_observation_share": 1.0,
+          "confidence": "high",
+          "latest_observation_at": "2026-10-18T09:38:00Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-park90"
