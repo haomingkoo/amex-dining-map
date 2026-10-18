@@ -3,7 +3,7 @@
   "source": "data/table-for-two.json",
   "program": "American Express Table for Two by Platinum",
   "official_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
-  "roster_checked_at": "2026-10-17T23:42:19Z",
+  "roster_checked_at": "2026-10-18T13:22:33Z",
   "menu_source": {
     "checked_at": "2026-10-17T23:44:04Z",
     "review_required": true,
@@ -20,7 +20,7 @@
     "project": "AMEXPlatSG",
     "stale_after_minutes": 30
   },
-  "manual_review_required": true,
+  "manual_review_required": false,
   "documents": [
     {
       "id": "tft-terms",
@@ -1716,6 +1716,23 @@
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-xing-yue-xuan"
+    },
+    {
+      "id": "tft-zui-yu-xuan",
+      "name": "Zui Yu Xuan Teochew Cuisine",
+      "dining_city_id": "205196578",
+      "dining_city_name": "Zui Yu Xuan",
+      "category": "restaurant",
+      "address": "130/131 Amoy Street, Far East Square, Singapore 049959",
+      "aliases": [],
+      "menus": {
+        "default": {
+          "status": "no_pdf_found",
+          "checked_at": "2026-10-17T23:44:04Z"
+        }
+      },
+      "release_patterns": [],
+      "explorer_route": "#/table-for-two?venue=tft-zui-yu-xuan"
     }
   ]
 }
