@@ -337,3 +337,15 @@ def test_api_security_headers_and_body_limit(client):
 
 def test_openapi_is_not_public(client):
     assert client.get("/openapi.json").status_code == 404
+
+
+def test_subscribe_accepts_a_venue_added_to_the_current_catalog(client):
+    response = client.post("/api/subscribe", json=_body(venues=["Park90"], sessions=["All-day Dining"]))
+
+    assert response.status_code == 200
+
+
+def test_subscribe_rejects_a_venue_not_in_the_catalog(client):
+    response = client.post("/api/subscribe", json=_body(venues=["Not A Real Venue"]))
+
+    assert response.status_code == 422
