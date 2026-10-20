@@ -1,7 +1,89 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-19T20:06:19Z",
+  "updated_at": "2026-10-20T00:12:06Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-10-20T00:12:06Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "3633febb608b"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "e0465126f434"
+        }
+      },
+      "changes": [
+        {
+          "field": "Official records SHA-256",
+          "before": "3633febb608b",
+          "after": "e0465126f434"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "af1745554b2845798fab",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "7a8e81e8683a1c1e0602"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "details_updated",
+      "subject": "Sushi Noge no Onikai / Yokohama",
+      "detected_at": "2026-10-20T00:12:06Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sushi Noge no Onikai",
+          "Country": "Japan",
+          "Region": "Yokohama/Kawasaki",
+          "City": "Yokohama",
+          "District": "Noge-machi",
+          "Address": "203, 2-79, Noge-machi, Naka-ku, Yokohama-shi, Kanagawa",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sushi Noge no Onikai",
+          "Country": "Japan",
+          "Region": "Yokohama/Kawasaki",
+          "City": "Yokohama",
+          "District": "Noge cho",
+          "Address": "203, 2-79, Noge-machi, Naka-ku, Yokohama-shi, Kanagawa",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "District",
+          "before": "Noge-machi",
+          "after": "Noge cho"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245561/",
+      "transition_id": "27b4c21320a5ca841338",
+      "stream_id": "87e94ba3308b28228912",
+      "occurrence": 1,
+      "id": "67cea45f8027845e18dc"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -32298,7 +32380,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "4b16a84d84aaa9a04d5e",
+        "latest_transition_id": "af1745554b2845798fab",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
           "13d4c2a8f5927f024200": 1,
@@ -32333,6 +32415,7 @@
           "a69f057f2f92477028c8": 1,
           "a7efbfcdb7e20f38fa23": 1,
           "a8d8ccc3568ee52a7f4f": 1,
+          "af1745554b2845798fab": 1,
           "af667c9a723df3e47a14": 1,
           "b9acef5ccde9cc17c509": 1,
           "be63932baeeb2ff4892b": 1,
@@ -33028,8 +33111,9 @@
         }
       },
       "87e94ba3308b28228912": {
-        "latest_transition_id": "c7018aa9fb960b24939f",
+        "latest_transition_id": "27b4c21320a5ca841338",
         "occurrences": {
+          "27b4c21320a5ca841338": 1,
           "c7018aa9fb960b24939f": 1
         }
       },
