@@ -83,3 +83,12 @@ Source: `data/love-dining.json`
 
 - **Removed (1)**
   - Mosella / Singapore
+
+<!-- source-change:0075129bbfa962cb681bf86a38992db52a4ab36bb11c1ac2591655684c4c2656 -->
+## 2026-10-21 00:10 UTC — Love Dining
+
+Source: `data/love-dining.json`
+
+- **Removed (2)**
+  - CHIFA! / Singapore
+  - Soi Social / Singapore
