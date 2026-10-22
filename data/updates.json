@@ -1,7 +1,192 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-22T22:38:44Z",
+  "updated_at": "2026-10-22T23:55:24Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-10-22T23:55:24Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "862/862 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "861/861 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "862/862 (100%), 0 unavailable",
+          "after": "861/861 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "da668e638e0d5b19646c",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "cdf907b9ed6650a955b8"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-10-22T23:55:24Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "775/862 (89.9%), 87 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "774/861 (89.9%), 87 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "775/862 (89.9%), 87 unavailable",
+          "after": "774/861 (89.9%), 87 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "fb4e3e5726a57f8c4730",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "c343d18990926f88bdd4"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-22T23:55:24Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3011/3018 (99.8%), 7 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3010/3017 (99.8%), 7 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3011/3018 (99.8%), 7 unavailable",
+          "after": "3010/3017 (99.8%), 7 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "5852ab5ce4e4d11561b4",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "b096b704ed011f070d02"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": "Sincere / Tokyo",
+      "detected_at": "2026-10-22T23:55:22Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sincere",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Sendagaya",
+          "Address": "B1, 3-7-13, Sendagaya, Shibuya-ku, Tokyo",
+          "Cuisine": [
+            "French"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/244250/",
+      "transition_id": "8ed070ccd2c33452f78a",
+      "stream_id": "24525695b479b19629eb",
+      "occurrence": 1,
+      "id": "5b32f5a1ca0e104be65b"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-10-22T23:55:22Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 862,
+          "Mapped count": 862,
+          "Official records SHA-256": "c77ad7c1b68f"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 861,
+          "Mapped count": 861,
+          "Official records SHA-256": "27b06619efbd"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 862,
+          "after": 861
+        },
+        {
+          "field": "Mapped count",
+          "before": 862,
+          "after": 861
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "c77ad7c1b68f",
+          "after": "27b06619efbd"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "9bddd9c2df6c7705f33d",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "0048f6fae87de5b63614"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -33338,7 +33523,7 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "60a7b0c988f7cd5a3e55",
+        "latest_transition_id": "fb4e3e5726a57f8c4730",
         "occurrences": {
           "0e86b64ab05f97a7ae46": 1,
           "1373702923712cbf4100": 1,
@@ -33364,6 +33549,7 @@
           "bf2d43448230e25274b0": 1,
           "c984a26a88d6eb9d7bd4": 1,
           "d2864138884f6006e429": 1,
+          "fb4e3e5726a57f8c4730": 1,
           "fb9f3c0184a38cbcca21": 1
         }
       },
@@ -33382,7 +33568,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "8ccb2ae7c2647d29744b",
+        "latest_transition_id": "9bddd9c2df6c7705f33d",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
           "13d4c2a8f5927f024200": 1,
@@ -33414,6 +33600,7 @@
           "910626fba4e9c94678da": 1,
           "935e84b29e318238bec4": 1,
           "969b1b0b77458669dc12": 1,
+          "9bddd9c2df6c7705f33d": 1,
           "a4d8fc4959b0de7deb1e": 1,
           "a69f057f2f92477028c8": 1,
           "a7efbfcdb7e20f38fa23": 1,
@@ -33578,6 +33765,12 @@
           "ee7b9aa769184442a35e": 1
         }
       },
+      "24525695b479b19629eb": {
+        "latest_transition_id": "8ed070ccd2c33452f78a",
+        "occurrences": {
+          "8ed070ccd2c33452f78a": 1
+        }
+      },
       "24d8dd9e97a131c5041b": {
         "latest_transition_id": "17a205ece5267fe41079",
         "occurrences": {
@@ -33597,7 +33790,7 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "023dbb9237dd583b8431",
+        "latest_transition_id": "da668e638e0d5b19646c",
         "occurrences": {
           "0024ea21d692def9b91b": 1,
           "023dbb9237dd583b8431": 1,
@@ -33618,6 +33811,7 @@
           "a5618f6621d57dfec25d": 1,
           "adcf8ebe1fc9c53286d8": 1,
           "d23603c301d18a4a78e1": 1,
+          "da668e638e0d5b19646c": 1,
           "ecee01e4770cfc076669": 1,
           "f93dfeef3a1deed1cca7": 1
         }
@@ -33986,7 +34180,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "8b5fcc11fdbb842d2a18",
+        "latest_transition_id": "5852ab5ce4e4d11561b4",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -34004,6 +34198,7 @@
           "4258225d5117a5d79957": 1,
           "4fc17cb16c0e54f69535": 1,
           "503524f40cdf0c1d8ac8": 1,
+          "5852ab5ce4e4d11561b4": 1,
           "597b5f61e2e836b13c25": 1,
           "5f2bd18453dc87008d58": 1,
           "5ff54655f7197bc32812": 1,

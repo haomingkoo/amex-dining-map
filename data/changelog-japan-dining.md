@@ -526,3 +526,11 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   -  SUGITA wagyu artisan / Tokyo
+
+<!-- source-change:0d6b912f18408a3f5a4e3fe1293ae7f666000d6e6b073e24f765177456ad1e02 -->
+## 2026-10-22 23:55 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Sincere / Tokyo
