@@ -518,3 +518,11 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - IL LUPINO PRIME / Tokyo
+
+<!-- source-change:588821059975d09e943cbe90f82c171acb156e9f1bc4b6d7e472a465283f8752 -->
+## 2026-10-22 00:00 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  -  SUGITA wagyu artisan / Tokyo

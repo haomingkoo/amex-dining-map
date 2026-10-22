@@ -1,7 +1,220 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-21T22:09:12Z",
+  "updated_at": "2026-10-22T00:00:08Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-10-22T00:00:08Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "861/861 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "862/862 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "861/861 (100%), 0 unavailable",
+          "after": "862/862 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "023dbb9237dd583b8431",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "f467dd6d113a30955b36"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_stale",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-10-22T00:00:08Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0,
+          "Coverage": "774/861 (89.9%), 87 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Source state": "mixed_age",
+          "Freshness": "mixed_age",
+          "Stale records": 1,
+          "Coverage": "775/862 (89.9%), 87 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "mixed_age"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "mixed_age"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 1
+        },
+        {
+          "field": "Coverage",
+          "before": "774/861 (89.9%), 87 unavailable",
+          "after": "775/862 (89.9%), 87 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "60a7b0c988f7cd5a3e55",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "b5d7fed4f8ffee663c61"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-22T00:00:08Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 15,
+          "Coverage": "3010/3017 (99.8%), 7 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 16,
+          "Coverage": "3011/3018 (99.8%), 7 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 15,
+          "after": 16
+        },
+        {
+          "field": "Coverage",
+          "before": "3010/3017 (99.8%), 7 unavailable",
+          "after": "3011/3018 (99.8%), 7 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "8b5fcc11fdbb842d2a18",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "7055e929c61b01c5c0bb"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": " SUGITA wagyu artisan / Tokyo",
+      "detected_at": "2026-10-22T00:00:06Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": " SUGITA wagyu artisan",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Shimbashi",
+          "Address": "1F, 5-13-10, Shimbashi, Minato-ku, Tokyo",
+          "Cuisine": [
+            "Steak, Teppanyaki"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/244284/",
+      "transition_id": "e00dccbbd9d2eca22274",
+      "stream_id": "497e50af3625b5d47bb3",
+      "occurrence": 1,
+      "id": "f21811fa0029c627a8b8"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-10-22T00:00:06Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 861,
+          "Mapped count": 861,
+          "Official records SHA-256": "c06f898db200"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 862,
+          "Mapped count": 862,
+          "Official records SHA-256": "c77ad7c1b68f"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 861,
+          "after": 862
+        },
+        {
+          "field": "Mapped count",
+          "before": 861,
+          "after": 862
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "c06f898db200",
+          "after": "c77ad7c1b68f"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "8ccb2ae7c2647d29744b",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "a51633f1f2455b189eae"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -32993,7 +33206,7 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "95c6d44cb209c0ce8da2",
+        "latest_transition_id": "60a7b0c988f7cd5a3e55",
         "occurrences": {
           "0e86b64ab05f97a7ae46": 1,
           "1373702923712cbf4100": 1,
@@ -33005,6 +33218,7 @@
           "4dd69dc8a805967651d8": 1,
           "50b49b2093693100bcfa": 1,
           "5df9a88a98f2b6ae09ad": 1,
+          "60a7b0c988f7cd5a3e55": 1,
           "6a8bbc10984738ed7d1d": 1,
           "7b13a4aa17c3a8b51663": 1,
           "81469570479e26998d74": 1,
@@ -33036,7 +33250,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "fd25b4504314f899459a",
+        "latest_transition_id": "8ccb2ae7c2647d29744b",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
           "13d4c2a8f5927f024200": 1,
@@ -33063,6 +33277,7 @@
           "7a077e08d6622c1d2181": 1,
           "81d9cbc1f34569e1cf16": 1,
           "827885cc967f7e007f12": 1,
+          "8ccb2ae7c2647d29744b": 1,
           "8edeee16126633a3ea28": 1,
           "910626fba4e9c94678da": 1,
           "935e84b29e318238bec4": 1,
@@ -33250,9 +33465,10 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "2895413af2cfdf788408",
+        "latest_transition_id": "023dbb9237dd583b8431",
         "occurrences": {
           "0024ea21d692def9b91b": 1,
+          "023dbb9237dd583b8431": 1,
           "09984113ccd7320c1c13": 1,
           "183b5921d88cdc2b1048": 1,
           "2895413af2cfdf788408": 1,
@@ -33409,6 +33625,12 @@
         "latest_transition_id": "e775464414be7c80ceb2",
         "occurrences": {
           "e775464414be7c80ceb2": 1
+        }
+      },
+      "497e50af3625b5d47bb3": {
+        "latest_transition_id": "e00dccbbd9d2eca22274",
+        "occurrences": {
+          "e00dccbbd9d2eca22274": 1
         }
       },
       "4a59f3fc16b9b302af4f": {
@@ -33632,7 +33854,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "973b166da288b05c66af",
+        "latest_transition_id": "8b5fcc11fdbb842d2a18",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -33662,6 +33884,7 @@
           "7d29900cac256e260858": 1,
           "7fd508a38f1b1c135b6a": 1,
           "82f4e4a87ef4e3e3127d": 1,
+          "8b5fcc11fdbb842d2a18": 1,
           "932d45bbb211ea91be6c": 1,
           "94325f8b95b5af31f14c": 1,
           "973b166da288b05c66af": 1,
