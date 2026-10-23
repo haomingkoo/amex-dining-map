@@ -1,7 +1,54 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-23T11:06:23Z",
+  "updated_at": "2026-10-23T15:11:59Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_stale",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-10-23T15:11:59Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "after": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 30
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 30
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public",
+      "transition_id": "454aaa1448de69137bdf",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 2,
+      "id": "4283bc4cb31a8a433082"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -35192,7 +35239,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "04d5cfacf701422a287e",
+        "latest_transition_id": "454aaa1448de69137bdf",
         "occurrences": {
           "02538e2bc5983d462994": 1,
           "0486ed88fd4f242b58f7": 1,
@@ -35213,7 +35260,7 @@
           "3239caa8063fc29c89d0": 1,
           "3cb3af30e4ddbef963fa": 1,
           "406de8f53c2bcdade09a": 1,
-          "454aaa1448de69137bdf": 1,
+          "454aaa1448de69137bdf": 2,
           "5104b3df2d979c9afc52": 4,
           "51788b6da8334881a570": 1,
           "569eb360db0f74267e06": 2,
