@@ -10,7 +10,6 @@ on:
 
 permissions:
   contents: write
-  issues: write
 
 concurrency:
   group: table-for-two-availability-refresh
@@ -48,35 +47,19 @@ jobs:
             echo "Alert secrets are not fully configured; skipping email run."
           fi
 
-      - name: Refresh Table for Two availability
-        id: source_refresh
+      # Railway owns live availability; the daily "Refresh Table for Two" keeps the committed fallback.
+      - name: Read live Table for Two availability
+        id: live_availability
         continue-on-error: true
-        run: python3 scripts/scrape_table_for_two.py --availability-only
-
-      - name: Build booking-project membership alert
-        id: membership_alert
-        if: always()
-        continue-on-error: true
-        run: |
-          python3 scripts/source_change_alert.py \
-            --program "Table for Two" \
-            --meta data/table-for-two.json \
-            --data data/table-for-two.json \
-            --output /tmp/table-for-two-membership-alert.md \
-            --changelog data/changelog-table-for-two.md \
-            --updates data/updates.json
-
-      - name: Build bounded Table for Two slot snapshot
-        id: slot_snapshot
-        if: always()
-        continue-on-error: true
-        run: python3 scripts/build_tft_slot_snapshot.py
+        env:
+          REMINDERS_API_BASE: ${{ secrets.REMINDERS_API_BASE }}
+        run: python3 scripts/tft_live_availability.py --output /tmp/table-for-two-live.json
 
       - name: Track first-seen release patterns
         id: release_patterns
-        if: always()
+        if: always() && steps.live_availability.outcome == 'success'
         continue-on-error: true
-        run: python3 scripts/track_table_for_two_releases.py
+        run: python3 scripts/track_table_for_two_releases.py --data /tmp/table-for-two-live.json
 
       - name: Rebuild Telegram release catalogue
         id: guide_catalogue
@@ -86,7 +69,7 @@ jobs:
 
       - name: Send matching alert emails
         id: alerts
-        if: always() && steps.config.outputs.enabled == 'true' && steps.source_refresh.outcome == 'success'
+        if: always() && steps.config.outputs.enabled == 'true' && steps.live_availability.outcome == 'success'
         continue-on-error: true
         env:
           REMINDERS_API_BASE: ${{ secrets.REMINDERS_API_BASE }}
@@ -96,97 +79,39 @@ jobs:
           ALERT_ONE_CLICK_UNSUBSCRIBE: ${{ secrets.ALERT_ONE_CLICK_UNSUBSCRIBE }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM: ${{ secrets.RESEND_FROM }}
-        run: python3 scripts/send_table_for_two_alerts.py
+        run: python3 scripts/send_table_for_two_alerts.py --data /tmp/table-for-two-live.json
 
-      - name: Finalize source health
-        id: availability_health
-        if: always()
-        continue-on-error: true
-        run: |
-          if [ "${{ steps.source_refresh.outcome }}" = "success" ]; then
-            outcome=success
-          else
-            outcome=failure
-          fi
-          python3 scripts/build_source_health.py --source table-for-two-availability --attempt-outcome "$outcome"
-
-      - name: Commit refreshed availability and alert state
+      # commit_and_push.sh no-ops when nothing is staged, so quiet runs make no commit.
+      - name: Commit alert state and new release observations
         id: data_commit
         if: always()
         continue-on-error: true
         env:
-          COMMIT_MESSAGE: "chore: refresh table for two availability"
+          COMMIT_MESSAGE: "chore: record table for two alert state"
           MUST_STAGE: |
-            data/table-for-two.json
-            data/table-for-two-slots.json
-            data/table-for-two-release-history.json
             data/table-for-two-alert-sent.json
-            data/updates.json
-            data/changelog-table-for-two.md
+            data/table-for-two-release-history.json
             reminders/app/tft_guide_catalog.json
-            data/source-health.json
           KEEP_LOCAL_ON_CONFLICT: |
-            data/table-for-two.json
-            data/table-for-two-slots.json
-            data/table-for-two-release-history.json
             data/table-for-two-alert-sent.json
-            data/changelog-table-for-two.md
+            data/table-for-two-release-history.json
             reminders/app/tft_guide_catalog.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           bash scripts/commit_and_push.sh
 
-      - name: Dispatch published owner updates
-        if: always()
-        id: owner_dispatch
-        continue-on-error: true
-        env:
-          OWNER_ALERT_INGEST_URL: ${{ secrets.OWNER_ALERT_INGEST_URL }}
-          OWNER_ALERT_INGEST_TOKEN: ${{ secrets.OWNER_ALERT_INGEST_TOKEN }}
-        run: python3 scripts/dispatch_owner_updates.py
-
-      - name: Commit owner delivery receipts
-        id: receipt_commit
-        if: always() && steps.owner_dispatch.outcome != 'skipped'
-        continue-on-error: true
-        env:
-          COMMIT_MESSAGE: "chore: record owner alert delivery"
-          MUST_STAGE: data/updates.json
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          bash scripts/commit_and_push.sh
-
-      - name: Open Table for Two membership alert issue
-        id: source_issue
-        if: always() && steps.membership_alert.outcome == 'success' && steps.membership_alert.outputs.alert_required == 'true'
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          bash scripts/open_source_alert_issue.sh \
-            "Table for Two source changed: review required" \
-            /tmp/table-for-two-membership-alert.md \
-            table-for-two
-
-      - name: Fail after preserving availability evidence
+      - name: Fail after preserving alert evidence
         if: always()
         env:
-          SOURCE_OUTCOME: ${{ steps.source_refresh.outcome }}
-          MEMBERSHIP_ALERT_OUTCOME: ${{ steps.membership_alert.outcome }}
-          SLOT_SNAPSHOT_OUTCOME: ${{ steps.slot_snapshot.outcome }}
+          LIVE_AVAILABILITY_OUTCOME: ${{ steps.live_availability.outcome }}
           RELEASE_PATTERNS_OUTCOME: ${{ steps.release_patterns.outcome }}
           GUIDE_CATALOGUE_OUTCOME: ${{ steps.guide_catalogue.outcome }}
           EMAIL_ALERTS_OUTCOME: ${{ steps.alerts.outcome }}
           DATA_COMMIT_OUTCOME: ${{ steps.data_commit.outcome }}
-          AVAILABILITY_HEALTH_OUTCOME: ${{ steps.availability_health.outcome }}
-          OWNER_DISPATCH_OUTCOME: ${{ steps.owner_dispatch.outcome }}
-          RECEIPT_COMMIT_OUTCOME: ${{ steps.receipt_commit.outcome }}
-          SOURCE_ISSUE_OUTCOME: ${{ steps.source_issue.outcome }}
         run: |
           failed=()
-          for stage in SOURCE MEMBERSHIP_ALERT SLOT_SNAPSHOT RELEASE_PATTERNS GUIDE_CATALOGUE DATA_COMMIT AVAILABILITY_HEALTH OWNER_DISPATCH RECEIPT_COMMIT; do
+          for stage in LIVE_AVAILABILITY RELEASE_PATTERNS GUIDE_CATALOGUE DATA_COMMIT; do
             outcome_name="${stage}_OUTCOME"
             outcome="${!outcome_name}"
             if [ "$outcome" != "success" ]; then
@@ -196,13 +121,10 @@ jobs:
           if [ "$EMAIL_ALERTS_OUTCOME" = "failure" ]; then
             failed+=("email_alerts=failure")
           fi
-          if [ "$SOURCE_ISSUE_OUTCOME" = "failure" ]; then
-            failed+=("source_issue=failure")
-          fi
           if [ "${#failed[@]}" -gt 0 ]; then
-            summary="Table for Two availability refresh completed with failures: ${failed[*]}"
+            summary="Table for Two alert run completed with failures: ${failed[*]}"
             echo "::error::$summary"
-            echo "### Table for Two availability refresh needs attention" >> "$GITHUB_STEP_SUMMARY"
+            echo "### Table for Two alert run needs attention" >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
             echo "$summary" >> "$GITHUB_STEP_SUMMARY"
             exit 1

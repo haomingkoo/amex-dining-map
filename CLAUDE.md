@@ -363,5 +363,8 @@ pins 3.12. Run `reminders/.venv/bin/python -m pytest reminders/tests`.
 Service-only `GITHUB_DISPATCH_TOKEN` (fine-grained, Actions: write on this repo) makes
 the service trigger `Table for Two Alerts` every 15 minutes, because GitHub's own cron
 drops most of those runs; `/healthz` reports `alert_dispatch_enabled` and the last result.
+The alert job reads live slots from `/api/tft/slots` (fails past 30 minutes old) and
+commits only sent-key hashes, new release observations, and the guide catalogue.
+`Monitor Source Health` ages `table-for-two-availability` from `/healthz` `tft_live`.
 The `Table for Two Alerts` workflow runs from `main`, so the
 alert job only picks up rewires after a merge.

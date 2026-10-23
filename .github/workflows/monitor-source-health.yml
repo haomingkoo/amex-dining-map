@@ -29,8 +29,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      # Availability freshness is Railway's live snapshot age, not a committed timestamp.
       - name: Recompute source health
-        run: python3 scripts/build_source_health.py
+        run: python3 scripts/build_source_health.py --tft-live-url https://amex-reminders-production.up.railway.app/healthz
 
       - name: Commit source-health transitions
         env:
