@@ -5656,6 +5656,35 @@ function refreshTableForTwoDateOptions() {
 
 let tableForTwoAlertWired = false;
 
+// Meals the chosen venues currently sell; null means no restriction (any venue or unknown).
+function tableForTwoOfferedMeals(names) {
+  if (!names.length) return null;
+  const chosen = tableForTwoVenues().filter((venue) => names.includes(venue.name));
+  const meals = chosen.map((venue) => (venue.availability?.meals || []).map((meal) => meal.meal).filter(Boolean));
+  if (chosen.length < names.length || meals.some((list) => list.length === 0)) return null;
+  return new Set(meals.flat());
+}
+
+function updateTableForTwoAlertSessions() {
+  const form = document.getElementById("tft-alert-form");
+  const hint = document.getElementById("tft-alert-session-hint");
+  if (!form || !hint) return;
+  const names = Array.from(form.querySelectorAll(".tft-venue-cb:checked"), (checkbox) => checkbox.value);
+  const offered = tableForTwoOfferedMeals(names);
+  const sessions = Array.from(form.querySelectorAll('input[name="session"]'));
+  sessions.forEach((checkbox) => {
+    const unavailable = Boolean(offered) && !offered.has(checkbox.value);
+    checkbox.disabled = unavailable;
+    if (unavailable) checkbox.checked = false;
+    checkbox.closest("label")?.classList.toggle("is-unavailable", unavailable);
+  });
+  if (offered && !sessions.some((checkbox) => checkbox.checked)) {
+    sessions.filter((checkbox) => offered.has(checkbox.value)).forEach((checkbox) => { checkbox.checked = true; });
+  }
+  hint.hidden = !offered;
+  hint.textContent = offered ? `Your venues currently offer ${Array.from(offered).join(" and ")}.` : "";
+}
+
 function tableForTwoAlertVenueNames() {
   return tableForTwoVenues()
     .map((venue) => venue && venue.name)
@@ -5691,6 +5720,7 @@ function renderTableForTwoAlertSignup() {
       const anyChecked =
         venueList.querySelectorAll(".tft-venue-cb:checked").length > 0;
       if (anyToggle) anyToggle.checked = !anyChecked;
+      updateTableForTwoAlertSessions();
     });
     if (anyToggle) {
       anyToggle.addEventListener("change", () => {
@@ -5701,6 +5731,7 @@ function renderTableForTwoAlertSignup() {
               checkbox.checked = false;
             });
         }
+        updateTableForTwoAlertSessions();
       });
     }
   }
