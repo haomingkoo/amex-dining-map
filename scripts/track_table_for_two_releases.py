@@ -199,6 +199,10 @@ def main() -> int:
     )
     added = append_current(load_json(data_path), history)
     observations = history.get("observations") or []
+    # Patterns derive only from observations, so an unchanged set needs no rewrite or commit.
+    if not added and not args.from_git and output_path.exists():
+        print(f"{len(observations)} observations, 0 new; history unchanged")
+        return 0
     history["schema_version"] = 1
     history["updated_at"] = (snapshot_time(load_json(data_path)) or datetime.now(SGT)).isoformat()
     history["patterns"] = build_patterns(observations)

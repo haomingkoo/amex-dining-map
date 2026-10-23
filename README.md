@@ -114,10 +114,12 @@ python3 scripts/source_change_alert.py --program "Plat Stay" --meta data/plat-st
 - `refresh-table-for-two.yml`: daily public Table for Two roster and baseline
   `AMEXPlatSG` availability refresh at `22:00 UTC`, including official menu PDF
   version checks. The browser also refreshes availability while the page is open.
-- `table-for-two-alerts.yml`: scheduled every 15 minutes for Table for Two availability refresh
-  and Resend email sender. It exports confirmed subscriptions from the Railway
-  reminder service, sends newly matched slots, stores salted sent-key hashes,
-  and records first-seen release observations.
+- `table-for-two-alerts.yml`: scheduled every 15 minutes as the Resend email sender.
+  It reads live availability from the Railway service's `/api/tft/slots` snapshot
+  and fails when that snapshot is older than 30 minutes. It exports confirmed
+  subscriptions from the Railway reminder service, sends newly matched slots,
+  stores salted sent-key hashes, and records first-seen release observations.
+  It commits only when an email was sent or a new release date was observed.
   GitHub schedules can start late or be skipped during platform load; the UI's
   checked timestamp and stale state are authoritative, not the nominal cron.
   This high-frequency job has its own concurrency group so slower daily source

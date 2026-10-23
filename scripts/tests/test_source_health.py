@@ -88,19 +88,52 @@ class SourceHealthTest(unittest.TestCase):
         self.assertEqual(source["checked_at"], "2026-08-30T00:00:00Z")
         self.assertEqual(source["coverage"], {"covered": 2, "total": 10, "unavailable": 8, "percent": 20.0})
 
-    def test_availability_missing_project_is_unavailable_coverage_not_failure(self):
+    def live(self, generated_at="2026-08-30T11:55:00Z", failed=0):
+        return {
+            "status": "success" if not failed else "partial",
+            "generated_at": generated_at,
+            "age_seconds": 300,
+            "counts": {"eligible": 2, "succeeded": 2 - failed, "failed": failed, "retained": 0},
+        }
+
+    def availability(self, payload):
+        return next(item for item in payload["sources"] if item["id"] == "table-for-two-availability")
+
+    def test_availability_freshness_comes_from_the_live_snapshot_not_commits(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             self.fixture(root)
-            tft = json.loads((root / "table-for-two.json").read_text())
-            tft["availability_source"] = {
-                "api_base": "https://example.com/api", "error_count": 1,
-                "errors": {"tft-2": "missing_amex_platinum_project"},
-            }
-            self.write(root, "table-for-two.json", tft)
-            payload = MODULE.build_source_health(root, NOW)
+            self.write(root, "table-for-two-slots.json", {"venues": [{"id": "tft-1", "checked_at": "2026-08-01T00:00:00Z"}]})
+            payload = MODULE.build_source_health(root, NOW, tft_live=self.live())
 
-        source = next(item for item in payload["sources"] if item["id"] == "table-for-two-availability")
+        source = self.availability(payload)
+        self.assertEqual(source["freshness_state"], "current")
+        self.assertEqual(source["checked_at"], "2026-08-30T11:55:00Z")
+
+    def test_live_snapshot_older_than_the_limit_is_stale(self):
+        old = MODULE.format_time(NOW - MODULE.timedelta(hours=MODULE.AVAILABILITY_STALE_HOURS + 1))
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            self.fixture(root)
+            payload = MODULE.build_source_health(root, NOW, tft_live=self.live(generated_at=old))
+
+        self.assertEqual(self.availability(payload)["freshness_state"], "stale")
+
+    def test_unreachable_live_snapshot_is_unavailable(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            self.fixture(root)
+            payload = MODULE.build_source_health(root, NOW, tft_live={"status": "unavailable"})
+
+        self.assertEqual(self.availability(payload)["freshness_state"], "unavailable")
+
+    def test_failed_live_venues_are_unavailable_coverage_not_failure(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            self.fixture(root)
+            payload = MODULE.build_source_health(root, NOW, tft_live=self.live(failed=1))
+
+        source = self.availability(payload)
         self.assertEqual(source["failure_state"], "clear")
         self.assertEqual(source["coverage"]["unavailable"], 1)
         self.assertEqual(source["coverage"]["covered"], 1)
@@ -113,6 +146,19 @@ class SourceHealthTest(unittest.TestCase):
         self.assertNotEqual(
             source["stale_after_minutes"], int(MODULE.PRIMARY_STALE_HOURS * 60)
         )
+
+    def test_build_without_live_input_keeps_the_monitor_availability_row(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            self.fixture(root)
+            output = root / "source-health.json"
+            updates = root / "updates.json"
+            first, _ = MODULE.update_source_health(root, output, updates, NOW, tft_live=self.live())
+            later = NOW + MODULE.timedelta(hours=MODULE.AVAILABILITY_STALE_HOURS * 3)
+            second, events = MODULE.update_source_health(root, output, updates, later, {"table-for-two-roster": "success"})
+
+        self.assertEqual(self.availability(second), self.availability(first))
+        self.assertNotIn("Table for Two availability", [event["subject"] for event in events])
 
     def test_transition_events_include_exact_before_after(self):
         old = {"sources": [{

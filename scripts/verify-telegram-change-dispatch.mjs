@@ -9,7 +9,6 @@ const workflows = [
   "refresh-love-dining.yml",
   "refresh-ratings.yml",
   "refresh-table-for-two.yml",
-  "table-for-two-alerts.yml",
   "monitor-source-health.yml",
 ];
 for (const name of workflows) {

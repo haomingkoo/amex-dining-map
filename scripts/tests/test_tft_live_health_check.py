@@ -63,3 +63,33 @@ def test_rejects_degraded_or_inconsistent_health(mutation, message):
 
     with pytest.raises(ValueError, match=message):
         validate_health(candidate, now=NOW)
+
+
+def load_build_source_health():
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    import build_source_health
+
+    return build_source_health
+
+
+def test_source_health_records_the_live_snapshot_as_a_successful_check(monkeypatch):
+    module = load_build_source_health()
+    monkeypatch.setattr(module, "fetch_health", lambda url: payload())
+
+    live, outcome = module.read_tft_live("https://example.test/healthz")
+
+    assert (live["generated_at"], outcome) == ("2026-09-02T00:19:00Z", "success")
+
+
+def test_source_health_marks_an_unreachable_service_as_a_failed_check(monkeypatch):
+    module = load_build_source_health()
+
+    def unreachable(url):
+        raise OSError("connection refused")
+
+    monkeypatch.setattr(module, "fetch_health", unreachable)
+
+    assert module.read_tft_live("https://example.test/healthz") == ({"status": "unavailable"}, "failure")

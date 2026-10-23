@@ -75,11 +75,11 @@ requireText(
   availability.includes("group: table-for-two-availability-refresh"),
   "high-frequency availability refresh must not contend with daily source writers",
 );
-requireText(availability.includes("Finalize source health"), "availability refresh must finalize source health");
-requireText(availability.includes("data/source-health.json"), "availability refresh must commit source health");
-requireText(availability.includes("dispatch_owner_updates.py"), "availability refresh must dispatch health transitions");
+requireText(availability.includes("scripts/tft_live_availability.py"), "alerts must read Railway's live snapshot");
+requireText(!availability.includes("data/source-health.json"), "alerts must not commit source health on every run");
 
 const monitor = read(".github/workflows/monitor-source-health.yml");
+requireText(monitor.includes("build_source_health.py --tft-live-url"), "health monitor must age availability from Railway's snapshot");
 requireText(monitor.includes("22,52 * * * *"), "health monitor must age sources independently of refresh success");
 requireText(monitor.includes("check_tft_live_health.py"), "health monitor must check Railway TFT freshness");
 requireText(monitor.includes("if: always()"), "Railway TFT health must be checked after other monitor outcomes");

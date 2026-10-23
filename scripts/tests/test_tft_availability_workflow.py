@@ -2,6 +2,7 @@ from pathlib import Path
 
 
 WORKFLOW = Path(".github/workflows/table-for-two-alerts.yml")
+LIVE_DATA = "/tmp/table-for-two-live.json"
 
 
 def workflow_text() -> str:
@@ -14,62 +15,53 @@ def step_block(text: str, name: str, next_name: str) -> str:
     return text[start:end]
 
 
-def test_membership_changes_are_checked_on_the_fast_cycle() -> None:
+def test_alerts_read_railway_live_snapshot_instead_of_scraping() -> None:
     text = workflow_text()
-    block = step_block(
-        text,
-        "Build booking-project membership alert",
-        "Build bounded Table for Two slot snapshot",
-    )
-    assert "source_change_alert.py" in block
-    assert "data/updates.json" in block
-    assert "continue-on-error: true" in block
-    assert "if: always()" in block
-    assert "issues: write" in text
+    live = step_block(text, "Read live Table for Two availability", "Track first-seen release patterns")
+    assert "scripts/tft_live_availability.py" in live
+    assert "secrets.REMINDERS_API_BASE" in live
+    assert "scrape_table_for_two.py" not in text
+    for name, next_name in (
+        ("Track first-seen release patterns", "Rebuild Telegram release catalogue"),
+        ("Send matching alert emails", "Commit alert state and new release observations"),
+    ):
+        block = step_block(text, name, next_name)
+        assert f"--data {LIVE_DATA}" in block
+        assert "steps.live_availability.outcome == 'success'" in block
 
 
-def test_shared_update_ledger_never_overwrites_remote_events_on_conflict() -> None:
+def test_commit_is_limited_to_alert_and_release_state() -> None:
     text = workflow_text()
     assert "group: table-for-two-availability-refresh" in text
     assert "cancel-in-progress: false" in text
     block = step_block(
         text,
-        "Commit refreshed availability and alert state",
-        "Dispatch published owner updates",
+        "Commit alert state and new release observations",
+        "Fail after preserving alert evidence",
     )
-    must_stage, keep_local = block.split("KEEP_LOCAL_ON_CONFLICT:", 1)
-    assert "data/updates.json" in must_stage
-    assert "data/updates.json" not in keep_local
-    helper = Path("scripts/commit_and_push.sh").read_text(encoding="utf-8")
-    assert '[[ "$f" == "data/updates.json" ]]' in helper
-    assert "scripts/merge_update_ledgers.py" in helper
-    assert "git ls-files -u" in helper
-    assert "git diff --cached --check" in helper
+    must_stage = block.split("MUST_STAGE:", 1)[1].split("KEEP_LOCAL_ON_CONFLICT:", 1)[0].split()
+    assert must_stage == [
+        "|",
+        "data/table-for-two-alert-sent.json",
+        "data/table-for-two-release-history.json",
+        "reminders/app/tft_guide_catalog.json",
+    ]
+    for daily_only in ("data/table-for-two.json", "data/table-for-two-slots.json", "data/source-health.json", "data/updates.json"):
+        assert daily_only not in text
 
 
-def test_independent_availability_evidence_survives_partial_failure() -> None:
+def test_independent_stages_survive_partial_failure_and_final_gate_is_last() -> None:
     text = workflow_text()
     stages = (
-        ("Refresh Table for Two availability", "Build booking-project membership alert"),
-        ("Build booking-project membership alert", "Build bounded Table for Two slot snapshot"),
-        ("Build bounded Table for Two slot snapshot", "Track first-seen release patterns"),
+        ("Read live Table for Two availability", "Track first-seen release patterns"),
         ("Track first-seen release patterns", "Rebuild Telegram release catalogue"),
         ("Rebuild Telegram release catalogue", "Send matching alert emails"),
-        ("Finalize source health", "Commit refreshed availability and alert state"),
-        ("Commit refreshed availability and alert state", "Dispatch published owner updates"),
+        ("Send matching alert emails", "Commit alert state and new release observations"),
+        ("Commit alert state and new release observations", "Fail after preserving alert evidence"),
     )
     for name, next_name in stages:
         assert "continue-on-error: true" in step_block(text, name, next_name)
-
-
-def test_health_uses_source_refresh_outcome_and_final_gate_is_last() -> None:
-    text = workflow_text()
-    health = step_block(
-        text, "Finalize source health", "Commit refreshed availability and alert state"
-    )
-    assert "steps.source_refresh.outcome" in health
-    assert "job.status" not in health
-    fail_at = text.index("      - name: Fail after preserving availability evidence")
-    assert fail_at > text.index("      - name: Open Table for Two membership alert issue")
-    assert "OWNER_DISPATCH_OUTCOME" in text[fail_at:]
-    assert "RECEIPT_COMMIT_OUTCOME" in text[fail_at:]
+    gate = text[text.index("      - name: Fail after preserving alert evidence"):]
+    assert "      - name:" not in gate[len("      - name:"):]
+    assert "LIVE_AVAILABILITY_OUTCOME" in gate
+    assert "DATA_COMMIT_OUTCOME" in gate

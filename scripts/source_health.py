@@ -16,12 +16,12 @@ from source_change_alert import append_updates, assign_event_identity
 
 SCHEMA_VERSION = 1
 PRIMARY_STALE_HOURS = 36
-# "Table for Two Alerts" declares cron "2,17,32,47 * * * *", but GitHub queues the
-# schedule: across 648 availability commits since 2026-08-05 the median gap was
-# 0.87h, p90 2.01h, max 11.33h, and only 22% of gaps were under 30 minutes. Source
-# health is itself only rebuilt every 30 minutes ("22,52 * * * *"), so a 0.5h limit
-# can never be met. 4h covers 97% of observed gaps.
+# Availability is Railway's live snapshot age, read by "Monitor Source Health"
+# ("22,52 * * * *"). GitHub queues that cron (TFT runs showed median gap 0.87h, p90
+# 2.01h, max 11.33h), and the page ages this row between monitor commits, so a 0.5h
+# limit can never be met. 4h covers 97% of observed gaps.
 AVAILABILITY_STALE_HOURS = 4
+AVAILABILITY_SOURCE_ID = "table-for-two-availability"
 RATINGS_STALE_HOURS = 90 * 24
 # "Refresh Tabelog Ratings" re-reads the least recently checked matched venues weekly.
 TABELOG_STALE_HOURS = 90 * 24
@@ -145,25 +145,26 @@ def _source(
     }
 
 
-def build_source_health(data_dir: Path, now: datetime) -> dict[str, Any]:
+def build_source_health(
+    data_dir: Path, now: datetime, tft_live: dict[str, Any] | None = None
+) -> dict[str, Any]:
     now = now.astimezone(timezone.utc)
     global_meta = load_json(data_dir / "global-dining-source.json", {})
     japan_meta = load_json(data_dir / "japan-dining-source.json", {})
     stay_meta = load_json(data_dir / "plat-stay-source.json", {})
     love_meta = load_json(data_dir / "love-dining-source.json", {})
     tft = load_json(data_dir / "table-for-two.json", {})
-    slots = load_json(data_dir / "table-for-two-slots.json", {})
     google = load_json(data_dir / "google-maps-ratings.json", {})
     global_records = load_json(data_dir / "global-restaurants.json", [])
     japan_records = load_json(data_dir / "japan-restaurants.json", [])
     love_records = load_json(data_dir / "love-dining.json", [])
     stay_records = load_json(data_dir / "plat-stays.json", [])
 
-    slot_venues = slots.get("venues", []) if isinstance(slots, dict) else []
-    slot_venues = slot_venues if isinstance(slot_venues, list) else []
     availability_source = tft.get("availability_source") or {}
     availability_source = availability_source if isinstance(availability_source, dict) else {}
-    unavailable_slot_ids = set((availability_source.get("errors") or {}).keys())
+    live_counts = (tft_live or {}).get("counts") or {}
+    live_total = int(live_counts.get("eligible") or 0)
+    live_failed = int(live_counts.get("failed") or 0)
     current_records: list[Any] = []
     for records in (global_records, japan_records, love_records, stay_records):
         if isinstance(records, list):
@@ -294,24 +295,20 @@ def build_source_health(data_dir: Path, now: datetime) -> dict[str, Any]:
             source_url=tft.get("official_url"),
         ),
         _source(
-            source_id="table-for-two-availability",
+            source_id=AVAILABILITY_SOURCE_ID,
             label="Table for Two availability",
             program="Table for Two",
             program_id="table-for-two",
             route="#/table-for-two",
             kind="enrichment",
-            timestamps=[
-                venue.get("checked_at")
-                for venue in slot_venues
-                if isinstance(venue, dict) and venue.get("id") not in unavailable_slot_ids
-            ],
+            timestamps=[(tft_live or {}).get("generated_at")],
             now=now,
             stale_after_hours=AVAILABILITY_STALE_HOURS,
             error_count=0,
-            record_count=len(slot_venues),
-            covered_count=max(0, len(slot_venues) - len(unavailable_slot_ids)),
-            unavailable_count=len(unavailable_slot_ids),
-            detail=f"{max(0, len(slot_venues) - len(unavailable_slot_ids))} of {len(slot_venues)} venues checked",
+            record_count=live_total,
+            covered_count=max(0, live_total - live_failed),
+            unavailable_count=live_failed,
+            detail=f"{max(0, live_total - live_failed)} of {live_total} venues checked",
             source_url=availability_source.get("api_base"),
         ),
         _source(
@@ -514,10 +511,18 @@ def update_source_health(
     updates: Path | None,
     now: datetime,
     attempts: dict[str, str] | None = None,
+    tft_live: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     previous = load_json(output, {})
-    payload = build_source_health(data_dir, now)
+    payload = build_source_health(data_dir, now, tft_live)
     apply_attempts(previous, payload, attempts or {}, now)
+    if tft_live is None:
+        # Only the monitor reads the live snapshot; every other build keeps its row.
+        kept = {item.get("id"): item for item in previous.get("sources", []) if isinstance(item, dict)}
+        payload["sources"] = [
+            kept.get(item["id"], item) if item["id"] == AVAILABILITY_SOURCE_ID else item
+            for item in payload["sources"]
+        ]
     detected_at = format_time(now)
     events = build_transition_events(previous, payload, detected_at)
     output.parent.mkdir(parents=True, exist_ok=True)
