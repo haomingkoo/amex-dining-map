@@ -22,6 +22,17 @@ PRIMARY_STALE_HOURS = 36
 # limit can never be met. 4h covers 97% of observed gaps.
 AVAILABILITY_STALE_HOURS = 4
 AVAILABILITY_SOURCE_ID = "table-for-two-availability"
+# The live timestamp moves every monitor run; these alone must not cause a commit.
+AVAILABILITY_VOLATILE_FIELDS = (
+    "checked_at",
+    "oldest_checked_at",
+    "upstream_date",
+    "upstream_year",
+    "last_attempt_at",
+    "last_success_at",
+)
+# Still republish timestamps this often so the page never ages a healthy row past its limit.
+AVAILABILITY_HEARTBEAT_HOURS = AVAILABILITY_STALE_HOURS / 2
 RATINGS_STALE_HOURS = 90 * 24
 # "Refresh Tabelog Ratings" re-reads the least recently checked matched venues weekly.
 TABELOG_STALE_HOURS = 90 * 24
@@ -505,6 +516,21 @@ def apply_attempts(
             })
 
 
+def _keep_availability_row(
+    old: dict[str, Any] | None, new: dict[str, Any], tft_live: dict[str, Any] | None, now: datetime
+) -> bool:
+    if old is None:
+        return False
+    # Only the monitor reads the live snapshot; every other build keeps its row.
+    if tft_live is None:
+        return True
+    stable = {key: value for key, value in new.items() if key not in AVAILABILITY_VOLATILE_FIELDS}
+    old_stable = {key: value for key, value in old.items() if key not in AVAILABILITY_VOLATILE_FIELDS}
+    published = parse_time(old.get("last_success_at"))
+    heartbeat_due = published is None or now - published >= timedelta(hours=AVAILABILITY_HEARTBEAT_HOURS)
+    return stable == old_stable and not heartbeat_due
+
+
 def update_source_health(
     data_dir: Path,
     output: Path,
@@ -516,13 +542,13 @@ def update_source_health(
     previous = load_json(output, {})
     payload = build_source_health(data_dir, now, tft_live)
     apply_attempts(previous, payload, attempts or {}, now)
-    if tft_live is None:
-        # Only the monitor reads the live snapshot; every other build keeps its row.
-        kept = {item.get("id"): item for item in previous.get("sources", []) if isinstance(item, dict)}
-        payload["sources"] = [
-            kept.get(item["id"], item) if item["id"] == AVAILABILITY_SOURCE_ID else item
-            for item in payload["sources"]
-        ]
+    kept = {item.get("id"): item for item in previous.get("sources", []) if isinstance(item, dict)}
+    payload["sources"] = [
+        kept[item["id"]] if item["id"] == AVAILABILITY_SOURCE_ID and _keep_availability_row(
+            kept.get(item["id"]), item, tft_live, now
+        ) else item
+        for item in payload["sources"]
+    ]
     detected_at = format_time(now)
     events = build_transition_events(previous, payload, detected_at)
     output.parent.mkdir(parents=True, exist_ok=True)

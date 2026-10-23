@@ -147,6 +147,38 @@ class SourceHealthTest(unittest.TestCase):
             source["stale_after_minutes"], int(MODULE.PRIMARY_STALE_HOURS * 60)
         )
 
+    def monitor_twice(self, later, second_live):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            self.fixture(root)
+            output = root / "source-health.json"
+            MODULE.update_source_health(root, output, None, NOW, {MODULE.AVAILABILITY_SOURCE_ID: "success"}, self.live())
+            first = output.read_bytes()
+            MODULE.update_source_health(root, output, None, later, {MODULE.AVAILABILITY_SOURCE_ID: "success"}, second_live)
+            return first, output.read_bytes()
+
+    def test_timestamp_only_live_change_leaves_the_file_unchanged(self):
+        later = NOW + MODULE.timedelta(minutes=30)
+
+        first, second = self.monitor_twice(later, self.live(generated_at="2026-08-30T12:25:00Z"))
+
+        self.assertEqual(first, second)
+
+    def test_live_state_change_rewrites_the_file(self):
+        later = NOW + MODULE.timedelta(hours=MODULE.AVAILABILITY_STALE_HOURS + 1)
+
+        first, second = self.monitor_twice(later, self.live())
+
+        self.assertNotEqual(first, second)
+
+    def test_timestamp_only_change_is_written_after_the_heartbeat(self):
+        later = NOW + MODULE.timedelta(hours=MODULE.AVAILABILITY_HEARTBEAT_HOURS)
+        fresh = MODULE.format_time(later - MODULE.timedelta(minutes=5))
+
+        first, second = self.monitor_twice(later, self.live(generated_at=fresh))
+
+        self.assertNotEqual(first, second)
+
     def test_build_without_live_input_keeps_the_monitor_availability_row(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
