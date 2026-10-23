@@ -1885,7 +1885,8 @@ input,
 
 .tft-field--sessions .tft-checks {
   display: flex;
-  gap: 18px;
+  flex-wrap: wrap;
+  gap: 10px 18px;
   padding-top: 2px;
 }
 
@@ -1897,6 +1898,7 @@ input,
   font-weight: 500;
   color: var(--text, #e8edf5);
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .tft-field--sessions input {
@@ -4760,4 +4762,15 @@ h1, h2, h3 {
   .intro-choices {
     grid-template-columns: 1fr;
   }
+}
+
+.tft-checks label.is-unavailable {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tft-session-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
 }
