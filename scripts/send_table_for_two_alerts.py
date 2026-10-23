@@ -40,10 +40,12 @@ except ImportError:  # running as `python3 scripts/<file>.py`
 DEFAULT_DATA_PATH = "data/table-for-two.json"
 DEFAULT_SENT_LOG_PATH = "data/table-for-two-alert-sent.json"
 DEFAULT_SITE_URL = "https://amex-explorer.kooexperience.com/#/table-for-two"
-MAX_MATCHES_PER_EMAIL = 24
+# Alert emails list this many dates, then "+N more"; each date row lists this many times.
+EMAIL_DATES_SHOWN = 8
+EMAIL_TIMES_SHOWN = 4
 ALERT_TIMEZONE = "Asia/Singapore"
 CSV_FETCH_TIMEOUT_SECONDS = 60
-UNSUBSCRIBE_COPY = "Stop future Table for Two emails for this email address:"
+UNSUBSCRIBE_COPY = "Stop Table for Two emails to this address:"
 UNSUBSCRIBE_LINK_TEXT = "Stop future Table for Two emails"
 
 
@@ -428,12 +430,51 @@ def subscription_state_key(subscription: Subscription, kind: str, salt: str) -> 
     )
 
 
-def format_slot(slot: dict[str, Any]) -> str:
-    date = slot.get("date") or "date not specified"
-    meal = slot.get("meal") or "Session"
-    time = slot.get("time") or "time not specified"
-    max_seats = slot.get("max_seats") or "?"
-    return f"{slot.get('venue_name')} - {date} {meal} {time} (up to {max_seats} pax)"
+def friendly_date(value: str) -> str:
+    parsed = iso_date(value)
+    return f"{parsed:%a}, {parsed.day} {parsed:%b}" if parsed else value
+
+
+def slot_rows(slots: list[dict[str, Any]]) -> list[tuple[str, str, str, list[str]]]:
+    """Group slots into (venue, date, meal, times) rows, soonest date first."""
+    grouped: dict[tuple[str, str, str], set[str]] = {}
+    for slot in slots:
+        key = (slot.get("date") or "", slot.get("venue_name") or "Venue", slot.get("meal") or "Session")
+        grouped.setdefault(key, set()).add(slot.get("time") or "")
+    return [(venue, day, meal, sorted(t for t in times if t)) for (day, venue, meal), times in sorted(grouped.items())]
+
+
+def times_text(times: list[str]) -> str:
+    shown = times[:EMAIL_TIMES_SHOWN]
+    extra = len(times) - len(shown)
+    return ", ".join(shown) + (f" +{extra} more" if extra else "")
+
+
+def alert_subject(slots: list[dict[str, Any]]) -> str:
+    venues = sorted({slot.get("venue_name") or "A venue" for slot in slots})
+    if len(venues) == 1:
+        return f"Table for Two: {venues[0]} has tables open"
+    if len(venues) == 2:
+        return f"Table for Two: {venues[0]} and {venues[1]} have tables open"
+    return f"Table for Two: {len(venues)} venues have tables open"
+
+
+def email_shell(title: str, body_html: str, unsubscribe_url: str = "") -> str:
+    """Brand frame shared by alert emails: inline styles and system fonts for mail clients."""
+    unsubscribe = (
+        f' &middot; <a href="{html.escape(unsubscribe_url)}" style="color:#8a7a5c">{UNSUBSCRIBE_LINK_TEXT}</a>'
+        if unsubscribe_url
+        else ""
+    )
+    return f"""<div style="background:#f6f2ea;padding:24px 12px">
+<div style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #eadfc8;border-radius:14px;padding:28px 24px;
+ font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#26303d">
+<p style="margin:0 0 10px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#a8843f;font-weight:600">Table for Two reminders</p>
+<h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.15;font-weight:600;color:#0b1624">{html.escape(title)}</h1>
+{body_html}
+<p style="margin:24px 0 0;padding-top:14px;border-top:1px solid #efe7d6;font-size:12px;line-height:1.5;color:#8a7a5c">
+An independent tool for Amex Platinum cardholders in Singapore. Not affiliated with American Express.{unsubscribe}</p>
+</div></div>"""
 
 
 def add_common_headers(
@@ -463,52 +504,38 @@ def build_email(
     unsubscribe_url: str = "",
     one_click_unsubscribe: bool = False,
 ) -> EmailMessage:
-    subject = f"Table for Two alert: {len(slots)} matching slot{'s' if len(slots) != 1 else ''}"
     greeting = f"Hi {subscription.name}," if subscription.name else "Hi,"
-    shown_slots = slots[:MAX_MATCHES_PER_EMAIL]
-    extra_count = max(0, len(slots) - len(shown_slots))
-    lines = [
-        greeting,
-        "",
-        f"These cached Table for Two slots matched your {subscription.party_size}-pax alert:",
-        "",
-        *[f"- {format_slot(slot)}" for slot in shown_slots],
-    ]
-    if extra_count:
-        lines.append(f"- ... and {extra_count} more")
-    lines.extend(
-        [
-            "",
-            "Book and redeem in the Amex Experiences App. This email is based on cached DiningCity AMEXPlatSG availability and should be reconfirmed before making plans.",
-            "",
-            site_url,
-        ]
-    )
+    rows = slot_rows(slots)
+    shown = rows[:EMAIL_DATES_SHOWN]
+    hidden = len(rows) - len(shown)
+    lead = f"Tables for {subscription.party_size} just opened up at the venues you asked about."
+    note = "Book in the Amex Experiences App. Tables go quickly, so check the app before you plan around it."
+    text_rows = [f"- {venue}: {friendly_date(day)}, {meal}: {times_text(times)}" for venue, day, meal, times in shown]
+    lines = [greeting, "", lead, "", *text_rows]
+    if hidden:
+        lines.append(f"- and {hidden} more")
+    lines.extend(["", note, "", f"See every time on the map: {site_url}"])
     if unsubscribe_url:
         lines.extend(["", UNSUBSCRIBE_COPY, unsubscribe_url])
-    text_body = "\n".join(lines)
-    html_items = "".join(f"<li>{html.escape(format_slot(slot))}</li>" for slot in shown_slots)
-    if extra_count:
-        html_items += f"<li>... and {extra_count} more</li>"
-    html_body = f"""
-    <p>{html.escape(greeting)}</p>
-    <p>These cached Table for Two slots matched your {subscription.party_size}-pax alert:</p>
-    <ul>{html_items}</ul>
-    <p>Book and redeem in the Amex Experiences App. Reconfirm cached DiningCity AMEXPlatSG availability before making plans.</p>
-    <p><a href="{html.escape(site_url)}">Open Table for Two explorer</a></p>
-    """
-    if unsubscribe_url:
-        html_body += f"""
-        <p style="color:#6b7280;font-size:12px">
-          <a href="{html.escape(unsubscribe_url)}">{UNSUBSCRIBE_LINK_TEXT}</a>
-        </p>
-        """
+    html_rows = "".join(
+        '<tr><td style="padding:10px 0;border-bottom:1px solid #f1eadc">'
+        f'<div style="font-weight:600;color:#0b1624">{html.escape(venue)}</div>'
+        f'<div style="font-size:14px;color:#5b6575">{html.escape(friendly_date(day))} &middot; {html.escape(meal)} &middot; {html.escape(times_text(times))}</div>'
+        "</td></tr>"
+        for venue, day, meal, times in shown
+    )
+    more = f'<p style="margin:10px 0 0;font-size:14px;color:#5b6575">and {hidden} more</p>' if hidden else ""
+    body = f"""<p style="margin:0 0 6px;font-size:15px">{html.escape(greeting)}</p>
+<p style="margin:0 0 14px;font-size:15px;line-height:1.5">{html.escape(lead)}</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">{html_rows}</table>{more}
+<p style="margin:22px 0 14px"><a href="{html.escape(site_url)}" style="display:inline-block;background:#0b1624;color:#f2e6c9;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px">See every time on the map</a></p>
+<p style="margin:0;font-size:13px;line-height:1.5;color:#5b6575">{html.escape(note)}</p>"""
 
     message = EmailMessage()
-    message["Subject"] = subject
+    message["Subject"] = alert_subject(slots)
     add_common_headers(message, sender, subscription.email, reply_to, unsubscribe_url, one_click_unsubscribe)
-    message.set_content(text_body)
-    message.add_alternative(html_body, subtype="html")
+    message.set_content("\n".join(lines))
+    message.add_alternative(email_shell("Tables just opened", body, unsubscribe_url), subtype="html")
     return message
 
 
@@ -521,13 +548,13 @@ def build_expired_email(
     unsubscribe_url: str = "",
     one_click_unsubscribe: bool = False,
 ) -> EmailMessage:
-    subject = "Table for Two alert expired"
+    subject = "Table for Two: your alert has ended"
     greeting = f"Hi {subscription.name}," if subscription.name else "Hi,"
     scope_lines = subscription_scope_lines(subscription, venue_labels)
     lines = [
         greeting,
         "",
-        "We did not find any cached Table for Two slots matching your alert before your selected dates passed.",
+        "No matching tables opened up before your dates passed, so this alert has ended.",
     ]
     if scope_lines:
         lines.extend(["", "Alert details:", *[f"- {line}" for line in scope_lines]])
@@ -536,19 +563,12 @@ def build_expired_email(
     if unsubscribe_url:
         lines.extend(["", UNSUBSCRIBE_COPY, unsubscribe_url])
     text_body = "\n".join(lines)
-    html_scope = "".join(f"<li>{html.escape(line)}</li>" for line in scope_lines)
-    html_body = f"""
-    <p>{html.escape(greeting)}</p>
-    <p>We did not find any cached Table for Two slots matching your alert before your selected dates passed.</p>
-    {f"<p>Alert details:</p><ul>{html_scope}</ul>" if html_scope else ""}
-    {f'<p><a href="{html.escape(signup_url)}">Create a new alert</a></p>' if signup_url else ""}
-    """
-    if unsubscribe_url:
-        html_body += f"""
-        <p style="color:#6b7280;font-size:12px">
-          <a href="{html.escape(unsubscribe_url)}">{UNSUBSCRIBE_LINK_TEXT}</a>
-        </p>
-        """
+    html_scope = "".join(f'<li style="margin:2px 0">{html.escape(line)}</li>' for line in scope_lines)
+    body = f"""<p style="margin:0 0 6px;font-size:15px">{html.escape(greeting)}</p>
+<p style="margin:0 0 14px;font-size:15px;line-height:1.5">No matching tables opened up before your dates passed, so this alert has ended.</p>
+{f'<ul style="margin:0 0 16px;padding-left:18px;font-size:14px;color:#5b6575">{html_scope}</ul>' if html_scope else ""}
+{f'<p style="margin:0"><a href="{html.escape(signup_url)}" style="display:inline-block;background:#0b1624;color:#f2e6c9;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px">Set up a new alert</a></p>' if signup_url else ""}"""
+    html_body = email_shell("Your alert has ended", body, unsubscribe_url)
 
     message = EmailMessage()
     message["Subject"] = subject

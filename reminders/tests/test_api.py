@@ -157,7 +157,7 @@ def test_confirm_activates_and_appears_in_export(client):
 
     landing = client.get(f"/api/confirm?token={token}")
     assert landing.status_code == 200
-    assert "Confirm reminders" in landing.text
+    assert "Start my reminders" in landing.text
 
     before = client.get(
         "/api/subscribers", headers={"Authorization": "Bearer export-secret"}
@@ -349,3 +349,21 @@ def test_subscribe_rejects_a_venue_not_in_the_catalog(client):
     response = client.post("/api/subscribe", json=_body(venues=["Not A Real Venue"]))
 
     assert response.status_code == 422
+
+
+def test_reminder_pages_allow_only_google_fonts_beyond_self(client):
+    policy = client.get("/api/unsubscribe?token=x").headers["Content-Security-Policy"]
+
+    assert "font-src https://fonts.gstatic.com;" in policy
+    assert "style-src 'unsafe-inline' https://fonts.googleapis.com;" in policy
+    assert "default-src 'none'" in policy
+
+
+def test_manage_page_lists_chosen_venues_first_and_labels_dates(client):
+    client.post("/api/subscribe", json=_body(venues=["VUE"], dates=[]))
+    token = _token(client.db_path, "manage_token")
+
+    page = client.get(f"/api/manage?token={token}").text
+
+    first_venue = page.index('class="m_venue_cb"')
+    assert 'value="VUE" checked' in page[first_venue:first_venue + 120]
