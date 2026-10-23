@@ -71,13 +71,22 @@ MENU_FILENAME_RE = re.compile(
 )
 
 
+def _rejected_asset(decision: dict) -> tuple | None:
+    candidate = decision.get("candidate") or {}
+    if decision.get("decision") != "rejected" or not candidate.get("asset_sha256"):
+        return None
+    return (candidate.get("venue_id"), candidate.get("card"), candidate.get("asset_sha256"))
+
+
 def matching_terminal_decision(item: dict, decisions: list[dict]) -> dict | None:
     candidate_id = review_item_sha256(item)
+    # A rejected file stays rejected even if it is re-queued under another kind.
+    asset = (item.get("venue_id") or item.get("candidate_venue_id"), item.get("card"), item.get("sha256"))
     matches = [
         decision
         for decision in decisions
-        if decision.get("candidate_id") == candidate_id
-        and decision.get("decision") in {"approved", "rejected"}
+        if decision.get("decision") in {"approved", "rejected"}
+        and (decision.get("candidate_id") == candidate_id or _rejected_asset(decision) == asset)
     ]
     if len(matches) > 1:
         raise ValueError("menu candidate has conflicting terminal decisions")

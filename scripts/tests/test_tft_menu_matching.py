@@ -269,3 +269,16 @@ def test_same_bytes_under_another_amex_spelling_is_not_a_menu_change():
 
     assert info["status"] == "published"
     assert (info["url"], info["review_manifest_sha256"]) == (previous["url"], "m" * 64)
+
+
+
+def test_rejected_file_is_not_requeued_under_another_kind():
+    rejected = {"candidate_id": "x" * 64, "decision": "rejected",
+                "candidate": {"venue_id": "tft-vue", "card": "platinum", "asset_sha256": "a" * 64}}
+    requeued = {"kind": "changed_or_new_venue_menu", "venue_id": "tft-vue", "card": "platinum",
+                "sha256": "a" * 64, "filename": "VUE-Menu_Platinum.pdf"}
+    queue = []
+
+    menus.enqueue_review(queue, requeued, [rejected])
+
+    assert queue == []
