@@ -63,23 +63,24 @@ def _shell(
 ) -> str:
     safe_title = escape(title)
     safe_unsubscribe_url = escape(unsubscribe_url, quote=True)
-    safe_manage_url = escape(manage_url, quote=True) if manage_url else None
+    link = 'style="color:#8a7a5c"'
     manage_link = (
-        f'<a href="{safe_manage_url}" style="color:#8a94a6">Manage your reminders</a> · '
-        if safe_manage_url
+        f'<a href="{escape(manage_url, quote=True)}" {link}>Manage your reminders</a> &middot; '
+        if manage_url
         else ""
     )
     return f"""\
-<div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-            max-width:480px;margin:0 auto;padding:24px;color:#1a2332">
-  <h1 style="font-size:20px;margin:0 0 16px">{safe_title}</h1>
+<div style="background:#f6f2ea;padding:24px 12px">
+<div style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #eadfc8;border-radius:14px;
+ padding:28px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#26303d">
+  <p style="margin:0 0 10px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#a8843f;font-weight:600">Table for Two reminders</p>
+  <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.15;font-weight:600;color:#0b1624">{safe_title}</h1>
   {body_html}
-  <hr style="border:none;border-top:1px solid #e5e9f0;margin:24px 0 12px">
-  <p style="font-size:12px;color:#8a94a6;margin:0">
-    Table for Two reminders · Unofficial Platinum Experience.<br>
-    {manage_link}<a href="{safe_unsubscribe_url}" style="color:#8a94a6">Unsubscribe</a>.
+  <p style="margin:24px 0 0;padding-top:14px;border-top:1px solid #efe7d6;font-size:12px;line-height:1.5;color:#8a7a5c">
+    An independent tool for Amex Platinum cardholders in Singapore. Not affiliated with American Express.<br>
+    {manage_link}<a href="{safe_unsubscribe_url}" {link}>Unsubscribe</a>
   </p>
-</div>"""
+</div></div>"""
 
 
 def confirm_email_html(
@@ -92,22 +93,21 @@ def confirm_email_html(
     greeting = f"Hi {escape(name)}," if name else "Hi,"
     safe_confirm_url = escape(confirm_url, quote=True)
     good_news = (
-        '<p style="font-size:15px;line-height:1.5;margin:0 0 16px;padding:10px 12px;'
-        "background:#eaf7f3;border-radius:8px;color:#0f5132\">\U0001f389 Good news — "
-        "there are already open tables at venues you picked. Confirm to start getting "
-        "matched.</p>"
+        '<p style="font-size:15px;line-height:1.5;margin:0 0 16px;padding:12px 14px;'
+        'background:#f3ecdc;border-radius:10px;color:#5c4a22">Good news: tables are already '
+        "open at venues you picked. Confirm and we'll send them over.</p>"
         if matches_exist
         else ""
     )
     body = f"""\
   {good_news}
-  <p style="font-size:15px;line-height:1.5;margin:0 0 16px">{greeting} please confirm
-     your email to start receiving Table for Two availability reminders.</p>
+  <p style="font-size:15px;line-height:1.5;margin:0 0 18px">{greeting} confirm your email and
+     we'll let you know when a Table for Two slot matches your request.</p>
   <p style="margin:0 0 20px">
     <a href="{safe_confirm_url}"
-       style="display:inline-block;background:#1a2332;color:#fff;text-decoration:none;
-              padding:12px 22px;border-radius:8px;font-size:15px">Confirm my email</a>
+       style="display:inline-block;background:#0b1624;color:#f2e6c9;text-decoration:none;
+              padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px">Confirm my email</a>
   </p>
-  <p style="font-size:13px;color:#8a94a6;margin:0">If you didn't request this, ignore
-     this email — nothing will be sent.</p>"""
-    return _shell("Confirm your Table for Two reminders", body, unsubscribe_url, manage_url)
+  <p style="font-size:13px;line-height:1.5;color:#5b6575;margin:0">Didn't sign up? Ignore this
+     email and nothing more will be sent.</p>"""
+    return _shell("One last step", body, unsubscribe_url, manage_url)

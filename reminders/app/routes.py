@@ -61,19 +61,65 @@ def abuse_key(kind: str, value: str, settings: Settings) -> str:
     return f"{kind}:{digest}"
 
 
-def _page(title: str, message: str) -> str:
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title}</title></head>
-<body style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-             background:#070d16;color:#e8edf5;display:flex;min-height:100vh;
-             align-items:center;justify-content:center;margin:0">
-  <div style="max-width:420px;padding:32px;text-align:center">
-    <h1 style="font-size:22px;margin:0 0 12px">{title}</h1>
-    <p style="font-size:15px;line-height:1.5;color:#aab4c4;margin:0 0 20px">{message}</p>
-    <a href="https://amex-explorer.kooexperience.com/#/table-for-two"
-       style="color:#7aa2ff">Back to Table for Two</a>
-  </div></body></html>"""
+SITE_URL = "https://amex-explorer.kooexperience.com/#/table-for-two"
+# Same faces as the explorer site, so a link from an email lands somewhere familiar.
+FONT_LINKS = (
+    '<link rel="preconnect" href="https://fonts.googleapis.com">'
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
+    'family=Cormorant+Garamond:wght@500;600&family=Figtree:wght@400;500;600&display=swap">'
+)
+PAGE_CSS = """
+:root{--surface:rgba(11,22,36,.92);--field:rgba(5,10,17,.62);--border:rgba(183,155,105,.18);
+ --border-strong:rgba(201,165,90,.42);--gold:#c9a55a;--teal:#4db8a6;--text:#f0ebe2;--muted:#8a9aaa;
+ --danger:#ff8a80;--serif:"Cormorant Garamond",Georgia,serif;--sans:"Figtree",system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:1.5rem;
+ font:400 1rem/1.55 var(--sans);color:var(--text);-webkit-font-smoothing:antialiased;
+ background:radial-gradient(70rem 36rem at 12% -12%,rgba(201,165,90,.12),transparent 60%),
+  radial-gradient(56rem 30rem at 108% 112%,rgba(77,184,166,.09),transparent 60%),
+  linear-gradient(180deg,#0a1520,#070c14 55%,#050a11)}
+.card{width:100%;max-width:27rem;padding:2.25rem 1.75rem 1.75rem;background:var(--surface);
+ border:1px solid var(--border);border-radius:20px;box-shadow:0 1.5rem 4rem rgba(0,0,0,.45);
+ animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+.eyebrow{margin:0 0 .9rem;font:600 .7rem/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+h1{margin:0 0 .6rem;font:600 2.1rem/1.05 var(--serif);letter-spacing:-.015em}
+.lead{margin:0 0 1.6rem;color:var(--muted)}
+.mark{display:grid;place-items:center;width:2.75rem;height:2.75rem;margin:0 0 1.1rem;border-radius:50%;
+ border:1px solid var(--border-strong);color:var(--gold);font:600 1.1rem/1 var(--sans)}
+.mark.warn{border-color:rgba(255,138,128,.45);color:var(--danger)}
+.btn{display:flex;justify-content:center;width:100%;padding:.9rem 1.2rem;border:0;border-radius:12px;
+ background:var(--gold);color:#17110a;font:600 1rem/1 var(--sans);cursor:pointer;
+ transition:transform .1s ease-out,filter .15s ease}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:scale(.97)}
+.back{display:inline-block;margin-top:1.4rem;color:var(--muted);font-size:.9rem;text-decoration:none;
+ border-bottom:1px solid var(--border);padding-bottom:1px}
+.back:hover{color:var(--text);border-color:var(--border-strong)}
+:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:6px}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+@media (prefers-reduced-motion:reduce){.card{animation:none}.btn{transition:none}.btn:active{transform:none}}
+@media (prefers-contrast:more){.card{background:#0b1624;border-color:var(--gold)}.lead{color:var(--text)}}
+"""
+
+
+def _document(title: str, inner: str, extra_css: str = "") -> str:
+    return (
+        '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width, initial-scale=1">'
+        f"<title>{html_escape(title)} · Table for Two</title>{FONT_LINKS}"
+        f"<style>{PAGE_CSS}{extra_css}</style></head><body>{inner}</body></html>"
+    )
+
+
+def _page(title: str, message: str, mark: str = "✓", tone: str = "") -> str:
+    return _document(
+        title,
+        f'<main class="card"><div class="mark {tone}" aria-hidden="true">{mark}</div>'
+        '<p class="eyebrow">Table for Two reminders</p>'
+        f'<h1>{html_escape(title)}</h1><p class="lead">{html_escape(message)}</p>'
+        f'<a class="back" href="{SITE_URL}">Back to Table for Two</a></main>',
+    )
 
 
 @router.post("/api/subscribe")
@@ -166,27 +212,24 @@ def subscribe(
 
 
 def _confirmation_form(title: str, message: str, action: str, label: str) -> str:
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1"><title>{title}</title></head>
-<body style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-background:#070d16;color:#e8edf5;display:flex;min-height:100vh;align-items:center;
-justify-content:center;margin:0"><main style="max-width:420px;padding:32px;text-align:center">
-<h1 style="font-size:22px;margin:0 0 12px">{title}</h1>
-<p style="font-size:15px;line-height:1.5;color:#aab4c4;margin:0 0 20px">{message}</p>
-<form method="post" action="{html_escape(action, quote=True)}">
-<button type="submit" style="padding:12px 20px;border:0;border-radius:8px;background:#4db8a6;
-color:#07120f;font-weight:700;cursor:pointer">{label}</button></form>
-</main></body></html>"""
+    return _document(
+        title,
+        '<main class="card"><p class="eyebrow">Table for Two reminders</p>'
+        f'<h1>{html_escape(title)}</h1><p class="lead">{html_escape(message)}</p>'
+        f'<form method="post" action="{html_escape(action, quote=True)}">'
+        f'<button class="btn" type="submit">{html_escape(label)}</button></form>'
+        f'<a class="back" href="{SITE_URL}">Back to Table for Two</a></main>',
+    )
 
 
 @router.get("/api/confirm", response_class=HTMLResponse)
 def confirm_page(token: str = "", settings: Settings = Depends(get_settings)) -> HTMLResponse:
     return HTMLResponse(
         _confirmation_form(
-            "Confirm your reminders",
-            "Confirm that you want to activate these Table for Two reminder settings.",
+            "One last step",
+            "Confirm your email and we'll start watching for tables that match your request.",
             f"{settings.public_base_url}/api/confirm?token={html_escape(token, quote=True)}",
-            "Confirm reminders",
+            "Start my reminders",
         )
     )
 
@@ -202,14 +245,16 @@ def confirm(token: str = "", settings: Settings = Depends(get_settings)) -> HTML
         log_event(logger, "subscription_confirmed")
         return HTMLResponse(
             _page(
-                "You're subscribed",
-                "We'll email you when a Table for Two slot matches your request.",
+                "You're all set",
+                "We'll email you as soon as a matching table opens up. Book it in the Amex Experiences App.",
             )
         )
     return HTMLResponse(
         _page(
-            "Link expired or invalid",
-            "Please sign up again from the Table for Two page.",
+            "This link has expired",
+            "Confirmation links last a few days. Sign up again from the Table for Two page.",
+            "!",
+            "warn",
         ),
         status_code=400,
     )
@@ -221,8 +266,8 @@ def unsubscribe_page(
 ) -> HTMLResponse:
     return HTMLResponse(
         _confirmation_form(
-            "Unsubscribe from reminders",
-            "Confirm that you want to stop all Table for Two reminder emails.",
+            "Stop all reminders?",
+            "You'll stop getting Table for Two emails. You can sign up again any time.",
             f"{settings.public_base_url}/api/unsubscribe?token={html_escape(token, quote=True)}",
             "Unsubscribe",
         )
@@ -241,10 +286,10 @@ def unsubscribe(
     if ok:
         log_event(logger, "subscription_unsubscribed")
         return HTMLResponse(
-            _page("Unsubscribed", "You won't receive any more Table for Two reminders.")
+            _page("You're unsubscribed", "You won't get any more Table for Two reminders.", "–")
         )
     return HTMLResponse(
-        _page("Invalid link", "This unsubscribe link is not valid."), status_code=400
+        _page("Invalid link", "This unsubscribe link is not valid.", "!", "warn"), status_code=400
     )
 
 
@@ -252,49 +297,54 @@ def _venue_names() -> list[str]:
     return tft_guide.venue_names()
 
 
-_MANAGE_TEMPLATE = """<!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Manage your Table for Two reminders</title>
-<style>
- body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#070d16;
-   color:#e8edf5;margin:0;padding:24px;display:flex;justify-content:center}
- .card{width:100%;max-width:420px}
- h1{font-size:20px;margin:0 0 4px}
- .sub{color:#8a94a6;font-size:13px;margin:0 0 18px}
- .note{background:rgba(77,184,166,.1);border:1px solid rgba(77,184,166,.35);border-radius:10px;
-   padding:10px 12px;font-size:13px;margin:0 0 16px}
- form{display:flex;flex-direction:column;gap:12px}
- label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#8a94a6}
- input,select{padding:9px 10px;font-size:14px;color:#e8edf5;background:#070d16;
-   border:1px solid rgba(255,255,255,.12);border-radius:10px;font-family:inherit}
- fieldset{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
- legend{font-size:12px;font-weight:600;color:#8a94a6;padding:0}
- .checks{display:flex;gap:18px}
- .checks label{flex-direction:row;align-items:center;font-size:14px;color:#e8edf5;font-weight:500}
- .checks input{accent-color:#4db8a6}
- button{padding:11px 14px;font-size:14px;font-weight:700;color:#4db8a6;background:rgba(77,184,166,.1);
-   border:1px solid rgba(77,184,166,.35);border-radius:10px;cursor:pointer;font-family:inherit}
- .status{font-size:13px;color:#4db8a6;margin:0}
- .status.err{color:#ff8585}
- .unsub{display:inline-block;margin-top:18px;color:#8a94a6;font-size:13px}
- .vany{flex-direction:row;align-items:center;gap:6px;font-size:14px;color:#e8edf5;font-weight:500}
- .vany input{width:auto;accent-color:#4db8a6}
- .venuelist{display:grid;gap:6px;max-height:140px;overflow-y:auto;padding:8px 10px;margin-top:6px;
-   border:1px solid rgba(255,255,255,.12);border-radius:10px;background:#070d16}
- .venuelist label{flex-direction:row;align-items:center;gap:8px;font-size:13px;color:#e8edf5;font-weight:500}
- .venuelist input{width:auto;accent-color:#4db8a6}
- .dateadder{display:flex;gap:8px}
- .dateadder input{flex:1;min-width:0}
- .dateadder button{flex:none;padding:0 14px;font-size:13px}
- .datechips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
- .datechips:empty{display:none}
- .datechip{display:inline-flex;align-items:center;gap:4px;padding:4px 4px 4px 9px;font-size:12px;
-   color:#e8edf5;background:rgba(15,27,43,.7);border:1px solid rgba(255,255,255,.12);border-radius:999px}
- .datechip button{border:none;background:none;color:#8a94a6;font-size:15px;line-height:1;cursor:pointer;padding:0 4px}
- .hint{margin:6px 0 0;font-size:11px;color:#8a94a6}
-</style></head><body><div class="card">
-<h1>Your Table for Two reminders</h1>
+MANAGE_CSS = """
+body{align-items:start}
+.card{max-width:30rem;margin-block:1rem}
+.sub{margin:-.2rem 0 1.4rem;color:var(--muted);font-size:.9rem;word-break:break-all}
+.note{background:rgba(77,184,166,.1);border:1px solid rgba(77,184,166,.35);border-radius:12px;
+ padding:.7rem .85rem;font-size:.9rem;margin:0 0 1.2rem}
+form{display:flex;flex-direction:column;gap:1.05rem}
+label{display:flex;flex-direction:column;gap:.4rem;font-size:.8rem;font-weight:600;color:var(--muted);letter-spacing:.01em}
+input,select{padding:.7rem .8rem;font:400 1rem/1.2 var(--sans);color:var(--text);background:var(--field);
+ border:1px solid var(--border);border-radius:12px;transition:border-color .15s ease}
+input:hover{border-color:var(--border-strong)}
+input:focus-visible{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(77,184,166,.25)}
+fieldset{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:.5rem}
+legend{font-size:.8rem;font-weight:600;color:var(--muted);padding:0;margin-bottom:.4rem}
+.checks{display:flex;flex-wrap:wrap;gap:.5rem}
+.checks label,.vany,.venuelist label{flex-direction:row;align-items:center;gap:.55rem;font-size:.95rem;color:var(--text);font-weight:500}
+.checks label{padding:.5rem .8rem;border:1px solid var(--border);border-radius:999px;background:var(--field);cursor:pointer}
+.checks label:has(input:checked){border-color:var(--border-strong);background:rgba(201,165,90,.1)}
+input[type=checkbox]{width:1.05rem;height:1.05rem;padding:0;accent-color:var(--gold);flex:none}
+.venuelist{display:grid;gap:.45rem;max-height:11rem;overflow-y:auto;padding:.7rem .8rem;
+ border:1px solid var(--border);border-radius:12px;background:var(--field)}
+.dateadder{display:flex;gap:.5rem}
+.dateadder input{flex:1;min-width:0}
+.dateadder button{flex:none;padding:0 1rem;font:600 .9rem/1 var(--sans);color:var(--gold);background:transparent;
+ border:1px solid var(--border-strong);border-radius:12px;cursor:pointer}
+.dateadder button:active{transform:scale(.97)}
+.datechips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.2rem}
+.datechips:empty{display:none}
+.datechip{display:inline-flex;align-items:center;gap:.2rem;padding:.25rem .25rem .25rem .65rem;font-size:.82rem;
+ color:var(--text);background:var(--field);border:1px solid var(--border);border-radius:999px}
+.datechip button{border:none;background:none;color:var(--muted);font-size:1rem;line-height:1;cursor:pointer;padding:.1rem .35rem}
+.hint{margin:.1rem 0 0;font-size:.78rem;color:var(--muted)}
+form > button[type=submit]{display:flex;justify-content:center;padding:.9rem 1.2rem;border:0;border-radius:12px;
+ background:var(--gold);color:#17110a;font:600 1rem/1 var(--sans);cursor:pointer;transition:transform .1s ease-out}
+form > button[type=submit]:active{transform:scale(.97)}
+.status{font-size:.9rem;color:var(--teal);margin:0;min-height:1.4em}
+.status.err{color:var(--danger)}
+.unsub{display:inline-block;margin-top:1.4rem;color:var(--muted);font-size:.85rem}
+@media (prefers-reduced-motion:reduce){form > button[type=submit]:active,.dateadder button:active{transform:none}}
+"""
+
+_MANAGE_TEMPLATE = (
+    '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+    '<meta name="viewport" content="width=device-width, initial-scale=1">'
+    "<title>Manage your reminders · Table for Two</title>" + FONT_LINKS
+    + "<style>" + PAGE_CSS + MANAGE_CSS + "</style></head><body>"
+    + """<main class="card"><p class="eyebrow">Table for Two reminders</p>
+<h1>Your reminders</h1>
 <p class="sub">__EMAIL__</p>
 __STATUS_NOTE__
 <form id="mform">
@@ -327,7 +377,7 @@ if(dAdd){dAdd.addEventListener('click',function(){
  var v=dPick.value; if(!v) return;
  var have=Array.prototype.slice.call(dChips.querySelectorAll('.datechip')).map(function(c){return c.dataset.value;});
  if(have.indexOf(v)>=0) return;
- var c=document.createElement('span'); c.className='datechip'; c.dataset.value=v; c.textContent=v+' ';
+ var c=document.createElement('span'); c.className='datechip'; c.dataset.value=v; var d=new Date(v+'T00:00'); c.textContent=d.toLocaleDateString('en-SG',d.getFullYear()===new Date().getFullYear()?{weekday:'short',day:'numeric',month:'short'}:{weekday:'short',day:'numeric',month:'short',year:'numeric'})+' ';
  var b=document.createElement('button'); b.type='button'; b.textContent='×'; b.addEventListener('click',function(){c.remove();});
  c.appendChild(b); dChips.appendChild(c); dPick.value='';
 });}
@@ -348,21 +398,29 @@ document.getElementById('mform').addEventListener('submit', async function(e){
  }catch(err){s.textContent='Network error — try again.';s.className='status err';}
 });
 </script>
-</div></body></html>"""
+</main></body></html>"""
+)
+
+
+def _chip_label(value: str) -> str:
+    day = date.fromisoformat(value)
+    year = "" if day.year == date.today().year else f" {day.year}"
+    return f"{day:%a}, {day.day} {day:%b}{year}"
 
 
 def _manage_page(record: dict, token: str, base: str, venue_names: list[str]) -> str:
     selected = set(record["venues"])
     any_selected = "any" in selected or not selected
     checkboxes = []
-    for name in venue_names:
+    # Chosen venues first, so the current choice is visible without scrolling.
+    for name in sorted(venue_names, key=lambda venue: venue not in selected):
         checked = " checked" if name in selected else ""
         checkboxes.append(
             f'<label><input type="checkbox" class="m_venue_cb" '
             f'value="{html_escape(name)}"{checked}> {html_escape(name)}</label>'
         )
     date_chips = "".join(
-        f'<span class="datechip" data-value="{html_escape(value)}">{html_escape(value)} '
+        f'<span class="datechip" data-value="{html_escape(value)}">{_chip_label(value)} '
         f'<button type="button" onclick="this.parentNode.remove()">×</button></span>'
         for value in record.get("dates", [])
     )
@@ -406,7 +464,7 @@ def manage(token: str = "", settings: Settings = Depends(get_settings)) -> HTMLR
         conn.close()
     if not record:
         return HTMLResponse(
-            _page("Invalid link", "This management link is not valid."), status_code=400
+            _page("Invalid link", "This management link is not valid.", "!", "warn"), status_code=400
         )
     if record["status"] == "unsubscribed":
         return HTMLResponse(
