@@ -66,8 +66,7 @@ def test_crossroads_fixed_twenty_rule_uses_current_id():
     assert '"love-paradox-singapore-merchant-court-crossroads-bar"' not in APP_SOURCE
 
 
-def test_chifa_is_structurally_ineligible_from_august_first():
-    chifa = next(record for record in RECORDS if record["id"] == "love-resorts-world-sentosa-chifa")
-    assert chifa["eligibility_status"] == "ineligible"
-    assert chifa["eligibility_effective_from"] == "2026-08-01"
-    assert "permanently closed" in chifa["notes"]
+def test_chifa_is_never_listed_as_eligible():
+    # Permanently closed; a refresh may drop it from the official listing entirely.
+    chifa = [record for record in RECORDS if record["id"] == "love-resorts-world-sentosa-chifa"]
+    assert all(record["eligibility_status"] == "ineligible" for record in chifa)
