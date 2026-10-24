@@ -106,7 +106,11 @@ def progress_bar(
     sys.stderr.flush()
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = "llama-3.3-70b-versatile"
+# llama-3.3-70b-versatile is enterprise-only on Groq now; gpt-oss reasons before it answers,
+# so it needs room for reasoning tokens even though the answer is a single number.
+GROQ_MODEL = "openai/gpt-oss-120b"
+GROQ_MAX_TOKENS = 512
+GROQ_REASONING_EFFORT = "low"
 
 PREFECTURE_SLUGS = {
     "Aichi": "aichi",
@@ -384,7 +388,8 @@ def groq_judge_match(record: dict, candidates: list[dict]) -> dict | None:
                 "model": GROQ_MODEL,
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0,
-                "max_tokens": 10,
+                "max_tokens": GROQ_MAX_TOKENS,
+                "reasoning_effort": GROQ_REASONING_EFFORT,
             },
             {"Authorization": f"Bearer {api_key}"},
         )
