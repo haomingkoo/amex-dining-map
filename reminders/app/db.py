@@ -385,27 +385,6 @@ def purge_expired_records(
     )
 
 
-def log_event(conn: sqlite3.Connection, ip: str, event_type: str) -> None:
-    conn.execute(
-        "INSERT INTO subscribe_events (source_ip, event_type, created_ts) "
-        "VALUES (?, ?, ?)",
-        (ip, event_type, _iso(_now())),
-    )
-    conn.commit()
-
-
-def count_recent_events(
-    conn: sqlite3.Connection, ip: str, event_type: str, within_minutes: int
-) -> int:
-    cutoff = _iso(_now() - timedelta(minutes=within_minutes))
-    row = conn.execute(
-        "SELECT COUNT(*) AS n FROM subscribe_events "
-        "WHERE source_ip = ? AND event_type = ? AND created_ts >= ?",
-        (ip, event_type, cutoff),
-    ).fetchone()
-    return int(row["n"])
-
-
 def consume_rate_limits(
     conn: sqlite3.Connection,
     limits: list[tuple[str, str, int]],

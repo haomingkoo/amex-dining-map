@@ -431,19 +431,6 @@ def clean_table_detail_text(value: str) -> str:
     return re.sub(r"\s+", " ", cleaned).strip()
 
 
-def extract_station_hint(value: str) -> str:
-    hints = extract_station_hints(value)
-    if hints:
-        return hints[0]
-    cleaned = clean_table_detail_text(value)
-    cleaned = re.sub(r"(?i)^(?:a|an|about a|about|it is a|it is an)\s+\d+-minute\s+walk from\s+", "", cleaned)
-    cleaned = re.sub(r"(?i)^\d+-minute\s+walk from\s+", "", cleaned)
-    cleaned = re.sub(r"(?i)\s+on the\s+.+$", "", cleaned)
-    cleaned = re.sub(r"(?i)\s+on\s+.+$", "", cleaned)
-    cleaned = re.sub(r"\(.*?\)", "", cleaned)
-    return re.sub(r"\s+", " ", cleaned).strip()
-
-
 def extract_station_hints(value: str) -> list[str]:
     raw = clean_table_detail_text(value)
     if not raw:
@@ -633,34 +620,6 @@ def looks_like_generic_sushi_counter(name: str) -> bool:
 
 def record_address_anchor(record: dict) -> str:
     return (record.get("source_localized_address") or record.get("address") or "").strip()
-
-
-def search_alias_terms(record: dict) -> list[str]:
-    aliases: list[str] = []
-    seen: set[str] = set()
-
-    def add_alias(value: str) -> None:
-        value = (value or "").strip()
-        if not value:
-            return
-        key = normalize_unicode(value) if JP_CHAR_RE.search(value) else normalize_ascii(value)
-        if not key or key in seen:
-            return
-        seen.add(key)
-        aliases.append(value)
-
-    native_title = (record.get("_native_title") or "").strip()
-    english_name = (record.get("name") or "").strip()
-    add_alias(native_title)
-    add_alias(english_name)
-    for alias in record.get("_native_aliases") or []:
-        add_alias(alias)
-    for keyword in record.get("_native_keywords") or []:
-        if looks_like_location_keyword(keyword) or keyword in GENERIC_JP_KEYWORDS:
-            continue
-        add_alias(keyword)
-
-    return aliases
 
 
 def fetch_native_metadata(record_id: str) -> dict:
@@ -1181,7 +1140,6 @@ def ddg_fallback_queries(record: dict) -> list[dict]:
         )
 
     alias_terms = search_alias_terms(record)
-    location_term_list = location_terms(record)
     phone_terms = phone_query_variants(record.get("phone_number") or "")
     address_block = primary_address_block(record_address_anchor(record))
     district = (record.get("district") or "").strip()

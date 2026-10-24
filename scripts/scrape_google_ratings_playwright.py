@@ -277,7 +277,6 @@ async def scrape_one(page, target: str, rid: str) -> dict | None:
 
 
 async def worker(
-    browser_factory,
     queue: asyncio.Queue,
     results: dict[str, dict],
     worker_id: int,
@@ -339,7 +338,7 @@ async def run_scraper(
         delay = max(1.0, 3.0 / concurrency)  # spread requests
         workers = [
             asyncio.create_task(
-                worker(None, q, batch_results, i + 1, delay)
+                worker(q, batch_results, i + 1, delay)
             )
             for i in range(min(concurrency, len(batch)))
         ]
