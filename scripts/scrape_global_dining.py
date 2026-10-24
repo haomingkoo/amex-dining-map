@@ -24,7 +24,6 @@ import sys
 import time
 import tempfile
 import unicodedata
-import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 

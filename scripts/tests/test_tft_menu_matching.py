@@ -25,7 +25,6 @@ def main() -> None:
     assert menus.MENU_FILENAME_RE.match("Osteria-Mozza-Menu-Centurion.pdf")
     assert menus.filename_stem("Feather-Blade_Menu.pdf") == "Feather-Blade"
     assert menus.filename_stem("Osteria-Mozza-Menu-Centurion.pdf") == "Osteria-Mozza"
-    assert menus.match_venue_to_filename("HighHouse", ["HighHouse-Menu_Centurion.pdf"]) == "HighHouse-Menu_Centurion.pdf"
     assert menus.direct_menu_candidate_filenames("Kaya", "platinum")[0] == "Kaya-Menu_Platinum.pdf"
     assert "CapitolBistro-Menu.pdf" in menus.direct_menu_candidate_filenames("CapitolBistro", "centurion")
     assert menus.has_buffet_tag({"category": "buffet"})
@@ -39,7 +38,6 @@ def main() -> None:
     ]
     assert menus.match_venue_candidates("Osteria Mozza", duplicates) == sorted(duplicates)
     assert menus.match_venue_candidates("Osteria Mozza", list(reversed(duplicates))) == sorted(duplicates)
-    assert menus.match_venue_to_filename("Osteria Mozza", duplicates) is None
 
 
 def test_cache_rejects_path_traversal(tmp_path):

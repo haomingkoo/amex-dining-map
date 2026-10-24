@@ -196,14 +196,6 @@ def test_specific_dates_round_trip(conn):
     assert db.active_subscribers(conn)[0]["dates"] == ["2026-07-04", "2026-07-18"]
 
 
-def test_event_count_window(conn):
-    db.log_event(conn, "9.9.9.9", "subscribe_attempt")
-    db.log_event(conn, "9.9.9.9", "subscribe_attempt")
-
-    assert db.count_recent_events(conn, "9.9.9.9", "subscribe_attempt", 60) == 2
-    assert db.count_recent_events(conn, "8.8.8.8", "subscribe_attempt", 60) == 0
-
-
 def test_consume_rate_limits_is_atomic(conn):
     limits = [("ip:one", "subscribe", 2), ("email:one", "subscribe", 2)]
     assert db.consume_rate_limits(conn, limits, 60) is True

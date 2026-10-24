@@ -332,11 +332,6 @@ def match_venue_candidates(venue_name: str, candidates: list[str]) -> list[str]:
     return matches
 
 
-def match_venue_to_filename(venue_name: str, candidates: list[str]) -> str | None:
-    matches = match_venue_candidates(venue_name, candidates)
-    return matches[0] if len(matches) == 1 else None
-
-
 def claim_menu_asset(
     claims: dict[tuple[str, str], str], source_key: str, filename: str, venue_id: str
 ) -> bool:
