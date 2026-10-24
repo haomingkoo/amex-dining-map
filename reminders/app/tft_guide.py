@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import calendar
 import json
 import logging
 import re
@@ -9,7 +10,7 @@ import threading
 import unicodedata
 import urllib.request
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import urlparse
@@ -26,6 +27,23 @@ MAX_REPLY_LENGTH = 3900
 PUBLISHED_MAX_BYTES = 1_000_000
 PUBLISHED_TIMEOUT_SECONDS = 4
 SGT = ZoneInfo("Asia/Singapore")
+MAX_NATURAL_QUERY_LENGTH = 200
+DEFAULT_PARTY_SIZE = 2
+NATURAL_DATES_RE = re.compile(
+    r"(?:(?:which|what) dates? (?:is|are|does|do|has|have) |when can i book "
+    r"|any dates? (?:for|at) )(?P<rest>.+?)[?!.]*",
+    re.IGNORECASE,
+)
+MEAL_RE = re.compile(r"(?:\b(?:for|at) )?\b(lunch|dinner)\b", re.IGNORECASE)
+PARTY_RE = re.compile(
+    r"\bfor (\d+)(?: (?:pax|people))?\b|\b(\d+) (?:pax|people)\b", re.IGNORECASE
+)
+MONTH_RE = re.compile(
+    r"(?:\bin )?\b(" + "|".join(calendar.month_name[1:]) + r")\b", re.IGNORECASE
+)
+TRAILING_FILLER_RE = re.compile(
+    r"(?: (?:have|has|available|availability))+$", re.IGNORECASE
+)
 
 logger = logging.getLogger(__name__)
 
@@ -307,6 +325,7 @@ def _help() -> str:
         "/menu VUE centurion — Centurion variant\n"
         "/release VUE dinner — observed first-detection pattern\n"
         "/slots — observed slots with date and any/weekend examples\n"
+        "Or ask: which dates is VUE available? (add lunch/dinner, for 4, or a month)\n"
         "/terms eligibility — reviewed official T&C summary\n"
         "/faq unavailable dates — reviewed official FAQ summary\n"
         "/remind — create a one-shot slot reminder when enabled\n"
@@ -655,6 +674,105 @@ def _menu_answer(venue: dict, card: str | None, catalog: dict, now: datetime) ->
     )[:MAX_REPLY_LENGTH]
 
 
+def _month_range(month: int, today: date) -> tuple[date, date]:
+    # A past month means next year; clip to today and MAX_RANGE_DAYS.
+    year = today.year if month >= today.month else today.year + 1
+    start = max(date(year, month, 1), today)
+    month_end = date(year, month, calendar.monthrange(year, month)[1])
+    return start, min(month_end, start + timedelta(days=tft_slots.MAX_RANGE_DAYS - 1))
+
+
+def _natural_dates_request(message: str, now: datetime) -> tft_slots.SlotRequest | str | None:
+    if len(message) > MAX_NATURAL_QUERY_LENGTH:
+        return None
+    match = NATURAL_DATES_RE.fullmatch(message)
+    if match is None:
+        return None
+    rest = match.group("rest")
+    meal = "Lunch or Dinner"
+    if meal_match := MEAL_RE.search(rest):
+        meal = meal_match.group(1).title()
+        rest = MEAL_RE.sub(" ", rest, count=1)
+    party_size = DEFAULT_PARTY_SIZE
+    if party_match := PARTY_RE.search(rest):
+        party_size = int(party_match.group(1) or party_match.group(2))
+        if not 1 <= party_size <= 10:
+            return "Party size must be a whole number from 1 to 10.\n" + tft_slots.usage()
+        rest = PARTY_RE.sub(" ", rest, count=1)
+    today = now.astimezone(SGT).date()
+    start_date, end_date = today, today + timedelta(days=tft_slots.MAX_RANGE_DAYS - 1)
+    if month_match := MONTH_RE.search(rest):
+        month = [name.casefold() for name in calendar.month_name].index(
+            month_match.group(1).casefold()
+        )
+        start_date, end_date = _month_range(month, today)
+        rest = MONTH_RE.sub(" ", rest, count=1)
+    venue_text = TRAILING_FILLER_RE.sub("", " ".join(rest.split()))
+    return tft_slots.SlotRequest(
+        venue_text=venue_text,
+        party_size=party_size,
+        meal=meal,
+        start_date=start_date,
+        end_date=end_date,
+        weekend_only=False,
+        preferred_time=None,
+    )
+
+
+def _slot_answer(
+    parsed: tft_slots.SlotRequest,
+    catalog: dict,
+    current: datetime,
+    slot_loader: Callable[[], dict] | None,
+) -> str:
+    source = catalog.get("slot_source") or {}
+    if (
+        source.get("url") != tft_slot_source.SOURCE_URL
+        or source.get("project") != tft_slots.PROJECT
+        or source.get("stale_after_minutes") != 30
+    ):
+        return "The slot source metadata could not be verified safely."
+    if parsed.venue_text.casefold() == "any":
+        venues = list(catalog.get("venues") or [])
+        venue_id = None
+    else:
+        venues = resolve_venue(parsed.venue_text, catalog)
+        if len(venues) != 1:
+            return (
+                "I could not match that to one exact Table for Two venue. "
+                "Use /venues, or use any to search all venues."
+            )
+        venue_id = str(venues[0].get("id") or "")
+    explorer = "Open filtered Table for Two: " + explorer_url(
+        venue_id=venue_id,
+        party_size=parsed.party_size,
+        meal=parsed.meal if parsed.meal in {"Lunch", "Dinner"} else None,
+        date_value=None if parsed.weekend_only else parsed.start_date.isoformat(),
+        day="weekend" if parsed.weekend_only else None,
+        preferred_time=(
+            parsed.preferred_time.strftime("%H:%M")
+            if parsed.preferred_time is not None
+            else None
+        ),
+    )
+    try:
+        snapshot = (slot_loader or tft_slot_source.load_snapshot)()
+    except tft_slot_source.SlotSourceUnavailable:
+        return (
+            "I could not load the bounded AMEXPlatSG slot source right now, so I "
+            "will not make an availability claim.\n"
+            f"{_official_source_line(catalog)}\n{explorer}"
+        )
+    return tft_slots.answer(
+        parsed,
+        venues,
+        snapshot,
+        current,
+        _official_source_line(catalog),
+        explorer,
+    )[:MAX_REPLY_LENGTH]
+
+
 def handle_message(
     text: str,
     catalog: dict,
@@ -729,52 +847,13 @@ def handle_message(
             parsed = tft_slots.parse_request(message, current)
         if isinstance(parsed, str):
             return parsed
-        source = catalog.get("slot_source") or {}
-        if (
-            source.get("url") != tft_slot_source.SOURCE_URL
-            or source.get("project") != tft_slots.PROJECT
-            or source.get("stale_after_minutes") != 30
-        ):
-            return "The slot source metadata could not be verified safely."
-        if parsed.venue_text.casefold() == "any":
-            venues = list(catalog.get("venues") or [])
-            venue_id = None
-        else:
-            venues = resolve_venue(parsed.venue_text, catalog)
-            if len(venues) != 1:
-                return (
-                    "I could not match that to one exact Table for Two venue. "
-                    "Use /venues, or use any to search all venues."
-                )
-            venue_id = str(venues[0].get("id") or "")
-        explorer = "Open filtered Table for Two: " + explorer_url(
-            venue_id=venue_id,
-            party_size=parsed.party_size,
-            meal=parsed.meal if parsed.meal in {"Lunch", "Dinner"} else None,
-            date_value=None if parsed.weekend_only else parsed.start_date.isoformat(),
-            day="weekend" if parsed.weekend_only else None,
-            preferred_time=(
-                parsed.preferred_time.strftime("%H:%M")
-                if parsed.preferred_time is not None
-                else None
-            ),
-        )
-        try:
-            snapshot = (slot_loader or tft_slot_source.load_snapshot)()
-        except tft_slot_source.SlotSourceUnavailable:
-            return (
-                "I could not load the bounded AMEXPlatSG slot source right now, so I "
-                "will not make an availability claim.\n"
-                f"{_official_source_line(catalog)}\n{explorer}"
-            )
-        return tft_slots.answer(
-            parsed,
-            venues,
-            snapshot,
-            current,
-            _official_source_line(catalog),
-            explorer,
-        )[:MAX_REPLY_LENGTH]
+        return _slot_answer(parsed, catalog, current, slot_loader)
+
+    natural_dates = _natural_dates_request(message, current)
+    if natural_dates is not None:
+        if isinstance(natural_dates, str):
+            return natural_dates
+        return _slot_answer(natural_dates, catalog, current, slot_loader)
 
     if lowered == "/release" or lowered.startswith("/release "):
         query = message[len("/release") :].strip()

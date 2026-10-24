@@ -270,3 +270,168 @@ def test_slot_command_requires_a_token_boundary():
 
     assert "Observed matching" not in result
     assert "http" not in result
+
+
+def counting_loader(payload: dict | None = None) -> tuple[list[int], object]:
+    calls = [0]
+
+    def loader():
+        calls[0] += 1
+        return payload or snapshot()
+
+    return calls, loader
+
+
+@pytest.mark.parametrize(
+    ("question", "venue_id"),
+    [
+        ("which dates is VUE available?", "tft-vue"),
+        ("what dates does Park90 have?", "tft-park90"),
+        ("When can I book VUE for dinner?", "tft-vue"),
+        ("any dates for Kaya at The Standard lunch for 4?", "tft-kaya-at-the-standard"),
+        ("which dates does VUE have in December?", "tft-vue"),
+    ],
+)
+def test_natural_dates_question_runs_a_slot_lookup_for_that_venue(question, venue_id):
+    calls, loader = counting_loader()
+
+    result = tft_guide.handle_message(question, catalog(), NOW, loader)
+
+    assert result.startswith("Table for Two — observed slots")
+    assert f"#/table-for-two?venue={venue_id}&" in result
+    assert calls[0] == 1
+
+
+@pytest.mark.parametrize(
+    "question",
+    ["when can I book Osteria Mozza for dinner?", "any dates for Kaya lunch for 4?"],
+)
+def test_natural_dates_question_with_unknown_venue_does_not_guess(question):
+    calls, loader = counting_loader()
+
+    result = tft_guide.handle_message(question, catalog(), NOW, loader)
+
+    assert result.startswith("I could not match that to one exact Table for Two venue.")
+    assert calls[0] == 0
+
+
+def test_natural_dates_question_with_ambiguous_venue_does_not_guess():
+    ambiguous_catalog = catalog()
+    duplicate = copy.deepcopy(ambiguous_catalog["venues"][0])
+    duplicate["id"] = "tft-duplicate"
+    duplicate["aliases"] = ["VUE"]
+    ambiguous_catalog["venues"].append(duplicate)
+    calls, loader = counting_loader()
+
+    result = tft_guide.handle_message(
+        "which dates is VUE available?", ambiguous_catalog, NOW, loader
+    )
+
+    assert "could not match that to one exact Table for Two venue" in result
+    assert calls[0] == 0
+
+
+def test_natural_dates_question_defaults_to_two_pax_both_meals_and_max_range():
+    result = answer("which dates is VUE available?")
+
+    assert "Filters: 2 pax, Lunch or Dinner, 2026-08-30 to 2026-09-29." in result
+
+
+@pytest.mark.parametrize(
+    ("question", "filters"),
+    [
+        ("when can I book VUE for dinner?", "2 pax, Dinner, "),
+        ("any dates for VUE lunch for 4?", "4 pax, Lunch, "),
+        ("which dates is VUE available for 3 pax?", "3 pax, Lunch or Dinner, "),
+        ("what dates does VUE have for 5 people?", "5 pax, Lunch or Dinner, "),
+        ("any dates for VUE 6 people dinner", "6 pax, Dinner, "),
+    ],
+)
+def test_natural_dates_modifiers_override_meal_and_party(question, filters):
+    result = answer(question)
+
+    assert f"Filters: {filters}2026-08-30 to 2026-09-29." in result
+
+
+@pytest.mark.parametrize(
+    "question", ["any dates for VUE for 11?", "which dates is VUE available for 0 pax?"]
+)
+def test_natural_dates_party_out_of_range_uses_existing_error(question):
+    calls, loader = counting_loader()
+
+    result = tft_guide.handle_message(question, catalog(), NOW, loader)
+
+    assert result.startswith("Party size must be a whole number from 1 to 10.")
+    assert calls[0] == 0
+
+
+@pytest.mark.parametrize(
+    ("question", "date_range"),
+    [
+        ("which dates does VUE have in October?", "2026-10-01 to 2026-10-31"),
+        ("which dates does VUE have in August?", "2026-08-30 to 2026-08-31"),
+        ("which dates does VUE have in July?", "2027-07-01 to 2027-07-31"),
+        ("any dates for VUE in february for dinner", "2027-02-01 to 2027-02-28"),
+    ],
+)
+def test_natural_dates_month_limits_range_to_that_month(question, date_range):
+    result = answer(question)
+
+    assert f", {date_range}." in result
+
+
+def test_natural_dates_month_returns_slots_inside_that_month():
+    result = answer("which dates does VUE have in October for dinner?")
+
+    assert "VUE — 2026-10-29 19:00" in result
+
+
+def test_natural_dates_rejects_bad_slot_source_metadata():
+    bad_catalog = catalog()
+    bad_catalog["slot_source"]["project"] = "OTHER"
+    calls, loader = counting_loader()
+
+    result = tft_guide.handle_message(
+        "which dates is VUE available?", bad_catalog, NOW, loader
+    )
+
+    assert result == "The slot source metadata could not be verified safely."
+    assert calls[0] == 0
+
+
+def test_natural_dates_source_failure_returns_bounded_nonclaim():
+    def fail():
+        raise tft_slot_source.SlotSourceUnavailable
+
+    result = tft_guide.handle_message("which dates is VUE available?", catalog(), NOW, fail)
+
+    assert "will not make an availability claim" in result
+    assert len(result) <= tft_guide.MAX_REPLY_LENGTH
+
+
+def test_natural_dates_answer_checks_snapshot_project_and_reply_length():
+    payload = snapshot()
+    payload["source_project"] = "OTHER"
+
+    result = answer("which dates is VUE available?", payload)
+
+    assert "The slot source metadata could not be verified safely." in result
+    assert len(result) <= tft_guide.MAX_REPLY_LENGTH
+
+
+@pytest.mark.parametrize(
+    "message", ["hello there", "where is VUE?", "dates", "which dates" + " x" * 200]
+)
+def test_unrelated_messages_do_not_trigger_a_slot_lookup(message):
+    calls, loader = counting_loader()
+
+    result = tft_guide.handle_message(message, catalog(), NOW, loader)
+
+    assert "observed slots" not in result
+    assert calls[0] == 0
+
+
+def test_help_mentions_plain_english_dates_question():
+    result = tft_guide.handle_message("/help", catalog(), NOW)
+
+    assert "which dates is VUE available?" in result
