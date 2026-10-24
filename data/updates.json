@@ -1,7 +1,73 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-23T23:49:56Z",
+  "updated_at": "2026-10-24T00:04:19Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-24T00:04:19Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 16
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 17
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 16,
+          "after": 17
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "956481a26f1aba906cb6",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "d63f8e8d59bb0da64df9"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_updated",
+      "subject": "Love Dining source",
+      "detected_at": "2026-10-24T00:04:19Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Hotel T&C PDF hash": "01630fb15152"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Hotel T&C PDF hash": "0d32857cf380"
+        }
+      },
+      "changes": [
+        {
+          "field": "Hotel T&C PDF hash",
+          "before": "01630fb15152",
+          "after": "0d32857cf380"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "fb3ff7e67d787864ffe9",
+      "stream_id": "915d672147e8dd8f713f",
+      "occurrence": 1,
+      "id": "0db8356b34f7f32626b9"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -34694,7 +34760,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "5852ab5ce4e4d11561b4",
+        "latest_transition_id": "956481a26f1aba906cb6",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "115ecbdf7edd8b04fc52": 1,
@@ -34728,6 +34794,7 @@
           "8b5fcc11fdbb842d2a18": 1,
           "932d45bbb211ea91be6c": 1,
           "94325f8b95b5af31f14c": 1,
+          "956481a26f1aba906cb6": 1,
           "973b166da288b05c66af": 1,
           "9b20e2012d24b98c912c": 1,
           "9ed6d46a5813888cc394": 1,
@@ -34877,12 +34944,13 @@
         }
       },
       "915d672147e8dd8f713f": {
-        "latest_transition_id": "529bca112c6849717caa",
+        "latest_transition_id": "fb3ff7e67d787864ffe9",
         "occurrences": {
           "529bca112c6849717caa": 1,
           "a0a9bd6099c50e729407": 1,
           "e84cc285cf3a411e0d24": 1,
-          "e94f1e64d26636b508c7": 1
+          "e94f1e64d26636b508c7": 1,
+          "fb3ff7e67d787864ffe9": 1
         }
       },
       "92472e860fb874b35365": {
