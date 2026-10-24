@@ -5655,6 +5655,181 @@ function refreshTableForTwoDateOptions() {
 }
 
 let tableForTwoAlertWired = false;
+// Mirrors the specific-dates cap in reminders/app/schemas.py.
+const TFT_ALERT_MAX_DATES = 31;
+const TFT_ALERT_QUICK_WEEKDAYS = { weekends: [0, 6], "fri-sat": [5, 6] };
+let tableForTwoAlertDates = [];
+let tableForTwoAlertMonth = "";
+
+function tftAlertDateSelectable(dateValue, range) {
+  if (!dateValue || !range.from || !range.to) return false;
+  return dateValue >= range.from && dateValue <= range.to && dateValue >= range.today;
+}
+
+function tftAlertAddDays(dateValue, days) {
+  const [year, month, day] = dateValue.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}
+
+function tftAlertShiftMonth(monthKey, delta) {
+  const [year, month] = monthKey.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1 + delta, 1)).toISOString().slice(0, 7);
+}
+
+function tftAlertClampDates(dates, range) {
+  return [...new Set(dates)].filter((dateValue) => tftAlertDateSelectable(dateValue, range)).sort();
+}
+
+function tftAlertToggleDate(dates, dateValue, max) {
+  if (dates.includes(dateValue)) return { dates: dates.filter((value) => value !== dateValue), limited: false };
+  if (dates.length >= max) return { dates, limited: true };
+  return { dates: [...dates, dateValue].sort(), limited: false };
+}
+
+// Every in-range day on the given UTC weekdays, capped at max.
+function tftAlertQuickPick(range, weekdays, max) {
+  const picked = [];
+  if (!range.from || !range.to) return { dates: picked, limited: false };
+  let cursor = range.from > range.today ? range.from : range.today;
+  while (cursor <= range.to && picked.length <= max) {
+    if (weekdays.includes(new Date(`${cursor}T00:00:00Z`).getUTCDay())) picked.push(cursor);
+    cursor = tftAlertAddDays(cursor, 1);
+  }
+  return { dates: picked.slice(0, max), limited: picked.length > max };
+}
+
+function tableForTwoAlertRange() {
+  return {
+    from: document.getElementById("tft-alert-from")?.value || "",
+    to: document.getElementById("tft-alert-to")?.value || "",
+    today: singaporeTodayKey(),
+  };
+}
+
+function tableForTwoAlertMonthBounds(range) {
+  const first = (range.from > range.today ? range.from : range.today).slice(0, 7);
+  const last = (range.to || "").slice(0, 7);
+  return { first, last: last > first ? last : first };
+}
+
+function showTableForTwoAlertDateLimit(message) {
+  const limit = document.getElementById("tft-alert-date-limit");
+  if (!limit) return;
+  limit.textContent = message;
+  limit.hidden = !message;
+}
+
+function renderTableForTwoAlertCalendar(focusDate = "") {
+  const grid = document.getElementById("tft-alert-date-grid");
+  if (!grid) return;
+  const range = tableForTwoAlertRange();
+  const bounds = tableForTwoAlertMonthBounds(range);
+  const month = tableForTwoAlertMonth;
+  const [year, monthNumber] = month.split("-").map(Number);
+  const leadingBlanks = new Date(Date.UTC(year, monthNumber - 1, 1)).getUTCDay();
+  const daysInMonth = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
+  const days = Array.from({ length: daysInMonth }, (_, index) => `${month}-${String(index + 1).padStart(2, "0")}`);
+  const tabDate = [focusDate].concat(
+    days.filter((day) => tableForTwoAlertDates.includes(day)),
+    days.filter((day) => tftAlertDateSelectable(day, range)),
+    days,
+  ).find((day) => days.includes(day));
+  const cells = Array.from({ length: leadingBlanks }, () => '<span class="tft-calendar-cell is-empty"></span>');
+  for (const day of days) {
+    const selectable = tftAlertDateSelectable(day, range);
+    const label = new Date(`${day}T00:00:00Z`).toLocaleDateString("en-SG", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
+    });
+    cells.push(`<button type="button" class="tft-calendar-cell" data-tft-pick-date="${day}"`
+      + ` aria-pressed="${tableForTwoAlertDates.includes(day)}"${selectable ? "" : ' aria-disabled="true"'}`
+      + ` aria-label="${escapeHtml(selectable ? label : `${label}, unavailable`)}"`
+      + ` tabindex="${day === tabDate ? 0 : -1}">${Number(day.slice(8))}</button>`);
+  }
+  grid.innerHTML = cells.join("");
+  document.getElementById("tft-alert-month-label").textContent = tableForTwoMonthLabel(month);
+  document.getElementById("tft-alert-month-prev").disabled = month <= bounds.first;
+  document.getElementById("tft-alert-month-next").disabled = month >= bounds.last;
+  if (focusDate) grid.querySelector(`[data-tft-pick-date="${focusDate}"]`)?.focus();
+}
+
+function renderTableForTwoAlertChips() {
+  const dateChips = document.getElementById("tft-alert-date-chips");
+  if (!dateChips) return;
+  dateChips.replaceChildren();
+  tableForTwoAlertDates.forEach((value, index) => {
+    const chip = document.createElement("span");
+    chip.className = "tft-date-chip";
+    chip.dataset.value = value;
+    chip.textContent = value + " ";
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", "Remove " + value);
+    remove.addEventListener("click", () => {
+      setTableForTwoAlertDates(tableForTwoAlertDates.filter((date) => date !== value));
+      const buttons = dateChips.querySelectorAll(".tft-date-chip button");
+      buttons[Math.min(index, buttons.length - 1)]?.focus();
+    });
+    chip.appendChild(remove);
+    dateChips.appendChild(chip);
+  });
+}
+
+function setTableForTwoAlertDates(dates, focusDate = "", limitMessage = "") {
+  tableForTwoAlertDates = dates;
+  renderTableForTwoAlertChips();
+  renderTableForTwoAlertCalendar(focusDate);
+  showTableForTwoAlertDateLimit(limitMessage);
+}
+
+function handleTableForTwoAlertGridKey(event) {
+  const steps = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+  const current = event.target.closest("[data-tft-pick-date]");
+  if (!current || !(event.key in steps)) return;
+  event.preventDefault();
+  const target = tftAlertAddDays(current.dataset.tftPickDate, steps[event.key]);
+  const bounds = tableForTwoAlertMonthBounds(tableForTwoAlertRange());
+  if (target.slice(0, 7) < bounds.first || target.slice(0, 7) > bounds.last) return;
+  tableForTwoAlertMonth = target.slice(0, 7);
+  renderTableForTwoAlertCalendar(target);
+}
+
+function wireTableForTwoAlertCalendar(fromInput, toInput) {
+  const grid = document.getElementById("tft-alert-date-grid");
+  if (!grid || grid.dataset.wired) return;
+  grid.dataset.wired = "1";
+  const limitMessage = `Pick at most ${TFT_ALERT_MAX_DATES} specific dates.`;
+  const resetToRange = () => {
+    const range = tableForTwoAlertRange();
+    tableForTwoAlertMonth = tableForTwoAlertMonthBounds(range).first;
+    setTableForTwoAlertDates(tftAlertClampDates(tableForTwoAlertDates, range));
+  };
+  fromInput?.addEventListener("change", resetToRange);
+  toInput?.addEventListener("change", resetToRange);
+  grid.addEventListener("keydown", handleTableForTwoAlertGridKey);
+  grid.addEventListener("click", (event) => {
+    const day = event.target.closest("[data-tft-pick-date]");
+    if (!day || day.getAttribute("aria-disabled") === "true") return;
+    const result = tftAlertToggleDate(tableForTwoAlertDates, day.dataset.tftPickDate, TFT_ALERT_MAX_DATES);
+    setTableForTwoAlertDates(result.dates, day.dataset.tftPickDate, result.limited ? limitMessage : "");
+  });
+  for (const [id, delta] of [["tft-alert-month-prev", -1], ["tft-alert-month-next", 1]]) {
+    document.getElementById(id)?.addEventListener("click", () => {
+      tableForTwoAlertMonth = tftAlertShiftMonth(tableForTwoAlertMonth, delta);
+      renderTableForTwoAlertCalendar();
+    });
+  }
+  document.querySelectorAll("[data-tft-quick]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const weekdays = TFT_ALERT_QUICK_WEEKDAYS[button.dataset.tftQuick];
+      const result = weekdays
+        ? tftAlertQuickPick(tableForTwoAlertRange(), weekdays, TFT_ALERT_MAX_DATES)
+        : { dates: [], limited: false };
+      setTableForTwoAlertDates(result.dates, "", result.limited ? `${limitMessage} Kept the first ${TFT_ALERT_MAX_DATES}.` : "");
+    });
+  });
+  resetToRange();
+}
 
 // Meals the chosen venues currently sell; null means no restriction (any venue or unknown).
 function tableForTwoOfferedMeals(names) {
@@ -5749,39 +5924,7 @@ function renderTableForTwoAlertSignup() {
     toInput.value = isoLocalDate(inThirtyDays);
   }
 
-  const dateAdd = document.getElementById("tft-alert-date-add");
-  const datePick = document.getElementById("tft-alert-date-pick");
-  const dateChips = document.getElementById("tft-alert-date-chips");
-  if (dateAdd && !dateAdd.dataset.wired) {
-    dateAdd.dataset.wired = "1";
-    const syncBounds = () => {
-      if (datePick && fromInput) datePick.min = fromInput.value || "";
-      if (datePick && toInput) datePick.max = toInput.value || "";
-    };
-    if (fromInput) fromInput.addEventListener("change", syncBounds);
-    if (toInput) toInput.addEventListener("change", syncBounds);
-    syncBounds();
-    dateAdd.addEventListener("click", () => {
-      const value = datePick.value;
-      if (!value) return;
-      const existing = Array.from(dateChips.querySelectorAll(".tft-date-chip")).map(
-        (chip) => chip.dataset.value,
-      );
-      if (existing.includes(value)) return;
-      const chip = document.createElement("span");
-      chip.className = "tft-date-chip";
-      chip.dataset.value = value;
-      chip.textContent = value + " ";
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.textContent = "×";
-      remove.setAttribute("aria-label", "Remove " + value);
-      remove.addEventListener("click", () => chip.remove());
-      chip.appendChild(remove);
-      dateChips.appendChild(chip);
-      datePick.value = "";
-    });
-  }
+  wireTableForTwoAlertCalendar(fromInput, toInput);
 
   if (!tableForTwoAlertWired) {
     tableForTwoAlertWired = true;

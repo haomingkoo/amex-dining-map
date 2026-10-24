@@ -1954,26 +1954,57 @@ input,
   gap: 8px;
 }
 
-.tft-date-adder {
+.tft-date-calendar .tft-month-pager {
+  margin-bottom: 8px;
+}
+
+.tft-date-calendar .tft-month-btn {
+  min-height: 40px;
+}
+
+.tft-date-calendar .tft-calendar-grid,
+.tft-date-calendar .tft-calendar-weekdays {
+  gap: 4px;
+}
+
+.tft-date-grid .tft-calendar-cell {
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.tft-date-grid .tft-calendar-cell[aria-pressed="true"] {
+  border-color: var(--teal-border-strong);
+  background: var(--teal-surface-strong);
+  color: var(--teal);
+}
+
+.tft-date-grid .tft-calendar-cell[aria-disabled="true"] {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-dim);
+  opacity: 0.45;
+  cursor: default;
+}
+
+.tft-date-grid .tft-calendar-cell:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.tft-date-quick-row {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.tft-date-adder input {
-  flex: 1;
-  min-width: 0;
-  box-sizing: border-box;
-  padding: 9px 10px;
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--text, #e8edf5);
-  background: var(--bg);
-  border: 1px solid var(--surface-border-soft);
-  border-radius: 10px;
-}
-
-.tft-date-add {
+.tft-date-quick {
   flex: none;
+  min-height: 40px;
   padding: 0 14px;
   font-family: inherit;
   font-size: 13px;
@@ -1985,8 +2016,26 @@ input,
   cursor: pointer;
 }
 
-.tft-date-add:hover {
+.tft-date-quick:hover {
   background: var(--teal-surface-strong);
+}
+
+.tft-date-quick:focus-visible,
+.tft-date-chip button:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+/* Keeps day cells at 40px or wider on 375px phones. */
+@media (max-width: 420px) {
+  .tft-date-calendar {
+    margin-inline: -6px;
+  }
+
+  .tft-date-calendar .tft-calendar-grid,
+  .tft-date-calendar .tft-calendar-weekdays {
+    gap: 2px;
+  }
 }
 
 .tft-date-chips {
@@ -2003,7 +2052,7 @@ input,
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 4px 4px 9px;
+  padding: 0 0 0 11px;
   font-size: 12px;
   color: var(--text, #e8edf5);
   background: var(--surface-soft);
@@ -2018,7 +2067,9 @@ input,
   font-size: 15px;
   line-height: 1;
   cursor: pointer;
-  padding: 0 4px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
 }
 
 .tft-date-hint {
