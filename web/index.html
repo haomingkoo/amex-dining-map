@@ -213,15 +213,20 @@
                 <h2 id="updates-history-title">Confirmed changes</h2>
                 <p>Restaurant, menu and benefit changes checked against a published source.</p>
               </div>
-              <button class="updates-mark-read" id="updates-mark-read" type="button">Mark all read</button>
+              <div class="updates-head-actions">
+                <button class="updates-mark-read" id="updates-mark-read" type="button">Mark all read</button>
+                <button class="updates-mark-read updates-close" id="updates-close" type="button" aria-label="Close what's new">Close ✕</button>
+              </div>
             </div>
             <div class="updates-list" id="updates-list" aria-live="polite"></div>
+            <button class="updates-more" id="updates-more" type="button" hidden></button>
             <details class="updates-secondary" id="updates-secondary" hidden>
               <summary>
                 <span>Other confirmed corrections</span>
                 <span id="updates-secondary-count">0</span>
               </summary>
               <div class="updates-list" id="updates-secondary-list"></div>
+              <button class="updates-more" id="updates-secondary-more" type="button" hidden></button>
             </details>
             <p class="updates-footnote">
               “Removed” means the venue was no longer present in the latest checked listing. It does not explain why.

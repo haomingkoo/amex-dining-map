@@ -2953,6 +2953,21 @@ function renderUpdateRow(update) {
   return details;
 }
 
+const UPDATES_PAGE_SIZE = 10;
+const updatesMoreButton = document.getElementById("updates-more");
+const updatesSecondaryMoreButton = document.getElementById("updates-secondary-more");
+const updatesCloseButton = document.getElementById("updates-close");
+
+// Render the first `shown` rows and say exactly how many older ones remain; nothing is cut silently.
+function renderUpdatePage(list, button, updates, shown) {
+  list.innerHTML = "";
+  updates.slice(0, shown).forEach((update) => list.appendChild(renderUpdateRow(update)));
+  if (!button) return;
+  const remaining = updates.length - shown;
+  button.hidden = remaining <= 0;
+  button.textContent = `Show ${Math.min(UPDATES_PAGE_SIZE, remaining)} more (${remaining} older)`;
+}
+
 function renderUpdates() {
   if (!updatesShell || !updatesList || !updatesHeadline || !updatesCount) return;
   const published = withoutCorrectedUpdates(state.updates.filter(isPublicDecisionUpdate))
@@ -2960,14 +2975,16 @@ function renderUpdates() {
   state.updates = published;
   const primary = published.filter(isPrimaryPublicUpdate);
   const secondary = published.filter((update) => !isPrimaryPublicUpdate(update));
-  updatesList.innerHTML = "";
-  primary.slice(0, 30).forEach((update) => updatesList.appendChild(renderUpdateRow(update)));
+  state.updatesPrimary = primary;
+  state.updatesPrimaryShown = Math.min(state.updatesPrimaryShown || UPDATES_PAGE_SIZE, Math.max(primary.length, UPDATES_PAGE_SIZE));
+  renderUpdatePage(updatesList, updatesMoreButton, primary, state.updatesPrimaryShown);
   if (updatesSecondary && updatesSecondaryList && updatesSecondaryCount) {
     updatesSecondary.hidden = secondary.length === 0;
     updatesSecondary.open = false;
     updatesSecondaryCount.textContent = String(secondary.length);
-    updatesSecondaryList.innerHTML = "";
-    secondary.slice(0, 30).forEach((update) => updatesSecondaryList.appendChild(renderUpdateRow(update)));
+    state.updatesSecondary = secondary;
+    state.updatesSecondaryShown = Math.min(state.updatesSecondaryShown || UPDATES_PAGE_SIZE, Math.max(secondary.length, UPDATES_PAGE_SIZE));
+    renderUpdatePage(updatesSecondaryList, updatesSecondaryMoreButton, secondary, state.updatesSecondaryShown);
   }
   renderUpdatesShell();
 }
@@ -8292,6 +8309,21 @@ updatesTrigger?.addEventListener("click", () => {
 });
 
 updatesMarkReadButton?.addEventListener("click", markUpdatesRead);
+
+updatesCloseButton?.addEventListener("click", () => {
+  setUpdatesOpen(false);
+  updatesTrigger?.focus();
+});
+
+updatesMoreButton?.addEventListener("click", () => {
+  state.updatesPrimaryShown += UPDATES_PAGE_SIZE;
+  renderUpdatePage(updatesList, updatesMoreButton, state.updatesPrimary || [], state.updatesPrimaryShown);
+});
+
+updatesSecondaryMoreButton?.addEventListener("click", () => {
+  state.updatesSecondaryShown += UPDATES_PAGE_SIZE;
+  renderUpdatePage(updatesSecondaryList, updatesSecondaryMoreButton, state.updatesSecondary || [], state.updatesSecondaryShown);
+});
 
 programLinks.forEach((link) => {
   link.addEventListener("click", (event) => {
