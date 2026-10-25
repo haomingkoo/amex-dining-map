@@ -902,7 +902,15 @@ def _final_reply(content: str, turn: _Turn) -> str | None:
     return (reply + "\n\n" + "\n".join(footer))[: tft_guide.MAX_REPLY_LENGTH]
 
 
+WEB_ONLY_FALLBACK = "I could not confirm a short summary from the search results. These pages cover it:"
+
+
 def _raw_reply(turn: _Turn) -> str | None:
+    if not turn.outputs and turn.web_urls:
+        # Snippets are untrusted, so only their URLs are shown.
+        return "\n".join(
+            [WEB_ONLY_FALLBACK, *turn.web_urls[:3], tft_guide._official_source_line(turn.catalog)]
+        )
     if not turn.outputs:
         if turn.outcome.startswith("guard"):
             raise AgentError(turn.outcome)

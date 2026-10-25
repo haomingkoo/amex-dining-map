@@ -234,7 +234,8 @@ The model never writes facts on its own. A guard compares every date, time,
 party size, price, decimal, URL and capitalised name in its reply with this
 turn's tool output. It also rejects replies that are long, mention UTC, claim a
 booking, or use mostly words no tool returned. A rejected reply is replaced by
-the raw tool output. A model error, timeout or invalid tool argument returns the
+the raw tool output, or by the source links when only web results were used.
+A model error, timeout or invalid tool argument returns the
 deterministic reply. Off-topic requests (homework, coding, other programmes) get
 a fixed refusal. Each message allows at most four tool calls and about 12 seconds.
 
