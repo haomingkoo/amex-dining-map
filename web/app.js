@@ -31,6 +31,11 @@ const TFT_PIN_UNKNOWN = "#c9a55a";
 const INTRO_STORAGE_KEY = "amex-benefits-intro-v3";
 const UPDATES_READ_STORAGE_KEY = "amex-benefits-updates-read-v1";
 const THEME_STORAGE_KEY = "theme-preference";
+const MAP_PIN_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.1-7-11.5a7 7 0 0 1 14 0C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
+const THEME_ICONS = {
+  dark: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
+  light: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg>',
+};
 const MOBILE_BREAKPOINT = 820;
 const SEARCH_DEBOUNCE_MS = 200;
 const THEME_TILE_URLS = {
@@ -216,7 +221,7 @@ const PROGRAMS = {
     label: "Table for Two",
     title: "Table for Two",
     description:
-      "Singapore Platinum set-menu roster with cached AMEXPlatSG slot availability.",
+      "Singapore Platinum set menus, with open tables from the Amex booking system.",
     defaultRoute: "table-for-two",
   },
   alerts: {
@@ -237,11 +242,11 @@ const ROUTES = {
     eyebrow: "Dining / All",
     title: "Dining Explorer",
     description:
-      "Amex Platinum dining directory — Singapore Local Dining Credit, Japan via Pocket Concierge, and abroad Global Dining Credit partners.",
+      "Amex Platinum dining partners: Singapore Local Dining Credit, Japan through Pocket Concierge, and Global Dining Credit restaurants abroad.",
     note:
       "All markets. Singapore is local dining credit; the abroad Global Dining Credit is for participating restaurants outside Singapore.",
     mapSummary:
-      "All Amex Platinum dining records. Filter by country or city; Singapore records are local credit, not abroad Global Dining Credit.",
+      "Every Platinum dining partner. Singapore venues use the Local Dining Credit; venues abroad use the Global Dining Credit.",
     matcher: () => true,
     defaultView: [25, 15],
     defaultZoom: 2,
@@ -267,7 +272,7 @@ const ROUTES = {
     title: "Overseas Dining (Japan)",
     description: "Map-first Japan dining guide sorted by Tabelog signals.",
     note: "Sorted Japan restaurants.",
-    mapSummary: "Japan restaurants sorted by selected Tabelog signal. Click a venue to move the map.",
+    mapSummary: "Japan restaurants sorted by selected Tabelog signal. Select a venue to move the map.",
     matcher: (record) => record.country === "Japan",
     defaultView: [35.676, 137.5],
     defaultZoom: 5,
@@ -282,7 +287,7 @@ const ROUTES = {
       "Singapore restaurants are Local Dining Credit entries. They are not eligible for the abroad Global Dining Credit; use Love Dining and Table for Two for separate local benefits.",
     note: "Singapore local dining credit restaurants.",
     mapSummary:
-      "Singapore Local Dining Credit records. The abroad Global Dining Credit excludes Singapore restaurants.",
+      "Singapore Local Dining Credit restaurants. The Global Dining Credit does not cover Singapore.",
     matcher: (record) => record.country === "Singapore",
     defaultView: [1.3521, 103.8198],
     defaultZoom: 12,
@@ -421,7 +426,7 @@ const ROUTES = {
     id: "stays",
     programId: "stays",
     label: "Overview",
-    eyebrow: "Plat Stay / Cached snapshot",
+    eyebrow: "Plat Stay / Hotels",
     title: "Stay Explorer",
     description:
       "Explore the Plat Stay hotel set, then jump to the official booking or contact page.",
@@ -502,9 +507,9 @@ const ROUTES = {
     eyebrow: "Table For Two / Singapore",
     title: "Table for Two",
     description:
-      "Singapore Platinum Table for Two venues from the official Amex 2026 roster image, with cached DiningCity AMEXPlatSG availability and app-only booking notes.",
+      "Singapore Platinum Table for Two restaurants from the official Amex 2026 list, with open tables from the Amex booking system. Booking happens in the Amex Experiences App.",
     mapSummary:
-      "Table for Two is booked via the Amex Experiences App. Generic public DiningCity restaurant slots are not treated as Table for Two allocation.",
+      "Table for Two is booked in the Amex Experiences App. Ordinary public tables at these restaurants do not count as Table for Two seats.",
   },
 };
 
@@ -990,7 +995,7 @@ function updateThemeToggle(theme) {
   );
 
   if (themeToggleIcon) {
-    themeToggleIcon.textContent = isLightTheme ? "☀" : "☾";
+    themeToggleIcon.innerHTML = isLightTheme ? THEME_ICONS.light : THEME_ICONS.dark;
   }
   if (themeToggleLabel) {
     themeToggleLabel.textContent = isLightTheme ? "Light" : "Dark";
@@ -1660,13 +1665,13 @@ function pocketSeatingLabel(summary) {
 
 function pocketSelectedDateSlotsHtml(record, selectedDate) {
   const summary = selectedDate ? pocketDateSummaries(record)[selectedDate] : null;
-  if (!selectedDate) return '<div class="tft-date-detail muted">Choose a date to see Pocket times and seats.</div>';
+  if (!selectedDate) return '<div class="tft-date-detail muted">Choose a date to see Pocket Concierge times and seats.</div>';
   if (!summary) {
     const isReservationDate = (pocketAvailabilityRecord(record)?.reservation_dates || []).includes(selectedDate);
     return `
       <div class="tft-date-detail">
         <h5>${escapeHtml(tableForTwoDateOptionLabel(selectedDate))}</h5>
-        <p>${isReservationDate ? "Pocket lists this date as bookable, but exact times/seats are not cached." : "No Pocket times found for this date."}</p>
+        <p>${isReservationDate ? "Pocket Concierge lists this date as bookable but does not show times or seats." : "Pocket Concierge shows no times for this date."}</p>
       </div>
     `;
   }
@@ -1951,10 +1956,10 @@ function stayLocationTags(record) {
 
 function focusLocationNote(record) {
   if (record.coordinate_confidence === "location_conflict") {
-    return "Location may be imprecise — verify the address before visiting.";
+    return "Location may be imprecise. Check the address before visiting.";
   }
   if (record.coordinate_confidence === "approximate") {
-    return "Location is approximate — confirm the address before visiting.";
+    return "Location is approximate. Confirm the address before visiting.";
   }
   if (["manual_verified", "google_place_verified"].includes(record.coordinate_confidence) && record.map_pin_note) {
     return record.map_pin_note;
@@ -2006,7 +2011,7 @@ function globalDiningCreditTermsWarning(payload) {
   if (!payload?.validUntil) return "";
   const expiry = new Date(`${payload.validUntil}T23:59:59+08:00`);
   if (!Number.isNaN(expiry.getTime()) && Date.now() > expiry.getTime()) {
-    return "This terms snapshot has passed its stated benefit expiry. Confirm the saved Amex offer before dining.";
+    return "These terms have passed their stated expiry date. Check the offer saved in your Amex app before dining.";
   }
   return "";
 }
@@ -2367,6 +2372,10 @@ async function ensureDiningDataLoaded() {
         fetchJson(GLOBAL_DATA_URL),
         fetchJson(GLOBAL_META_URL),
       ]);
+      if (!Array.isArray(japanRecords) && !Array.isArray(globalRecords)) {
+        dataLoadPromises.dining = null;
+        throw new Error("dining data unavailable");
+      }
       state.restaurants = [
         ...(Array.isArray(japanRecords) ? japanRecords : []),
         ...(Array.isArray(globalRecords) ? globalRecords : []),
@@ -2390,7 +2399,11 @@ async function ensureStaysDataLoaded() {
         fetchJson(STAYS_DATA_URL),
         fetchJson(STAYS_META_URL),
       ]);
-      state.stays = Array.isArray(stays) ? stays : [];
+      if (!Array.isArray(stays)) {
+        dataLoadPromises.stays = null;
+        throw new Error("stay data unavailable");
+      }
+      state.stays = stays;
       state.stays.forEach((record) => {
         record.search_text = (record.search_text || "").toLowerCase();
       });
@@ -2409,7 +2422,11 @@ async function ensureLoveDiningDataLoaded() {
         fetchJson(LOVE_DINING_DATA_URL),
         fetchJson(LOVE_DINING_META_URL),
       ]);
-      state.loveDining = Array.isArray(loveDining) ? loveDining : [];
+      if (!Array.isArray(loveDining)) {
+        dataLoadPromises.loveDining = null;
+        throw new Error("Love Dining data unavailable");
+      }
+      state.loveDining = loveDining;
       state.loveDining.forEach((record) => {
         const benefit = loveDiningBenefitProfile(record);
         record.search_text = [
@@ -2453,6 +2470,10 @@ async function ensureTableForTwoDataLoaded() {
           bot_username: null,
         })),
       ]);
+      if (!tableForTwo) {
+        dataLoadPromises.tableForTwo = null;
+        throw new Error("Table for Two data unavailable");
+      }
       state.tableForTwo = tableForTwo;
       applyTableForTwoStaticSnapshot(staticSlots);
       state.tableForTwoReleaseHistory = releaseHistory;
@@ -2492,11 +2513,11 @@ async function ensureRouteDataLoaded(route = currentRoute()) {
 
 function renderRouteLoadingState(route = currentRoute()) {
   if (isDiningRoute(route)) {
-    summaryStripText.textContent = "Loading dining records...";
+    summaryStripText.textContent = "Loading restaurants...";
     resultsText.textContent = "Loading venues...";
-    focusCard.innerHTML = '<div class="empty-state">Loading dining records...</div>';
-    resultsTableBody.innerHTML = '<tr><td colspan="8" class="empty-table">Loading dining records...</td></tr>';
-    mobileResultsList.innerHTML = '<div class="empty-state">Loading dining records...</div>';
+    focusCard.innerHTML = '<div class="empty-state">Loading restaurants...</div>';
+    resultsTableBody.innerHTML = '<tr><td colspan="8" class="empty-table">Loading restaurants...</td></tr>';
+    mobileResultsList.innerHTML = '<div class="empty-state">Loading restaurants...</div>';
     return;
   }
 
@@ -2727,7 +2748,7 @@ function sourceHealthCoverageLabel(coverage) {
   } else if (Number.isFinite(covered) && Number.isFinite(total)) {
     parts.push(`${covered.toLocaleString("en-SG")} of ${total.toLocaleString("en-SG")} available`);
   } else if (Number.isFinite(total)) {
-    parts.push(`${total.toLocaleString("en-SG")} records checked`);
+    parts.push(`${total.toLocaleString("en-SG")} checked`);
   }
   [
     ["stale", "older checks"],
@@ -2882,7 +2903,7 @@ function renderUpdatesShell() {
   if (!state.updatesLoaded) {
     updatesHeadline.textContent = "Checking confirmed changes...";
   } else if (unread.length) {
-    updatesHeadline.textContent = publicUpdateSummary(unread);
+    updatesHeadline.innerHTML = `<span class="updates-headline-full">${escapeHtml(publicUpdateSummary(unread))}</span><span class="updates-headline-short">${unread.length} unread change${unread.length === 1 ? "" : "s"}</span>`;
   } else if (primaryUpdates.length) {
     const latest = primaryUpdates[0];
     updatesHeadline.textContent = `Latest: ${updateKindLabel(latest.kind, latest).toLowerCase()} · ${latest.subject}`;
@@ -3040,7 +3061,7 @@ function diningSourceMeta(kind) {
 
 function diningSourceName(kind) {
   if (kind === "japan") return "Pocket Concierge";
-  if (kind === "global") return "Amex official directory";
+  if (kind === "global") return "Amex list";
   return "Source";
 }
 
@@ -3048,7 +3069,7 @@ function diningSourceCacheLabelForKind(kind) {
   const meta = diningSourceMeta(kind);
   if (!meta?.fetched_at) return "";
   const review = meta.manual_review_required ? " · some details are being verified" : "";
-  return `${diningSourceName(kind)} cached ${formatTimestamp(meta.fetched_at)}${review}`;
+  return `${diningSourceName(kind)} checked ${formatTimestamp(meta.fetched_at)}${review}`;
 }
 
 function diningSourceCacheLabel(record) {
@@ -3145,8 +3166,8 @@ function setTableOpen(isOpen) {
 function renderTableToggle() {
   const count = state.filtered.length;
   tableToggleMeta.textContent = state.tableOpen
-    ? `Showing ${count} detailed row${count === 1 ? "" : "s"}`
-    : `${count} row${count === 1 ? "" : "s"} available for deeper scanning`;
+    ? `Showing all ${count.toLocaleString("en-SG")}`
+    : `Compare all ${count.toLocaleString("en-SG")} side by side`;
 }
 
 function activeRecord() {
@@ -3716,8 +3737,9 @@ function renderStats() {
     ? `${filteredCountries.length} ${filteredCountries.length === 1 ? "country" : "countries"}, ${filteredCities.length} ${filteredCities.length === 1 ? "city" : "cities"}`
     : `${filteredCities.length} ${filteredCities.length === 1 ? "city" : "cities"}`;
 
-  const mappedText = filteredMapped === state.filtered.length ? "" : `, ${filteredMapped} mapped`;
-  const scopeMappedText = filteredMapped === state.scopeRecords.length ? "" : `, ${filteredMapped} mapped`;
+  const unpinnedText = (count) => (count > 0 ? `, ${count.toLocaleString("en-SG")} without a map pin` : "");
+  const mappedText = unpinnedText(state.filtered.length - filteredMapped);
+  const scopeMappedText = unpinnedText(state.scopeRecords.length - filteredMapped);
   const cacheSummary = [
     diningRouteCacheSummary(),
     pocketAvailabilityCacheLabel(),
@@ -3736,16 +3758,17 @@ function renderStats() {
   } else {
     summaryStripText.textContent =
       filterCount > 0
-        ? `${state.filtered.length} of ${state.scopeRecords.length} venues shown across ${filteredLoc}${mappedText}${cacheText}`
-        : `${state.scopeRecords.length} venues across ${scopeLoc}${scopeMappedText}${cacheText}`;
+        ? `${state.filtered.length.toLocaleString("en-SG")} of ${state.scopeRecords.length.toLocaleString("en-SG")} venues shown in ${filteredLoc}${mappedText}${cacheText}`
+        : `${state.scopeRecords.length.toLocaleString("en-SG")} venues in ${scopeLoc}${scopeMappedText}${cacheText}`;
 
-    resultsText.textContent = state.activeId ? `Selected venue · ${route.label}` : `Click a dot to select · ${route.label}`;
+    resultsText.textContent = state.activeId ? `Selected venue · ${route.label}` : `Select a pin on the map · ${route.label}`;
   }
   if (focusPanelTitle) focusPanelTitle.textContent = isJapanRankRoute(route) ? "Ranked venues" : "Selected venue";
+  setMapEmptyNote("map-empty-note", state.filtered.length === 0 && state.scopeRecords.length > 0);
   tableSummary.textContent =
-    filterCount > 0 ? "Current filtered shortlist in table form." : "Current route list in table form.";
-  mobileSummary.textContent = `${state.filtered.length} venues${state.filtered.length > MOBILE_PAGE_SIZE ? ` — scroll to browse all` : ""}`;
-  mapSummary.textContent = window.innerWidth <= MOBILE_BREAKPOINT ? "Tap a dot to explore a restaurant" : route.mapSummary;
+    filterCount > 0 ? "Your filtered shortlist." : "Every venue in this section.";
+  mobileSummary.textContent = `${state.filtered.length.toLocaleString("en-SG")} venues${state.filtered.length > MOBILE_PAGE_SIZE ? ". Scroll to see more" : ""}`;
+  mapSummary.textContent = window.innerWidth <= MOBILE_BREAKPOINT ? "Tap a pin to see a restaurant" : route.mapSummary;
   renderToolbarToggle();
   renderTableToggle();
 }
@@ -3986,7 +4009,7 @@ function renderJapanRankPanel() {
       </div>
     </details>
     ${pagerHtml}
-    <div class="rank-list">${rows || '<div class="empty-state">No ranked venues for this selection.</div>'}</div>
+    <div class="rank-list">${rows || '<div class="empty-state">No ranked venues in this prefecture.</div>'}</div>
   `;
 
   focusCard.querySelector(".rank-filter-panel")?.addEventListener("toggle", (event) => {
@@ -4112,11 +4135,11 @@ function renderFocusCard() {
   if (!record) {
     focusCard.innerHTML = state.filtered.length > 0
       ? `<div class="empty-state map-cta">
-          <div class="map-cta-icon" aria-hidden="true">◉</div>
+          <div class="map-cta-icon" aria-hidden="true">${MAP_PIN_ICON}</div>
           <p class="map-cta-heading">Select a dining venue</p>
           <p class="map-cta-sub">Use a map pin or table row to review cuisine, ratings, and eligibility notes.</p>
         </div>`
-      : '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
+      : '<div class="empty-state"><p>No venues match these filters.</p><button type="button" class="ghost-btn" data-clear-filters="reset-filters">Clear filters</button></div>';
     // Hide focus-panel on mobile when no record
     if (window.innerWidth <= MOBILE_BREAKPOINT) {
       if (diningFocusPanel) diningFocusPanel.style.display = 'none';
@@ -4287,7 +4310,7 @@ function renderTable() {
   }
   if (!state.filtered.length) {
     resultsTableBody.innerHTML =
-      '<tr><td colspan="8" class="empty-table">No matches. Adjust filters to expand results.</td></tr>';
+      '<tr><td colspan="8" class="empty-table">No venues match these filters.</td></tr>';
     return;
   }
 
@@ -4305,7 +4328,7 @@ function renderTable() {
   resultsTableBody.innerHTML = "";
   if (!tableRows.length) {
     resultsTableBody.innerHTML =
-      '<tr><td colspan="8" class="empty-table">No matches in table. Try a different search.</td></tr>';
+      '<tr><td colspan="8" class="empty-table">Nothing in the table matches that search.</td></tr>';
     return;
   }
 
@@ -4366,7 +4389,7 @@ function renderMobileCards(resetPage = true) {
   if (resetPage) mobileCardPage = 1;
   if (!state.filtered.length) {
     mobileResultsList.innerHTML =
-      '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
+      '<div class="empty-state"><p>No venues match these filters.</p><button type="button" class="ghost-btn" data-clear-filters="reset-filters">Clear filters</button></div>';
     return;
   }
 
@@ -4384,7 +4407,7 @@ function renderMobileCards(resetPage = true) {
     const kidPolicyKnown = isJapan && record.child_policy_norm && record.child_policy_norm !== "unknown";
     const gMobile = googleRating(record);
     const googleRatingInline = gMobile && gMobile.rating != null
-      ? `<span class="card-google-rating">★ ${gMobile.rating}${gMobile.review_count ? ` · ${Number(gMobile.review_count).toLocaleString()}` : ""} · ${escapeHtml(formatSourceDate(gMobile.scraped_at))}</span>`
+      ? `<span class="card-google-rating" title="Google rating, checked ${escapeHtml(formatSourceDate(gMobile.scraped_at))}">Google ★ ${gMobile.rating}${gMobile.review_count ? ` (${Number(gMobile.review_count).toLocaleString()})` : ""}</span>`
       : "";
     const regionDot = `<span class="card-region-dot" style="background:${markerColor(record)}" aria-hidden="true"></span>`;
     const cardSummary = diningSummaryPayload(record);
@@ -4527,7 +4550,7 @@ function setActiveRecord(id, options = {}) {
   const route = currentRoute();
   resultsText.textContent = isJapanRankRoute(route)
     ? id ? `Selected ranked venue · ${route.label}` : `Page ${state.japanRankPage} · click a venue to move the map`
-    : id ? `Selected venue · ${route.label}` : `Click a dot to select · ${route.label}`;
+    : id ? `Selected venue · ${route.label}` : `Select a pin on the map · ${route.label}`;
   renderFocusCard();
   if (!isJapanRankRoute(route)) {
     renderTable();
@@ -4664,10 +4687,10 @@ function stayLocationBadge(record) {
 
 function stayLocationNote(record) {
   if (record.coordinate_confidence === "location_conflict") {
-    return "Location may be imprecise — verify the property address before booking.";
+    return "Location may be imprecise. Check the hotel address before booking.";
   }
   if (record.coordinate_confidence === "approximate") {
-    return "Location is approximate — confirm the address before travelling.";
+    return "Location is approximate. Confirm the address before travelling.";
   }
   if (["poi_matched", "poi_address_matched", "address_matched", "google_place_verified"].includes(record.coordinate_confidence)) {
     return "Pin is matched to a place/address signal, not guaranteed to a specific hotel entrance.";
@@ -4934,8 +4957,8 @@ function setStayTableOpen(isOpen) {
 function renderStayTableToggle() {
   const count = state.stayFiltered.length;
   staysTableToggleMeta.textContent = state.stayTableOpen
-    ? `Showing ${count} detailed row${count === 1 ? "" : "s"}`
-    : `${count} row${count === 1 ? "" : "s"} available for deeper scanning`;
+    ? `Showing all ${count.toLocaleString("en-SG")}`
+    : `Compare all ${count.toLocaleString("en-SG")} side by side`;
 }
 
 function resetStayFilterControls() {
@@ -5070,8 +5093,8 @@ function renderStayStats() {
   const selected = stayDateRange();
   const filterCount = activeStayFilterCount();
   const sourceFreshness = state.staysSourceMeta?.fetched_at
-    ? `Official source cached ${formatTimestamp(state.staysSourceMeta.fetched_at)}`
-    : "Official source cache time unavailable";
+    ? `Amex list checked ${formatTimestamp(state.staysSourceMeta.fetched_at)}`
+    : "Check time not recorded";
 
   if (filterCount > 0) {
     const mappedText = mapped === state.stayFiltered.length ? "" : `, ${mapped} mapped`;
@@ -5084,10 +5107,11 @@ function renderStayStats() {
     staysSummaryStripText.textContent = `${state.stays.length} properties across ${scopeCountries.length} countries${mappedText} · ${sourceFreshness}.`;
   }
 
-  staysResultsText.textContent = state.stayActiveId ? "Selected property · Plat Stay" : "Click a pin to select · Plat Stay";
+  setMapEmptyNote("stays-map-empty-note", state.stayFiltered.length === 0 && state.stays.length > 0);
+  staysResultsText.textContent = state.stayActiveId ? "Selected property · Plat Stay" : "Select a pin on the map · Plat Stay";
   staysTableSummary.textContent = selected
-    ? "Current shortlist in table form. Exact blackout conflicts are already removed."
-    : "Current Plat Stay list in table form. Add travel dates to remove exact blackout conflicts.";
+    ? "Your shortlist. Hotels with a blackout on your dates are hidden."
+    : "Every Plat Stay hotel. Add travel dates to hide hotels with a blackout on those dates.";
   staysMobileSummary.textContent = staysTableSummary.textContent;
   staysMapSummary.textContent = "Plat Stay world view. Use filters and dates to narrow the shortlist.";
   renderStayToolbarToggle();
@@ -5126,11 +5150,11 @@ function renderStayFocusCard() {
   if (!record) {
     staysFocusCard.innerHTML = state.stayFiltered.length > 0
       ? `<div class="empty-state map-cta">
-          <div class="map-cta-icon" aria-hidden="true">◉</div>
-          <p class="map-cta-heading">Click any pin on the map</p>
+          <div class="map-cta-icon" aria-hidden="true">${MAP_PIN_ICON}</div>
+          <p class="map-cta-heading">Select a hotel on the map</p>
           <p class="map-cta-sub">or select a property from the list below</p>
         </div>`
-      : '<div class="empty-state">No matches. Adjust filters or dates to expand results.</div>';
+      : '<div class="empty-state"><p>No hotels match these filters and dates.</p><button type="button" class="ghost-btn" data-clear-filters="stays-reset-filters">Clear filters</button></div>';
     return;
   }
 
@@ -5209,7 +5233,7 @@ function refocusActiveRow(tableBody, hadRowFocus) {
 function renderStayTable() {
   if (!state.stayFiltered.length) {
     staysResultsTableBody.innerHTML =
-      '<tr><td colspan="5" class="empty-table">No matches. Adjust filters or dates to expand results.</td></tr>';
+      '<tr><td colspan="5" class="empty-table">No hotels match these filters and dates.</td></tr>';
     return;
   }
 
@@ -5241,7 +5265,7 @@ function renderStayTable() {
 function renderStayMobileCards() {
   if (!state.stayFiltered.length) {
     staysMobileResultsList.innerHTML =
-      '<div class="empty-state">No matches. Adjust filters or dates to expand results.</div>';
+      '<div class="empty-state"><p>No hotels match these filters and dates.</p><button type="button" class="ghost-btn" data-clear-filters="stays-reset-filters">Clear filters</button></div>';
     return;
   }
 
@@ -5250,7 +5274,7 @@ function renderStayMobileCards() {
     const status = stayAvailability(record);
     const g = googleRating(record);
     const googleRatingInline = g && g.rating != null
-      ? `<span class="badge blue">★ ${g.rating}${g.review_count ? ` · ${Number(g.review_count).toLocaleString()}` : ""} · ${escapeHtml(formatSourceDate(g.scraped_at))}</span>`
+      ? `<span class="badge blue" title="Google rating, checked ${escapeHtml(formatSourceDate(g.scraped_at))}">Google ★ ${g.rating}${g.review_count ? ` (${Number(g.review_count).toLocaleString()})` : ""}</span>`
       : "";
     const locationBadge = stayLocationBadge(record);
     const card = document.createElement("article");
@@ -5297,7 +5321,7 @@ function renderStayMobileCards() {
 
 function setActiveStayRecord(id) {
   state.stayActiveId = id;
-  staysResultsText.textContent = id ? "Selected property · Plat Stay" : "Click a pin to select · Plat Stay";
+  staysResultsText.textContent = id ? "Selected property · Plat Stay" : "Select a pin on the map · Plat Stay";
   renderStayFocusCard();
   renderStayTable();
   renderStayMobileCards();
@@ -5390,12 +5414,12 @@ function tableForTwoAvailabilityFromSlotVenue(venue, live = false) {
     error_code: live ? venue.error_code : undefined,
     confidence: "diningcity_amex_platinum_project",
     summary: venue.status === "live_available"
-      ? `Bookable slots returned in the latest ${live ? "live" : "published fallback"} check.`
+      ? "Bookable in the latest check."
       : venue.status === "live_no_seats"
-        ? "Not bookable in the latest live check."
-        : "The latest live check was unavailable.",
+        ? "Not bookable in the latest check."
+        : "The latest check did not complete.",
     meals: venue.meals,
-    notes: ["Cached from the DiningCity AMEXPlatSG project. Book and redeem through the Amex Experiences App."],
+    notes: ["From the Amex booking system. Book and redeem in the Amex Experiences App."],
   };
 }
 
@@ -6011,7 +6035,7 @@ async function submitTableForTwoAlert(event) {
         false,
       );
     } else if (response.status === 429) {
-      showTableForTwoAlertStatus("Too many attempts — please try again later.", true);
+      showTableForTwoAlertStatus("Too many attempts. Try again in a few minutes.", true);
     } else {
       showTableForTwoAlertStatus(
         tableForTwoAlertErrorMessage(data) ||
@@ -6224,26 +6248,26 @@ function renderTableForTwoFreshnessDetails(payload, venues, selectedRecord = nul
       ? `${bookingCandidates.length} new booking-app venue${bookingCandidates.length === 1 ? " is" : "s are"} being verified.`
       : "",
     notListedVenues.length
-      ? `${notListedVenues.length} official-roster venue${notListedVenues.length === 1 ? " is" : "s are"} not currently in the booking app.`
+      ? `${notListedVenues.length} restaurant${notListedVenues.length === 1 ? " on the official list is" : "s on the official list are"} not in the Amex app right now.`
       : "",
   ].filter(Boolean);
 
   tableForTwoFreshnessContent.innerHTML = `
     <div class="tft-freshness-row">
       <strong>Availability</strong>
-      <span>${escapeHtml(availabilitySubject)}${escapeHtml(availabilityCheckedAt ? `Checked ${formatTimestamp(availabilityCheckedAt)}.` : "Check pending.")}${state.tableForTwoLiveRefreshFailed ? " Latest live check unavailable; showing the published snapshot." : ""} Cached from ${escapeHtml(payload.availability_source?.project || "AMEXPlatSG")}; confirm in the Amex Experiences App.</span>
+      <span>${escapeHtml(availabilitySubject)}${escapeHtml(availabilityCheckedAt ? `Checked ${formatTimestamp(availabilityCheckedAt)}.` : "Check pending.")}${state.tableForTwoLiveRefreshFailed ? " The latest check did not complete, so this shows the previous one." : ""} From the Amex booking system; confirm in the Amex Experiences App.</span>
     </div>
     <div class="tft-freshness-row">
-      <strong>Official roster</strong>
+      <strong>Official list</strong>
       <span>${escapeHtml(payload.last_verified_at ? `Checked ${formatTimestamp(payload.last_verified_at)}.` : "Check pending.")}</span>
     </div>
     <div class="tft-freshness-row">
       <strong>Official menus</strong>
-      <span>${escapeHtml(menuCheckedAt ? `Index checked ${formatTimestamp(menuCheckedAt)}.` : "Check time unavailable.")}</span>
+      <span>${escapeHtml(menuCheckedAt ? `Checked ${formatTimestamp(menuCheckedAt)}.` : "Check time unavailable.")}</span>
     </div>
     ${rosterNotes.length ? `
       <div class="tft-freshness-row">
-        <strong>Roster notes</strong>
+        <strong>Notes</strong>
         <span>${escapeHtml(rosterNotes.join(" "))}</span>
       </div>
     ` : ""}
@@ -6311,7 +6335,7 @@ function filterTableForTwo() {
   ].filter(Boolean).join(" · ");
   const statusBits = [
     autoAvailabilityOnly ? `${shown} bookable venues` : `${shown === total ? total : `${shown} of ${total}`} venues in the Amex app`,
-    notListedVenues.length ? `${total + notListedVenues.length} on the official roster` : "",
+    notListedVenues.length ? `${total + notListedVenues.length} on the official list` : "",
     filterLabel,
     !autoAvailabilityOnly && freshAvailableCount ? `${freshAvailableCount} bookable` : "",
     !autoAvailabilityOnly && freshNoSeatCount ? `${freshNoSeatCount} not bookable` : "",
@@ -6322,18 +6346,19 @@ function filterTableForTwo() {
       ? "Some menu details are being verified"
       : "",
   ].filter(Boolean);
+  setMapEmptyNote("tft-map-empty-note", shown === 0 && total > 0);
   tableForTwoSummaryStripText.textContent = `${statusBits.join(" · ")}.`;
   renderTableForTwoFreshnessDetails(payload, venues, activeTableForTwoRecord());
   tableForTwoListSummary.textContent =
     autoAvailabilityOnly
       ? "Bookable restaurants for the current filters."
       : notListedVenues.length
-        ? `Active booking-app restaurants first. Not currently shown: ${notListedVenues.map((record) => record.name).join(", ")}.`
+        ? `Restaurants you can book in the Amex app come first. Not in the app right now: ${notListedVenues.map((record) => record.name).join("; ")}.`
         : "Restaurants first. Pick a venue to see dates and times.";
   if (tableForTwoMapSummary) {
     const mappedCount = venues.filter((record) => tableForTwoHasMapPin(record)).length;
     tableForTwoMapSummary.textContent =
-      `${mappedCount}/${total} restaurants mapped. Green pins are bookable for the current filters.`;
+      `${mappedCount} of ${total} restaurants on the map. Teal pins are bookable for your filters.`;
   }
   if (tableForTwoNoMatchLegend) {
     tableForTwoNoMatchLegend.hidden = false;
@@ -6543,10 +6568,10 @@ function tableForTwoAvailabilityLabel(record, filters = state.tableForTwoCurrent
   const key = tableForTwoAvailabilityKey(record, filters);
   if (key === "available") return `${partySize} pax available`;
   if (key === "no_seats") return "Not bookable";
-  if (key === "stale") return "Stale availability check";
+  if (key === "stale") return "Not checked recently";
   return ["retained", "error"].includes(record.availability?.live_result)
-    ? "Check unavailable"
-    : "Source pending";
+    ? "Check did not complete"
+    : "Not checked yet";
 }
 
 function tableForTwoAvailabilityBadgeClass(record, filters = state.tableForTwoCurrentFilters || {}) {
@@ -6688,7 +6713,7 @@ function tableForTwoNoMatchLine(record, filters = state.tableForTwoCurrentFilter
   const timeText = filters.time ? ` within ${TABLE_FOR_TWO_TIME_WINDOW_LABEL} of ${filters.time}` : "";
   if (filters.time) return `Not bookable for ${partySize} pax${dateText}${timeText}. Check the Amex app before planning around it.`;
   if (filters.date || filters.session || filters.day) return `Not bookable for ${partySize} pax${dateText}. Check the Amex app before planning around it.`;
-  return `Not bookable for ${partySize} pax in the current cached check.`;
+  return `Not bookable for ${partySize} pax in the latest check.`;
 }
 
 function tableForTwoCompactAvailabilityLine(record, filters = state.tableForTwoCurrentFilters || {}) {
@@ -7025,7 +7050,7 @@ function tableForTwoTelegramDeepLink(action, record) {
 
 function renderTableForTwoList() {
   if (!state.tableForTwoFiltered.length) {
-    tableForTwoResultsList.innerHTML = '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
+    tableForTwoResultsList.innerHTML = '<div class="empty-state"><p>No restaurants match these filters.</p><button type="button" class="ghost-btn" data-clear-filters="tft-reset-filters">Clear filters</button></div>';
     return;
   }
 
@@ -7043,7 +7068,7 @@ function renderTableForTwoList() {
     const listDateSummary = dateSummary === "Availability may be outdated" || availabilityLine.startsWith(dateSummary) ? "" : dateSummary;
     const rating = googleRating(record);
     const ratingStr = rating && rating.rating != null
-      ? `<span class="card-google-rating">★ ${escapeHtml(String(rating.rating))}${rating.review_count ? ` (${Number(rating.review_count).toLocaleString()})` : ""} · ${escapeHtml(formatSourceDate(rating.scraped_at))}</span>`
+      ? `<span class="card-google-rating" title="Google rating, checked ${escapeHtml(formatSourceDate(rating.scraped_at))}">Google ★ ${escapeHtml(String(rating.rating))}${rating.review_count ? ` (${Number(rating.review_count).toLocaleString()})` : ""}</span>`
       : "";
     card.setAttribute("role", "button");
     card.setAttribute("tabindex", "0");
@@ -7089,22 +7114,22 @@ function renderTableForTwoCard() {
       : "";
     const latestAvailabilityCheckedAt = tableForTwoLatestAvailabilityCheckedAt();
     tableForTwoFocusCard.innerHTML = `
-      <div class="focus-kicker">Official roster</div>
+      <div class="focus-kicker">Table for Two</div>
       <h3 class="focus-title">Select a venue</h3>
       <p class="focus-summary">Pick a restaurant to see bookable dates and times. Booking and redemption still happen in the Amex Experiences App.</p>
       <div class="price-grid tft-status-grid">
         <div class="price-card">
-          <span class="price-label">Roster</span>
+          <span class="price-label">Official list</span>
           <div class="price-tier">${escapeHtml(payload.venues?.length ? `${payload.venues.length} venues` : "No venues loaded")}</div>
-          <div class="price-raw">${escapeHtml(tableForTwoNotListedVenues().length ? `${tableForTwoVenues().length} listed in the Amex app. ` : "")}Official Amex source checked ${escapeHtml(payload.last_verified_at ? formatTimestamp(payload.last_verified_at) : "pending")}.</div>
+          <div class="price-raw">${escapeHtml(tableForTwoNotListedVenues().length ? `${tableForTwoVenues().length} listed in the Amex app. ` : "")}Amex page checked ${escapeHtml(payload.last_verified_at ? formatTimestamp(payload.last_verified_at) : "pending")}.</div>
         </div>
         <div class="price-card">
-          <span class="price-label">Availability source</span>
-          <div class="price-tier">${escapeHtml(payload.availability_source?.project || "AMEXPlatSG")}</div>
+          <span class="price-label">Open tables</span>
+          <div class="price-tier">Amex booking system</div>
           <div class="price-raw">${escapeHtml(latestAvailabilityCheckedAt ? `Checked ${formatTimestamp(latestAvailabilityCheckedAt)}.` : "Availability check pending.")}</div>
         </div>
       </div>
-      <div class="focus-note">Slot coverage: DiningCity AMEXPlatSG availability is cached here. Complete booking and voucher redemption in the Amex Experiences App.</div>
+      <div class="focus-note">Open tables come from the booking system behind the Amex app, with the time of each check shown. Book and redeem in the Amex Experiences App.</div>
       ${reviewNote}
       <div class="focus-actions">
         <a class="inline-link primary-action" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Official Table for Two page</a>
@@ -7118,27 +7143,27 @@ function renderTableForTwoCard() {
   const displayName = record.app_name || record.name;
   if (record.booking_project_status === "not_listed") {
     const permanentlyClosed = record.operational_status === "permanently_closed";
-    const statusTitle = permanentlyClosed ? "Permanently closed" : "Not currently in the TFT booking project";
+    const statusTitle = permanentlyClosed ? "Permanently closed" : "Not in the Amex app right now";
     const statusCopy = permanentlyClosed
-      ? `${record.operational_status_note || "An official Amex source marks this venue permanently closed."} It is also absent from the current DiningCity AMEXPlatSG booking project.`
-      : "This venue remains in the retained official-roster snapshot, but it is absent from the current DiningCity AMEXPlatSG booking project. That does not independently prove the restaurant itself has closed.";
+      ? `${record.operational_status_note || "An official Amex source marks this venue permanently closed."} It is also no longer bookable in the Amex app.`
+      : "This restaurant is on the saved official list but is not bookable in the Amex app right now. That does not mean the restaurant has closed.";
     const historicalMenus = tableForTwoPublishedMenus(record)
       .map((menu) => `<a class="inline-link" href="${escapeHtml(menu.url)}" target="_blank" rel="noopener">${escapeHtml(`${menu.label || "Set"} historical menu (PDF)`)}</a>`)
       .join("");
     const googleMapsUrl = bestGoogleMapsUrl(record) || googleMapsSearchUrl([displayName, "Singapore"]);
     tableForTwoFocusCard.innerHTML = `
-      <div class="focus-kicker">Historical roster record</div>
+      <div class="focus-kicker">Earlier listing</div>
       <h3 class="focus-title">${escapeHtml(displayName)}</h3>
       <div class="focus-tags"><span class="badge amber">${escapeHtml(statusTitle)}</span></div>
       ${record.address ? `<div class="focus-address">${escapeHtml(record.address)}</div>` : ""}
       <div class="focus-note focus-note-warn">${escapeHtml(statusCopy)}</div>
-      <p class="focus-summary">Booking, availability alerts, and reminders are disabled for this record. The source links remain available so the change can be audited.</p>
+      <p class="focus-summary">Booking, alerts and reminders are off for this restaurant. The source links stay here so you can check the change.</p>
       <div class="focus-actions">
         ${historicalMenus}
         <a class="inline-link" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
         ${record.venue_source_url ? `<a class="inline-link subtle" href="${escapeHtml(record.venue_source_url)}" target="_blank" rel="noopener">Venue source</a>` : ""}
         ${record.operational_status_source_url ? `<a class="inline-link subtle" href="${escapeHtml(record.operational_status_source_url)}" target="_blank" rel="noopener">Closure source</a>` : ""}
-        <a class="inline-link subtle" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Retained official roster source</a>
+        <a class="inline-link subtle" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Saved official list</a>
       </div>
     `;
     return;
@@ -7156,7 +7181,7 @@ function renderTableForTwoCard() {
     .map((menu, index) => `<a class="inline-link${index === 0 ? " primary-action" : ""}" href="${escapeHtml(menu.url)}" target="_blank" rel="noopener">${escapeHtml(`${menu.label || "Set"} menu (PDF)`)}</a>`)
     .join("");
   const menuPdfNote = !menuPdfLinks && menuPdf.status === "buffet_no_menu_expected"
-    ? `<div class="focus-note">Buffet venue — no set menu PDF.</div>`
+    ? `<div class="focus-note">Buffet venue, so there is no set menu PDF.</div>`
     : "";
   const venueMenuReviewItems = tableForTwoVenueMenuReviewItems(payload, record);
   const venueMenuReviewWarning = tableForTwoVenueMenuReviewWarning(venueMenuReviewItems);
@@ -7208,9 +7233,9 @@ function renderTableForTwoCard() {
       <a class="inline-link${menuPdfLinks ? "" : " primary-action"}" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
       ${record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.dining_city_public_url)}" target="_blank" rel="noopener">Public DiningCity page</a>` : ""}
       ${record.venue_source_url && !record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.venue_source_url)}" target="_blank" rel="noopener">Venue source</a>` : ""}
-      ${profileSourceUrl ? `<a class="inline-link subtle" href="${escapeHtml(profileSourceUrl)}" target="_blank" rel="noopener">DiningCity profile source</a>` : ""}
+      ${profileSourceUrl ? `<a class="inline-link subtle" href="${escapeHtml(profileSourceUrl)}" target="_blank" rel="noopener">DiningCity profile</a>` : ""}
       ${tableForTwoHasMapPin(record) ? `<button type="button" class="ghost-btn secondary" data-tft-focus-map="true">Center on map</button>` : ""}
-      <a class="inline-link subtle" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Official roster</a>
+      <a class="inline-link subtle" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Official list</a>
       <a class="inline-link subtle" href="${escapeHtml(payload.terms_url || TABLE_FOR_TWO_TNC_URL)}" target="_blank" rel="noopener">T&Cs PDF</a>
       ${telegramAskUrl ? `<a class="inline-link subtle" href="${escapeHtml(telegramAskUrl)}" target="_blank" rel="noopener">Ask on Telegram</a>` : ""}
       ${telegramReminderUrl ? `<a class="inline-link subtle" href="${escapeHtml(telegramReminderUrl)}" target="_blank" rel="noopener">Set Telegram reminder</a>` : ""}
@@ -7627,7 +7652,7 @@ function loveDiningCachedAt() {
 
 function loveDiningCachedLabel() {
   const cachedAt = loveDiningCachedAt();
-  return cachedAt ? formatTimestamp(cachedAt) : "Cache time not recorded";
+  return cachedAt ? formatTimestamp(cachedAt) : "Check time not recorded";
 }
 
 function loveDiningReviewSummary() {
@@ -7729,8 +7754,9 @@ function filterLoveDining() {
   const reviewSuffix = state.loveDiningSourceMeta?.manual_review_required ? " · some details are being verified" : "";
   const reviewedBaseline = loveDiningReviewSummary();
   loveSummaryStripText.textContent = n === total
-    ? `${total} venues · ${reviewedBaseline} · cached ${cachedLabel}${reviewSuffix}`
-    : `${n} of ${total} venues · cached ${cachedLabel}${reviewSuffix}`;
+    ? `${total} venues · ${reviewedBaseline} · checked ${cachedLabel}${reviewSuffix}`
+    : `${n} of ${total} venues · checked ${cachedLabel}${reviewSuffix}`;
+  setMapEmptyNote("love-map-empty-note", n === 0 && total > 0);
   loveResultsText.textContent = `${n} venue${n === 1 ? "" : "s"} shown · ${reviewedBaseline}`;
   loveMobileSummary.textContent = `${n} venue${n === 1 ? "" : "s"}`;
 
@@ -7770,7 +7796,7 @@ function renderLoveDiningCard() {
   const record = state.loveDining.find((r) => r.id === state.loveDiningActiveId) || null;
   if (!record) {
     loveFocusCard.innerHTML = `<div class="empty-state map-cta">
-      <div class="map-cta-icon" aria-hidden="true">◉</div>
+      <div class="map-cta-icon" aria-hidden="true">${MAP_PIN_ICON}</div>
       <p class="map-cta-heading">Select a Love Dining venue</p>
       <p class="map-cta-sub">Use a map pin or result card to check savings, booking rules, and T&C links.</p>
     </div>`;
@@ -7884,7 +7910,7 @@ function renderLoveDiningCard() {
 
 function renderLoveDiningMobileList() {
   if (!state.loveDiningFiltered.length) {
-    loveMobileResultsList.innerHTML = '<div class="empty-state">No matches. Adjust filters to expand results.</div>';
+    loveMobileResultsList.innerHTML = '<div class="empty-state"><p>No venues match these filters.</p><button type="button" class="ghost-btn" data-clear-filters="love-reset-filters">Clear filters</button></div>';
     return;
   }
   loveMobileResultsList.innerHTML = "";
@@ -7895,7 +7921,7 @@ function renderLoveDiningMobileList() {
     const isUnavailable = benefit.savingsKey === "unavailable";
     const g = isUnavailable || loveDiningShouldHideMapPin(record) ? null : googleRating(record);
     const ratingStr = g && g.rating != null
-      ? `<span class="card-google-rating">★ ${g.rating}${g.review_count ? ` (${Number(g.review_count).toLocaleString()})` : ""} · ${escapeHtml(formatSourceDate(g.scraped_at))}</span>`
+      ? `<span class="card-google-rating" title="Google rating, checked ${escapeHtml(formatSourceDate(g.scraped_at))}">Google ★ ${g.rating}${g.review_count ? ` (${Number(g.review_count).toLocaleString()})` : ""}</span>`
       : "";
     card.innerHTML = `
       <div class="mobile-card-head">
@@ -7915,7 +7941,7 @@ function renderLoveDiningMobileList() {
         <span class="badge green">${escapeHtml(benefit.appliesLabel)}</span>
         <span class="badge ${isUnavailable ? "amber" : "blue"}">${escapeHtml(loveDiningBookingLabel(record))}</span>
         ${loveDiningHasMultipleLocations(record) ? '<span class="badge amber">Bundled locations</span>' : ""}
-        <span class="badge">Cached ${escapeHtml(loveDiningCachedLabel())}</span>
+        <span class="badge">Checked ${escapeHtml(loveDiningCachedLabel())}</span>
       </div>
     `;
     card.addEventListener("click", () => {
@@ -8079,7 +8105,7 @@ async function applyRoute(routeId) {
 }
 
 function handleHashRoute() {
-  void applyRoute(resolveRouteFromHash());
+  applyRoute(resolveRouteFromHash()).catch(() => renderLoadFailure());
 }
 
 function navigateToRouteHash(routeHash) {
@@ -8088,7 +8114,7 @@ function navigateToRouteHash(routeHash) {
     window.location.hash = nextHash;
     return;
   }
-  void applyRoute(resolveRouteFromHash(nextHash));
+  applyRoute(resolveRouteFromHash(nextHash)).catch(() => renderLoadFailure());
 }
 
 async function init() {
@@ -8447,25 +8473,31 @@ window.addEventListener("resize", () => {
   }
 });
 
+function setMapEmptyNote(id, isEmpty) {
+  const note = document.getElementById(id);
+  if (note) note.hidden = !isEmpty;
+}
+
+function renderLoadFailure() {
+  const message = "Couldn't load the venue list. Check your connection, then reload.";
+  const block = `<div class="empty-state load-error" role="alert"><p>${message}</p><button type="button" class="ghost-btn" data-reload-page>Reload</button></div>`;
+  [focusCard, staysFocusCard, loveFocusCard, tableForTwoFocusCard,
+    mobileResultsList, staysMobileResultsList, loveMobileResultsList, tableForTwoResultsList]
+    .forEach((el) => { if (el) el.innerHTML = block; });
+  [summaryStripText, staysSummaryStripText, loveSummaryStripText, tableForTwoSummaryStripText,
+    resultsText, staysResultsText, tableSummary, staysTableSummary, mobileSummary, staysMobileSummary]
+    .forEach((el) => { if (el) el.textContent = "Couldn't load the venue list."; });
+  if (resultsTableBody) resultsTableBody.innerHTML = '<tr><td colspan="8" class="empty-table">Couldn\'t load the venue list.</td></tr>';
+  if (staysResultsTableBody) staysResultsTableBody.innerHTML = '<tr><td colspan="5" class="empty-table">Couldn\'t load the venue list.</td></tr>';
+}
+
+document.addEventListener("click", (event) => {
+  const target = event.target instanceof Element ? event.target : null;
+  if (target?.closest("[data-reload-page]")) window.location.reload();
+  const clear = target?.closest("[data-clear-filters]");
+  if (clear) document.getElementById(clear.dataset.clearFilters)?.click();
+});
+
 installRenderedUrlSanitizer();
 
-init().catch(() => {
-  focusCard.innerHTML =
-    '<div class="empty-state">Data failed to load. Please refresh the page.</div>';
-  staysFocusCard.innerHTML =
-    '<div class="empty-state">Data failed to load. Please refresh the page.</div>';
-  resultsText.textContent = "Load failed";
-  staysResultsText.textContent = "Load failed";
-  tableSummary.textContent = "Load failed";
-  staysTableSummary.textContent = "Load failed";
-  mobileSummary.textContent = "Load failed";
-  staysMobileSummary.textContent = "Load failed";
-  resultsTableBody.innerHTML =
-    '<tr><td colspan="8" class="empty-table">The dataset failed to load.</td></tr>';
-  staysResultsTableBody.innerHTML =
-    '<tr><td colspan="7" class="empty-table">The dataset failed to load.</td></tr>';
-  mobileResultsList.innerHTML =
-    '<div class="empty-state">The dataset failed to load.</div>';
-  staysMobileResultsList.innerHTML =
-    '<div class="empty-state">The dataset failed to load.</div>';
-});
+init().catch(() => renderLoadFailure());

@@ -320,7 +320,7 @@ async def telegram_guide_webhook(
             )
         elif first_word == "/delete_me" and settings.telegram_guide_llm_enabled:
             await run_in_threadpool(_forget_guide_context, settings, user_key)
-            answer = "Deleted your recent guide conversation context. Telegram reminders are not enabled yet."
+            answer = "Deleted your recent conversation with the guide. Telegram reminders are not switched on yet."
         elif reminder_command:
             answer = "Telegram reminders are not enabled yet. You can still use /slots to see open times."
         else:

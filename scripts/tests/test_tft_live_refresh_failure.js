@@ -46,7 +46,7 @@ function buildContext(fetchImpl) {
   assert.equal(ok.warnings.length, 0);
 
   // The freshness panel tells readers when the live check failed.
-  assert.match(app, /tableForTwoLiveRefreshFailed \? " Latest live check unavailable; showing the published snapshot\."/);
+  assert.match(app, /tableForTwoLiveRefreshFailed \? " The latest check did not complete, so this shows the previous one\."/);
 
   console.log("tft live refresh failure tests passed");
 })().catch((error) => {

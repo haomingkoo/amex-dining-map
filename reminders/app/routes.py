@@ -410,7 +410,7 @@ document.getElementById('mform').addEventListener('submit', async function(e){
   var r=await fetch(window.location.pathname+window.location.search,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   var d=await r.json().catch(function(){return {};});
   if(r.ok){s.textContent=d.message||'Saved.';}else{s.textContent=d.detail||'Could not save.';s.className='status err';}
- }catch(err){s.textContent='Network error — try again.';s.className='status err';}
+ }catch(err){s.textContent='Network error. Try again.';s.className='status err';}
 });
 </script>
 </main></body></html>"""
@@ -442,7 +442,7 @@ def _manage_page(record: dict, token: str, base: str, venue_names: list[str]) ->
     note = ""
     if record["status"] == "pending":
         note = (
-            '<p class="note">Your email isn\'t confirmed yet — check your inbox for the '
+            '<p class="note">Your email isn\'t confirmed yet. Check your inbox for the '
             "confirmation link. You can still update your preferences here.</p>"
         )
     replacements = {

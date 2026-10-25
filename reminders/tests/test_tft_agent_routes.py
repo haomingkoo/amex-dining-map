@@ -147,7 +147,7 @@ def test_delete_me_forgets_context_when_reminders_are_off(llm_settings, scripted
     conn = db.connect(llm_settings.db_path)
     assert conn.execute("SELECT COUNT(*) FROM telegram_guide_context").fetchone()[0] == 0
     conn.close()
-    assert sent[-1].startswith("Deleted your recent guide conversation context.")
+    assert sent[-1].startswith("Deleted your recent conversation with the guide.")
 
 
 def test_context_expires_after_thirty_minutes(llm_settings):
