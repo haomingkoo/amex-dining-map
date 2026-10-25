@@ -289,6 +289,7 @@ def counting_loader(payload: dict | None = None) -> tuple[list[int], object]:
         ("what dates does Park90 have?", "tft-park90"),
         ("When can I book VUE for dinner?", "tft-vue"),
         ("any dates for Kaya at The Standard lunch for 4?", "tft-kaya-at-the-standard"),
+        ("any dates for Kaya lunch for 4?", "tft-kaya-at-the-standard"),
         ("which dates does VUE have in December?", "tft-vue"),
     ],
 )
@@ -304,7 +305,7 @@ def test_natural_dates_question_runs_a_slot_lookup_for_that_venue(question, venu
 
 @pytest.mark.parametrize(
     "question",
-    ["when can I book Osteria Mozza for dinner?", "any dates for Kaya lunch for 4?"],
+    ["when can I book Osteria Mozza for dinner?", "any dates for Odette lunch for 4?"],
 )
 def test_natural_dates_question_with_unknown_venue_does_not_guess(question):
     calls, loader = counting_loader()

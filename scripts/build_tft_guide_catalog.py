@@ -46,6 +46,7 @@ REVIEWED_ALIASES = {
     "tft-colony": ["Colony at the Ritz Carlton", "Colony Ritz Carlton"],
     "tft-cultivate": ["Cultivate Cafe"],
     "tft-ginger": ["Ginger at Park Royal"],
+    "tft-kaya-at-the-standard": ["Kaya"],
     "tft-kees": ["Kees"],
     "tft-one-ninety": ["One Ninety", "One Ninety Restaurant"],
     "tft-vineyard": ["Vineyard at Hort Park"],
