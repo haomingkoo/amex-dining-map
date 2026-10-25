@@ -1,0 +1,127 @@
+/* Shared styles for privacy.html and terms.html. Tokens mirror styles.css (dark theme). */
+:root {
+  --bg: #070d16;
+  --surface: rgba(11, 22, 36, 0.92);
+  --border: rgba(183, 155, 105, 0.18);
+  --border-strong: rgba(201, 165, 90, 0.42);
+  --gold: #c9a55a;
+  --teal: #4db8a6;
+  --text: #f0ebe2;
+  --text-soft: rgba(240, 235, 226, 0.78);
+  --muted: #8a9aaa;
+  --serif: "Cormorant Garamond", Georgia, serif;
+  --sans: "Figtree", system-ui, sans-serif;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 1.5rem 1rem 3rem;
+  font: 400 1rem/1.65 var(--sans);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(70rem 36rem at 12% -12%, rgba(201, 165, 90, 0.12), transparent 60%),
+    radial-gradient(56rem 30rem at 108% 112%, rgba(77, 184, 166, 0.09), transparent 60%),
+    linear-gradient(180deg, #0a1520, #070c14 55%, #050a11);
+  background-attachment: fixed;
+}
+
+.legal-page {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 2.25rem 1.75rem 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.45);
+}
+
+.legal-back {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.legal-back:hover { color: var(--text); border-color: var(--border-strong); }
+
+.eyebrow {
+  margin: 0 0 0.8rem;
+  font: 600 0.7rem/1 var(--sans);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+h1 {
+  margin: 0 0 0.4rem;
+  font: 600 2.4rem/1.05 var(--serif);
+  letter-spacing: -0.015em;
+}
+
+h2 {
+  margin: 2.2rem 0 0.6rem;
+  font: 600 1.55rem/1.15 var(--serif);
+  color: var(--text);
+}
+
+h3 {
+  margin: 1.4rem 0 0.4rem;
+  font: 600 1rem/1.3 var(--sans);
+  color: var(--gold);
+}
+
+p, li { color: var(--text-soft); }
+ul { padding-left: 1.2rem; }
+li + li { margin-top: 0.35rem; }
+strong { color: var(--text); font-weight: 600; }
+code { font-size: 0.88em; color: var(--text); }
+
+a { color: var(--gold); text-underline-offset: 2px; }
+a:hover { color: var(--text); }
+
+.updated { margin: 0 0 1.6rem; color: var(--muted); font-size: 0.9rem; }
+
+.table-wrap { overflow-x: auto; margin: 0.8rem 0; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+
+th, td {
+  padding: 0.55rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-soft);
+}
+
+th { color: var(--text); font-weight: 600; }
+
+.review {
+  font: 600 0.72rem/1 var(--sans);
+  letter-spacing: 0.06em;
+  color: var(--teal);
+  white-space: nowrap;
+}
+
+.legal-footer {
+  max-width: 46rem;
+  margin: 1.4rem auto 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.legal-footer a { color: inherit; }
+
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 4px; }
+
+@media (max-width: 30rem) {
+  .legal-page { padding: 1.75rem 1.1rem 1.5rem; }
+  h1 { font-size: 2rem; }
+}
