@@ -390,7 +390,9 @@ def _slot_request(args: SlotArgs, today: date) -> tft_slots.SlotRequest:
         end = start
     else:
         end = start + timedelta(days=span - 1)
-    # A model asking for "a month" often overshoots by a day; clip to the cap.
+    # "This month" can start in the past and "a month" can overshoot a day; clip both.
+    if end >= today:
+        start = max(start, today)
     end = min(end, start + timedelta(days=tft_slots.MAX_RANGE_DAYS - 1))
     if start < today or end < start or end > today + timedelta(days=365):
         raise AgentError("slot_range")
@@ -405,17 +407,17 @@ def _slot_request(args: SlotArgs, today: date) -> tft_slots.SlotRequest:
     )
 
 
-WEEKDAY_RE = re.compile(
-    r"\b(" + "|".join(name.lower() for name in calendar.day_name) + r")s?\b", re.IGNORECASE
-)
+WEEKDAY_WORDS = {
+    **{name.lower(): index for index, name in enumerate(calendar.day_name)},
+    **{"mon": 0, "tue": 1, "tues": 1, "wed": 2, "thu": 3, "thur": 3, "thurs": 3, "fri": 4, "sat": 5},
+}
+WEEKDAY_RE = re.compile(r"\b(" + "|".join(WEEKDAY_WORDS) + r")s?\b", re.IGNORECASE)
 
 
 def _named_weekday(text: str) -> int | None:
     """The one weekday the user named, if exactly one."""
-    named = {match.lower() for match in WEEKDAY_RE.findall(text)}
-    if len(named) != 1:
-        return None
-    return [name.lower() for name in calendar.day_name].index(named.pop())
+    named = {WEEKDAY_WORDS[match.lower()] for match in WEEKDAY_RE.findall(text)}
+    return named.pop() if len(named) == 1 else None
 
 
 def _find_slots(args: SlotArgs, turn: _Turn) -> str:

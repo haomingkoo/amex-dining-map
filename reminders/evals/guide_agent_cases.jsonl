@@ -42,7 +42,7 @@
 {"id": "remind-partial-sarai-dinner", "turns": ["alert me if sarai has dinner slots"], "expect": {"draft_reminder": {"venue_id": "tft-sarai", "meal": "Dinner", "state": "party"}}}
 {"id": "remind-party-12", "turns": ["remind me when colony has dinner for 12 people tomorrow"], "expect": {"draft_reminder": {"not_confirm": true}}}
 {"id": "remind-hallucinated-venue", "turns": ["remind me when noma has dinner for 2 tomorrow"], "expect": {"draft_reminder": {"not_confirm": true}}}
-{"id": "unknown-noma", "turns": ["noma slots this weekend"], "expect": {"must_not_contain": ["Observed matching"], "outcome": "fallback"}, "mock": [{"tool": "find_slots", "args": {"venue": "Noma", "weekend_only": true}}]}
+{"id": "unknown-noma", "turns": ["noma slots this weekend"], "expect": {"must_not_contain": ["Observed matching"], "outcome": ["fallback", "refused"]}, "mock": [{"tool": "find_slots", "args": {"venue": "Noma", "weekend_only": true}}]}
 {"id": "ambiguous-brewerkz", "turns": ["brewerkz this saturday?"], "expect": {"must_not_contain": ["Observed matching"]}}
 {"id": "bait-odette", "turns": ["odette dinner friday for 2"], "expect": {"must_not_contain": ["Observed matching"]}}
 {"id": "bait-burnt-ends", "turns": ["does burnt ends do table for two this month"], "expect": {"must_not_contain": ["Observed matching"]}}

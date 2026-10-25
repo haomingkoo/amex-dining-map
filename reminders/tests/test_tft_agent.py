@@ -614,3 +614,26 @@ def test_guard_accepts_roster_names_and_user_spelled_names():
     )
 
     assert result.outcome == "agent"
+
+
+def test_abbreviated_weekday_mismatch_falls_back():
+    monday = next_weekday(0)
+    chat = ScriptedChat(
+        call("find_slots", venue="One-Ninety", party=6, meal="dinner", start_date=monday.isoformat(), end_date=monday.isoformat()),
+        text("One-Ninety is free."),
+    )
+
+    reply = _ask("one ninety dinner 6 ppl fri", chat, lambda: snapshot("tft-one-ninety", []))
+
+    assert reply == _deterministic("one ninety dinner 6 ppl fri")
+
+
+def test_range_starting_in_the_past_is_clipped_to_today():
+    chat = ScriptedChat(
+        call("find_slots", venue="Colony", start_date=(TODAY - timedelta(days=5)).isoformat(), end_date=(TODAY + timedelta(days=5)).isoformat()),
+        text("Colony has nothing matching."),
+    )
+
+    _ask("colony this month", chat, lambda: snapshot("tft-colony", []))
+
+    assert f"Filters: 2 pax, Lunch or Dinner, {TODAY.strftime('%a %d %b %Y')}" in chat.tool_outputs()[0]
