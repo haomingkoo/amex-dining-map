@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 import threading
 import time
@@ -15,6 +16,8 @@ from app import tft_live_api
 from app.config import load_settings
 
 
+logger = logging.getLogger("amex_reminders.slots")
+
 SOURCE_URL = "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json"
 PROJECT = "AMEXPlatSG"
 MAX_RESPONSE_BYTES = 1_000_000
@@ -22,6 +25,7 @@ MAX_VENUES = 50
 MAX_MEALS_PER_VENUE = 4
 MAX_SLOTS = 20_000
 POSITIVE_CACHE_SECONDS = 60
+MEAL_NAME_RE = re.compile(r"[A-Za-z][A-Za-z &\-]{1,39}")
 NEGATIVE_CACHE_SECONDS = 15
 
 
@@ -92,7 +96,8 @@ def validate_snapshot(payload: Any) -> dict[str, Any]:
         if not isinstance(meals, list) or len(meals) > MAX_MEALS_PER_VENUE:
             raise ValueError("slot snapshot meal count is invalid")
         for meal in meals:
-            if not isinstance(meal, dict) or meal.get("meal") not in {"Lunch", "Dinner"}:
+            # DiningCity also lists sessions like "Afternoon Tea"; accept any short plain name.
+            if not isinstance(meal, dict) or not MEAL_NAME_RE.fullmatch(str(meal.get("meal") or "")):
                 raise ValueError("slot snapshot meal is invalid")
             if meal.get("status") not in {"available", "no_seats", "unknown"}:
                 raise ValueError("slot snapshot meal status is invalid")
@@ -149,7 +154,9 @@ def live_snapshot(now: datetime | None = None) -> dict[str, Any] | None:
             return None
         validate_snapshot(snapshot)
         generated = _aware_timestamp(snapshot["generated_at"])
-    except (RuntimeError, ValueError, TypeError, OSError):
+    except (RuntimeError, ValueError, TypeError, OSError) as exc:
+        # A rejected live file silently degraded reminders to the daily copy once; say so.
+        logger.warning("live slot snapshot rejected, falling back to Pages copy: %s", exc)
         return None
     age = ((now or datetime.now(timezone.utc)) - generated).total_seconds()
     return snapshot if age <= tft_live_api.TFT_LIVE_STALE_AFTER_SECONDS else None
