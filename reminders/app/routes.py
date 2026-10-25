@@ -17,7 +17,12 @@ from pydantic import ValidationError
 from app import db, tft_guide
 from app.availability import open_tables_exist
 from app.config import Settings, load_settings
-from app.emailer import EmailDeliveryError, confirm_email_html, send_email
+from app.emailer import (
+    EmailDeliveryError,
+    confirm_email_html,
+    confirm_email_text,
+    send_email,
+)
 from app.observability import log_event
 from app.schemas import SubscribeRequest
 from app.tft_live_refresh import MEALS
@@ -193,6 +198,9 @@ def subscribe(
             api_key=settings.resend_api_key,
             sender=settings.resend_from,
             list_unsubscribe_url=unsub_url,
+            text=confirm_email_text(
+                sub_input.name, confirm_url, unsub_url, manage_url, matches_exist
+            ),
         )
     except Exception as exc:
         error_code = (

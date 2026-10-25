@@ -5,11 +5,13 @@ from __future__ import annotations
 import json
 import urllib.error
 import urllib.request
+from email.utils import formataddr, parseaddr
 from html import escape
 
 RESEND_ENDPOINT = "https://api.resend.com/emails"
 PRIVACY_URL = "https://amex-explorer.kooexperience.com/privacy.html"
 PRIVACY_EMAIL = "privacy@kooexperience.com"
+SENDER_NAME = "Table for Two alerts"
 
 
 class EmailDeliveryError(RuntimeError):
@@ -28,10 +30,19 @@ def send_email(
     api_key: str,
     sender: str,
     list_unsubscribe_url: str | None = None,
+    text: str | None = None,
     timeout: int = 30,
 ) -> None:
     """Send one HTML email through Resend. Provider responses are never retained."""
-    payload: dict = {"from": sender, "to": [to], "subject": subject, "html": html}
+    payload: dict = {
+        "from": formataddr((SENDER_NAME, parseaddr(sender)[1])),
+        "to": [to],
+        "subject": subject,
+        "html": html,
+        "reply_to": PRIVACY_EMAIL,
+    }
+    if text:
+        payload["text"] = text
     if list_unsubscribe_url:
         payload["headers"] = {
             "List-Unsubscribe": f"<{list_unsubscribe_url}>",
@@ -72,6 +83,8 @@ def _shell(
         else ""
     )
     return f"""\
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>{safe_title}</title></head><body style="margin:0">
 <div style="background:#f6f2ea;padding:24px 12px">
 <div style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #eadfc8;border-radius:14px;
  padding:28px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#26303d">
@@ -83,7 +96,8 @@ def _shell(
     {manage_link}<a href="{safe_unsubscribe_url}" {link}>Unsubscribe</a> &middot; <a href="{PRIVACY_URL}" {link}>Privacy</a><br>
     Questions or data requests: <a href="mailto:{PRIVACY_EMAIL}" {link}>{PRIVACY_EMAIL}</a>
   </p>
-</div></div>"""
+</div></div>
+</body></html>"""
 
 
 def confirm_email_html(
@@ -111,6 +125,45 @@ def confirm_email_html(
        style="display:inline-block;background:#0b1624;color:#f2e6c9;text-decoration:none;
               padding:12px 20px;border-radius:10px;font-weight:600;font-size:15px">Confirm my email</a>
   </p>
+  <p style="font-size:13px;line-height:1.5;color:#5b6575;margin:0 0 16px;word-break:break-all">Or open
+     this link: <a href="{safe_confirm_url}" style="color:#5b6575">{safe_confirm_url}</a></p>
   <p style="font-size:13px;line-height:1.5;color:#5b6575;margin:0">Didn't sign up? Ignore this
      email and nothing more will be sent.</p>"""
     return _shell("One last step", body, unsubscribe_url, manage_url)
+
+
+def confirm_email_text(
+    name: str | None,
+    confirm_url: str,
+    unsubscribe_url: str,
+    manage_url: str | None = None,
+    matches_exist: bool = False,
+) -> str:
+    """Plain-text twin of confirm_email_html."""
+    lines = [f"Hi {name}," if name else "Hi,", ""]
+    if matches_exist:
+        lines += [
+            "Good news: tables are already open at venues you picked. "
+            "Confirm and we'll send them over.",
+            "",
+        ]
+    lines += [
+        "Confirm your email and we'll let you know when a Table for Two slot "
+        "matches your request:",
+        "",
+        confirm_url,
+        "",
+        "Didn't sign up? Ignore this email and nothing more will be sent.",
+        "",
+        "--",
+        "An independent tool for Amex Platinum cardholders in Singapore. "
+        "Not affiliated with American Express.",
+    ]
+    if manage_url:
+        lines.append(f"Manage your reminders: {manage_url}")
+    lines += [
+        f"Unsubscribe: {unsubscribe_url}",
+        f"Privacy: {PRIVACY_URL}",
+        f"Questions or data requests: {PRIVACY_EMAIL}",
+    ]
+    return "\n".join(lines) + "\n"

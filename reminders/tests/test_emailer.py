@@ -40,11 +40,14 @@ def test_send_email_posts_to_resend(monkeypatch):
         api_key="re_test_key",
         sender="dinnertime@kooexperience.com",
         list_unsubscribe_url="https://svc/api/unsubscribe?token=z",
+        text="hi",
     )
 
     assert captured["url"] == "https://api.resend.com/emails"
     assert captured["auth"] == "Bearer re_test_key"
-    assert captured["data"]["from"] == "dinnertime@kooexperience.com"
+    assert captured["data"]["from"] == "Table for Two alerts <dinnertime@kooexperience.com>"
+    assert captured["data"]["reply_to"] == "privacy@kooexperience.com"
+    assert captured["data"]["text"] == "hi"
     assert captured["data"]["to"] == ["guest@example.com"]
     assert captured["data"]["subject"] == "Confirm"
     assert "List-Unsubscribe" in captured["data"]["headers"]
@@ -103,3 +106,25 @@ def test_confirmation_email_footer_has_privacy_link_and_contact():
 
     assert emailer.PRIVACY_URL in html
     assert "Questions or data requests: <a href=\"mailto:privacy@kooexperience.com\"" in html
+
+
+def test_confirm_email_text_carries_the_same_links_as_html():
+    args = ("Al", "https://svc/c?token=a", "https://svc/u", "https://svc/m", True)
+
+    text = emailer.confirm_email_text(*args)
+    html = emailer.confirm_email_html(*args)
+
+    for url in ("https://svc/c?token=a", "https://svc/u", "https://svc/m", emailer.PRIVACY_URL):
+        assert url in text
+        assert url in html
+    assert "Good news" in text
+    assert "<" not in text
+
+
+def test_confirm_email_html_has_no_external_assets():
+    html = emailer.confirm_email_html("Al", "https://svc/c", "https://svc/u", "https://svc/m")
+
+    assert "<img" not in html
+    assert "<link" not in html
+    assert "fonts.googleapis" not in html
+    assert html.count(">https://svc/c</a>") == 1  # raw link text matches its href
