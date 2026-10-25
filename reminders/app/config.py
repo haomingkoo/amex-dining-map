@@ -46,7 +46,7 @@ class Settings:
     tft_live_single_replica_confirmed: bool = False
     github_dispatch_token: str = ""
     telegram_guide_llm_enabled: bool = False
-    groq_api_key: str = ""
+    gemini_api_key: str = ""
     brave_api_key: str = ""
     telegram_llm_user_limit_per_minute: int = 4
     telegram_llm_user_limit_per_day: int = 20
@@ -154,7 +154,7 @@ def load_settings() -> Settings:
             "TFT_LIVE_SINGLE_REPLICA_CONFIRMED"
         ),
         telegram_guide_llm_enabled=_env_bool("TELEGRAM_GUIDE_LLM_ENABLED"),
-        groq_api_key=os.getenv("GROQ_API_KEY", "").strip(),
+        gemini_api_key=os.getenv("GEMINI_API_KEY", "").strip(),
         brave_api_key=os.getenv("BRAVE_API_KEY", "").strip(),
         telegram_llm_user_limit_per_minute=_env_int(
             "TELEGRAM_LLM_USER_LIMIT_PER_MINUTE", 4
@@ -264,10 +264,10 @@ def load_settings() -> Settings:
         if not settings.telegram_guide_enabled:
             missing.append("TELEGRAM_GUIDE_ENABLED")
         if (
-            re.fullmatch(r"[A-Za-z0-9_-]{20,256}", settings.groq_api_key) is None
-            or settings.groq_api_key.startswith(("YOUR_", "REPLACE_", "CHANGE_ME"))
+            re.fullmatch(r"[A-Za-z0-9._-]{20,256}", settings.gemini_api_key) is None
+            or settings.gemini_api_key.startswith(("YOUR_", "REPLACE_", "CHANGE_ME"))
         ):
-            missing.append("GROQ_API_KEY")
+            missing.append("GEMINI_API_KEY")
         if min(
             settings.telegram_llm_user_limit_per_minute,
             settings.telegram_llm_user_limit_per_day,

@@ -151,7 +151,7 @@ def _guide_agent(settings: Settings, principal_key: str, text: str) -> str | Non
         tft_guide.load_catalog(),
         datetime.now(timezone.utc),
         history=history,
-        chat=tft_agent.groq_chat(settings.groq_api_key),
+        chat=tft_agent.gemini_chat(settings.gemini_api_key),
         search=(
             tft_agent.brave_search(settings.brave_api_key)
             if settings.brave_api_key
@@ -174,6 +174,8 @@ def _guide_answer(settings: Settings, principal_key: str, text: str) -> str:
     def agent(message: str) -> str | None:
         if not _llm_allowed(settings, principal_key):
             over_budget.append(True)
+            logger.warning("guide agent skipped reason=budget")
+            tft_agent.record_outcome("budget")
             return None
         return _guide_agent(settings, principal_key, message)
 

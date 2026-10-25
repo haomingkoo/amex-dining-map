@@ -219,25 +219,37 @@ is sent at most once.
 
 ### Optional LLM agent
 
-Set `TELEGRAM_GUIDE_LLM_ENABLED=true` and `GROQ_API_KEY` to let free text that
-the deterministic matchers cannot place reach a Groq `openai/gpt-oss-120b`
-tool-calling agent. Startup fails if the flag is on without a key or without
-`TELEGRAM_GUIDE_ENABLED`. `/healthz` reports `telegram_guide_llm_enabled`.
+Set `TELEGRAM_GUIDE_LLM_ENABLED=true` and `GEMINI_API_KEY` to let free text that
+the deterministic matchers cannot place reach a Gemini `gemini-3.1-flash-lite`
+tool-calling agent (OpenAI-compatible endpoint; there is no other provider).
+Startup fails if the flag is on without a key or without `TELEGRAM_GUIDE_ENABLED`.
 Slash commands and every message the deterministic matchers already answer
 never call the model. The agent can only call thin wrappers over the existing
 answers (slots, menus, release patterns, venue details, T&C and FAQ summaries).
 It can also read the roster description and Google Maps rating baked into the
-catalogue. With `TELEGRAM_REMINDERS_ENABLED=true` it can start a reminder draft.
-The draft reply is the existing confirmation text, and only a typed YES activates it.
+catalogue. With `TELEGRAM_REMINDERS_ENABLED=true` it can start a reminder draft
+that follows the same venue, meal and dates steps as `/remind` (party defaults
+to 2). The draft reply is the normal confirmation text, and only a typed YES
+activates it.
 
 The model never writes facts on its own. A guard compares every date, time,
 party size, price, decimal, URL and capitalised name in its reply with this
 turn's tool output. It also rejects replies that are long, mention UTC, claim a
-booking, or use mostly words no tool returned. A rejected reply is replaced by
-the raw tool output, or by the source links when only web results were used.
-A model error, timeout or invalid tool argument returns the
-deterministic reply. Off-topic requests (homework, coding, other programmes) get
-a fixed refusal. Each message allows at most four tool calls and about 12 seconds.
+booking, or use mostly words no tool returned. Any sentence that gives an
+opinion (worth it, tasty, good for a date) without naming its source in the same
+sentence, such as "Per Google reviews" or "a 2025 r/singapore thread said", is
+deleted. A rejected reply is replaced by the raw tool output, or by the source
+links when only web results were used. A model error or timeout after a tool ran
+shows that tool's output. Any other model error, timeout or invalid tool
+argument returns the deterministic reply. Off-topic requests (homework, coding,
+other programmes) get a fixed refusal. Each message allows at most four tool
+calls, 10 seconds per model call and about 20 seconds in total.
+
+Fallbacks are never silent. Each one logs a warning on the
+`amex_reminders.guide_agent` logger (`guide agent fallback reason=...` or
+`guide agent guard rejected reply reason=...`). `/healthz` then shows
+`telegram_guide_llm` with per-outcome counts since the last restart, the
+fallback total and the last fallback reason and time.
 
 Set `BRAVE_API_KEY` to offer `web_search` for one roster venue at a time (dress
 code, parking, or community opinions from Reddit, HardwareZone and Burpple).
@@ -248,22 +260,21 @@ LLM-backed messages have their own quota on top of the guide limits. The
 defaults are `TELEGRAM_LLM_USER_LIMIT_PER_MINUTE=4`,
 `TELEGRAM_LLM_USER_LIMIT_PER_DAY=20` and `TELEGRAM_LLM_GLOBAL_LIMIT_PER_DAY=1500`.
 Over budget, the bot answers deterministically and prefixes "I'm in basic mode
-for now." Groq's free tier allows only a few agent messages per minute, so use a
-paid Groq tier before enabling this for real traffic.
+for now." That also counts as a `budget` fallback in `/healthz`.
 
-Privacy: Groq receives the message text (capped at 500 characters), the catalogue
-venue names and up to three recent exchanges. Brave receives a query built from
-the canonical venue name and a short topic. Neither receives a Telegram ID or
-username. Those three exchanges are stored per hashed user for 30 minutes, then
-purged. `/delete_me` removes them.
+Privacy: Gemini receives the message text (capped at 500 characters), the
+catalogue venue names and up to three recent exchanges. Brave receives a query
+built from the canonical venue name and a short topic. Neither receives a
+Telegram ID or username. Those three exchanges are stored per hashed user for 30
+minutes, then purged. `/delete_me` removes them.
 
 Evals live in `reminders/evals/`. The CI subset runs in pytest with a scripted
 model. A live run uses fixtures for slots and web results, so only the model is
 live. Results go to the gitignored `reminders/evals/results/` folder:
 
 ```bash
-reminders/.venv/bin/python scripts/eval_guide_agent.py --provider groq --limit 10
-reminders/.venv/bin/python scripts/check_guide_intent_live.py --brave-env PATH
+reminders/.venv/bin/python scripts/eval_guide_agent.py --provider gemini --key-file PATH
+reminders/.venv/bin/python scripts/check_guide_intent_live.py --key-file PATH --brave-env PATH
 ```
 
 Spam controls are intentionally quiet: Telegram's webhook secret is checked

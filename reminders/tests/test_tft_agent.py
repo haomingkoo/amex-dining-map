@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from app import db, telegram_bot_store, telegram_reminders, tft_agent, tft_guide
+from app import db, telegram_bot_store, telegram_reminders, tft_agent, tft_guide, tft_slots
 from tests.agent_helpers import (
     NOW,
     TODAY,
@@ -78,7 +78,7 @@ def test_weekend_phrasings_route_to_colony_weekend_lookup(message):
     reply = _ask(message, chat, _colony_weekend_loader())
 
     output = chat.tool_outputs()[0]
-    assert "Filters: 2 pax, Lunch or Dinner, weekends in the next 30 days." in output
+    assert f"Filters: 2 pax, Lunch or Dinner, weekends in the next {tft_slots.WEEKEND_RANGE_DAYS} days." in output
     assert _day(SATURDAY) in output and _day(WEDNESDAY) not in output
     assert "venue=tft-colony&party=2&day=weekend" in reply
     assert reply.startswith(f"Colony has slots on {_day(SATURDAY)}")
@@ -182,7 +182,7 @@ def test_http_timeout_and_garbage_body_become_agent_errors(monkeypatch):
 
     monkeypatch.setattr(tft_agent.urllib.request, "urlopen", timeout)
     with pytest.raises(tft_agent.AgentError, match="timeout"):
-        tft_agent.groq_chat("k" * 30)([], [], "auto", 1)
+        tft_agent.gemini_chat("k" * 30)([], [], "auto", 1)
 
     class Body(io.BytesIO):
         def __enter__(self):
@@ -193,11 +193,12 @@ def test_http_timeout_and_garbage_body_become_agent_errors(monkeypatch):
 
     monkeypatch.setattr(tft_agent.urllib.request, "urlopen", lambda *_a, **_k: Body(b"<html>"))
     with pytest.raises(tft_agent.AgentError, match="invalid_json"):
-        tft_agent.groq_chat("k" * 30)([], [], "auto", 1)
+        tft_agent.gemini_chat("k" * 30)([], [], "auto", 1)
 
 
 def test_budget_exhaustion_falls_back():
-    ticks = iter([0.0, 0.0, 13.0, 13.0])
+    over = tft_agent.TOTAL_BUDGET_SECONDS + 1
+    ticks = iter([0.0, 0.0, over, over])
     chat = ScriptedChat(call("list_venues"), text("Here you go."))
 
     result = tft_agent.run_detailed(
@@ -516,7 +517,7 @@ def test_full_reminder_sentence_returns_the_exact_confirmation_and_yes_activates
     assert reply == telegram_reminders._confirmation_prompt(_conversation(reminder_db))
     assert _conversation(reminder_db)["state"] == "confirm"
     activated = telegram_reminders.handle_message(reminder_db, PRINCIPAL, 5555, "YES", catalog(), NOW)
-    assert activated.startswith("Active reminder R")
+    assert activated.startswith("Reminder R") and " is on: " in activated
     row = reminder_db.execute("SELECT * FROM telegram_reminders").fetchone()
     assert (row["venue_id"], row["party_size"], row["meal"], row["state"]) == ("tft-colony", 2, "Dinner", "active")
 
@@ -526,20 +527,20 @@ def test_partial_reminder_starts_at_the_first_missing_step(reminder_db):
 
     reply = _ask("remind me about VUE", chat, drafter=_drafter(reminder_db))
 
-    assert _conversation(reminder_db)["state"] == "party"
-    assert "Create one Table for Two reminder for VUE (2/4)" in reply
-    assert "How many people (1–10)?" in reply
+    assert _conversation(reminder_db)["state"] == "meal"
+    assert _conversation(reminder_db)["party_size"] == 2
+    assert reply.startswith("Reminder for VUE. Lunch or dinner?")
 
 
 @pytest.mark.parametrize(
     "fields,state,reprompt",
     [
         ({"venue": "Noma", "party": 2, "meal": "dinner"}, "venue", "I need one exact TFT venue"),
-        ({"venue": "Colony", "party": 12, "meal": "dinner"}, "party", "Reply with a whole-number party size"),
+        ({"venue": "Colony", "party": 12, "meal": "dinner"}, "venue", "Party size must be 1 to 10"),
         (
             {"venue": "Colony", "party": 2, "meal": "dinner", "dates": [(TODAY - timedelta(days=2)).isoformat()]},
             "dates",
-            "I could not validate those future Singapore dates",
+            "I couldn't read those dates.",
         ),
     ],
 )
@@ -559,7 +560,7 @@ def test_reminder_dates_on_the_wrong_weekday_are_reprompted(reminder_db):
     reply = _ask("remind me when Colony has dinner for 2 on a Saturday", chat, drafter=_drafter(reminder_db))
 
     assert _conversation(reminder_db)["state"] == "dates"
-    assert "I could not validate those future Singapore dates" in reply
+    assert "I couldn't read those dates." in reply
 
 
 def test_no_tool_can_activate_list_cancel_or_delete_reminders(reminder_db):
@@ -640,3 +641,103 @@ def test_range_starting_in_the_past_is_clipped_to_today():
     _ask("colony this month", chat, lambda: snapshot("tft-colony", []))
 
     assert f"Filters: 2 pax, Lunch or Dinner, {TODAY.strftime('%a %d %b %Y')}" in chat.tool_outputs()[0]
+
+
+# ---------------------------------------------------------------- gemini, attribution and stats
+
+
+def test_gemini_thought_signature_is_echoed_on_the_next_turn():
+    first = call("list_venues")
+    first["tool_calls"][0]["extra_content"] = {"google": {"thought_signature": "sig-abc"}}
+    chat = ScriptedChat(first, text("Here are the venues."))
+
+    tft_agent.run("which venues are there", catalog(), NOW, history=[], chat=chat)
+
+    echoed = chat.requests[1]["messages"][-2]["tool_calls"][0]
+    assert echoed["extra_content"] == {"google": {"thought_signature": "sig-abc"}}
+
+
+def test_gemini_client_posts_to_gemini_with_the_flash_lite_model(monkeypatch):
+    sent = {}
+
+    class Body(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+    def urlopen(request, timeout):
+        sent.update(url=request.full_url, body=json.loads(request.data))
+        return Body(json.dumps({"choices": [{"message": {"content": "hi"}}]}).encode())
+
+    monkeypatch.setattr(tft_agent.urllib.request, "urlopen", urlopen)
+
+    tft_agent.gemini_chat("k" * 30)([], [], "auto", 1)
+
+    assert sent["url"].startswith("https://generativelanguage.googleapis.com/")
+    assert sent["body"]["model"] == "gemini-3.1-flash-lite"
+
+
+def test_unattributed_opinion_sentence_is_dropped_and_attributed_one_kept():
+    chat = ScriptedChat(
+        call("venue_info", venue="Colony"),
+        text(
+            "Colony is a buffet restaurant with seven open kitchens. The food is amazing. "
+            "Per Google Maps, Colony is rated 4.6 from 3,131 reviews."
+        ),
+    )
+
+    reply = tft_agent.run("is colony nice", catalog(), NOW, history=[], chat=chat)
+
+    assert "amazing" not in reply
+    assert reply.startswith("Colony is a buffet restaurant with seven open kitchens. Per Google Maps")
+
+
+def test_reply_of_only_unattributed_opinion_falls_back_to_tool_output():
+    chat = ScriptedChat(call("venue_info", venue="Colony"), text("Colony is great for a date."))
+
+    result = tft_agent.run_detailed("is colony good for a date", catalog(), NOW, history=[], chat=chat)
+
+    assert result.outcome == "guard:opinion"
+    assert result.reply.startswith("Colony — venue info")
+
+
+def test_greeting_words_are_not_treated_as_opinions():
+    reply, dropped = tft_agent._attributed_only("Good news! Colony has dinner at 19:00. Good luck booking.")
+
+    assert dropped == 0
+    assert reply == "Good news! Colony has dinner at 19:00. Good luck booking."
+
+
+def test_stats_count_agent_replies_and_fallbacks():
+    tft_agent.reset_stats()
+    ok = ScriptedChat(call("list_venues"), text("Here are the venues."))
+    broken = ScriptedChat(tft_agent.AgentError("http_500"))
+
+    tft_agent.run("which venues", catalog(), NOW, history=[], chat=ok)
+    tft_agent.run("which venues", catalog(), NOW, history=[], chat=broken)
+    stats = tft_agent.stats()
+
+    assert stats["outcomes"] == {"agent": 1, "fallback:http_500": 1}
+    assert stats["fallbacks"] == 1
+    assert stats["last_fallback"]["outcome"] == "fallback:http_500"
+    tft_agent.reset_stats()
+
+
+def test_fallback_is_logged_at_warning(caplog):
+    broken = ScriptedChat(tft_agent.AgentError("timeout"))
+
+    with caplog.at_level("WARNING", logger="amex_reminders.guide_agent"):
+        tft_agent.run("which venues", catalog(), NOW, history=[], chat=broken)
+
+    assert "guide agent fallback reason=timeout" in caplog.text
+
+
+def test_model_timeout_after_a_tool_shows_the_tool_output():
+    chat = ScriptedChat(call("list_venues"), tft_agent.AgentError("timeout"))
+
+    result = tft_agent.run_detailed("which venues are there", catalog(), NOW, history=[], chat=chat)
+
+    assert result.outcome == "raw:timeout"
+    assert result.reply == tft_guide._venues(catalog(), NOW)

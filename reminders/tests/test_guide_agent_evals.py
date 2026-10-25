@@ -48,7 +48,7 @@ def test_scorecard_counts_refusals_and_guard_fallbacks():
 
 def test_over_budget_case_is_basic_mode_without_llm(llm_settings, monkeypatch):  # noqa: F811
     case = next(case for case in MOCKED if case["id"] == "colony-weekend")
-    monkeypatch.setattr(tft_agent, "groq_chat", lambda _key: pytest.fail("over budget must not call the LLM"))
+    monkeypatch.setattr(tft_agent, "gemini_chat", lambda _key: pytest.fail("over budget must not call the LLM"))
     settings = replace(llm_settings, telegram_llm_user_limit_per_day=1)
     principal = "user:" + "e" * 64
     telegram_bot_routes._llm_allowed(settings, principal)

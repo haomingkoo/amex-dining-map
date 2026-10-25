@@ -5,7 +5,8 @@ Only the LLM is live: slots use a synthetic snapshot around the clock and web
 search replays reminders/evals/fixtures/web_results.json. Keys come from the
 environment or an .env file and are never printed.
 
-    reminders/.venv/bin/python scripts/eval_guide_agent.py --provider groq --limit 10
+    reminders/.venv/bin/python scripts/eval_guide_agent.py --provider gemini --key-file PATH
+    reminders/.venv/bin/python scripts/eval_guide_agent.py --provider gemini --model gemini-flash-latest
     reminders/.venv/bin/python scripts/eval_guide_agent.py --record-web --brave-env PATH
 """
 
@@ -25,10 +26,7 @@ sys.path.insert(0, str(ROOT / "reminders"))
 from app import tft_agent, tft_guide  # noqa: E402
 from evals import harness  # noqa: E402
 
-PROVIDERS = {
-    "groq": ("GROQ_API_KEY", tft_agent.groq_chat),
-    "gemini": ("GEMINI_API_KEY", tft_agent.gemini_chat),
-}
+PROVIDERS = {"gemini": ("GEMINI_API_KEY", tft_agent.gemini_chat)}
 RATE_LIMIT_WAIT_SECONDS = 30
 RATE_LIMIT_RETRIES = 3
 
@@ -73,7 +71,13 @@ def _table(card: dict) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--provider", choices=sorted(PROVIDERS), default="groq")
+    parser.add_argument("--provider", choices=sorted(PROVIDERS), default="gemini")
+    parser.add_argument("--model", default=tft_agent.GEMINI_MODEL)
+    parser.add_argument("--key-file", type=Path, help="file holding only the provider key")
+    parser.add_argument(
+        "--http-timeout", type=float, default=0,
+        help="override the per-call timeout (total budget = 2x) to score the model apart from latency",
+    )
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--env", type=Path, default=ROOT / ".env")
     parser.add_argument("--pause", type=float, default=2.0, help="seconds between cases")
@@ -89,10 +93,13 @@ def main() -> int:
         print(f"Recorded {count} web fixtures to {harness.WEB_FIXTURE_PATH}")
         return 0
     key_name, factory = PROVIDERS[args.provider]
-    key = _env_value(key_name, args.env)
+    key = args.key_file.read_text().strip() if args.key_file else _env_value(key_name, args.env)
     if not key:
         raise SystemExit(f"{key_name} is not set")
-    chat = PatientChat(factory(key))
+    chat = PatientChat(factory(key, args.model))
+    if args.http_timeout:
+        tft_agent.HTTP_TIMEOUT_SECONDS = args.http_timeout
+        tft_agent.TOTAL_BUDGET_SECONDS = 2 * args.http_timeout
     now = datetime.now(timezone.utc)
     search = harness.fixture_search(catalog)
     # ci_only cases script adversarial model output and only run with the mock.
@@ -107,10 +114,14 @@ def main() -> int:
         time.sleep(args.pause)
     card = harness.scorecard(results)
     card["rate_limit_retries"] = chat.rate_limited
-    print(f"\n## Scorecard: {args.provider}\n\n{_table(card)}")
-    out = ROOT / "reminders" / "evals" / "results" / f"{now.date().isoformat()}-{args.provider}.json"
+    print(f"\n## Scorecard: {args.provider} {args.model} (timeout {tft_agent.HTTP_TIMEOUT_SECONDS:g}s)\n\n{_table(card)}")
+    suffix = f"-t{args.http_timeout:g}" if args.http_timeout else ""
+    out = ROOT / "reminders" / "evals" / "results" / f"{now.date().isoformat()}-{args.model}{suffix}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
-    meta = {"provider": args.provider, "now": now.isoformat(), "cases": len(cases)}
+    meta = {
+        "provider": args.provider, "model": args.model, "now": now.isoformat(), "cases": len(cases),
+        "http_timeout": tft_agent.HTTP_TIMEOUT_SECONDS,
+    }
     out.write_text(json.dumps(harness.result_json(results, card, meta), ensure_ascii=False, indent=2, default=str))
     print(f"\nWrote {out.relative_to(ROOT)}")
     return 0

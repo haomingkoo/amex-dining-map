@@ -22,7 +22,7 @@ def llm_settings(tmp_path: Path):
     settings = replace(
         _settings(tmp_path / "agent.db"),
         telegram_guide_llm_enabled=True,
-        groq_api_key="g" * 40,
+        gemini_api_key="g" * 40,
         telegram_user_limit_per_minute=1_000,
         telegram_user_limit_per_day=1_000,
     )
@@ -43,12 +43,12 @@ def scripted(monkeypatch):
         chats.append(chat)
         return chat
 
-    monkeypatch.setattr(tft_agent, "groq_chat", factory)
+    monkeypatch.setattr(tft_agent, "gemini_chat", factory)
     return chats
 
 
 def test_llm_disabled_never_builds_a_client(llm_settings, monkeypatch):
-    monkeypatch.setattr(tft_agent, "groq_chat", lambda _key: pytest.fail("LLM must stay off"))
+    monkeypatch.setattr(tft_agent, "gemini_chat", lambda _key: pytest.fail("LLM must stay off"))
 
     reply = telegram_bot_routes._guide_answer(
         replace(llm_settings, telegram_guide_llm_enabled=False), PRINCIPAL, FREE_TEXT
@@ -99,7 +99,7 @@ def test_drafting_counts_toward_the_llm_budget(llm_settings, monkeypatch):
         telegram_reminder_dispatch_token="r" * 43,
         telegram_llm_user_limit_per_day=1,
     )
-    monkeypatch.setattr(tft_agent, "groq_chat", lambda _key: ScriptedChat(call("draft_reminder", venue="VUE")))
+    monkeypatch.setattr(tft_agent, "gemini_chat", lambda _key: ScriptedChat(call("draft_reminder", venue="VUE")))
 
     first = telegram_bot_routes._guide_answer(settings, PRINCIPAL, "remind me about VUE")
     conn = db.connect(settings.db_path)
@@ -108,7 +108,7 @@ def test_drafting_counts_toward_the_llm_budget(llm_settings, monkeypatch):
     conn.close()
     second = telegram_bot_routes._guide_answer(settings, PRINCIPAL, "remind me about VUE")
 
-    assert "(2/4)" in first
+    assert first.startswith("Reminder for VUE. Lunch or dinner?")
     assert second.startswith(telegram_bot_routes.BASIC_MODE)
 
 
@@ -179,15 +179,15 @@ def _guide_env(monkeypatch) -> None:
 
 def test_llm_enabled_without_key_fails_at_startup(monkeypatch):
     _guide_env(monkeypatch)
-    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
 
-    with pytest.raises(RuntimeError, match="GROQ_API_KEY"):
+    with pytest.raises(RuntimeError, match="GEMINI_API_KEY"):
         load_settings()
 
 
 def test_llm_settings_load_with_key_and_default_limits(monkeypatch):
     _guide_env(monkeypatch)
-    monkeypatch.setenv("GROQ_API_KEY", "gsk_" + "a" * 40)
+    monkeypatch.setenv("GEMINI_API_KEY", "AQ.Ab8" + "a" * 40)
 
     settings = load_settings()
 
@@ -197,3 +197,29 @@ def test_llm_settings_load_with_key_and_default_limits(monkeypatch):
         settings.telegram_llm_user_limit_per_day,
         settings.telegram_llm_global_limit_per_day,
     ) == (4, 20, 1_500)
+
+
+def test_healthz_reports_llm_fallback_counters(llm_settings, monkeypatch):
+    tft_agent.reset_stats()
+    monkeypatch.setattr(tft_agent, "gemini_chat", lambda _key: ScriptedChat(tft_agent.AgentError("http_503")))
+    monkeypatch.setattr("app.main.settings", llm_settings)
+
+    telegram_bot_routes._guide_answer(llm_settings, PRINCIPAL, FREE_TEXT)
+    with TestClient(app) as client:
+        health = client.get("/healthz").json()
+
+    assert health["feature_state"]["telegram_guide_llm_enabled"] is True
+    assert health["telegram_guide_llm"]["fallbacks"] == 1
+    assert health["telegram_guide_llm"]["outcomes"] == {"fallback:http_503": 1}
+    tft_agent.reset_stats()
+
+
+def test_over_budget_is_counted_as_a_fallback(llm_settings, scripted):
+    tft_agent.reset_stats()
+    settings = replace(llm_settings, telegram_llm_global_limit_per_day=1)
+
+    telegram_bot_routes._guide_answer(settings, "user:" + "1" * 64, FREE_TEXT)
+    telegram_bot_routes._guide_answer(settings, "user:" + "2" * 64, FREE_TEXT)
+
+    assert tft_agent.stats()["outcomes"] == {"agent": 1, "budget": 1}
+    tft_agent.reset_stats()

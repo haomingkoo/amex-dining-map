@@ -22,6 +22,7 @@ from app import (
     telegram_bot_store,
     telegram_reminder_dispatch,
     telegram_reminders,
+    tft_agent,
     tft_guide,
     tft_live_api,
 )
@@ -249,6 +250,8 @@ def healthz() -> dict[str, Any]:
         "alert_dispatch": dict(alert_dispatch.last_dispatch),
         "telegram_reminder_dispatch": dict(telegram_reminder_dispatch.last_dispatch),
     }
+    if settings.telegram_guide_llm_enabled:
+        response["telegram_guide_llm"] = tft_agent.stats()
     response.update(catalog_health())
     response["tft_live"] = tft_live_api.snapshot_health(
         settings.tft_live_snapshot_path

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Opt-in live check: run real multi-turn guide conversations against Groq.
+"""Opt-in live check: run real multi-turn guide conversations against Gemini.
 
-Reads GROQ_API_KEY (or GEMINI_API_KEY with --provider gemini, eval only) and
-BRAVE_API_KEY for web search from the environment or an .env file. Slots come from the live public snapshot and reminders use a
-throwaway SQLite file. Keys are never printed.
+Reads GEMINI_API_KEY (or --key-file) and BRAVE_API_KEY for web search from the
+environment or an .env file. Slots come from the live public snapshot and
+reminders use a throwaway SQLite file. Keys are never printed.
 
-    reminders/.venv/bin/python scripts/check_guide_intent_live.py [--brave-env PATH]
+    reminders/.venv/bin/python scripts/check_guide_intent_live.py [--key-file PATH] [--brave-env PATH]
 """
 
 from __future__ import annotations
@@ -69,18 +69,17 @@ def _cell(text: str, limit: int = 110) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--brave-env", type=Path, default=ROOT / ".env")
-    parser.add_argument("--provider", choices=["groq", "gemini"], default="groq")
+    parser.add_argument("--model", default=tft_agent.GEMINI_MODEL)
     parser.add_argument("--env", type=Path, default=ROOT / ".env")
-    # Groq's free tier allows few tokens per minute; pause so turns do not hit 429.
-    parser.add_argument("--pause", type=float, default=20.0)
+    parser.add_argument("--key-file", type=Path, help="file holding only the Gemini key")
+    parser.add_argument("--pause", type=float, default=2.0)
     args = parser.parse_args()
-    key_name = "GEMINI_API_KEY" if args.provider == "gemini" else "GROQ_API_KEY"
-    key = _env_value(key_name, args.env)
+    key = args.key_file.read_text().strip() if args.key_file else _env_value("GEMINI_API_KEY", args.env)
     if not key:
-        raise SystemExit(f"{key_name} is not set")
+        raise SystemExit("GEMINI_API_KEY is not set")
     brave_key = _env_value("BRAVE_API_KEY", args.brave_env)
     catalog = tft_guide.load_catalog()
-    chat = (tft_agent.gemini_chat if args.provider == "gemini" else tft_agent.groq_chat)(key)
+    chat = tft_agent.gemini_chat(key, args.model)
     search = tft_agent.brave_search(brave_key) if brave_key else None
     db_path = Path(tempfile.mkdtemp()) / "live.db"
     telegram_bot_store.init_db(db_path)
@@ -92,7 +91,7 @@ def main() -> int:
             conn, PRINCIPAL, catalog, datetime.now(timezone.utc), fields
         )
 
-    print(f"Provider: {args.provider}. Web search: {'on' if search else 'off'}\n")
+    print(f"Model: {args.model}. Web search: {'on' if search else 'off'}\n")
     print("| # | Message | Tools called | Outcome | ms | Reply (excerpt) |")
     print("|---|---|---|---|---|---|")
     full: list[tuple[str, str]] = []
