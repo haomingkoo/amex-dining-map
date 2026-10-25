@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,8 @@ DEFAULT_SOURCE = Path("data/table-for-two.json")
 DEFAULT_RELEASE_HISTORY = Path("data/table-for-two-release-history.json")
 DEFAULT_OUTPUT = Path("reminders/app/tft_guide_catalog.json")
 DEFAULT_REVIEW_ROOT = Path("data/reviews/official-documents")
+DEFAULT_RATINGS = Path("data/google-maps-ratings.json")
+INFO_TEXT_LIMIT = 600
 SOURCE_PROJECT = "AMEXPlatSG"
 DOCUMENT_SPECS = {
     "tft-terms": (
@@ -51,6 +54,32 @@ REVIEWED_ALIASES = {
     "tft-one-ninety": ["One Ninety", "One Ninety Restaurant"],
     "tft-vineyard": ["Vineyard at Hort Park"],
 }
+
+
+def _clean_text(value: Any, limit: int = INFO_TEXT_LIMIT) -> str | None:
+    if not isinstance(value, str):
+        return None
+    text = " ".join(unicodedata.normalize("NFKC", value).split())
+    return text[:limit] or None
+
+
+def _info_projection(venue: dict, rating: dict | None) -> dict:
+    """Roster description and Google rating the guide agent may quote."""
+    profile = venue.get("dining_city_profile") or {}
+    info: dict[str, Any] = {
+        "description": _clean_text(profile.get("description")),
+        "cuisines": [c for c in (_clean_text(x, 40) for x in profile.get("cuisines") or []) if c],
+        "area": _clean_text(venue.get("app_area"), 80),
+        "opening_hours": _clean_text(profile.get("opening_hour"), 400),
+        "google": None,
+    }
+    if rating and isinstance(rating.get("rating"), (int, float)):
+        info["google"] = {
+            "rating": rating["rating"],
+            "review_count": rating.get("review_count"),
+            "checked_on": rating.get("scraped_at"),
+        }
+    return info
 
 
 def _menu_projection(menu: dict | None) -> dict | None:
@@ -241,10 +270,13 @@ def build_catalog(
     source: dict,
     release_history: dict | None = None,
     review_root: Path = DEFAULT_REVIEW_ROOT,
+    ratings: dict | None = None,
 ) -> dict:
     tft_menu_reviews.verify_decision_receipts(source)
     if release_history is None:
         release_history = json.loads(DEFAULT_RELEASE_HISTORY.read_text())
+    if ratings is None:
+        ratings = json.loads(DEFAULT_RATINGS.read_text())
     active_venues = [
         venue
         for venue in source.get("venues") or []
@@ -274,6 +306,7 @@ def build_catalog(
                 "menus": menus,
                 "release_patterns": release_patterns.get(venue["id"], []),
                 "explorer_route": f"#/table-for-two?venue={venue['id']}",
+                "info": _info_projection(venue, ratings.get(venue["id"])),
             }
         )
     return {
