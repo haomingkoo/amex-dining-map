@@ -756,21 +756,34 @@ def test_management_and_delete_confirmation_have_independent_quota(
     assert "Email reminders were not changed" in sends[-1][2]
 
 
-def test_reminder_dispatch_generation_mismatch_fails_before_claim_or_send(
-    guide_client, monkeypatch
-):
+def test_reminder_dispatch_generation_mismatch_is_advisory(guide_client, monkeypatch):
     client, settings = guide_client
-    settings = replace(
-        settings,
-        telegram_reminders_enabled=True,
-        telegram_reminder_dispatch_token="d" * 43,
-    )
+    settings = _enabled_reminder_settings(settings)
     app.dependency_overrides[get_settings] = lambda: settings
+    now = datetime.now(timezone.utc)
+    requested_date = (now + timedelta(days=10)).date().isoformat()
+    _seed_active_reminder(settings, now, requested_date)
     snapshot = {
         "schema_version": 1,
         "source_project": "AMEXPlatSG",
-        "generated_at": "2026-08-30T04:00:00+00:00",
-        "venues": [],
+        "generated_at": now.isoformat(),
+        "venues": [
+            {
+                "id": "tft-vue",
+                "project": "AMEXPlatSG",
+                "status": "live_available",
+                "checked_at": (now - timedelta(minutes=2)).isoformat(),
+                "meals": [
+                    {
+                        "meal": "Dinner",
+                        "status": "available",
+                        "slots": [
+                            {"date": requested_date, "time": "19:00", "max_seats": 2}
+                        ],
+                    }
+                ],
+            }
+        ],
     }
     monkeypatch.setattr(
         "app.telegram_bot_routes.tft_slot_source.load_snapshot",
@@ -788,15 +801,9 @@ def test_reminder_dispatch_generation_mismatch_fails_before_claim_or_send(
         headers={"X-Telegram-Reminder-Dispatch-Token": "d" * 43},
     )
 
-    assert response.status_code == 409
-    assert sends == []
-    conn = db.connect(settings.db_path)
-    try:
-        assert conn.execute(
-            "SELECT COUNT(*) FROM telegram_reminder_deliveries"
-        ).fetchone()[0] == 0
-    finally:
-        conn.close()
+    assert response.status_code == 200
+    assert response.json()["sent"] == 1
+    assert len(sends) == 1
 
 
 def test_dispatch_bypasses_prewarmed_old_snapshot_once(guide_client, monkeypatch):

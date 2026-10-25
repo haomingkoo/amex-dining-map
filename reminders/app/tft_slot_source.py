@@ -8,8 +8,11 @@ import threading
 import time
 import urllib.error
 import urllib.request
-from datetime import date, datetime, time as clock_time
+from datetime import date, datetime, time as clock_time, timezone
 from typing import Any, Callable
+
+from app import tft_live_api
+from app.config import load_settings
 
 
 SOURCE_URL = "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json"
@@ -138,12 +141,30 @@ def _fetch(opener: Callable = _opener) -> dict[str, Any]:
     return validate_snapshot(json.loads(body))
 
 
+def live_snapshot(now: datetime | None = None) -> dict[str, Any] | None:
+    """The service's own live snapshot when valid and fresh, else None."""
+    try:
+        snapshot = tft_live_api.validated_snapshot(load_settings().tft_live_snapshot_path)
+        if snapshot is None:
+            return None
+        validate_snapshot(snapshot)
+        generated = _aware_timestamp(snapshot["generated_at"])
+    except (RuntimeError, ValueError, TypeError, OSError):
+        return None
+    age = ((now or datetime.now(timezone.utc)) - generated).total_seconds()
+    return snapshot if age <= tft_live_api.TFT_LIVE_STALE_AFTER_SECONDS else None
+
+
 def load_snapshot(
     opener: Callable = _opener,
     monotonic: Callable[[], float] = time.monotonic,
     force_refresh: bool = False,
 ) -> dict[str, Any]:
     global _cached, _cached_at, _negative_until
+    # The committed Pages copy refreshes daily; the live file every few minutes.
+    live = live_snapshot()
+    if live is not None:
+        return live
     current = monotonic()
     with _lock:
         if (

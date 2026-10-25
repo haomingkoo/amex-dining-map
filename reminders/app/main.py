@@ -19,6 +19,7 @@ from app import (
     db,
     owner_alert_store,
     telegram_bot_store,
+    telegram_reminder_dispatch,
     telegram_reminders,
     tft_guide,
     tft_live_api,
@@ -121,6 +122,16 @@ async def lifespan(_: FastAPI):
                     alert_dispatch.dispatch_and_record,
                     settings.github_dispatch_token,
                     alert_dispatch.GITHUB_REPO,
+                )
+            )
+        )
+    if settings.telegram_reminders_enabled:
+        tasks.append(
+            asyncio.create_task(
+                run_periodically(
+                    telegram_reminder_dispatch.DISPATCH_INTERVAL_SECONDS,
+                    telegram_reminder_dispatch.dispatch_and_record,
+                    settings,
                 )
             )
         )
@@ -230,6 +241,7 @@ def healthz() -> dict[str, Any]:
             "alert_dispatch_enabled": bool(settings.github_dispatch_token),
         },
         "alert_dispatch": dict(alert_dispatch.last_dispatch),
+        "telegram_reminder_dispatch": dict(telegram_reminder_dispatch.last_dispatch),
     }
     response.update(catalog_health())
     response["tft_live"] = tft_live_api.snapshot_health(
