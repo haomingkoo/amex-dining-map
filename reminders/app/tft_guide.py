@@ -805,7 +805,32 @@ def _slot_answer(
     )[:MAX_REPLY_LENGTH]
 
 
+NO_MATCH_PREFIXES = (
+    "I could not match that to one exact Table for Two venue.",
+    "Which venue?",
+)
+
+
 def handle_message(
+    text: str,
+    catalog: dict,
+    now: datetime | None = None,
+    slot_loader=None,
+    agent: Callable[[str], str | None] | None = None,
+) -> str:
+    """Deterministic answer; free text it cannot place goes to the optional agent."""
+    reply = _deterministic_answer(text, catalog, now, slot_loader)
+    if (
+        agent is None
+        or not text.strip()
+        or text.strip().startswith("/")
+        or not reply.startswith(NO_MATCH_PREFIXES)
+    ):
+        return reply
+    return agent(text) or reply
+
+
+def _deterministic_answer(
     text: str,
     catalog: dict,
     now: datetime | None = None,

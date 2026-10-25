@@ -150,9 +150,9 @@ queries. `/terms <topic>` and `/faq <topic>` return page-aware reviewed official
 document summaries. Bounded common questions such as “What is Table for Two?”,
 “Where is VUE?”, and “Does VUE have a menu?” route to the same deterministic,
 cited interfaces; typos and ambiguous venues are never guessed.
-It uses a generated source catalogue with official Amex menu links and
-never invokes an LLM, follows a user URL, joins groups, or reads owner-channel
-configuration. The catalogue is bundled with the Railway revision; the TFT
+It uses a generated source catalogue with official Amex menu links. Unless the
+optional agent below is enabled, it never invokes an LLM. It never follows a user
+URL, joins groups, or reads owner-channel configuration. The catalogue is bundled with the Railway revision; the TFT
 refresh rebuilds it, but a normal reviewed Railway deployment is required to
 serve that newer revision. Substantive venue and menu answers expose the source check time and warn
 when the bundled roster or menu index is stale. Release answers expose exact
@@ -217,6 +217,66 @@ works. Its `expected_generated_at` is now advisory because the live snapshot is
 newer than any deploy. SQLite claims dedupe the two callers, so a notification
 is sent at most once.
 
+### Optional LLM agent
+
+Set `TELEGRAM_GUIDE_LLM_ENABLED=true` and `GEMINI_API_KEY` to let free text that
+the deterministic matchers cannot place reach a Gemini `gemini-3.1-flash-lite`
+tool-calling agent (OpenAI-compatible endpoint; there is no other provider).
+Startup fails if the flag is on without a key or without `TELEGRAM_GUIDE_ENABLED`.
+Slash commands and every message the deterministic matchers already answer
+never call the model. The agent can only call thin wrappers over the existing
+answers (slots, menus, release patterns, venue details, T&C and FAQ summaries).
+It can also read the roster description and Google Maps rating baked into the
+catalogue. With `TELEGRAM_REMINDERS_ENABLED=true` it can start a reminder draft
+that follows the same venue, meal and dates steps as `/remind` (party defaults
+to 2). The draft reply is the normal confirmation text, and only a typed YES
+activates it.
+
+The model never writes facts on its own. A guard compares every date, time,
+party size, price, decimal, URL and capitalised name in its reply with this
+turn's tool output. It also rejects replies that are long, mention UTC, claim a
+booking, or use mostly words no tool returned. Any sentence that gives an
+opinion (worth it, tasty, good for a date) without naming its source in the same
+sentence, such as "Per Google reviews" or "a 2025 r/singapore thread said", is
+deleted. A rejected reply is replaced by the raw tool output, or by the source
+links when only web results were used. A model error or timeout after a tool ran
+shows that tool's output. Any other model error, timeout or invalid tool
+argument returns the deterministic reply. Off-topic requests (homework, coding,
+other programmes) get a fixed refusal. Each message allows at most four tool
+calls, 10 seconds per model call and about 20 seconds in total.
+
+Fallbacks are never silent. Each one logs a warning on the
+`amex_reminders.guide_agent` logger (`guide agent fallback reason=...` or
+`guide agent guard rejected reply reason=...`). `/healthz` then shows
+`telegram_guide_llm` with per-outcome counts since the last restart, the
+fallback total and the last fallback reason and time.
+
+Set `BRAVE_API_KEY` to offer `web_search` for one roster venue at a time (dress
+code, parking, or community opinions from Reddit, HardwareZone and Burpple).
+`/healthz` reports `telegram_guide_web_search_enabled`. Results are capped at
+five, treated as untrusted data and cited by URL.
+
+LLM-backed messages have their own quota on top of the guide limits. The
+defaults are `TELEGRAM_LLM_USER_LIMIT_PER_MINUTE=4`,
+`TELEGRAM_LLM_USER_LIMIT_PER_DAY=20` and `TELEGRAM_LLM_GLOBAL_LIMIT_PER_DAY=1500`.
+Over budget, the bot answers deterministically and prefixes "I'm in basic mode
+for now." That also counts as a `budget` fallback in `/healthz`.
+
+Privacy: Gemini receives the message text (capped at 500 characters), the
+catalogue venue names and up to three recent exchanges. Brave receives a query
+built from the canonical venue name and a short topic. Neither receives a
+Telegram ID or username. Those three exchanges are stored per hashed user for 30
+minutes, then purged. `/delete_me` removes them.
+
+Evals live in `reminders/evals/`. The CI subset runs in pytest with a scripted
+model. A live run uses fixtures for slots and web results, so only the model is
+live. Results go to the gitignored `reminders/evals/results/` folder:
+
+```bash
+reminders/.venv/bin/python scripts/eval_guide_agent.py --provider gemini --key-file PATH
+reminders/.venv/bin/python scripts/check_guide_intent_live.py --key-file PATH --brave-env PATH
+```
+
 Spam controls are intentionally quiet: Telegram's webhook secret is checked
 before JSON parsing, update IDs are durably deduplicated, and guide-only
 identities are stored as keyed hashes. A reminder draft stores no raw Telegram
@@ -227,7 +287,8 @@ minute and daily quotas are
 consumed atomically. Groups, bots, unsupported updates, and rate-limited bursts
 return success without sending a reply, preventing warning-message
 amplification. Replay metadata expires after seven days and quota metadata
-after 24 hours; message text and usernames are not stored.
+after 24 hours. Usernames are not stored. Message text is stored only as the
+optional agent's 30-minute conversation context.
 
 Before enabling, create a separate BotFather bot and generate two independent
 43+ character values for `TELEGRAM_GUIDE_WEBHOOK_SECRET` and

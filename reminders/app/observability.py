@@ -10,7 +10,12 @@ from typing import Any
 
 def configure_logging() -> None:
     formatter = logging.Formatter("%(message)s")
-    for name in ("amex_reminders.http", "amex_reminders.lifecycle", "amex_reminders.delivery"):
+    for name in (
+        "amex_reminders.http",
+        "amex_reminders.lifecycle",
+        "amex_reminders.delivery",
+        "amex_reminders.guide_agent",
+    ):
         logger = logging.getLogger(name)
         if not logger.handlers:
             handler = logging.StreamHandler(sys.stdout)

@@ -22,6 +22,7 @@ from app import (
     telegram_bot_store,
     telegram_reminder_dispatch,
     telegram_reminders,
+    tft_agent,
     tft_guide,
     tft_live_api,
 )
@@ -246,12 +247,18 @@ def healthz() -> dict[str, Any]:
             "owner_alerts_enabled": settings.owner_alerts_enabled,
             "telegram_guide_enabled": settings.telegram_guide_enabled,
             "telegram_reminders_enabled": settings.telegram_reminders_enabled,
+            "telegram_guide_llm_enabled": settings.telegram_guide_llm_enabled,
+            "telegram_guide_web_search_enabled": bool(
+                settings.telegram_guide_llm_enabled and settings.brave_api_key
+            ),
             "tft_live_refresh_enabled": settings.tft_live_refresh_enabled,
             "alert_dispatch_enabled": bool(settings.github_dispatch_token),
         },
         "alert_dispatch": dict(alert_dispatch.last_dispatch),
         "telegram_reminder_dispatch": dict(telegram_reminder_dispatch.last_dispatch),
     }
+    if settings.telegram_guide_llm_enabled:
+        response["telegram_guide_llm"] = tft_agent.stats()
     response.update(catalog_health())
     response["tft_live"] = tft_live_api.snapshot_health(
         settings.tft_live_snapshot_path

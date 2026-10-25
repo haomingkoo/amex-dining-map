@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import json
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -31,7 +32,15 @@ CREATE TABLE IF NOT EXISTS telegram_rate_events (
 );
 CREATE INDEX IF NOT EXISTS idx_telegram_rate_scope_ts
 ON telegram_rate_events(scope_key, event_type, created_ts);
+CREATE TABLE IF NOT EXISTS telegram_guide_context (
+  principal_key TEXT PRIMARY KEY,
+  exchanges TEXT NOT NULL,
+  updated_ts TEXT NOT NULL
+);
 """
+CONTEXT_TTL = timedelta(minutes=30)
+CONTEXT_EXCHANGES = 3
+CONTEXT_TEXT_LIMIT = 800
 
 
 @dataclass(frozen=True)
@@ -74,6 +83,10 @@ def purge(conn: sqlite3.Connection) -> None:
     conn.execute(
         "DELETE FROM telegram_webhook_updates WHERE updated_ts < ?",
         (_iso(now - timedelta(days=7)),),
+    )
+    conn.execute(
+        "DELETE FROM telegram_guide_context WHERE updated_ts < ?",
+        (_iso(now - CONTEXT_TTL),),
     )
 
 
@@ -147,7 +160,7 @@ def consume_limits(
     policies: list[tuple[str, int, int]],
     event_type: str = "guide",
 ) -> bool:
-    if event_type not in {"guide", "management"}:
+    if event_type not in {"guide", "management", "llm"}:
         raise ValueError("invalid Telegram rate event type")
     now = _now()
     purge(conn)
@@ -175,3 +188,42 @@ def consume_limits(
     except Exception:
         conn.rollback()
         raise
+
+
+def load_context(conn: sqlite3.Connection, principal_key: str) -> list[tuple[str, str]]:
+    """Recent (user, reply) pairs for the hashed principal, newest last."""
+    row = conn.execute(
+        "SELECT exchanges FROM telegram_guide_context "
+        "WHERE principal_key = ? AND updated_ts >= ?",
+        (principal_key, _iso(_now() - CONTEXT_TTL)),
+    ).fetchone()
+    if row is None:
+        return []
+    try:
+        pairs = json.loads(row["exchanges"])
+        return [(str(user), str(reply)) for user, reply in pairs][-CONTEXT_EXCHANGES:]
+    except (ValueError, TypeError):
+        return []
+
+
+def save_exchange(
+    conn: sqlite3.Connection, principal_key: str, user_text: str, reply: str
+) -> None:
+    pairs = load_context(conn, principal_key) + [
+        (user_text[:CONTEXT_TEXT_LIMIT], reply[:CONTEXT_TEXT_LIMIT])
+    ]
+    conn.execute(
+        "INSERT INTO telegram_guide_context (principal_key, exchanges, updated_ts) "
+        "VALUES (?, ?, ?) ON CONFLICT(principal_key) DO UPDATE SET "
+        "exchanges = excluded.exchanges, updated_ts = excluded.updated_ts",
+        (principal_key, json.dumps(pairs[-CONTEXT_EXCHANGES:]), _iso()),
+    )
+    conn.commit()
+
+
+def forget_context(conn: sqlite3.Connection, principal_key: str) -> None:
+    conn.execute(
+        "DELETE FROM telegram_guide_context WHERE principal_key = ?",
+        (principal_key,),
+    )
+    conn.commit()

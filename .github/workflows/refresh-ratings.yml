@@ -78,11 +78,16 @@ jobs:
           fi
           python3 scripts/build_source_health.py --source google-maps-ratings --attempt-outcome "$outcome"
 
+      - name: Rebuild Telegram guide catalogue
+        # The guide catalogue carries TFT ratings, so it must track this file.
+        run: python3 scripts/build_tft_guide_catalog.py
+
       - name: Commit updated ratings
         env:
           COMMIT_MESSAGE: "chore: refresh google maps ratings"
           MUST_STAGE: |
             data/google-maps-ratings.json
+            reminders/app/tft_guide_catalog.json
             data/source-health.json
             data/updates.json
           KEEP_LOCAL_ON_CONFLICT: data/google-maps-ratings.json

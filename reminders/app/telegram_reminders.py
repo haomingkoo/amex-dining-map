@@ -405,6 +405,83 @@ def _new_id(conn: sqlite3.Connection) -> str:
     raise RuntimeError("could not allocate reminder id")
 
 
+PRIVACY_LINE = "If you confirm, I will store this private chat ID until the reminder ends; /delete_me removes it."
+VENUE_PROMPT = (
+    "New reminder. Which venue? Send its name, e.g. Colony (add 'for 4' if you're bringing paying guests). "
+    "/venues lists them all, /cancel stops."
+)
+VENUE_REPROMPT = "I need one exact TFT venue. Use /venues, then reply with its name, or /cancel."
+PARTY_REPROMPT = "Party size must be 1 to 10. Send the venue again, e.g. Colony for 4, or /cancel."
+
+
+def _dates_prompt(today: date) -> str:
+    ex = date_examples(today)
+    return (
+        f"Which date(s)? For example: {ex['month']}, {ex['day']}, {ex['range']}, "
+        f"{ex['weekends']}, or {ex['list']}. Up to {tft_slots.MAX_RANGE_DAYS} days, or up to 10 separate dates."
+    )
+
+
+def _dates_reprompt(today: date) -> str:
+    ex = date_examples(today)
+    return (
+        f"I couldn't read those dates. Try: {ex['month']}, {ex['day']}, {ex['range']}, "
+        f"or {ex['weekends']}. Dates must be in the future, up to {tft_slots.MAX_RANGE_DAYS} days, or up to 10 separate dates."
+    )
+
+
+def start_from_fields(
+    conn: sqlite3.Connection,
+    principal_key: str,
+    catalog: dict,
+    now: datetime,
+    fields: dict[str, Any],
+) -> str:
+    """Pre-fill the /remind flow (venue, meal, dates; party defaults to 2) and prompt the first gap."""
+    _purge(conn, now)
+    conn.commit()
+    if conn.execute(
+        "SELECT 1 FROM telegram_reminder_conversations WHERE principal_key = ?",
+        (principal_key,),
+    ).fetchone():
+        return "A reminder setup is already in progress. Send /remind to continue, or /cancel."
+    today = now.astimezone(tft_slots.SGT).date()
+    venue, party, meal, dates = (fields.get(key) for key in ("venue", "party", "meal", "dates"))
+    known: dict[str, Any] = {}
+    matches = tft_guide.resolve_venue(str(venue), catalog) if venue else []
+    if len(matches) == 1:
+        known.update(venue_id=matches[0]["id"], venue_name=matches[0]["name"])
+    party_ok = party is None or (isinstance(party, int) and 1 <= party <= 10)
+    if "venue_id" in known and party_ok:
+        known["party_size"] = party or 2
+    if isinstance(meal, str) and meal.casefold() in {"lunch", "dinner"}:
+        known["meal"] = meal.casefold().title()
+    parsed = _parse_dates(str(dates), today) if dates else None
+    if parsed is not None:
+        known.update(date_start=parsed[0], date_end=parsed[1], dates=json.dumps(parsed[2]))
+    # A bad party size reopens the venue step, as typing "Colony for 12" does.
+    state = next(
+        (step for step, key in (("venue", "party_size"), ("meal", "meal"), ("dates", "date_start"))
+         if key not in known),
+        "confirm",
+    )
+    _save_conversation(conn, principal_key, state, now, created_ts=_iso(now), **known)
+    if state == "confirm":
+        draft = conn.execute(
+            "SELECT * FROM telegram_reminder_conversations WHERE principal_key = ?",
+            (principal_key,),
+        ).fetchone()
+        return _confirmation_prompt(draft)
+    if state == "venue":
+        prompt = PARTY_REPROMPT if not party_ok else VENUE_REPROMPT if venue else VENUE_PROMPT
+    elif state == "meal":
+        prompt = f"Reminder for {known['venue_name']}. Lunch or dinner?"
+    else:
+        prefix = f"Reminder for {known['venue_name']}, {known['meal'].lower()}. "
+        prompt = prefix + (_dates_reprompt(today) if dates else _dates_prompt(today))
+    return f"{prompt}\n{PRIVACY_LINE}"
+
+
 def handle_message(
     conn: sqlite3.Connection,
     principal_key: str,
@@ -469,11 +546,7 @@ def handle_message(
                 "delete_confirm": "Deletion is waiting: reply DELETE exactly, or /cancel.",
             }
             return prompts[conversation["state"]]
-        return (
-            "New reminder. Which venue? Send its name, e.g. Colony (add 'for 4' if you're bringing paying guests). "
-            "/venues lists them all, /cancel stops.\n"
-            "If you confirm, I will store this private chat ID until the reminder ends; /delete_me removes it."
-        )
+        return f"{VENUE_PROMPT}\n{PRIVACY_LINE}"
 
     if lowered == "/reminders":
         rows = conn.execute(
@@ -532,7 +605,7 @@ def handle_message(
         _save_conversation(
             conn, principal_key, "delete_confirm", now, created_ts=_iso(now)
         )
-        return "Delete your Telegram reminder data? This removes active reminders, setup state, stored delivery chat ID, reminder receipts, and rate keys. It does not affect email reminders. Reply DELETE within 15 minutes or /cancel."
+        return "Delete your Telegram reminder data? This removes active reminders, setup state, stored delivery chat ID, reminder receipts, recent guide conversation context, and rate keys. It does not affect email reminders. Reply DELETE within 15 minutes or /cancel."
 
     if conversation and conversation["state"] == "delete_confirm":
         if message != "DELETE":
@@ -559,6 +632,10 @@ def handle_message(
                 "DELETE FROM telegram_rate_events WHERE scope_key = ?",
                 (principal_key,),
             )
+            conn.execute(
+                "DELETE FROM telegram_guide_context WHERE principal_key = ?",
+                (principal_key,),
+            )
             conn.commit()
         except Exception:
             conn.rollback()
@@ -572,10 +649,10 @@ def handle_message(
     if state == "venue":
         venue_text, party = _venue_and_party(message)
         if party is None:
-            return "Party size must be 1 to 10. Send the venue again, e.g. Colony for 4, or /cancel."
+            return PARTY_REPROMPT
         matches = tft_guide.resolve_venue(venue_text, catalog)
         if len(matches) != 1:
-            return "I need one exact TFT venue. Use /venues, then reply with its name, or /cancel."
+            return VENUE_REPROMPT
         venue = matches[0]
         _save_conversation(
             conn, principal_key, "meal", now,
@@ -595,19 +672,11 @@ def handle_message(
         _save_conversation(
             conn, principal_key, "dates", now, meal=lowered.title()
         )
-        ex = date_examples(now.astimezone(tft_slots.SGT).date())
-        return (
-            f"Which date(s)? For example: {ex['month']}, {ex['day']}, {ex['range']}, "
-            f"{ex['weekends']}, or {ex['list']}. Up to {tft_slots.MAX_RANGE_DAYS} days, or up to 10 separate dates."
-        )
+        return _dates_prompt(now.astimezone(tft_slots.SGT).date())
     if state == "dates":
         parsed = _parse_dates(message, now.astimezone(tft_slots.SGT).date())
         if parsed is None:
-            ex = date_examples(now.astimezone(tft_slots.SGT).date())
-            return (
-                f"I couldn't read those dates. Try: {ex['month']}, {ex['day']}, {ex['range']}, "
-                f"or {ex['weekends']}. Dates must be in the future, up to {tft_slots.MAX_RANGE_DAYS} days, or up to 10 separate dates."
-            )
+            return _dates_reprompt(now.astimezone(tft_slots.SGT).date())
         start, end, dates = parsed
         _save_conversation(
             conn, principal_key, "confirm", now,
