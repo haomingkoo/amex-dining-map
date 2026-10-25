@@ -145,8 +145,8 @@ def test_guide_answer_uses_live_when_pages_copy_is_ten_hours_old(sources):
         f"/slots VUE | 2 | dinner | {requested}", tft_guide.load_catalog(), now
     )
 
-    assert "Observed matching AMEXPlatSG slots" in result
-    assert "older than 30 minutes" not in result
+    assert result.startswith("Open tables, dinner for 2 at VUE on ")
+    assert "too old to rely on" not in result
     assert sources.fetches == []
 
 
@@ -159,7 +159,7 @@ def test_guide_answer_reports_stale_when_only_old_pages_copy_exists(sources):
         f"/slots VUE | 2 | dinner | {requested}", tft_guide.load_catalog(), now
     )
 
-    assert "older than 30 minutes" in result
+    assert "too old to rely on" in result
 
 
 def _reset_last_dispatch(monkeypatch) -> None:

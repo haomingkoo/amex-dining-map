@@ -31,7 +31,7 @@ FRIDAY = next_weekday(4)
 
 
 def _day(value) -> str:
-    return value.strftime("%a %d %b")
+    return tft_slots._day(value)
 
 
 def _ask(message: str, chat: ScriptedChat, loader=None, **kwargs) -> str:
@@ -78,7 +78,7 @@ def test_weekend_phrasings_route_to_colony_weekend_lookup(message):
     reply = _ask(message, chat, _colony_weekend_loader())
 
     output = chat.tool_outputs()[0]
-    assert f"Filters: 2 pax, Lunch or Dinner, weekends in the next {tft_slots.WEEKEND_RANGE_DAYS} days." in output
+    assert output.startswith(f"Open tables, weekend lunch or dinner for 2 at Colony in the next {tft_slots.WEEKEND_RANGE_DAYS} days:")
     assert _day(SATURDAY) in output and _day(WEDNESDAY) not in output
     assert "venue=tft-colony&party=2&day=weekend" in reply
     assert reply.startswith(f"Colony has slots on {_day(SATURDAY)}")
@@ -97,7 +97,7 @@ def test_saturday_phrasing_looks_up_that_saturday_only():
 
     output = chat.tool_outputs()[0]
     assert _day(SATURDAY) in output and _day(SUNDAY) not in output
-    assert "2 pax, Lunch or Dinner" in output
+    assert output.startswith(f"Open tables, lunch or dinner for 2 at Colony on {_day(SATURDAY)}:")
     assert "19:00" in reply
 
 
@@ -121,7 +121,7 @@ def test_dinner_for_four_next_friday_is_single_day_party_four():
     reply = _ask("dinner for 4 at vue next friday", chat, lambda: snapshot("tft-vue", []))
 
     assert f"party=4&meal=dinner&date={FRIDAY.isoformat()}" in reply
-    assert f"Filters: 4 pax, Dinner, {FRIDAY.strftime('%a %d %b %Y')}." in chat.tool_outputs()[0]
+    assert chat.tool_outputs()[0].startswith(f"No dinner for 4 at VUE on {_day(FRIDAY)}.")
 
 
 def test_kaya_menu_resolves_through_candidates_to_the_official_pdf():
@@ -173,7 +173,7 @@ def test_invalid_model_output_keeps_the_deterministic_reply(step):
     reply = _ask(message, chat, _colony_weekend_loader())
 
     assert reply == _deterministic(message)
-    assert "Observed matching" not in reply
+    assert "Open tables," not in reply
 
 
 def test_http_timeout_and_garbage_body_become_agent_errors(monkeypatch):
@@ -253,7 +253,7 @@ def test_follow_up_uses_memory():
     sent = chat.requests[0]["messages"]
     assert sent[1] == {"role": "user", "content": history[0][0]}
     assert sent[2] == {"role": "assistant", "content": history[0][1]}
-    assert "Filters: 2 pax, Dinner" in chat.tool_outputs()[0]
+    assert "weekend dinners for 2 at Colony" in chat.tool_outputs()[0]
     assert reply.startswith("Dinner is open at 19:00.")
 
 
@@ -263,7 +263,7 @@ def test_hallucinated_slot_time_is_replaced_by_raw_tool_output():
     reply = _ask("colony this weekend?", chat, _colony_weekend_loader())
 
     assert "20:45" not in reply
-    assert reply.startswith("Table for Two — observed slots")
+    assert reply.startswith("Open tables, weekend lunch or dinner for 2 at Colony")
 
 
 def test_invented_url_is_never_shown():
@@ -272,7 +272,7 @@ def test_invented_url_is_never_shown():
     reply = _ask("colony this weekend?", chat, _colony_weekend_loader())
 
     assert "evil.example" not in reply
-    assert reply.startswith("Table for Two — observed slots")
+    assert reply.startswith("Open tables, weekend lunch or dinner for 2 at Colony")
 
 
 def test_tool_loop_is_capped_at_four_calls():
@@ -640,7 +640,7 @@ def test_range_starting_in_the_past_is_clipped_to_today():
 
     _ask("colony this month", chat, lambda: snapshot("tft-colony", []))
 
-    assert f"Filters: 2 pax, Lunch or Dinner, {TODAY.strftime('%a %d %b %Y')}" in chat.tool_outputs()[0]
+    assert chat.tool_outputs()[0].startswith(f"No lunch or dinner for 2 at Colony from {_day(TODAY)} to ")
 
 
 # ---------------------------------------------------------------- gemini, attribution and stats

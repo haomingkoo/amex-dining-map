@@ -28,6 +28,7 @@ PUBLISHED_MAX_BYTES = 1_000_000
 PUBLISHED_TIMEOUT_SECONDS = 4
 SGT = ZoneInfo("Asia/Singapore")
 MAX_NATURAL_QUERY_LENGTH = 200
+EXPLORER_PREFIX = "Open in Amex Explorer: "
 DEFAULT_PARTY_SIZE = 2
 NATURAL_DATES_RE = re.compile(
     r"(?:(?:which|what) dates? (?:is|are|does|do|has|have) |when can i book "
@@ -323,15 +324,15 @@ def _help() -> str:
         "Just ask, for example:\n"
         "• which dates is VUE available?\n"
         "• when can I book Colony for dinner for 4?\n"
-        f"• which dates does Park90 have in {month}?\n\n"
-        "Get a message when a slot opens:\n"
+        f"• which dates does Park90 have in {month}?\n"
+        "• /slots Estate dinner weekend\n\n"
+        "Get a message when a table opens:\n"
         "1. Send /remind\n"
         "2. Answer four quick questions: venue, party size, lunch or dinner, date(s)\n"
-        "3. Reply YES. I'll message you once when a matching slot shows up.\n"
+        "3. Reply YES. I will message you once when a matching table opens.\n"
         "/reminders lists yours, /cancel R123456 stops one, /delete_me erases your data.\n\n"
-        "More: /venues, /menu VUE, /release VUE dinner, /slots, /terms, /faq, /about\n\n"
-        "I only answer from checked sources and don't guess. Booking and redemption happen "
-        "in the Amex Experiences App. Not affiliated with American Express.\n"
+        "More: /venues, /menu VUE, /release VUE dinner, /terms, /faq, /about\n\n"
+        f"{tft_slots.SOURCE_NOTE} Not affiliated with American Express.\n"
         "Privacy: https://amex-explorer.kooexperience.com/privacy.html"
     )
 
@@ -762,7 +763,7 @@ def _slot_answer(
         or source.get("project") != tft_slots.PROJECT
         or source.get("stale_after_minutes") != 30
     ):
-        return "The slot source metadata could not be verified safely."
+        return tft_slots.UNAVAILABLE
     if parsed.venue_text.casefold() == "any":
         venues = list(catalog.get("venues") or [])
         venue_id = None
@@ -774,7 +775,7 @@ def _slot_answer(
                 "Use /venues, or use any to search all venues."
             )
         venue_id = str(venues[0].get("id") or "")
-    explorer = "Open filtered Table for Two: " + explorer_url(
+    explorer = EXPLORER_PREFIX + explorer_url(
         venue_id=venue_id,
         party_size=parsed.party_size,
         meal=parsed.meal if parsed.meal in {"Lunch", "Dinner"} else None,
@@ -790,19 +791,8 @@ def _slot_answer(
     try:
         snapshot = (slot_loader or tft_slot_source.load_snapshot)()
     except tft_slot_source.SlotSourceUnavailable:
-        return (
-            "I could not load the bounded AMEXPlatSG slot source right now, so I "
-            "will not make an availability claim.\n"
-            f"{_official_source_line(catalog)}\n{explorer}"
-        )
-    return tft_slots.answer(
-        parsed,
-        venues,
-        snapshot,
-        current,
-        _official_source_line(catalog),
-        explorer,
-    )[:MAX_REPLY_LENGTH]
+        return f"{tft_slots.UNAVAILABLE}\n{explorer}"
+    return tft_slots.answer(parsed, venues, snapshot, current, explorer)[:MAX_REPLY_LENGTH]
 
 
 NO_MATCH_PREFIXES = (

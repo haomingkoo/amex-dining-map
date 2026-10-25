@@ -60,12 +60,12 @@ def answer(command: str, payload: dict | None = None) -> str:
 def test_vue_filters_party_meal_date_and_preferred_time_together():
     result = answer("/slots VUE | 2 | dinner | 2026-10-29 | 19:00")
 
-    assert "Observed matching AMEXPlatSG slots" in result
-    for value in ("18:00", "18:30", "19:00", "19:30", "20:00"):
-        assert f"Thu 29 Oct {value}" in result
-    assert "2 pax, Dinner, Thu 29 Oct 2026, within 60 minutes of 19:00 SGT" in result
-    assert "checked 30 Aug, 10:50 SGT" in result
-    assert "Booking and voucher redemption remain in the Amex Experiences App" in result
+    assert result.startswith("Open tables, dinner for 2 at VUE on Thu 29 Oct, around 7:00pm:")
+    for value in ("6:00pm", "6:30pm", "7:00pm", "7:30pm", "8:00pm"):
+        assert f"Thu 29 Oct {value} (up to 2 people)" in result
+    assert f"Last checked 30 Aug, 10:50am. {tft_slots.SOURCE_NOTE}" in result
+    for jargon in ("observ", "AMEXPlatSG", "cached", "Official TFT", "—", "Filters:"):
+        assert jargon not in result
     assert (
         "#/table-for-two?venue=tft-vue&party=2&meal=dinner&date=2026-10-29&time=19%3A00"
         in result
@@ -84,9 +84,9 @@ def test_vue_filters_party_meal_date_and_preferred_time_together():
 def test_every_slot_filter_can_remove_nonmatching_observations(command: str):
     result = answer(command)
 
-    assert "No matching slot was observed" in result
-    assert "sold out" in result
-    assert "Observed matching AMEXPlatSG slots" not in result
+    assert result.startswith("No ")
+    assert "Open tables," not in result
+    assert tft_slots.SOURCE_NOTE in result
 
 
 def test_generic_diningcity_project_is_excluded():
@@ -96,8 +96,8 @@ def test_generic_diningcity_project_is_excluded():
 
     result = answer("/slots VUE | 2 | dinner | 2026-10-29", payload)
 
-    assert "no verifiable AMEXPlatSG slot snapshot" in result
-    assert "Thu 29 Oct 19:00" not in result
+    assert result.startswith("I do not have current times for VUE right now.")
+    assert "7:00pm" not in result
 
 
 def test_unknown_status_is_unverifiable_not_fresh_empty_coverage():
@@ -108,9 +108,8 @@ def test_unknown_status_is_unverifiable_not_fresh_empty_coverage():
 
     result = answer("/slots VUE | 2 | dinner | 2026-10-29", payload)
 
-    assert "no verifiable AMEXPlatSG slot snapshot" in result
-    assert "No matching slot was observed" not in result
-    assert "1 unverifiable" in result
+    assert result.startswith("I do not have current times for VUE right now.")
+    assert "Last checked" not in result
 
 
 def test_any_search_discloses_catalog_venues_missing_from_snapshot():
@@ -122,7 +121,7 @@ def test_any_search_discloses_catalog_venues_missing_from_snapshot():
     result = answer("/slots any | 2 | dinner | weekend", payload)
 
     missing = len(catalog()["venues"]) - 1
-    assert f"{missing} unverifiable" in result
+    assert f"{missing} venues were left out because I do not have a recent check." in result
 
 
 def test_per_venue_staleness_overrides_recent_top_level_generation_time():
@@ -133,9 +132,9 @@ def test_per_venue_staleness_overrides_recent_top_level_generation_time():
 
     result = answer("/slots VUE | 2 | dinner | 2026-10-29", payload)
 
-    assert "older than 30 minutes" in result
-    assert "current availability cannot be determined" in result
-    assert "Observed matching AMEXPlatSG slots" not in result
+    assert result.startswith("I cannot see current times for VUE right now.")
+    assert "The last check was 30 Aug, 10:29am, which is too old to rely on." in result
+    assert "Open tables," not in result
 
 
 def test_weekend_any_uses_transparent_next_62_day_defaults():
@@ -157,11 +156,11 @@ def test_weekend_any_uses_transparent_next_62_day_defaults():
 
     result = answer("/slots any | 2 | dinner | weekend", payload)
 
-    assert f"{venue_name} — Sat 05 Sep: 19:00 (1 time" in result
-    assert "2026-09-07" not in result
-    assert "weekends in the next 62 days" in result
+    assert result.startswith("Open tables, weekend dinners for 2 in the next 62 days:")
+    assert f"• {venue_name}, Sat 5 Sep: 7:00pm (1 time)" in result
+    assert "Mon 7 Sep" not in result
     assert (
-        "Open filtered Table for Two: https://amex-explorer.kooexperience.com/"
+        "Open in Amex Explorer: https://amex-explorer.kooexperience.com/"
         "#/table-for-two?party=2&meal=dinner&day=weekend"
         in result
     )
@@ -196,9 +195,9 @@ def test_conversational_weekend_query_defaults_transparently_and_checks_both_mea
         "Which TFT venues have weekend slots?", catalog(), NOW, loader
     )
 
-    assert "VUE — Sat 05 Sep: dinner 19:00 (1 time" in result
-    assert f"{lunch_venue_name} — Sun 06 Sep: lunch 19:00 (1 time" in result
-    assert "Filters: 2 pax, Lunch or Dinner, weekends in the next 62 days" in result
+    assert "• VUE, Sat 5 Sep: dinner 7:00pm (1 time)" in result
+    assert f"• {lunch_venue_name}, Sun 6 Sep: lunch 7:00pm (1 time)" in result
+    assert result.startswith("Open tables, weekend lunch or dinner for 2 in the next 62 days:")
     assert calls == 1
 
 
@@ -260,7 +259,7 @@ def test_source_failure_returns_one_bounded_nonclaim():
         "/slots VUE | 2 | dinner | 2026-10-29", catalog(), NOW, fail
     )
 
-    assert "will not make an availability claim" in result
+    assert result.startswith(tft_slots.UNAVAILABLE)
     assert "amex-explorer.kooexperience.com" in result
     assert len(result) <= tft_guide.MAX_REPLY_LENGTH
 
@@ -268,7 +267,7 @@ def test_source_failure_returns_one_bounded_nonclaim():
 def test_slot_command_requires_a_token_boundary():
     result = answer("/slotsVUE | 2 | dinner | 2026-10-29")
 
-    assert "Observed matching" not in result
+    assert "Open tables," not in result
     assert "http" not in result
 
 
@@ -298,7 +297,7 @@ def test_natural_dates_question_runs_a_slot_lookup_for_that_venue(question, venu
 
     result = tft_guide.handle_message(question, catalog(), NOW, loader)
 
-    assert result.startswith("Table for Two — observed slots")
+    assert tft_slots.SOURCE_NOTE in result
     assert f"#/table-for-two?venue={venue_id}&" in result
     assert calls[0] == 1
 
@@ -335,23 +334,23 @@ def test_natural_dates_question_with_ambiguous_venue_does_not_guess():
 def test_natural_dates_question_defaults_to_two_pax_both_meals_and_max_range():
     result = answer("which dates is VUE available?")
 
-    assert "Filters: 2 pax, Lunch or Dinner, Sun 30 Aug 2026 to Fri 30 Oct 2026." in result
+    assert result.startswith("Open tables, lunch or dinner for 2 at VUE in the next 62 days:")
 
 
 @pytest.mark.parametrize(
     ("question", "filters"),
     [
-        ("when can I book VUE for dinner?", "2 pax, Dinner, "),
-        ("any dates for VUE lunch for 4?", "4 pax, Lunch, "),
-        ("which dates is VUE available for 3 pax?", "3 pax, Lunch or Dinner, "),
-        ("what dates does VUE have for 5 people?", "5 pax, Lunch or Dinner, "),
-        ("any dates for VUE 6 people dinner", "6 pax, Dinner, "),
+        ("when can I book VUE for dinner?", "dinners for 2"),
+        ("any dates for VUE lunch for 4?", "lunches for 4"),
+        ("which dates is VUE available for 3 pax?", "lunch or dinner for 3"),
+        ("what dates does VUE have for 5 people?", "lunch or dinner for 5"),
+        ("any dates for VUE 6 people dinner", "dinners for 6"),
     ],
 )
 def test_natural_dates_modifiers_override_meal_and_party(question, filters):
     result = answer(question)
 
-    assert f"Filters: {filters}Sun 30 Aug 2026 to Fri 30 Oct 2026." in result
+    assert f"{filters} at VUE in the next 62 days" in result
 
 
 @pytest.mark.parametrize(
@@ -369,22 +368,22 @@ def test_natural_dates_party_out_of_range_uses_existing_error(question):
 @pytest.mark.parametrize(
     ("question", "date_range"),
     [
-        ("which dates does VUE have in October?", "Thu 01 Oct 2026 to Sat 31 Oct 2026"),
-        ("which dates does VUE have in August?", "Sun 30 Aug 2026 to Mon 31 Aug 2026"),
-        ("which dates does VUE have in July?", "Thu 01 Jul 2027 to Sat 31 Jul 2027"),
-        ("any dates for VUE in february for dinner", "Mon 01 Feb 2027 to Sun 28 Feb 2027"),
+        ("which dates does VUE have in October?", "from Thu 1 Oct to Sat 31 Oct:"),
+        ("which dates does VUE have in August?", "from Sun 30 Aug to Mon 31 Aug."),
+        ("which dates does VUE have in July?", "from Thu 1 Jul to Sat 31 Jul 2027."),
+        ("any dates for VUE in february for dinner", "from Mon 1 Feb to Sun 28 Feb 2027."),
     ],
 )
 def test_natural_dates_month_limits_range_to_that_month(question, date_range):
     result = answer(question)
 
-    assert f", {date_range}." in result
+    assert f"at VUE {date_range}" in result
 
 
 def test_natural_dates_month_returns_slots_inside_that_month():
     result = answer("which dates does VUE have in October for dinner?")
 
-    assert "VUE — Thu 29 Oct: 18:00–20:00 (5 times" in result
+    assert "• Thu 29 Oct: 6:00pm–8:00pm (5 times)" in result
 
 
 def test_natural_dates_rejects_bad_slot_source_metadata():
@@ -396,7 +395,7 @@ def test_natural_dates_rejects_bad_slot_source_metadata():
         "which dates is VUE available?", bad_catalog, NOW, loader
     )
 
-    assert result == "The slot source metadata could not be verified safely."
+    assert result == tft_slots.UNAVAILABLE
     assert calls[0] == 0
 
 
@@ -406,7 +405,7 @@ def test_natural_dates_source_failure_returns_bounded_nonclaim():
 
     result = tft_guide.handle_message("which dates is VUE available?", catalog(), NOW, fail)
 
-    assert "will not make an availability claim" in result
+    assert result.startswith(tft_slots.UNAVAILABLE)
     assert len(result) <= tft_guide.MAX_REPLY_LENGTH
 
 
@@ -416,7 +415,7 @@ def test_natural_dates_answer_checks_snapshot_project_and_reply_length():
 
     result = answer("which dates is VUE available?", payload)
 
-    assert "The slot source metadata could not be verified safely." in result
+    assert result == tft_slots.UNAVAILABLE
     assert len(result) <= tft_guide.MAX_REPLY_LENGTH
 
 
@@ -428,7 +427,7 @@ def test_unrelated_messages_do_not_trigger_a_slot_lookup(message):
 
     result = tft_guide.handle_message(message, catalog(), NOW, loader)
 
-    assert "observed slots" not in result
+    assert tft_slots.SOURCE_NOTE not in result
     assert calls[0] == 0
 
 
@@ -441,15 +440,15 @@ def test_help_mentions_plain_english_dates_question():
 def test_range_answer_groups_slots_into_dates_and_links_without_a_date():
     result = answer("which dates does VUE have in October?")
 
-    assert "Observed matching AMEXPlatSG dates:" in result
-    assert "VUE — Thu 29 Oct: dinner 18:00–20:00 (5 times, checked" in result
+    assert result.startswith("Open tables, lunch or dinner for 2 at VUE from Thu 1 Oct to Sat 31 Oct:")
+    assert "• Thu 29 Oct: dinner 6:00pm–8:00pm (5 times)" in result
     assert "&date=" not in result
 
 
 def test_single_day_answer_keeps_slot_rows_and_dated_link():
     result = answer("/slots VUE | 2 | dinner | 2026-10-29")
 
-    assert "Observed matching AMEXPlatSG slots" in result
+    assert "• Thu 29 Oct 6:00pm (up to 2 people)" in result
     assert "&date=2026-10-29" in result
 
 
@@ -461,13 +460,13 @@ def test_slots_accepts_plain_words_and_lookalike_pipes(command: str) -> None:
     result = answer(command)
 
     assert "Use /slots" not in result
-    assert "weekends in the next 62 days" in result
+    assert "weekend dinners for 2 at VUE in the next 62 days" in result
 
 
 def test_slots_plain_venue_only_searches_that_venue() -> None:
     result = answer("/slots VUE")
 
-    assert "Table for Two — observed slots" in result
+    assert tft_slots.SOURCE_NOTE in result
     assert "venue=tft-vue" in result
 
 
@@ -477,3 +476,66 @@ def test_exact_slots_range_allows_62_days_and_rejects_63():
 
     assert isinstance(allowed, tft_slots.SlotRequest)
     assert too_long == "Date ranges are limited to 62 days per lookup."
+
+
+def vue_with(meals: list[dict], status: str = "live_available") -> dict:
+    payload = snapshot()
+    vue = next(venue for venue in payload["venues"] if venue["id"] == "tft-vue")
+    vue["status"] = status
+    vue["meals"] = meals
+    return payload
+
+
+def meal(name: str, dates: list[str], at: str) -> dict:
+    slots = [{"date": value, "time": at, "max_seats": 2} for value in dates]
+    return {"meal": name, "status": "available", "slots": slots}
+
+
+def body_lines(result: str) -> list[str]:
+    return result.split("\n\n")[0].splitlines()
+
+
+def test_empty_weekend_offers_weekday_dinners_at_the_same_venue():
+    payload = vue_with([meal("Dinner", ["2026-09-01", "2026-09-03", "2026-09-15"], "18:00")])
+
+    result = answer("/slots VUE | 2 | dinner | weekend", payload)
+
+    assert body_lines(result) == [
+        "No weekend dinners for 2 at VUE in the next 62 days.",
+        "Weekday dinners are open on 3 days, 1–15 Sep. Earliest: Tue 1 Sep, 6:00pm.",
+    ]
+    assert result.count("https://") == 1
+    assert "day=weekend" in result
+
+
+def test_empty_meal_offers_the_other_meal_at_the_same_venue():
+    payload = vue_with([meal("Lunch", ["2026-09-05", "2026-09-12"], "12:00")])
+
+    result = answer("/slots VUE dinner weekend", payload)
+
+    assert body_lines(result) == [
+        "No weekend dinners for 2 at VUE in the next 62 days.",
+        "No dinners on other days either.",
+        "Lunches are open on 2 days, 5–12 Sep. Earliest: Sat 5 Sep, 12:00pm.",
+    ]
+
+
+def test_fully_booked_venue_says_nothing_is_open_in_the_window():
+    payload = vue_with([], status="live_no_seats")
+
+    result = answer("/slots VUE | 2 | dinner | weekend", payload)
+
+    assert body_lines(result) == [
+        "No weekend dinners for 2 at VUE in the next 62 days.",
+        "Nothing else is open for 2 at VUE in the next 62 days.",
+    ]
+    assert f"Last checked 30 Aug, 10:50am. {tft_slots.SOURCE_NOTE}" in result
+
+
+def test_alternatives_respect_party_size():
+    payload = vue_with([meal("Dinner", ["2026-09-01"], "18:00")])
+
+    result = answer("/slots VUE | 4 | dinner | weekend", payload)
+
+    assert "Weekday" not in result
+    assert "Nothing else is open for 4 at VUE" in result

@@ -1,4 +1,4 @@
-"""Pure parsing, matching, and formatting for observed AMEXPlatSG slots."""
+"""Pure parsing, matching, and formatting for AMEXPlatSG slots."""
 
 from __future__ import annotations
 
@@ -19,6 +19,9 @@ PREFERRED_TIME_WINDOW_MINUTES = 60
 SGT = ZoneInfo("Asia/Singapore")
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 TIME_RE = re.compile(r"\d{2}:\d{2}")
+MEAL_PLURALS = {"Lunch": "lunches", "Dinner": "dinners"}
+SOURCE_NOTE = "Times come from DiningCity and can change; book in the Amex Experiences app."
+UNAVAILABLE = "I cannot load Table for Two times right now. Please try again in a few minutes."
 
 
 @dataclass(frozen=True)
@@ -133,14 +136,52 @@ def _in_range(value: str, request: SlotRequest) -> bool:
 
 
 def _day(value: date) -> str:
-    return value.strftime("%a %d %b")
+    return f"{value:%a} {value.day} {value:%b}"
 
 
-def _full_day(value: date) -> str:
-    return value.strftime("%a %d %b %Y")
+def clock(value: str) -> str:
+    """'18:00' -> '6:00pm'."""
+    parsed = time.fromisoformat(value)
+    return f"{parsed.hour % 12 or 12}:{parsed.minute:02d}{'am' if parsed.hour < 12 else 'pm'}"
 
 
-def _date_rows(matches: list[dict], request: SlotRequest) -> list[str]:
+def checked_label(moment: datetime) -> str:
+    local = moment.astimezone(SGT)
+    return f"{local.day} {local:%b}, {clock(local.strftime('%H:%M'))}"
+
+
+def _span(dates: list[str]) -> str:
+    first, last = date.fromisoformat(min(dates)), date.fromisoformat(max(dates))
+    if first == last:
+        return f"{first.day} {first:%b}"
+    if (first.year, first.month) == (last.year, last.month):
+        return f"{first.day}–{last.day} {last:%b}"
+    return f"{first.day} {first:%b}–{last.day} {last:%b}"
+
+
+def _when(request: SlotRequest, today: date) -> str:
+    if request.start_date == request.end_date:
+        return f" on {_day(request.start_date)}"
+    if (request.start_date, request.end_date) == (today, today + timedelta(days=MAX_RANGE_DAYS - 1)):
+        return f" in the next {MAX_RANGE_DAYS} days"
+    year = f" {request.end_date.year}" if request.end_date.year != today.year else ""
+    return f" from {_day(request.start_date)} to {_day(request.end_date)}{year}"
+
+
+def _search(request: SlotRequest, venue: str | None, today: date) -> str:
+    """What was asked for, e.g. 'weekend dinners for 2 at Estate in the next 62 days'."""
+    noun = MEAL_PLURALS.get(request.meal, "lunch or dinner")
+    if request.start_date == request.end_date:
+        noun = request.meal.lower()
+    phrase = f"{'weekend ' if request.weekend_only else ''}{noun} for {request.party_size}"
+    phrase += f" at {venue}" if venue else ""
+    phrase += _when(request, today)
+    if request.preferred_time:
+        phrase += f", around {clock(request.preferred_time.strftime('%H:%M'))}"
+    return phrase
+
+
+def _date_rows(matches: list[dict], request: SlotRequest, multi: bool) -> list[str]:
     """One line per venue, date and meal, so a range reads as dates rather than slots."""
     groups: dict[tuple[str, str, str], list[dict]] = {}
     for item in matches:
@@ -148,17 +189,73 @@ def _date_rows(matches: list[dict], request: SlotRequest) -> list[str]:
     rows = []
     for (venue_name, slot_date, meal), items in list(groups.items())[:MAX_RESULTS]:
         times = sorted(item["time"] for item in items)
-        span = times[0] if len(times) == 1 else f"{times[0]}–{times[-1]}"
-        day = _day(date.fromisoformat(slot_date))
-        checked = max(item["checked_at"] for item in items).astimezone(SGT).strftime("%d %b, %H:%M SGT")
+        span = clock(times[0]) if len(times) == 1 else f"{clock(times[0])}–{clock(times[-1])}"
         meal_label = f"{meal.lower()} " if request.meal == "Lunch or Dinner" else ""
         rows.append(
-            f"• {venue_name} — {day}: {meal_label}{span} "
-            f"({len(times)} time{'s' if len(times) > 1 else ''}, checked {checked})"
+            f"• {venue_name + ', ' if multi else ''}{_day(date.fromisoformat(slot_date))}: "
+            f"{meal_label}{span} ({len(times)} time{'s' if len(times) > 1 else ''})"
         )
     if len(groups) > MAX_RESULTS:
         rows.append(f"• {len(groups) - MAX_RESULTS} more dates")
     return rows
+
+
+def _slot_rows(matches: list[dict], request: SlotRequest, multi: bool) -> list[str]:
+    rows = []
+    for item in matches[:MAX_RESULTS]:
+        meal_label = f" {str(item['meal']).lower()}" if request.meal == "Lunch or Dinner" else ""
+        rows.append(
+            f"• {item['venue_name'] + ': ' if multi else ''}"
+            f"{_day(date.fromisoformat(item['date']))} {clock(item['time'])}{meal_label} "
+            f"(up to {item['max_seats']} people)"
+        )
+    if len(matches) > MAX_RESULTS:
+        rows.append(f"• {len(matches) - MAX_RESULTS} more times")
+    return rows
+
+
+def _alternative(label: str, slots: list[dict], multi: bool) -> str:
+    """'Weekday dinners are open on 11 days, 2–18 Nov. Earliest: Mon 2 Nov, 6:00pm.'"""
+    first = min(slots, key=lambda item: (item["date"], item["time"]))
+    earliest = f"{_day(date.fromisoformat(first['date']))}, {clock(first['time'])}"
+    earliest += f" at {first['venue_name']}" if multi else ""
+    days = sorted({item["date"] for item in slots})
+    if len(days) == 1:
+        return f"{label} are open on one day: {earliest.replace(', ', ', from ', 1)}."
+    return f"{label} are open on {len(days)} days, {_span(days)}. Earliest: {earliest}."
+
+
+def _no_match(request: SlotRequest, fresh: list[dict], venue: str | None, multi: bool, today: date) -> str:
+    """Say nothing matched, then the nearest open alternative from the same data."""
+    window_end = today + timedelta(days=MAX_RANGE_DAYS - 1)
+    window = [item for item in fresh if today.isoformat() <= item["date"] <= window_end.isoformat()]
+    lines = [f"No {_search(request, venue, today)}."]
+    one_meal = request.meal in MEAL_PLURALS
+    same_meal = [item for item in window if not one_meal or item["meal"] == request.meal]
+    relaxable = (
+        request.weekend_only
+        or request.preferred_time is not None
+        or (request.start_date, request.end_date) != (today, window_end)
+    )
+    noun = MEAL_PLURALS.get(request.meal, "tables")
+    if relaxable and same_meal:
+        weekdays = all(date.fromisoformat(item["date"]).weekday() < 5 for item in same_meal)
+        label = f"Weekday {noun}" if request.weekend_only and weekdays else noun.capitalize()
+        lines.append(_alternative(label, same_meal, multi))
+        return "\n".join(lines)
+    other = [
+        item for item in window
+        if one_meal and item["meal"] in MEAL_PLURALS and item["meal"] != request.meal
+    ]
+    if other:
+        if relaxable:
+            single = request.start_date == request.end_date and not request.weekend_only
+            lines.append(f"No {request.meal.lower() if single else noun} on other days either.")
+        lines.append(_alternative(MEAL_PLURALS[other[0]["meal"]].capitalize(), other, multi))
+        return "\n".join(lines)
+    where = f"at {venue}" if venue else "at any venue"
+    lines.append(f"Nothing else is open for {request.party_size} {where} in the next {MAX_RANGE_DAYS} days.")
+    return "\n".join(lines)
 
 
 def answer(
@@ -166,18 +263,18 @@ def answer(
     catalog_venues: list[dict],
     snapshot: dict,
     now: datetime,
-    official_source_line: str,
     explorer_line: str,
 ) -> str:
     if snapshot.get("source_project") != PROJECT:
-        return "The slot source metadata could not be verified safely."
+        return UNAVAILABLE
     names = {str(venue.get("id")): str(venue.get("name")) for venue in catalog_venues}
     wanted_ids = set(names)
+    multi = len(names) > 1
+    venue_label = None if multi else next(iter(names.values()), None)
     preferred = _minutes(request.preferred_time) if request.preferred_time else None
-    matches = []
+    fresh = []
     stale = []
     unavailable = []
-    fresh_coverage = 0
     fresh_checked = []
     seen_ids = set()
     for venue in snapshot.get("venues") or []:
@@ -199,48 +296,40 @@ def answer(
         if venue.get("status") not in {"live_available", "live_no_seats"}:
             unavailable.append(venue_id)
             continue
-        fresh_coverage += 1
         fresh_checked.append(checked)
         if venue.get("status") != "live_available":
             continue
         for meal in venue.get("meals") or []:
-            if (
-                (
-                    request.meal != "Lunch or Dinner"
-                    and meal.get("meal") != request.meal
-                )
-                or meal.get("status") != "available"
-            ):
+            if meal.get("status") != "available":
                 continue
             for slot in meal.get("slots") or []:
                 slot_date = str(slot.get("date") or "")
                 slot_time = str(slot.get("time") or "")
                 slot_minutes = _minutes(slot_time)
-                if (
-                    not _in_range(slot_date, request)
-                    or slot_minutes is None
-                    or int(slot.get("max_seats") or 0) < request.party_size
-                    or (
-                        preferred is not None
-                        and abs(slot_minutes - preferred)
-                        > PREFERRED_TIME_WINDOW_MINUTES
-                    )
-                ):
+                try:
+                    date.fromisoformat(slot_date)
+                except ValueError:
                     continue
-                matches.append(
+                if slot_minutes is None or int(slot.get("max_seats") or 0) < request.party_size:
+                    continue
+                fresh.append(
                     {
                         "venue_id": venue_id,
                         "venue_name": names[venue_id],
                         "meal": meal.get("meal"),
                         "date": slot_date,
                         "time": slot_time,
+                        "minutes": slot_minutes,
                         "max_seats": int(slot.get("max_seats") or 0),
-                        "checked_at": checked,
-                        "distance": abs(slot_minutes - preferred)
-                        if preferred is not None
-                        else 0,
                     }
                 )
+    matches = [
+        {**item, "distance": abs(item["minutes"] - preferred) if preferred is not None else 0}
+        for item in fresh
+        if (request.meal == "Lunch or Dinner" or item["meal"] == request.meal)
+        and _in_range(item["date"], request)
+        and (preferred is None or abs(item["minutes"] - preferred) <= PREFERRED_TIME_WINDOW_MINUTES)
+    ]
     unavailable.extend(sorted(wanted_ids - seen_ids))
     matches.sort(
         key=lambda item: (
@@ -251,60 +340,33 @@ def answer(
         )
     )
     today = now.astimezone(SGT).date()
-    default_weekend = request.weekend_only and (request.start_date, request.end_date) == (
-        today, today + timedelta(days=WEEKEND_RANGE_DAYS - 1)
-    )
-    filters = (
-        f"{request.party_size} pax, {request.meal}, "
-        f"{f'weekends in the next {WEEKEND_RANGE_DAYS} days' if default_weekend else ('weekends only, ' if request.weekend_only else '') + _full_day(request.start_date)}"
-        f"{f' to {_full_day(request.end_date)}' if request.end_date != request.start_date and not default_weekend else ''}"
-        f"{f', within 60 minutes of {request.preferred_time.strftime('%H:%M')} SGT' if request.preferred_time else ''}"
-    )
-    if matches and request.end_date != request.start_date and preferred is None:
-        body = "Observed matching AMEXPlatSG dates:\n" + "\n".join(_date_rows(matches, request))
-    elif matches:
-        rows = []
-        for item in matches[:MAX_RESULTS]:
-            checked = item["checked_at"].astimezone(SGT).strftime("%d %b, %H:%M SGT")
-            meal_label = (
-                f"{str(item['meal']).lower()}, "
-                if request.meal == "Lunch or Dinner"
-                else ""
-            )
-            rows.append(
-                f"• {item['venue_name']} — {_day(date.fromisoformat(item['date']))} {item['time']}, "
-                f"{meal_label}"
-                f"up to {item['max_seats']} pax (checked {checked})"
-            )
-        body = "Observed matching AMEXPlatSG slots:\n" + "\n".join(rows)
-        if len(matches) > MAX_RESULTS:
-            body += f"\n• {len(matches) - MAX_RESULTS} more matching observations"
-    elif fresh_coverage:
-        latest = max(fresh_checked).astimezone(SGT).strftime(
-            "%d %b %Y, %H:%M SGT"
+    who = venue_label or "these venues"
+    if matches:
+        rows = (
+            _date_rows(matches, request, multi)
+            if request.end_date != request.start_date and preferred is None
+            else _slot_rows(matches, request, multi)
         )
-        body = (
-            "No matching slot was observed in the fresh cached AMEXPlatSG checks. "
-            "This does not mean the Amex Experiences App is sold out. "
-            f"Latest matching venue check: {latest}."
-        )
+        body = f"Open tables, {_search(request, venue_label, today)}:\n" + "\n".join(rows)
+    elif fresh_checked:
+        body = _no_match(request, fresh, venue_label, multi, today)
     elif stale:
         latest = max(checked for _venue_id, checked in stale)
         body = (
-            "The matching venue snapshot is older than 30 minutes, so current "
-            "availability cannot be determined. Last checked: "
-            f"{latest.astimezone(SGT).strftime('%d %b %Y, %H:%M SGT')}."
+            f"I cannot see current times for {who} right now. The last check was "
+            f"{checked_label(latest)}, which is too old to rely on."
         )
     else:
-        body = "The matching venue selection has no verifiable AMEXPlatSG slot snapshot."
-    if stale or unavailable:
+        body = f"I do not have current times for {who} right now."
+    left_out = len(stale) + len(unavailable)
+    if fresh_checked and left_out:
         body += (
-            f"\nCoverage note: {len(stale)} stale and {len(unavailable)} unverifiable "
-            "matching venue snapshots were excluded."
+            f"\n{left_out} venue{'s were' if left_out != 1 else ' was'} left out "
+            "because I do not have a recent check."
         )
-    return (
-        f"Table for Two — observed slots\n\n{body}\n\nFilters: {filters}.\n"
-        "Cached DiningCity AMEXPlatSG observations only. Booking and voucher redemption "
-        "remain in the Amex Experiences App.\n"
-        f"{official_source_line}\n{explorer_line}"
+    note = (
+        f"Last checked {checked_label(min(fresh_checked))}. {SOURCE_NOTE}"
+        if fresh_checked
+        else SOURCE_NOTE
     )
+    return f"{body}\n\n{note}\n{explorer_line}"
