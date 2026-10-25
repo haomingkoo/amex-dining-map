@@ -295,7 +295,7 @@ def _normalize_dates(value: str, today: date) -> str:
         start, end = _month_bounds(MONTHS[m.group(1)], m.group(2), today)
         return f"{start.isoformat()}..{end.isoformat()}"
     if text in {"any", "anytime", "any time", "any date", "whenever possible"}:
-        text = "next 30 days"
+        text = f"next {tft_slots.MAX_RANGE_DAYS} days"
     if m := re.fullmatch(r"(?:the )?next (?:(\d{1,2}|a|one|two) )?(day|week)s?", text):
         n = {"a": 1, "one": 1, "two": 2, None: 1}.get(m.group(1)) or int(m.group(1))
         days = n * (7 if m.group(2) == "week" else 1)
@@ -598,7 +598,7 @@ def handle_message(
         ex = date_examples(now.astimezone(tft_slots.SGT).date())
         return (
             f"Which date(s)? For example: {ex['month']}, {ex['day']}, {ex['range']}, "
-            f"{ex['weekends']}, or {ex['list']}. Up to 31 days, or up to 10 separate dates."
+            f"{ex['weekends']}, or {ex['list']}. Up to {tft_slots.MAX_RANGE_DAYS} days, or up to 10 separate dates."
         )
     if state == "dates":
         parsed = _parse_dates(message, now.astimezone(tft_slots.SGT).date())
@@ -606,7 +606,7 @@ def handle_message(
             ex = date_examples(now.astimezone(tft_slots.SGT).date())
             return (
                 f"I couldn't read those dates. Try: {ex['month']}, {ex['day']}, {ex['range']}, "
-                f"or {ex['weekends']}. Dates must be in the future, up to 31 days, or up to 10 separate dates."
+                f"or {ex['weekends']}. Dates must be in the future, up to {tft_slots.MAX_RANGE_DAYS} days, or up to 10 separate dates."
             )
         start, end, dates = parsed
         _save_conversation(

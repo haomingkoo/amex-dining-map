@@ -627,3 +627,21 @@ def test_global_live_cap_prevents_unscannable_newer_matching_reminder(
         assert result.notifications == []
     finally:
         conn.close()
+
+
+def test_reminder_accepts_62_day_range_and_rejects_63(tmp_path: Path):
+    conn = connection(tmp_path / "reminders.db")
+    try:
+        replies, confirmation = create_reminder(conn, date_value="2026-08-30..2026-10-30")
+        _, rejected = create_reminder(
+            conn, principal=PRINCIPAL_B, chat_id=222, date_value="2026-08-30..2026-10-31"
+        )
+
+        assert "Up to 62 days" in replies[2]
+        assert "is on:" in confirmation
+        assert rejected.startswith("I couldn't read those dates.")
+        assert "up to 62 days" in rejected
+        rows = conn.execute("SELECT principal_key FROM telegram_reminders").fetchall()
+        assert [row["principal_key"] for row in rows] == [PRINCIPAL_A]
+    finally:
+        conn.close()

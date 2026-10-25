@@ -138,7 +138,7 @@ def test_per_venue_staleness_overrides_recent_top_level_generation_time():
     assert "Observed matching AMEXPlatSG slots" not in result
 
 
-def test_weekend_any_uses_transparent_next_30_day_defaults():
+def test_weekend_any_uses_transparent_next_62_day_defaults():
     payload = snapshot()
     venue, venue_name = other_venue(payload)
     venue["checked_at"] = (NOW - timedelta(minutes=5)).isoformat()
@@ -159,7 +159,7 @@ def test_weekend_any_uses_transparent_next_30_day_defaults():
 
     assert f"{venue_name} — Sat 05 Sep: 19:00 (1 time" in result
     assert "2026-09-07" not in result
-    assert "weekends in the next 30 days" in result
+    assert "weekends in the next 62 days" in result
     assert (
         "Open filtered Table for Two: https://amex-explorer.kooexperience.com/"
         "#/table-for-two?party=2&meal=dinner&day=weekend"
@@ -198,7 +198,7 @@ def test_conversational_weekend_query_defaults_transparently_and_checks_both_mea
 
     assert "VUE — Sat 05 Sep: dinner 19:00 (1 time" in result
     assert f"{lunch_venue_name} — Sun 06 Sep: lunch 19:00 (1 time" in result
-    assert "Filters: 2 pax, Lunch or Dinner, weekends in the next 30 days" in result
+    assert "Filters: 2 pax, Lunch or Dinner, weekends in the next 62 days" in result
     assert calls == 1
 
 
@@ -335,7 +335,7 @@ def test_natural_dates_question_with_ambiguous_venue_does_not_guess():
 def test_natural_dates_question_defaults_to_two_pax_both_meals_and_max_range():
     result = answer("which dates is VUE available?")
 
-    assert "Filters: 2 pax, Lunch or Dinner, Sun 30 Aug 2026 to Tue 29 Sep 2026." in result
+    assert "Filters: 2 pax, Lunch or Dinner, Sun 30 Aug 2026 to Fri 30 Oct 2026." in result
 
 
 @pytest.mark.parametrize(
@@ -351,7 +351,7 @@ def test_natural_dates_question_defaults_to_two_pax_both_meals_and_max_range():
 def test_natural_dates_modifiers_override_meal_and_party(question, filters):
     result = answer(question)
 
-    assert f"Filters: {filters}Sun 30 Aug 2026 to Tue 29 Sep 2026." in result
+    assert f"Filters: {filters}Sun 30 Aug 2026 to Fri 30 Oct 2026." in result
 
 
 @pytest.mark.parametrize(
@@ -461,7 +461,7 @@ def test_slots_accepts_plain_words_and_lookalike_pipes(command: str) -> None:
     result = answer(command)
 
     assert "Use /slots" not in result
-    assert "weekends in the next 30 days" in result
+    assert "weekends in the next 62 days" in result
 
 
 def test_slots_plain_venue_only_searches_that_venue() -> None:
@@ -469,3 +469,11 @@ def test_slots_plain_venue_only_searches_that_venue() -> None:
 
     assert "Table for Two — observed slots" in result
     assert "venue=tft-vue" in result
+
+
+def test_exact_slots_range_allows_62_days_and_rejects_63():
+    allowed = tft_slots.parse_request("/slots VUE | 2 | dinner | 2026-08-30..2026-10-30", NOW)
+    too_long = tft_slots.parse_request("/slots VUE | 2 | dinner | 2026-08-30..2026-10-31", NOW)
+
+    assert isinstance(allowed, tft_slots.SlotRequest)
+    assert too_long == "Date ranges are limited to 62 days per lookup."

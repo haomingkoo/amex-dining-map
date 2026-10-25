@@ -29,7 +29,9 @@ SUNDAY = date(2026, 10, 25)
         ("Next 30 days", ("2026-10-25", "2026-11-23", [])),
         ("next week", ("2026-10-25", "2026-10-31", [])),
         ("next 2 weeks", ("2026-10-25", "2026-11-07", [])),
-        ("anytime", ("2026-10-25", "2026-11-23", [])),
+        ("anytime", ("2026-10-25", "2026-12-25", [])),
+        ("1 nov to 1 jan", ("2026-11-01", "2027-01-01", [])),
+        ("next 62 days", ("2026-10-25", "2026-12-25", [])),
     ],
 )
 def test_parse_dates_accepts_natural_input(text: str, expected: tuple) -> None:
@@ -53,7 +55,7 @@ def test_next_weekend_on_a_sunday_is_the_following_saturday_and_sunday() -> None
     assert _parse_dates("next weekend", SUNDAY)[2] == ["2026-10-31", "2026-11-01"]
 
 
-@pytest.mark.parametrize("text", ["2025-11-01", "1 jan 2020", "1 nov to 30 dec", "whenever", "31/02", "", "next 60 days"])
+@pytest.mark.parametrize("text", ["2025-11-01", "1 jan 2020", "1 nov to 2 jan", "whenever", "31/02", "", "next 63 days"])
 def test_parse_dates_still_rejects_past_too_long_or_unreadable(text: str) -> None:
     assert _parse_dates(text, SUNDAY) is None
 

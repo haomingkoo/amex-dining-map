@@ -11,8 +11,9 @@ from zoneinfo import ZoneInfo
 
 PROJECT = "AMEXPlatSG"
 STALE_AFTER = timedelta(minutes=30)
-MAX_RANGE_DAYS = 31
-WEEKEND_RANGE_DAYS = 30
+# Releases land about 53-61 days ahead, so lookups must reach that far.
+MAX_RANGE_DAYS = 62
+WEEKEND_RANGE_DAYS = MAX_RANGE_DAYS
 MAX_RESULTS = 8
 PREFERRED_TIME_WINDOW_MINUTES = 60
 SGT = ZoneInfo("Asia/Singapore")
@@ -251,7 +252,7 @@ def answer(
     )
     filters = (
         f"{request.party_size} pax, {request.meal}, "
-        f"{'weekends in the next 30 days' if request.weekend_only else _full_day(request.start_date)}"
+        f"{f'weekends in the next {WEEKEND_RANGE_DAYS} days' if request.weekend_only else _full_day(request.start_date)}"
         f"{f' to {_full_day(request.end_date)}' if request.end_date != request.start_date and not request.weekend_only else ''}"
         f"{f', within 60 minutes of {request.preferred_time.strftime('%H:%M')} SGT' if request.preferred_time else ''}"
     )
