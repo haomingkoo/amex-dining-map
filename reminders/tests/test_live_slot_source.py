@@ -274,3 +274,33 @@ def test_lifespan_starts_reminder_loop_only_when_enabled(monkeypatch):
     )
     with TestClient(app):
         assert ran.wait(timeout=1)
+
+
+def test_snapshot_with_extra_diningcity_meal_types_is_still_valid() -> None:
+    import json
+    from pathlib import Path
+
+    from app import tft_slot_source
+
+    payload = json.loads((Path(__file__).resolve().parents[2] / "data" / "table-for-two-slots.json").read_text())
+    venue = payload["venues"][0]
+    venue["meals"] = list(venue.get("meals") or [])[:2] + [
+        {"meal": "Afternoon Tea", "status": "available", "slots": []},
+    ]
+
+    tft_slot_source.validate_snapshot(payload)
+
+
+def test_snapshot_with_a_malicious_meal_name_is_rejected() -> None:
+    import json
+    from pathlib import Path
+
+    import pytest
+
+    from app import tft_slot_source
+
+    payload = json.loads((Path(__file__).resolve().parents[2] / "data" / "table-for-two-slots.json").read_text())
+    payload["venues"][0]["meals"] = [{"meal": "<script>", "status": "available", "slots": []}]
+
+    with pytest.raises(ValueError):
+        tft_slot_source.validate_snapshot(payload)
