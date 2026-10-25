@@ -317,24 +317,19 @@ def _menu_source_context(menu: dict, catalog: dict, now: datetime) -> str:
 
 def _help() -> str:
     return (
-        "Table for Two helper\n\n"
-        "/about — what this source-grounded helper covers\n"
-        "/venues — list bundled roster snapshot\n"
-        "/venue VUE — reviewed venue details\n"
-        "/menu VUE platinum — official Amex menu\n"
-        "/menu VUE centurion — Centurion variant\n"
-        "/release VUE dinner — observed first-detection pattern\n"
-        "/slots — observed slots with date and any/weekend examples\n"
-        "Or ask: which dates is VUE available? (add lunch/dinner, for 4, or a month)\n"
-        "/terms eligibility — reviewed official T&C summary\n"
-        "/faq unavailable dates — reviewed official FAQ summary\n"
-        "/remind — create a one-shot slot reminder when enabled\n"
-        "/reminders — list your active Telegram reminders\n"
-        "/cancel RXXXXXX — cancel one active Telegram reminder\n"
-        "/delete_me — delete your Telegram reminder data\n"
-        "/help — show these commands\n\n"
-        "I use a generated source catalogue and do not guess. Confirm offers and bookings "
-        "in the Amex Experiences App."
+        "Hi! I'm an unofficial guide to Amex Platinum Table for Two in Singapore.\n\n"
+        "Just ask, for example:\n"
+        "• which dates is VUE available?\n"
+        "• when can I book Colony for dinner for 4?\n"
+        "• which dates does Park90 have in December?\n\n"
+        "Get a message when a slot opens:\n"
+        "1. Send /remind\n"
+        "2. Answer four quick questions: venue, party size, lunch or dinner, date(s)\n"
+        "3. Reply YES. I'll message you once when a matching slot shows up.\n"
+        "/reminders lists yours, /cancel R123456 stops one, /delete_me erases your data.\n\n"
+        "More: /venues, /menu VUE, /release VUE dinner, /slots, /terms, /faq, /about\n\n"
+        "I only answer from checked sources and don't guess. Booking and redemption happen "
+        "in the Amex Experiences App. Not affiliated with American Express."
     )
 
 
