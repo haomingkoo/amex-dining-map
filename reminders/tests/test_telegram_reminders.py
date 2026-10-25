@@ -25,7 +25,6 @@ def create_reminder(conn, principal=PRINCIPAL_A, chat_id=111, date_value="2026-1
     replies = [
         telegram_reminders.handle_message(conn, principal, chat_id, "/remind", catalog, NOW),
         telegram_reminders.handle_message(conn, principal, chat_id, "VUE", catalog, NOW),
-        telegram_reminders.handle_message(conn, principal, chat_id, "2", catalog, NOW),
         telegram_reminders.handle_message(conn, principal, chat_id, "dinner", catalog, NOW),
         telegram_reminders.handle_message(conn, principal, chat_id, date_value, catalog, NOW),
     ]
@@ -69,9 +68,9 @@ def test_guided_confirmation_stores_chat_only_after_explicit_yes(tmp_path: Path)
         assert "store this private chat ID" in replies[0]
         assert "store this private chat ID" in replies[-1]
         assert "/delete_me" in replies[-1]
-        assert "Timezone: Singapore" in replies[-1]
+        assert "(Singapore time)" in replies[-1]
         assert "notify once only" in replies[-1]
-        assert "Active reminder R" in confirmation
+        assert "is on:" in confirmation
         conversation_columns = {
             row["name"]
             for row in conn.execute(
@@ -99,11 +98,11 @@ def test_reminder_start_link_preselects_reviewed_venue_without_storing_chat(tmp_
         )
 
         assert "for VUE" in reply
-        assert "How many people" in reply
+        assert "Lunch or dinner?" in reply
         conversation = conn.execute(
             "SELECT state, venue_id, venue_name FROM telegram_reminder_conversations"
         ).fetchone()
-        assert tuple(conversation) == ("party", "tft-vue", "VUE")
+        assert tuple(conversation) == ("meal", "tft-vue", "VUE")
         assert conn.execute("SELECT COUNT(*) FROM telegram_reminders").fetchone()[0] == 0
     finally:
         conn.close()
@@ -134,7 +133,7 @@ def test_resumed_confirmation_repeats_chat_storage_and_deletion_consent(
     conn = connection(tmp_path / "reminders.db")
     catalog = tft_guide.load_catalog()
     try:
-        for text in ("/remind", "VUE", "2", "dinner", "2026-10-29"):
+        for text in ("/remind", "VUE", "dinner", "2026-10-29"):
             telegram_reminders.handle_message(
                 conn, PRINCIPAL_A, 111, text, catalog, NOW
             )
@@ -147,7 +146,7 @@ def test_resumed_confirmation_repeats_chat_storage_and_deletion_consent(
         activated = telegram_reminders.handle_message(
             conn, PRINCIPAL_A, 111, "YES", catalog, NOW
         )
-        assert "Active reminder" in activated
+        assert "is on:" in activated
     finally:
         conn.close()
 
@@ -160,10 +159,10 @@ def test_invalid_steps_do_not_save_and_idle_state_expires(tmp_path: Path):
         assert "one exact" in telegram_reminders.handle_message(
             conn, PRINCIPAL_A, 111, "not a venue", catalog, NOW
         )
-        assert "How many people" in telegram_reminders.handle_message(
+        assert "Lunch or dinner?" in telegram_reminders.handle_message(
             conn, PRINCIPAL_A, 111, "VUE", catalog, NOW
         )
-        assert "whole-number" in telegram_reminders.handle_message(
+        assert "lunch or dinner" in telegram_reminders.handle_message(
             conn, PRINCIPAL_A, 111, "11", catalog, NOW
         )
         expired = telegram_reminders.handle_message(
@@ -184,8 +183,8 @@ def test_delete_confirmation_gets_fresh_fifteen_minute_window(tmp_path: Path):
     conn = connection(tmp_path / "reminders.db")
     catalog = tft_guide.load_catalog()
     try:
-        moments = [0, 14, 28, 42, 55]
-        messages = ["/remind", "VUE", "2", "dinner", "2026-10-29"]
+        moments = [0, 14, 28, 42]
+        messages = ["/remind", "VUE", "dinner", "2026-10-29"]
         for minutes, message in zip(moments, messages, strict=True):
             telegram_reminders.handle_message(
                 conn,
@@ -314,7 +313,7 @@ def test_fresh_match_claims_one_bounded_notification_and_replay_none(tmp_path: P
         notification = first.notifications[0]
         assert "19:00" in notification.text and "19:30" in notification.text
         assert "not a booking guarantee" in notification.text
-        assert "checked 30 Aug 2026, 11:55 SGT" in notification.text
+        assert "Seen 11:55 SGT, 30 Aug" in notification.text
         assert (
             "#/table-for-two?venue=tft-vue&party=2&meal=dinner&date=2026-10-29"
             in notification.text
@@ -377,7 +376,7 @@ def test_concurrent_confirmation_and_dispatch_each_have_one_winner(tmp_path: Pat
     conn = connection(path)
     catalog = tft_guide.load_catalog()
     try:
-        for text in ("/remind", "VUE", "2", "dinner", "2026-10-29"):
+        for text in ("/remind", "VUE", "dinner", "2026-10-29"):
             telegram_reminders.handle_message(
                 conn, PRINCIPAL_A, 111, text, catalog, NOW
             )
@@ -395,7 +394,7 @@ def test_concurrent_confirmation_and_dispatch_each_have_one_winner(tmp_path: Pat
 
     with ThreadPoolExecutor(max_workers=2) as pool:
         confirmation_results = list(pool.map(lambda _index: confirm(), range(2)))
-    assert sum("Active reminder" in (result or "") for result in confirmation_results) == 1
+    assert sum("is on:" in (result or "") for result in confirmation_results) == 1
 
     def claim():
         local = db.connect(path)
@@ -610,7 +609,7 @@ def test_global_live_cap_prevents_unscannable_newer_matching_reminder(
             ),
         )
         conn.commit()
-        for text in ("/remind", "VUE", "2", "dinner", "2026-10-29"):
+        for text in ("/remind", "VUE", "dinner", "2026-10-29"):
             telegram_reminders.handle_message(
                 conn, PRINCIPAL_A, 111, text, catalog, NOW
             )

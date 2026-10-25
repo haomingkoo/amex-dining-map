@@ -89,7 +89,7 @@ def _seed_active_reminder(settings: Settings, now: datetime, requested_date: str
         principal = telegram_bot_store.identity_key(
             "user", 4444, settings.telegram_identity_hash_salt
         )
-        for text in ("/remind", "VUE", "2", "dinner", requested_date, "YES"):
+        for text in ("/remind", "VUE", "dinner", requested_date, "YES"):
             telegram_reminders.handle_message(
                 conn, principal, 4444, text, tft_guide.load_catalog(), now
             )
@@ -677,21 +677,20 @@ def test_private_guided_reminder_flow_is_replay_safe_and_keeps_guide_commands(
         "/remind",
         "/venues",
         "VUE",
-        "2",
         "dinner",
         requested_date,
         "YES",
     ]
     for index, text in enumerate(steps, start=30_000):
         assert _post(client, _update(update_id=index, text=text)).json() == {"ok": True}
-    replay = _post(client, _update(update_id=30_006, text="YES"))
+    replay = _post(client, _update(update_id=30_005, text="YES"))
 
     assert replay.json() == {"ok": True}
     assert len(sends) == len(steps)
     assert "Table for Two — cached roster" in sends[1][2]
-    assert "How many people" in sends[2][2]
+    assert "Lunch or dinner?" in sends[2][2]
     assert "store this private chat ID" in sends[0][2]
-    assert "Active reminder R" in sends[-1][2]
+    assert "is on:" in sends[-1][2]
     conn = db.connect(settings.db_path)
     try:
         row = conn.execute(
@@ -991,7 +990,7 @@ def test_reminder_dispatch_sends_once_then_terminally_closes_destination(
         principal = telegram_bot_store.identity_key(
             "user", 4444, settings.telegram_identity_hash_salt
         )
-        for text in ("/remind", "VUE", "2", "dinner", requested_date, "YES"):
+        for text in ("/remind", "VUE", "dinner", requested_date, "YES"):
             telegram_reminders.handle_message(
                 conn, principal, 4444, text, tft_guide.load_catalog(), now
             )
