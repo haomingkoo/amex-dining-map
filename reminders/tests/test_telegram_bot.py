@@ -1073,3 +1073,76 @@ def test_reminder_dispatch_sends_once_then_terminally_closes_destination(
                 logged_values.append(value)
     for forbidden in (4444, requested_date, "tft-vue", "d" * 43, sends[0][2]):
         assert forbidden not in logged_values
+
+
+def _rows_mentioning(conn, needles: set) -> list[tuple[str, str]]:
+    """Every (table, column) in the database holding one of the needle values."""
+    hits = []
+    tables = [
+        row[0]
+        for row in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
+        )
+    ]
+    for table in tables:
+        columns = [col[1] for col in conn.execute(f"PRAGMA table_info({table})")]
+        for row in conn.execute(f"SELECT * FROM {table}"):
+            hits += [(table, col) for col, value in zip(columns, row) if value in needles]
+    return hits
+
+
+def test_delete_me_removes_every_telegram_row_for_that_user(guide_client, monkeypatch):
+    client, settings = guide_client
+    settings = _enabled_reminder_settings(settings)
+    app.dependency_overrides[get_settings] = lambda: settings
+    monkeypatch.setattr(
+        "app.telegram_bot_routes.telegram.send_message", lambda *args: 1
+    )
+    leaver, stayer = 777_000_111, 777_000_222
+    leaver_key = telegram_bot_store.identity_key(
+        "user", leaver, settings.telegram_identity_hash_salt
+    )
+    stayer_key = telegram_bot_store.identity_key(
+        "user", stayer, settings.telegram_identity_hash_salt
+    )
+    day = (datetime.now(timezone.utc) + timedelta(days=10)).date().isoformat()
+    update_id = 60_000
+    for user in (leaver, stayer):
+        for text in ("/remind", "VUE", "dinner", day, "YES", "/remind", "Colony"):
+            update_id += 1
+            _post(client, _update(update_id=update_id, text=text, user_id=user))
+    conn = db.connect(settings.db_path)
+    try:
+        reminder_id = conn.execute(
+            "SELECT id FROM telegram_reminders WHERE principal_key = ?", (leaver_key,)
+        ).fetchone()[0]
+        conn.execute(
+            "INSERT INTO telegram_reminder_deliveries (reminder_id, slot_fingerprint, "
+            "state, created_ts, updated_ts) VALUES (?, 'fp', 'done', ?, ?)",
+            (reminder_id, day, day),
+        )
+        conn.commit()
+        needles = {leaver_key, leaver, reminder_id}
+        before = {table for table, _col in _rows_mentioning(conn, needles)}
+    finally:
+        conn.close()
+
+    _post(client, _update(update_id=update_id + 1, text="/delete_me", user_id=leaver))
+    _post(client, _update(update_id=update_id + 2, text="DELETE", user_id=leaver))
+
+    conn = db.connect(settings.db_path)
+    try:
+        assert before >= {
+            "telegram_reminders",
+            "telegram_reminder_conversations",
+            "telegram_reminder_deliveries",
+            "telegram_rate_events",
+        }
+        assert _rows_mentioning(conn, needles) == []
+        assert {table for table, _col in _rows_mentioning(conn, {stayer_key, stayer})} >= {
+            "telegram_reminders",
+            "telegram_reminder_conversations",
+            "telegram_rate_events",
+        }
+    finally:
+        conn.close()
