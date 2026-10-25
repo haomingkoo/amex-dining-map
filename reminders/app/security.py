@@ -72,8 +72,8 @@ class SecurityHeadersMiddleware:
                 headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
                 headers["Content-Security-Policy"] = (
                     "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; "
-                    "form-action 'self'; style-src 'unsafe-inline' https://fonts.googleapis.com; "
-                    "font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; "
+                    "form-action 'self'; style-src 'unsafe-inline'; "
+                    "font-src 'self'; script-src 'unsafe-inline'; "
                     "connect-src 'self'; img-src data:"
                 )
                 if path.startswith("/api/"):

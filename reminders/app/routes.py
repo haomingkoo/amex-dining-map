@@ -62,12 +62,12 @@ def abuse_key(kind: str, value: str, settings: Settings) -> str:
 
 
 SITE_URL = "https://amex-explorer.kooexperience.com/#/table-for-two"
-# Same faces as the explorer site, so a link from an email lands somewhere familiar.
+# Same faces as the explorer site, self-hosted so no visitor IP reaches Google.
 FONT_LINKS = (
-    '<link rel="preconnect" href="https://fonts.googleapis.com">'
-    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
-    'family=Cormorant+Garamond:wght@500;600&family=Figtree:wght@400;500;600&display=swap">'
+    "<style>@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:300 700;"
+    "font-display:swap;src:url(/fonts/cormorant-garamond-latin-normal.woff2) format('woff2')}"
+    "@font-face{font-family:'Figtree';font-style:normal;font-weight:300 900;"
+    "font-display:swap;src:url(/fonts/figtree-latin-normal.woff2) format('woff2')}</style>"
 )
 PAGE_CSS = """
 :root{--surface:rgba(11,22,36,.92);--field:rgba(5,10,17,.62);--border:rgba(183,155,105,.18);
