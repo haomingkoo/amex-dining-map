@@ -157,7 +157,7 @@ def test_weekend_any_uses_transparent_next_30_day_defaults():
 
     result = answer("/slots any | 2 | dinner | weekend", payload)
 
-    assert f"{venue_name} — 2026-09-05 19:00" in result
+    assert f"{venue_name} — Sat 05 Sep: 19:00 (1 time" in result
     assert "2026-09-07" not in result
     assert "weekends in the next 30 days" in result
     assert (
@@ -196,8 +196,8 @@ def test_conversational_weekend_query_defaults_transparently_and_checks_both_mea
         "Which TFT venues have weekend slots?", catalog(), NOW, loader
     )
 
-    assert "VUE — 2026-09-05 19:00, dinner" in result
-    assert f"{lunch_venue_name} — 2026-09-06 19:00, lunch" in result
+    assert "VUE — Sat 05 Sep: dinner 19:00 (1 time" in result
+    assert f"{lunch_venue_name} — Sun 06 Sep: lunch 19:00 (1 time" in result
     assert "Filters: 2 pax, Lunch or Dinner, weekends in the next 30 days" in result
     assert calls == 1
 
@@ -383,7 +383,7 @@ def test_natural_dates_month_limits_range_to_that_month(question, date_range):
 def test_natural_dates_month_returns_slots_inside_that_month():
     result = answer("which dates does VUE have in October for dinner?")
 
-    assert "VUE — 2026-10-29 19:00" in result
+    assert "VUE — Thu 29 Oct: 18:00–20:00 (5 times" in result
 
 
 def test_natural_dates_rejects_bad_slot_source_metadata():
@@ -435,3 +435,18 @@ def test_help_mentions_plain_english_dates_question():
     result = tft_guide.handle_message("/help", catalog(), NOW)
 
     assert "which dates is VUE available?" in result
+
+
+def test_range_answer_groups_slots_into_dates_and_links_without_a_date():
+    result = answer("which dates does VUE have in October?")
+
+    assert "Observed matching AMEXPlatSG dates:" in result
+    assert "VUE — Thu 29 Oct: dinner 18:00–20:00 (5 times, checked" in result
+    assert "&date=" not in result
+
+
+def test_single_day_answer_keeps_slot_rows_and_dated_link():
+    result = answer("/slots VUE | 2 | dinner | 2026-10-29")
+
+    assert "Observed matching AMEXPlatSG slots" in result
+    assert "&date=2026-10-29" in result
