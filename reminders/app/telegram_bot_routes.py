@@ -19,6 +19,7 @@ from app import (
     db,
     telegram,
     telegram_bot_store,
+    telegram_reminder_dispatch,
     telegram_reminders,
     tft_guide,
     tft_slot_source,
@@ -318,26 +319,8 @@ async def dispatch_telegram_reminders(
     try:
         snapshot = await run_in_threadpool(tft_slot_source.load_snapshot)
     except tft_slot_source.SlotSourceUnavailable:
-        log_event(
-            logger,
-            "telegram_reminder_run",
-            run_id=run_id,
-            state="dead",
-            error_code="slot_source_unavailable",
-            active_scanned_count=0,
-            matched_count=0,
-            no_match_count=0,
-            stale_venue_count=0,
-            expired_count=0,
-            reconciled_claimed_count=0,
-            reconciled_unknown_count=0,
-            batch_limited=False,
-            claimed_count=0,
-            sent_count=0,
-            unknown_count=0,
-            dead_count=0,
-            skipped_count=0,
-            duration_ms=round((time.monotonic() - started) * 1000),
+        telegram_reminder_dispatch.log_dead_run(
+            run_id, "slot_source_unavailable", started
         )
         raise HTTPException(
             status_code=503, detail=f"Slot source unavailable. Run {run_id}."
@@ -348,207 +331,33 @@ async def dispatch_telegram_reminders(
                 lambda: tft_slot_source.load_snapshot(force_refresh=True)
             )
         except tft_slot_source.SlotSourceUnavailable:
-            log_event(
-                logger,
-                "telegram_reminder_run",
-                run_id=run_id,
-                state="dead",
-                error_code="slot_source_refresh_failed",
-                active_scanned_count=0,
-                matched_count=0,
-                no_match_count=0,
-                stale_venue_count=0,
-                expired_count=0,
-                reconciled_claimed_count=0,
-                reconciled_unknown_count=0,
-                batch_limited=False,
-                claimed_count=0,
-                sent_count=0,
-                unknown_count=0,
-                dead_count=0,
-                skipped_count=0,
-                duration_ms=round((time.monotonic() - started) * 1000),
+            telegram_reminder_dispatch.log_dead_run(
+                run_id, "slot_source_refresh_failed", started
             )
             raise HTTPException(
                 status_code=503, detail=f"Slot source unavailable. Run {run_id}."
             )
-    if snapshot.get("generated_at") != payload.expected_generated_at:
-        log_event(
-            logger,
-            "telegram_reminder_run",
-            run_id=run_id,
-            state="dead",
-            error_code="snapshot_generation_mismatch",
-            active_scanned_count=0,
-            matched_count=0,
-            no_match_count=0,
-            stale_venue_count=0,
-            expired_count=0,
-            reconciled_claimed_count=0,
-            reconciled_unknown_count=0,
-            batch_limited=False,
-            claimed_count=0,
-            sent_count=0,
-            unknown_count=0,
-            dead_count=0,
-            skipped_count=0,
-            duration_ms=round((time.monotonic() - started) * 1000),
-        )
-        raise HTTPException(
-            status_code=409, detail=f"Snapshot generation mismatch. Run {run_id}."
-        )
-
-    try:
-        conn = db.connect(settings.db_path)
-        try:
-            claim_result = telegram_reminders.claim_notifications(
-                conn, snapshot, datetime.now(timezone.utc)
-            )
-        finally:
-            conn.close()
-    except Exception:
-        log_event(
-            logger,
-            "telegram_reminder_run",
-            run_id=run_id,
-            state="dead",
-            error_code="store_unavailable",
-            active_scanned_count=0,
-            matched_count=0,
-            no_match_count=0,
-            stale_venue_count=0,
-            expired_count=0,
-            reconciled_claimed_count=0,
-            reconciled_unknown_count=0,
-            batch_limited=False,
-            claimed_count=0,
-            sent_count=0,
-            unknown_count=0,
-            dead_count=0,
-            skipped_count=0,
-            duration_ms=round((time.monotonic() - started) * 1000),
-        )
-        raise HTTPException(
-            status_code=503, detail=f"Reminder store unavailable. Run {run_id}."
-        )
-    sent = unknown = dead = skipped = receipt_conflicts = 0
-    store_failed = False
-    for notification in claim_result.notifications:
-        delivery_started = time.monotonic()
-        try:
-            conn = db.connect(settings.db_path)
-            try:
-                should_send = telegram_reminders.begin_notification(
-                    conn,
-                    notification.reminder_id,
-                    notification.chat_id,
-                    datetime.now(timezone.utc),
-                )
-            finally:
-                conn.close()
-        except Exception:
-            store_failed = True
-            log_event(
-                logger,
-                "telegram_reminder_delivery",
-                run_id=run_id,
-                state="dead",
-                error_code="store_unavailable",
-                duration_ms=round((time.monotonic() - delivery_started) * 1000),
-            )
-            break
-        if not should_send:
-            skipped += 1
-            continue
-        try:
-            message_id = await run_in_threadpool(
-                telegram.send_message,
-                settings.telegram_guide_bot_token,
-                notification.chat_id,
-                notification.text,
-            )
-            state, code = "done", "sent"
-            sent += 1
-        except telegram.TelegramDeliveryError as exc:
-            state = "unknown" if exc.state in {"unknown", "retry"} else "dead"
-            code = exc.code
-            message_id = None
-            if state == "unknown":
-                unknown += 1
-            else:
-                dead += 1
-        try:
-            conn = db.connect(settings.db_path)
-            try:
-                telegram_reminders.complete_notification(
-                    conn,
-                    notification.reminder_id,
-                    state,
-                    code,
-                    datetime.now(timezone.utc),
-                    message_id,
-                )
-            finally:
-                conn.close()
-        except Exception:
-            receipt_conflicts += 1
-            log_event(
-                logger,
-                "telegram_reminder_delivery",
-                run_id=run_id,
-                state="unknown",
-                error_code="receipt_conflict",
-                duration_ms=round((time.monotonic() - delivery_started) * 1000),
-            )
-            continue
-        log_event(
-            logger,
-            "telegram_reminder_delivery",
-            run_id=run_id,
-            state=state,
-            error_code=code,
-            duration_ms=round((time.monotonic() - delivery_started) * 1000),
-        )
-    failed = store_failed or receipt_conflicts > 0
-    log_event(
-        logger,
-        "telegram_reminder_run",
-        run_id=run_id,
-        state="dead" if failed else "done",
-        error_code=(
-            "store_unavailable"
-            if store_failed
-            else "receipt_conflict"
-            if receipt_conflicts
-            else "completed"
-        ),
-        active_scanned_count=claim_result.active_scanned_count,
-        matched_count=claim_result.matched_count,
-        no_match_count=claim_result.no_match_count,
-        stale_venue_count=claim_result.stale_venue_count,
-        expired_count=claim_result.expired_count,
-        reconciled_claimed_count=claim_result.reconciled_claimed_count,
-        reconciled_unknown_count=claim_result.reconciled_unknown_count,
-        batch_limited=claim_result.batch_limited,
-        claimed_count=len(claim_result.notifications),
-        sent_count=sent,
-        unknown_count=unknown,
-        dead_count=dead,
-        skipped_count=skipped,
-        duration_ms=round((time.monotonic() - started) * 1000),
+    # Advisory: the live snapshot is newer than the deploy that sent this generation.
+    result = await run_in_threadpool(
+        telegram_reminder_dispatch.run_dispatch, settings, snapshot
     )
-    if failed:
+    if result.claim_failed:
         raise HTTPException(
-            status_code=503 if store_failed else 500,
-            detail=f"Reminder dispatch incomplete. Run {run_id}.",
+            status_code=503,
+            detail=f"Reminder store unavailable. Run {result.run_id}.",
+        )
+    if result.error_code:
+        raise HTTPException(
+            status_code=503 if result.error_code == "store_unavailable" else 500,
+            detail=f"Reminder dispatch incomplete. Run {result.run_id}.",
         )
     return {
         "ok": True,
-        "run_id": run_id,
-        "claimed": len(claim_result.notifications),
-        "sent": sent,
-        "unknown": unknown,
-        "dead": dead,
-        "skipped": skipped,
-        "more": claim_result.more_matches,
+        "run_id": result.run_id,
+        "claimed": result.claimed,
+        "sent": result.sent,
+        "unknown": result.unknown,
+        "dead": result.dead,
+        "skipped": result.skipped,
+        "more": result.more,
     }

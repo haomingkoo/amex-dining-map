@@ -206,9 +206,16 @@ The guide also contains a disabled-by-default, one-shot reminder lifecycle:
 one exact venue, party size, lunch or dinner, and an absolute SGT date, range,
 or up to ten specific dates. A confirmed reminder sends at most one notification
 after the first fresh cached AMEXPlatSG match, then closes. It is separate from
-email subscribers. Telegram reminder dispatch still consumes the committed
-projection until that delivery path is migrated and separately accepted; do not
-claim it has the same freshness as the public Railway endpoint yet.
+email subscribers. When `TELEGRAM_REMINDERS_ENABLED=true`, the service runs
+reminder dispatch in-process every 300 seconds. Guide slot answers and reminder
+dispatch both read the service's live snapshot first. They fall back to the
+committed Pages projection only when the live file is missing, invalid or older
+than 30 minutes. `/healthz` reports the last in-process or route run under
+`telegram_reminder_dispatch` (time, sent, unknown and dead counts, error code).
+The Pages-triggered `POST /api/internal/telegram/reminders/dispatch` still
+works. Its `expected_generated_at` is now advisory because the live snapshot is
+newer than any deploy. SQLite claims dedupe the two callers, so a notification
+is sent at most once.
 
 Spam controls are intentionally quiet: Telegram's webhook secret is checked
 before JSON parsing, update IDs are durably deduplicated, and guide-only
