@@ -53,6 +53,8 @@ live_refresher = TFTLiveRefresher(
 # cadence, so a published change is adopted before the next check reads /healthz.
 PUBLISHED_CATALOG_URL = f"{settings.explorer_base_url}/data/tft_guide_catalog.json"
 CATALOG_REFRESH_INTERVAL_SECONDS = 900
+# Retention limits in db.purge_expired_records apply daily, not only on restart.
+PURGE_INTERVAL_SECONDS = 86_400
 
 
 async def run_live_refresh_loop(
@@ -126,6 +128,11 @@ async def lifespan(_: FastAPI):
                 )
             )
         )
+    tasks.append(
+        asyncio.create_task(
+            run_periodically(PURGE_INTERVAL_SECONDS, db.purge, settings.db_path)
+        )
+    )
     if settings.telegram_reminders_enabled:
         tasks.append(
             asyncio.create_task(

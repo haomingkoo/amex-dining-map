@@ -62,6 +62,10 @@ def abuse_key(kind: str, value: str, settings: Settings) -> str:
 
 
 SITE_URL = "https://amex-explorer.kooexperience.com/#/table-for-two"
+PRIVACY_LINK = (
+    '<p class="legal"><a href="https://amex-explorer.kooexperience.com/privacy.html">Privacy</a>'
+    " &middot; Unofficial, not affiliated with American Express</p>"
+)
 # Same faces as the explorer site, self-hosted so no visitor IP reaches Google.
 FONT_LINKS = (
     "<style>@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:300 700;"
@@ -96,6 +100,8 @@ h1{margin:0 0 .6rem;font:600 2.1rem/1.05 var(--serif);letter-spacing:-.015em}
 .back{display:inline-block;margin-top:1.4rem;color:var(--muted);font-size:.9rem;text-decoration:none;
  border-bottom:1px solid var(--border);padding-bottom:1px}
 .back:hover{color:var(--text);border-color:var(--border-strong)}
+.legal{margin:1.4rem 0 0;font-size:.78rem;color:var(--muted)}
+.legal a{color:inherit}
 :focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:6px}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}}
 @media (prefers-reduced-motion:reduce){.card{animation:none}.btn{transition:none}.btn:active{transform:none}}
@@ -118,7 +124,7 @@ def _page(title: str, message: str, mark: str = "✓", tone: str = "") -> str:
         f'<main class="card"><div class="mark {tone}" aria-hidden="true">{mark}</div>'
         '<p class="eyebrow">Table for Two reminders</p>'
         f'<h1>{html_escape(title)}</h1><p class="lead">{html_escape(message)}</p>'
-        f'<a class="back" href="{SITE_URL}">Back to Table for Two</a></main>',
+        f'<a class="back" href="{SITE_URL}">Back to Table for Two</a>{PRIVACY_LINK}</main>',
     )
 
 
@@ -218,7 +224,7 @@ def _confirmation_form(title: str, message: str, action: str, label: str) -> str
         f'<h1>{html_escape(title)}</h1><p class="lead">{html_escape(message)}</p>'
         f'<form method="post" action="{html_escape(action, quote=True)}">'
         f'<button class="btn" type="submit">{html_escape(label)}</button></form>'
-        f'<a class="back" href="{SITE_URL}">Back to Table for Two</a></main>',
+        f'<a class="back" href="{SITE_URL}">Back to Table for Two</a>{PRIVACY_LINK}</main>',
     )
 
 
@@ -368,6 +374,7 @@ __STATUS_NOTE__
  <p id="status" class="status"></p>
 </form>
 <a class="unsub" href="__BASE__/api/unsubscribe?token=__TOKEN__">Unsubscribe from all reminders</a>
+__PRIVACY_LINK__
 <script>
 var mList=document.getElementById('m_venue_list'), mAny=document.getElementById('m_any');
 if(mList){mList.addEventListener('change',function(){if(mAny)mAny.checked=mList.querySelectorAll('.m_venue_cb:checked').length===0;});}
@@ -448,6 +455,7 @@ def _manage_page(record: dict, token: str, base: str, venue_names: list[str]) ->
         "__STATUS_NOTE__": note,
         "__BASE__": base,
         "__TOKEN__": html_escape(token),
+        "__PRIVACY_LINK__": PRIVACY_LINK,
     }
     page = _MANAGE_TEMPLATE
     for key, value in replacements.items():

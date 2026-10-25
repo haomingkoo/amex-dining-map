@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
@@ -159,7 +161,7 @@ def test_init_db_migrates_missing_dates_column(tmp_path: Path):
     conn.execute(
         "INSERT INTO subscribers (email, party_size, sessions, venues, date_start, "
         "date_end, unsubscribe_token, created_ts) VALUES "
-        "('x@e.com', 2, '[\"Dinner\"]', '[\"any\"]', '2026-07-01', '2026-07-10', "
+        "('x@e.com', 2, '[\"Dinner\"]', '[\"any\"]', '2099-07-01', '2099-07-10', "
         "'tok', '2026-06-24T00:00:00+00:00')"
     )
     conn.commit()
@@ -209,3 +211,17 @@ def test_database_file_is_owner_only(tmp_path: Path):
     path = tmp_path / "private.db"
     db.init_db(path)
     assert path.stat().st_mode & 0o777 == 0o600
+
+
+def test_purge_deletes_subscriptions_that_ended_over_30_days_ago(conn):
+    old_end = (date.today() - timedelta(days=31)).isoformat()
+    recent_end = (date.today() - timedelta(days=5)).isoformat()
+    db.upsert_pending(conn, replace(_sub("old@example.com"), date_start=old_end, date_end=old_end), "ip", 168)
+    db.upsert_pending(conn, replace(_sub("new@example.com"), date_start=recent_end, date_end=recent_end), "ip", 168)
+    conn.execute("UPDATE subscribers SET status = 'active'")
+    conn.commit()
+
+    db.purge_expired_records(conn)
+
+    emails = [row["email"] for row in conn.execute("SELECT email FROM subscribers")]
+    assert emails == ["new@example.com"]

@@ -331,7 +331,8 @@ def _help() -> str:
         "/reminders lists yours, /cancel R123456 stops one, /delete_me erases your data.\n\n"
         "More: /venues, /menu VUE, /release VUE dinner, /slots, /terms, /faq, /about\n\n"
         "I only answer from checked sources and don't guess. Booking and redemption happen "
-        "in the Amex Experiences App. Not affiliated with American Express."
+        "in the Amex Experiences App. Not affiliated with American Express.\n"
+        "Privacy: https://amex-explorer.kooexperience.com/privacy.html"
     )
 
 

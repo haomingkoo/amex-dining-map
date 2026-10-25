@@ -92,6 +92,12 @@ def test_unknown_start_payload_falls_back_to_help():
     assert "attacker.example" not in answer
 
 
+def test_start_help_links_the_privacy_notice():
+    answer = tft_guide.handle_message("/start", _catalog(), NOW)
+
+    assert answer.rstrip().endswith("Privacy: https://amex-explorer.kooexperience.com/privacy.html")
+
+
 def test_about_and_common_program_questions_are_bounded_and_cited():
     for query in (
         "/about",
