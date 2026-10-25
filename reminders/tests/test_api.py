@@ -376,3 +376,33 @@ def test_manage_page_lists_chosen_venues_first_and_labels_dates(client):
 
     first_venue = page.index('class="m_venue_cb"')
     assert 'value="VUE" checked' in page[first_venue:first_venue + 120]
+
+
+def test_one_click_list_unsubscribe_post_unsubscribes(client):
+    client.post("/api/subscribe", json=_body())
+    client.post(f"/api/confirm?token={_token(client.db_path, 'confirm_token')}")
+    unsub_token = _token(client.db_path, "unsubscribe_token")
+    one_click_url = client.sent[0][1]["list_unsubscribe_url"]
+
+    response = client.post(
+        one_click_url,
+        content="List-Unsubscribe=One-Click",
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+
+    assert one_click_url.endswith(f"/api/unsubscribe?token={unsub_token}")
+    assert response.status_code == 200
+    assert _token(client.db_path, "status") == "unsubscribed"
+
+
+def test_service_pages_link_the_privacy_notice(client):
+    client.post("/api/subscribe", json=_body())
+    manage_token = _token(client.db_path, "manage_token")
+
+    pages = [
+        client.get("/api/confirm?token=x").text,
+        client.get("/api/unsubscribe?token=x").text,
+        client.get(f"/api/manage?token={manage_token}").text,
+    ]
+
+    assert all("/privacy.html" in page for page in pages)

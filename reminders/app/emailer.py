@@ -8,6 +8,8 @@ import urllib.request
 from html import escape
 
 RESEND_ENDPOINT = "https://api.resend.com/emails"
+PRIVACY_URL = "https://amex-explorer.kooexperience.com/privacy.html"
+PRIVACY_EMAIL = "privacy@kooexperience.com"
 
 
 class EmailDeliveryError(RuntimeError):
@@ -78,7 +80,8 @@ def _shell(
   {body_html}
   <p style="margin:24px 0 0;padding-top:14px;border-top:1px solid #efe7d6;font-size:12px;line-height:1.5;color:#8a7a5c">
     An independent tool for Amex Platinum cardholders in Singapore. Not affiliated with American Express.<br>
-    {manage_link}<a href="{safe_unsubscribe_url}" {link}>Unsubscribe</a>
+    {manage_link}<a href="{safe_unsubscribe_url}" {link}>Unsubscribe</a> &middot; <a href="{PRIVACY_URL}" {link}>Privacy</a><br>
+    Questions or data requests: <a href="mailto:{PRIVACY_EMAIL}" {link}>{PRIVACY_EMAIL}</a>
   </p>
 </div></div>"""
 

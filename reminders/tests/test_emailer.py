@@ -96,3 +96,10 @@ def test_confirm_email_html_shows_matches_only_when_present():
 
     assert "Good news" not in without
     assert "Good news" in with_matches
+
+
+def test_confirmation_email_footer_has_privacy_link_and_contact():
+    html = emailer.confirm_email_html(None, "https://svc/c", "https://svc/u")
+
+    assert emailer.PRIVACY_URL in html
+    assert "Questions or data requests: <a href=\"mailto:privacy@kooexperience.com\"" in html

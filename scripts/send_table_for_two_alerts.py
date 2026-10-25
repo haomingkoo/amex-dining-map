@@ -47,6 +47,8 @@ ALERT_TIMEZONE = "Asia/Singapore"
 CSV_FETCH_TIMEOUT_SECONDS = 60
 UNSUBSCRIBE_COPY = "Stop Table for Two emails to this address:"
 UNSUBSCRIBE_LINK_TEXT = "Stop future Table for Two emails"
+PRIVACY_URL = "https://amex-explorer.kooexperience.com/privacy.html"
+PRIVACY_COPY = "Questions or data requests: privacy@kooexperience.com"
 
 
 @dataclass(frozen=True)
@@ -473,7 +475,8 @@ def email_shell(title: str, body_html: str, unsubscribe_url: str = "") -> str:
 <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.15;font-weight:600;color:#0b1624">{html.escape(title)}</h1>
 {body_html}
 <p style="margin:24px 0 0;padding-top:14px;border-top:1px solid #efe7d6;font-size:12px;line-height:1.5;color:#8a7a5c">
-An independent tool for Amex Platinum cardholders in Singapore. Not affiliated with American Express.{unsubscribe}</p>
+An independent tool for Amex Platinum cardholders in Singapore. Not affiliated with American Express.{unsubscribe} &middot; <a href="{PRIVACY_URL}" style="color:#8a7a5c">Privacy</a><br>
+Questions or data requests: <a href="mailto:privacy@kooexperience.com" style="color:#8a7a5c">privacy@kooexperience.com</a></p>
 </div></div>"""
 
 
@@ -517,6 +520,7 @@ def build_email(
     lines.extend(["", note, "", f"See every time on the map: {site_url}"])
     if unsubscribe_url:
         lines.extend(["", UNSUBSCRIBE_COPY, unsubscribe_url])
+    lines.extend(["", PRIVACY_COPY])
     html_rows = "".join(
         '<tr><td style="padding:10px 0;border-bottom:1px solid #f1eadc">'
         f'<div style="font-weight:600;color:#0b1624">{html.escape(venue)}</div>'
@@ -562,6 +566,7 @@ def build_expired_email(
         lines.extend(["", "You can create a new alert here:", signup_url])
     if unsubscribe_url:
         lines.extend(["", UNSUBSCRIBE_COPY, unsubscribe_url])
+    lines.extend(["", PRIVACY_COPY])
     text_body = "\n".join(lines)
     html_scope = "".join(f'<li style="margin:2px 0">{html.escape(line)}</li>' for line in scope_lines)
     body = f"""<p style="margin:0 0 6px;font-size:15px">{html.escape(greeting)}</p>
@@ -585,7 +590,7 @@ def resend_config_from_env() -> dict[str, Any]:
         "reply_to": os.environ.get("ALERT_REPLY_TO", "").strip(),
         "unsubscribe_base_url": os.environ.get("ALERT_UNSUBSCRIBE_BASE_URL", "").strip(),
         "one_click_unsubscribe": parse_enabled(
-            os.environ.get("ALERT_ONE_CLICK_UNSUBSCRIBE") or "false"
+            os.environ.get("ALERT_ONE_CLICK_UNSUBSCRIBE") or "true"
         ),
         "timeout": int(os.environ.get("RESEND_TIMEOUT_SEC", "30")),
     }

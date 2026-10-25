@@ -44,3 +44,24 @@ def test_html_escapes_venue_names_and_keeps_unsubscribe_link():
 
     assert "<b>Kee" not in html_body and "&lt;b&gt;Kee" in html_body
     assert 'href="https://u/x"' in html_body
+
+
+def test_alert_footer_links_privacy_and_contact():
+    message = alerts.build_email(
+        subscription(), [slot("VUE", "2026-10-27", "19:00")], "s@example.com", "https://site", unsubscribe_url="https://u/x"
+    )
+
+    assert alerts.PRIVACY_URL in message.get_body(("html",)).get_content()
+    assert "privacy@kooexperience.com" in message.get_body(("plain",)).get_content()
+
+
+def test_one_click_unsubscribe_header_is_on_by_default(monkeypatch):
+    monkeypatch.delenv("ALERT_ONE_CLICK_UNSUBSCRIBE", raising=False)
+    config = alerts.resend_config_from_env()
+
+    message = alerts.build_email(
+        subscription(), [slot("VUE", "2026-10-27", "19:00")], "s@example.com", "https://site",
+        unsubscribe_url="https://u/x", one_click_unsubscribe=config["one_click_unsubscribe"],
+    )
+
+    assert message["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
