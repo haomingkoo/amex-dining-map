@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import hmac
 import json
 import logging
@@ -277,6 +279,12 @@ async def telegram_guide_webhook(
         )
         return {"ok": True}
     _finish(settings, payload.update_id, "done", "sent", message_id)
+    # Deployed only (HTTPS base), like the other background jobs, so tests stay offline.
+    if settings.public_base_url.startswith("https://") and answer.startswith("Reminder ") and " is on: " in answer:
+        # Check straight away; cancellations go in minutes. Dedupe lives in the claim step.
+        asyncio.get_running_loop().run_in_executor(
+            None, telegram_reminder_dispatch.dispatch_and_record, settings
+        )
     log_event(
         logger,
         "telegram_guide_delivery",

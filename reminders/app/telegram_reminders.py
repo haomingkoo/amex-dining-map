@@ -223,10 +223,10 @@ def _save_conversation(
 
 def _confirmation_prompt(draft: sqlite3.Row) -> str:
     return (
-        "Confirm this one-shot reminder:\n"
-        f"{_summary(draft)}\n"
-        "Timezone: Singapore (SGT, UTC+8).\n"
-        "Reply YES to activate or /cancel. I will store this private chat ID and the confirmed criteria until the reminder ends or is cancelled; /delete_me removes your Telegram reminder data. I will notify once only when the first fresh cached AMEXPlatSG observation matches, then close it. This is not a reservation or booking guarantee."
+        f"Set this reminder?\n{_summary(draft)} (Singapore time)\n\n"
+        "Reply YES to turn it on, or /cancel. I'll notify once only when a matching slot "
+        "appears, then close it. If you confirm, I will store this private chat ID until the "
+        "reminder ends or is cancelled; /delete_me removes it. Not a booking guarantee."
     )
 
 
@@ -367,17 +367,32 @@ def _parse_dates(value: str, today: date) -> tuple[str, str, list[str]] | None:
     return start.isoformat(), end.isoformat(), []
 
 
+def _day(value: str) -> str:
+    return date.fromisoformat(value).strftime("%a %d %b")
+
+
 def _summary(row: sqlite3.Row | dict[str, Any]) -> str:
     dates = json.loads(row["dates"] or "[]")
-    date_label = ", ".join(dates) if dates else (
-        row["date_start"]
+    date_label = ", ".join(_day(d) for d in dates) if dates else (
+        _day(row["date_start"])
         if row["date_start"] == row["date_end"]
-        else f"{row['date_start']} to {row['date_end']}"
+        else f"{_day(row['date_start'])} to {_day(row['date_end'])}"
     )
-    return (
-        f"{row['venue_name']} · {row['party_size']} pax · {row['meal']} · "
-        f"{date_label}"
-    )
+    # Table for Two covers two diners; only mention party size when someone asked for more.
+    party = f" · {row['party_size']} pax" if int(row["party_size"] or 2) != 2 else ""
+    return f"{row['venue_name']} · {str(row['meal']).lower()}{party} · {date_label}"
+
+
+PARTY_RE = re.compile(r"\s*\b(?:for\s+(\d{1,2})(?:\s*(?:pax|people|persons|diners))?|(\d{1,2})\s*(?:pax|people|persons|diners))\b", re.I)
+
+
+def _venue_and_party(message: str) -> tuple[str, int | None]:
+    """'Latido for 4' -> ('Latido', 4); plain venue names default to Table for Two's 2."""
+    match = PARTY_RE.search(message)
+    if not match:
+        return message, 2
+    party = int(match.group(1) or match.group(2))
+    return (message[: match.start()] + message[match.end():]).strip(), party if 1 <= party <= 10 else None
 
 
 def _new_id(conn: sqlite3.Connection) -> str:
@@ -433,14 +448,12 @@ def handle_message(
             return "That venue link is not in the reviewed TFT roster. Use /venues."
         venue = matches[0]
         _save_conversation(
-            conn, principal_key, "party", now,
-            venue_id=venue["id"], venue_name=venue["name"],
+            conn, principal_key, "meal", now,
+            venue_id=venue["id"], venue_name=venue["name"], party_size=2,
         )
         return (
-            f"Create one Table for Two reminder for {venue['name']} (2/4). "
-            "Setup expires after 15 idle minutes.\n"
-            "How many people (1–10)?\n"
-            "If you confirm, I will store this private chat ID and the criteria until the reminder ends or is cancelled. /delete_me removes your Telegram reminder data; email reminders are separate."
+            f"Reminder for {venue['name']}. Lunch or dinner?\n"
+            "If you confirm, I will store this private chat ID until the reminder ends; /delete_me removes it."
         )
 
     if lowered == "/remind":
@@ -457,9 +470,9 @@ def handle_message(
             }
             return prompts[conversation["state"]]
         return (
-            "Create one Table for Two reminder (1/4). Setup expires after 15 idle minutes.\n"
-            "Venue: send one exact venue name. Use /venues to browse, or /cancel.\n"
-            "If you confirm, I will store this private chat ID and the criteria until the reminder ends or is cancelled. /delete_me removes your Telegram reminder data; email reminders are separate."
+            "New reminder. Which venue? Send its name, e.g. Colony (add 'for 4' if you're bringing paying guests). "
+            "/venues lists them all, /cancel stops.\n"
+            "If you confirm, I will store this private chat ID until the reminder ends; /delete_me removes it."
         )
 
     if lowered == "/reminders":
@@ -557,15 +570,18 @@ def handle_message(
 
     state = conversation["state"]
     if state == "venue":
-        matches = tft_guide.resolve_venue(message, catalog)
+        venue_text, party = _venue_and_party(message)
+        if party is None:
+            return "Party size must be 1 to 10. Send the venue again, e.g. Colony for 4, or /cancel."
+        matches = tft_guide.resolve_venue(venue_text, catalog)
         if len(matches) != 1:
             return "I need one exact TFT venue. Use /venues, then reply with its name, or /cancel."
         venue = matches[0]
         _save_conversation(
-            conn, principal_key, "party", now,
-            venue_id=venue["id"], venue_name=venue["name"],
+            conn, principal_key, "meal", now,
+            venue_id=venue["id"], venue_name=venue["name"], party_size=party,
         )
-        return f"{venue['name']}. How many people (1–10)?"
+        return f"{venue['name']}. Lunch or dinner?"
     if state == "party":
         if re.fullmatch(r"\d{1,2}", message) is None or not 1 <= int(message) <= 10:
             return "Reply with a whole-number party size from 1 to 10, or /cancel."
@@ -652,7 +668,7 @@ def handle_message(
         except Exception:
             conn.rollback()
             raise
-        return f"Active reminder {reminder_id}: {_summary(draft)}\nIt expires after the final requested date in Singapore time. List with /reminders or cancel with /cancel {reminder_id}."
+        return f"Reminder {reminder_id} is on: {_summary(draft)}\nChecking now, then every few minutes. /reminders lists yours, /cancel {reminder_id} stops it."
     return None
 
 
@@ -772,22 +788,24 @@ def claim_notifications(
         if not claimed:
             continue
         checked = selected[0]["checked_at"].astimezone(tft_slots.SGT).strftime(
-            "%d %b %Y, %H:%M SGT"
+            "%H:%M SGT, %d %b"
         )
-        lines = [
-            f"• {item['date']} {item['time']} — up to {item['max_seats']} pax"
-            for item in selected
-        ]
-        more = (
-            f"\n• {len(matches) - len(selected)} more matching observations"
-            if len(matches) > len(selected)
-            else ""
-        )
+        by_day: dict[str, list[str]] = {}
+        for item in matches:
+            by_day.setdefault(item["date"], []).append(item["time"])
+        lines = []
+        for slot_date, times in list(by_day.items())[:MAX_NOTIFICATION_SLOTS]:
+            span = times[0] if len(times) == 1 else f"{min(times)}–{max(times)}"
+            lines.append(f"• {_day(slot_date)}: {span} ({len(times)} time{'s' if len(times) > 1 else ''})")
+        if len(by_day) > MAX_NOTIFICATION_SLOTS:
+            lines.append(f"• {len(by_day) - MAX_NOTIFICATION_SLOTS} more dates")
+        first = next(iter(by_day))
         text = (
-            f"TFT reminder {row['id']} matched\n\n{_summary(row)}\n"
+            f"🔔 {row['venue_name']} has {str(row['meal']).lower()} open\n"
             + "\n".join(lines)
-            + more
-            + f"\n\nObserved in cached AMEXPlatSG data checked {checked}. Availability can change and this is not a booking guarantee. Book and redeem in the Amex Experiences App.\nOpen filtered venue: {tft_guide.explorer_url(venue_id=row['venue_id'], party_size=row['party_size'], meal=row['meal'], date_value=row['date_start'])}"
+            + f"\n\nBook now in the Amex Experiences App, slots go fast. Seen {checked}; not a booking guarantee.\n"
+            f"Map: {tft_guide.explorer_url(venue_id=row['venue_id'], party_size=row['party_size'], meal=row['meal'], date_value=first)}\n"
+            f"Reminder {row['id']} is now closed. /remind to set another."
         )
         notifications.append(
             Notification(
