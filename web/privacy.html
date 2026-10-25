@@ -21,166 +21,79 @@
       <p class="updated">Last updated 25 October 2026</p>
 
       <p>
-        This notice covers the map at <strong>amex-explorer.kooexperience.com</strong>, the Table for Two email
-        reminders and the Table for Two Telegram bot. It describes what each part collects and why.
-        It is written to the standard of Singapore's Personal Data Protection Act 2012 (PDPA).
-      </p>
-      <p>
-        The service is run by <strong>Koo Haoming (individual, Singapore)</strong>. It is an unofficial fan site
-        and is not affiliated with American Express. For any privacy question or request, email
-        <a href="mailto:privacy@kooexperience.com">privacy@kooexperience.com</a>.
+        This site is run by Koo Haoming, an individual in Singapore. It is an unofficial fan site and is not
+        affiliated with American Express. This page covers the map, the Table for Two email alerts and the
+        Telegram bot. Questions go to <a href="mailto:privacy@kooexperience.com">privacy@kooexperience.com</a>.
       </p>
 
-      <h2>1. Browsing the map</h2>
+      <h2>What we collect</h2>
+      <h3>If you only browse the map</h3>
       <p>
-        You can use the map without an account. The site sets no cookies and does not ask for your location.
-        It stores three small preferences in your browser's local storage:
+        No account, no cookies and no location. Your browser keeps three settings in local storage:
+        <code>theme-preference</code>, <code>amex-benefits-intro-v3</code> and
+        <code>amex-benefits-updates-read-v1</code>. They record your theme, whether you saw the intro and the
+        updates you have read. They stay on your device.
       </p>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Key</th><th>What it holds</th></tr></thead>
-          <tbody>
-            <tr><td><code>theme-preference</code></td><td>Dark or light theme</td></tr>
-            <tr><td><code>amex-benefits-intro-v3</code></td><td>Whether you have seen the intro screen</td></tr>
-            <tr><td><code>amex-benefits-updates-read-v1</code></td><td>The newest "What's new" item you have marked read</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p>These never leave your browser. Clear your site data to remove them.</p>
-
-      <h3>Services your browser contacts</h3>
+      <h3>If you sign up for email alerts</h3>
       <p>
-        Loading the map makes your browser request files from the services below. Each one receives your IP address
-        and browser details as part of the request. The site sends no referrer header to them.
+        Your email and, if you give it, your name. Your alert choices: party size, venues, sessions and dates.
+        We also keep a scrambled (hashed) copy of your IP address to stop repeat sign-ups. It is wiped when you
+        confirm.
       </p>
-      <ul>
-        <li><strong>GitHub Pages</strong> hosts the site files.</li>
-        <li><strong>Cloudflare</strong> sits in front of the site as a proxy and CDN.
-          <strong>Cloudflare Web Analytics: cookieless, aggregate page views, no input capture.</strong></li>
-        <li><strong>unpkg.com</strong> serves the Leaflet map library.</li>
-        <li><strong>OpenStreetMap Germany</strong> (<code>tile.openstreetmap.de</code>) serves the map tiles.
-          It sees which map area you are viewing.</li>
-        <li><strong>DiningCity</strong> (<code>static-assets.diningcity.asia</code>) serves some Table for Two venue photos.</li>
-        <li><strong>The reminders service on Railway</strong> serves live Table for Two slot data.</li>
-      </ul>
+      <h3>If you use the Telegram bot</h3>
       <p>
-        Links to Google Maps, Tabelog, Pocket Concierge, American Express and Telegram only open when you click them.
-        Those sites then apply their own privacy policies.
+        Your Telegram ID is only stored in hashed form. If you confirm a reminder, we store your chat ID so the bot
+        can message you, plus the venue, meal and dates you picked. We do not store the text of your messages.
       </p>
 
-      <h2>2. Table for Two email alerts</h2>
-      <h3>What is collected</h3>
-      <ul>
-        <li>Your email address and, if you give it, your name.</li>
-        <li>Your alert choices: party size, venues, sessions, date range and any specific dates.</li>
-        <li>A keyed hash of your IP address, used only to limit repeated sign-ups. It is cleared when you confirm.</li>
-        <li>Sign-up, confirmation and unsubscribe times, plus random tokens for your confirm, manage and unsubscribe links.</li>
-      </ul>
-      <h3>Why</h3>
+      <h2>Why</h2>
       <p>
-        To confirm your sign-up, check the latest observed Table for Two slots against your choices and email you when
-        one matches. The rate-limit hash prevents abuse. Your details are not used for marketing or sold.
+        To show you the map, to email or message you when a matching Table for Two slot appears, and to stop abuse.
+        We do not use your details for marketing and we do not sell them.
       </p>
-      <h3>Consent and withdrawal</h3>
-      <p>
-        No alerts are sent until you click the link in the confirmation email. Every email has a <strong>Manage</strong>
-        link and an <strong>Unsubscribe</strong> link that work without a login. Mail apps that support one-click
-        unsubscribe can also stop the emails directly.
-      </p>
-      <h3>How long it is kept</h3>
+
+      <h2>Who sees it</h2>
       <ul>
-        <li>Unconfirmed sign-ups are deleted when the confirmation link expires.</li>
-        <li>Unsubscribed records are deleted 30 days after you unsubscribe.</li>
-        <li>Alerts whose date range ended more than 30 days ago are deleted.</li>
-        <li>Rate-limit records are deleted after 24 hours.</li>
+        <li><strong>Railway</strong> hosts the alerts service and its database.</li>
+        <li><strong>Resend</strong> sends the emails.</li>
+        <li><strong>GitHub</strong> hosts the site and runs the job that sends alerts.</li>
+        <li><strong>Cloudflare</strong> sits in front of the site. Cloudflare Web Analytics: cookieless, aggregate page views, no input capture.</li>
+        <li><strong>Telegram</strong> carries bot messages.</li>
         <li>
-          To avoid sending the same alert twice, the alert job keeps a salted one-way hash of each alert it has sent.
-          This hash contains no readable email address. It is stored in the project's public GitHub repository and is
-          not deleted. <span class="review">[LAWYER REVIEW]</span>
+          Loading the map also fetches files from unpkg.com (map code), tile.openstreetmap.de (map tiles) and
+          DiningCity (some venue photos). They see your IP address, as any website you load does.
+        </li>
+      </ul>
+      <p>Most of these companies are outside Singapore, so your data is stored overseas.</p>
+
+      <h2>How long</h2>
+      <ul>
+        <li>Unconfirmed sign-ups: until the confirmation link expires.</li>
+        <li>Unsubscribed emails: 30 days.</li>
+        <li>Alerts whose dates have passed: 30 days after the last date.</li>
+        <li>Telegram chat IDs: until the reminder is sent, cancelled or out of date.</li>
+        <li>Finished Telegram reminders: 30 days.</li>
+        <li>Anti-abuse records: 24 hours.</li>
+      </ul>
+      <p>
+        To avoid sending an alert twice, the alert job keeps a hashed record of each alert sent. It contains no
+        readable email address and is kept in the project's public GitHub repository.
+      </p>
+
+      <h2>Your choices</h2>
+      <ul>
+        <li>Every email has links to change your alerts or unsubscribe. No login needed.</li>
+        <li>In Telegram, send <code>/delete_me</code> then <code>DELETE</code> to erase everything the bot holds about you.</li>
+        <li>
+          Email <a href="mailto:privacy@kooexperience.com">privacy@kooexperience.com</a> to see, correct or delete
+          your data, or to withdraw consent. Write from the address you signed up with.
         </li>
       </ul>
 
-      <h2>3. Table for Two Telegram bot</h2>
-      <ul>
-        <li>
-          Your Telegram user ID is never stored as-is. It is turned into a keyed hash, which is used for rate limits
-          and to link your reminders to you.
-        </li>
-        <li>
-          Your chat ID is stored only when you confirm a reminder, so the bot can message you. It is cleared once the
-          reminder is sent, cancelled or past its dates.
-        </li>
-        <li>
-          While you set up a reminder the bot keeps your venue, party size, meal and dates. Unfinished setups expire
-          after 15 minutes.
-        </li>
-        <li>Rate-limit records are deleted after 24 hours. Finished reminders are deleted after 30 days, or 90 days if the last delivery status is unclear.</li>
-        <li>
-          Telegram's update IDs are kept for 7 days so a message is not answered twice. They are not linked to your
-          user ID.
-        </li>
-        <li>The bot does not store the text of your messages. Service logs record the command type and outcome only.</li>
-      </ul>
+      <h2>Contact</h2>
       <p>
-        Send <code>/delete_me</code> and reply <code>DELETE</code> to erase all of your Telegram reminder data at once.
-        This removes reminders, setup state, stored chat IDs, delivery receipts and rate-limit records.
-        Telegram keeps its own copy of your chat under its own policy.
-      </p>
-
-      <h2>4. Who processes your data</h2>
-      <p>
-        These providers process data on the operator's behalf. Most are based outside Singapore, so your data is
-        transferred overseas.
-      </p>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Provider</th><th>Role</th><th>Data</th></tr></thead>
-          <tbody>
-            <tr><td>Railway (US)</td><td>Hosts the reminders service and its database</td><td>Alert sign-ups, Telegram reminder data and request logs</td></tr>
-            <tr><td>Resend (US)</td><td>Sends the emails</td><td>Email address, name and email content</td></tr>
-            <tr><td>GitHub (US)</td><td>Hosts the site and runs the scheduled alert job</td><td>Visitor IP for site files. Subscriber list while the alert job runs.</td></tr>
-            <tr><td>Cloudflare (US)</td><td>Proxy, CDN and Web Analytics</td><td>Visitor IP and page requests</td></tr>
-            <tr><td>Telegram</td><td>Delivers bot messages</td><td>Your chat with the bot</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p>
-        The operator relies on these providers' contractual and security commitments to protect transferred data to a
-        standard comparable to the PDPA. <span class="review">[LAWYER REVIEW]</span>
-      </p>
-
-      <h2>5. Your rights</h2>
-      <p>Under the PDPA you can:</p>
-      <ul>
-        <li>ask what personal data is held about you and how it has been used;</li>
-        <li>ask for it to be corrected;</li>
-        <li>withdraw consent at any time by unsubscribing, sending <code>/delete_me</code> or emailing the address below.</li>
-      </ul>
-      <p>
-        Email <a href="mailto:privacy@kooexperience.com">privacy@kooexperience.com</a> from the address you signed up
-        with. You will get a reply within 30 days. <span class="review">[LAWYER REVIEW]</span>
-      </p>
-      <p>
-        If a data breach is likely to cause you significant harm, you and the Personal Data Protection Commission will
-        be told as the PDPA requires. <span class="review">[LAWYER REVIEW]</span>
-      </p>
-
-      <h2>6. Security</h2>
-      <p>
-        The reminders database is not public. Email sign-ups need a confirmation click. Tokens in links are random
-        and each link does one job. Telegram IDs and IP addresses are stored only as keyed hashes.
-      </p>
-
-      <h2>7. Age</h2>
-      <p>
-        The service is meant for American Express Platinum cardholders, who are adults. It is not directed at
-        children.
-      </p>
-
-      <h2>8. Changes</h2>
-      <p>
-        If this notice changes, the date at the top will change too. A change that affects how your email or Telegram
-        data is used will be announced before it applies.
+        <a href="mailto:privacy@kooexperience.com">privacy@kooexperience.com</a>. If this page changes, the date at
+        the top changes too.
       </p>
     </main>
     <footer class="legal-footer">
