@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta, timezone
 import re
-from typing import Any
+from typing import Any, Callable
 from zoneinfo import ZoneInfo
 
 
@@ -225,8 +225,10 @@ def _alternative(label: str, slots: list[dict], multi: bool) -> str:
     return f"{label} are open on {len(days)} days, {_span(days)}. Earliest: {earliest}."
 
 
-def _no_match(request: SlotRequest, fresh: list[dict], venue: str | None, multi: bool, today: date) -> str:
-    """Say nothing matched, then the nearest open alternative from the same data."""
+def _no_match(
+    request: SlotRequest, fresh: list[dict], venue: str | None, multi: bool, today: date
+) -> tuple[str, SlotRequest]:
+    """Say nothing matched, then the nearest open alternative and the request that finds it."""
     window_end = today + timedelta(days=MAX_RANGE_DAYS - 1)
     window = [item for item in fresh if today.isoformat() <= item["date"] <= window_end.isoformat()]
     lines = [f"No {_search(request, venue, today)}."]
@@ -238,11 +240,14 @@ def _no_match(request: SlotRequest, fresh: list[dict], venue: str | None, multi:
         or (request.start_date, request.end_date) != (today, window_end)
     )
     noun = MEAL_PLURALS.get(request.meal, "tables")
+    wider = replace(
+        request, start_date=today, end_date=window_end, weekend_only=False, preferred_time=None
+    )
     if relaxable and same_meal:
         weekdays = all(date.fromisoformat(item["date"]).weekday() < 5 for item in same_meal)
         label = f"Weekday {noun}" if request.weekend_only and weekdays else noun.capitalize()
         lines.append(_alternative(label, same_meal, multi))
-        return "\n".join(lines)
+        return "\n".join(lines), wider
     other = [
         item for item in window
         if one_meal and item["meal"] in MEAL_PLURALS and item["meal"] != request.meal
@@ -252,10 +257,10 @@ def _no_match(request: SlotRequest, fresh: list[dict], venue: str | None, multi:
             single = request.start_date == request.end_date and not request.weekend_only
             lines.append(f"No {request.meal.lower() if single else noun} on other days either.")
         lines.append(_alternative(MEAL_PLURALS[other[0]["meal"]].capitalize(), other, multi))
-        return "\n".join(lines)
+        return "\n".join(lines), replace(wider, meal=other[0]["meal"])
     where = f"at {venue}" if venue else "at any venue"
     lines.append(f"Nothing else is open for {request.party_size} {where} in the next {MAX_RANGE_DAYS} days.")
-    return "\n".join(lines)
+    return "\n".join(lines), request
 
 
 def answer(
@@ -263,8 +268,9 @@ def answer(
     catalog_venues: list[dict],
     snapshot: dict,
     now: datetime,
-    explorer_line: str,
+    explorer_line: Callable[[SlotRequest], str],
 ) -> str:
+    """explorer_line(request) gives the link line for the request the reply describes."""
     if snapshot.get("source_project") != PROJECT:
         return UNAVAILABLE
     names = {str(venue.get("id")): str(venue.get("name")) for venue in catalog_venues}
@@ -340,6 +346,7 @@ def answer(
         )
     )
     today = now.astimezone(SGT).date()
+    linked = request
     who = venue_label or "these venues"
     if matches:
         rows = (
@@ -349,7 +356,7 @@ def answer(
         )
         body = f"Open tables, {_search(request, venue_label, today)}:\n" + "\n".join(rows)
     elif fresh_checked:
-        body = _no_match(request, fresh, venue_label, multi, today)
+        body, linked = _no_match(request, fresh, venue_label, multi, today)
     elif stale:
         latest = max(checked for _venue_id, checked in stale)
         body = (
@@ -369,4 +376,4 @@ def answer(
         if fresh_checked
         else SOURCE_NOTE
     )
-    return f"{body}\n\n{note}\n{explorer_line}"
+    return f"{body}\n\n{note}\n{explorer_line(linked)}"

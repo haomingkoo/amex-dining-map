@@ -775,24 +775,27 @@ def _slot_answer(
                 "Use /venues, or use any to search all venues."
             )
         venue_id = str(venues[0].get("id") or "")
-    explorer = EXPLORER_PREFIX + explorer_url(
-        venue_id=venue_id,
-        party_size=parsed.party_size,
-        meal=parsed.meal if parsed.meal in {"Lunch", "Dinner"} else None,
-        # A range must not pin the site to its first day, which is usually sold out.
-        date_value=parsed.start_date.isoformat() if parsed.end_date == parsed.start_date else None,
-        day="weekend" if parsed.weekend_only else None,
-        preferred_time=(
-            parsed.preferred_time.strftime("%H:%M")
-            if parsed.preferred_time is not None
-            else None
-        ),
-    )
+
+    def explorer_for(request: tft_slots.SlotRequest) -> str:
+        return EXPLORER_PREFIX + explorer_url(
+            venue_id=venue_id,
+            party_size=request.party_size,
+            meal=request.meal if request.meal in {"Lunch", "Dinner"} else None,
+            # A range must not pin the site to its first day, which is usually sold out.
+            date_value=request.start_date.isoformat() if request.end_date == request.start_date else None,
+            day="weekend" if request.weekend_only else None,
+            preferred_time=(
+                request.preferred_time.strftime("%H:%M")
+                if request.preferred_time is not None
+                else None
+            ),
+        )
+
     try:
         snapshot = (slot_loader or tft_slot_source.load_snapshot)()
     except tft_slot_source.SlotSourceUnavailable:
-        return f"{tft_slots.UNAVAILABLE}\n{explorer}"
-    return tft_slots.answer(parsed, venues, snapshot, current, explorer)[:MAX_REPLY_LENGTH]
+        return f"{tft_slots.UNAVAILABLE}\n{explorer_for(parsed)}"
+    return tft_slots.answer(parsed, venues, snapshot, current, explorer_for)[:MAX_REPLY_LENGTH]
 
 
 NO_MATCH_PREFIXES = (
