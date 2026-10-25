@@ -210,7 +210,7 @@ def test_invalid_or_ambiguous_query_does_not_fetch_source():
         calls += 1
         return snapshot()
 
-    invalid = tft_guide.handle_message("/slots VUE dinner", catalog(), NOW, loader)
+    invalid = tft_guide.handle_message("/slots VUE | 2", catalog(), NOW, loader)
     ambiguous_catalog = catalog()
     duplicate = copy.deepcopy(ambiguous_catalog["venues"][0])
     duplicate["id"] = "tft-duplicate"
@@ -450,3 +450,21 @@ def test_single_day_answer_keeps_slot_rows_and_dated_link():
 
     assert "Observed matching AMEXPlatSG slots" in result
     assert "&date=2026-10-29" in result
+
+
+@pytest.mark.parametrize(
+    "command",
+    ["/slots VUE dinner weekend", "/slots VUE | 2 | dinner | weekend", "/slots VUE ｜ 2 ｜ dinner ｜ weekend"],
+)
+def test_slots_accepts_plain_words_and_lookalike_pipes(command: str) -> None:
+    result = answer(command)
+
+    assert "Use /slots" not in result
+    assert "weekends in the next 30 days" in result
+
+
+def test_slots_plain_venue_only_searches_that_venue() -> None:
+    result = answer("/slots VUE")
+
+    assert "Table for Two — observed slots" in result
+    assert "venue=tft-vue" in result

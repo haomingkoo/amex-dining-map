@@ -716,6 +716,39 @@ def _natural_dates_request(message: str, now: datetime) -> tft_slots.SlotRequest
     )
 
 
+PIPE_LOOKALIKES = str.maketrans({"｜": "|", "¦": "|", "│": "|", "ǀ": "|"})
+WEEKEND_WORD_RE = re.compile(r"\b(?:this |next |on |the )?(?:weekends?|wkends?)\b", re.IGNORECASE)
+
+
+def _slots_command(message: str, now: datetime) -> tft_slots.SlotRequest | str:
+    """`/slots` takes the strict pipe form or plain words: `/slots VUE dinner weekend`."""
+    message = message.translate(PIPE_LOOKALIKES)
+    if "|" in message:
+        return tft_slots.parse_request(message, now)
+    rest = message[len("/slots"):].strip()
+    if not rest:
+        return tft_slots.usage()
+    weekend_only = bool(WEEKEND_WORD_RE.search(rest))
+    rest = WEEKEND_WORD_RE.sub(" ", rest)
+    words = " ".join(rest.split()) or "any"
+    parsed = _natural_dates_request(f"when can I book {words}", now)
+    if not isinstance(parsed, tft_slots.SlotRequest):
+        return parsed or tft_slots.usage()
+    venue = parsed.venue_text or "any"
+    if weekend_only:
+        today = now.astimezone(SGT).date()
+        return tft_slots.SlotRequest(
+            venue_text=venue, party_size=parsed.party_size, meal=parsed.meal,
+            start_date=today, end_date=today + timedelta(days=tft_slots.WEEKEND_RANGE_DAYS - 1),
+            weekend_only=True, preferred_time=None,
+        )
+    return tft_slots.SlotRequest(
+        venue_text=venue, party_size=parsed.party_size, meal=parsed.meal,
+        start_date=parsed.start_date, end_date=parsed.end_date,
+        weekend_only=False, preferred_time=None,
+    )
+
+
 def _slot_answer(
     parsed: tft_slots.SlotRequest,
     catalog: dict,
@@ -842,7 +875,7 @@ def handle_message(
                 preferred_time=None,
             )
         else:
-            parsed = tft_slots.parse_request(message, current)
+            parsed = _slots_command(message, current)
         if isinstance(parsed, str):
             return parsed
         return _slot_answer(parsed, catalog, current, slot_loader)
