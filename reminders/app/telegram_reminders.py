@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import calendar
 import re
 import secrets
 import sqlite3
@@ -229,7 +230,101 @@ def _confirmation_prompt(draft: sqlite3.Row) -> str:
     )
 
 
+MONTHS = {name.casefold(): i for i, name in enumerate(calendar.month_name) if name} | {
+    name.casefold(): i for i, name in enumerate(calendar.month_abbr) if name
+} | {"sept": 9}
+_MONTH = r"(" + "|".join(sorted(MONTHS, key=len, reverse=True)) + r")"
+DAY_MONTH_RE = re.compile(rf"^(\d{{1,2}})(?:st|nd|rd|th)?\s+{_MONTH}(?:\s+(\d{{4}}))?$")
+MONTH_DAY_RE = re.compile(rf"^{_MONTH}\s+(\d{{1,2}})(?:st|nd|rd|th)?(?:\s+(\d{{4}}))?$")
+SLASH_RE = re.compile(r"^(\d{1,2})/(\d{1,2})(?:/(\d{4}))?$")
+MONTH_ONLY_RE = re.compile(rf"^(?:all of |whole of |in )?{_MONTH}(?:\s+(\d{{4}}))?$")
+WEEKDAYS = {name.casefold(): i for i, name in enumerate(calendar.day_name)}
+EVERY_RE = re.compile(
+    rf"^(?:every |any |all )?(weekend|saturday|sunday|friday|{'|'.join(WEEKDAYS)})s?"
+    rf"(?: in {_MONTH}(?:\s+(\d{{4}}))?)?$"
+)
+
+
+def _next_date(day: int, month: int, year: str | None, today: date) -> date | None:
+    try:
+        if year:
+            return date(int(year), month, day)
+        candidate = date(today.year, month, day)
+        return candidate if candidate >= today else date(today.year + 1, month, day)
+    except ValueError:
+        return None
+
+
+def _one_date(text: str, today: date) -> date | None:
+    text = text.strip()
+    if text == "today":
+        return today
+    if text == "tomorrow":
+        return today + timedelta(days=1)
+    if DATE_RE.fullmatch(text):
+        try:
+            return date.fromisoformat(text)
+        except ValueError:
+            return None
+    if m := DAY_MONTH_RE.match(text):
+        return _next_date(int(m.group(1)), MONTHS[m.group(2)], m.group(3), today)
+    if m := MONTH_DAY_RE.match(text):
+        return _next_date(int(m.group(2)), MONTHS[m.group(1)], m.group(3), today)
+    if m := SLASH_RE.match(text):
+        return _next_date(int(m.group(1)), int(m.group(2)), m.group(3), today)
+    return None
+
+
+def _month_bounds(month: int, year: str | None, today: date) -> tuple[date, date]:
+    y = int(year) if year else (today.year if month >= today.month else today.year + 1)
+    return max(date(y, month, 1), today), date(y, month, calendar.monthrange(y, month)[1])
+
+
+def _normalize_dates(value: str, today: date) -> str:
+    """Turn 'november', '1 Nov to 15 Nov' or 'weekends in nov' into the strict syntax."""
+    text = re.sub(r"\s+", " ", value.casefold().strip().rstrip("?.!")).strip()
+    if m := MONTH_ONLY_RE.match(text):
+        start, end = _month_bounds(MONTHS[m.group(1)], m.group(2), today)
+        return f"{start.isoformat()}..{end.isoformat()}"
+    if text in {"any", "anytime", "any time", "any date", "whenever possible"}:
+        text = "next 30 days"
+    if m := re.fullmatch(r"(?:the )?next (?:(\d{1,2}|a|one|two) )?(day|week)s?", text):
+        n = {"a": 1, "one": 1, "two": 2, None: 1}.get(m.group(1)) or int(m.group(1))
+        days = n * (7 if m.group(2) == "week" else 1)
+        return f"{today.isoformat()}..{(today + timedelta(days=days - 1)).isoformat()}"
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{4}-\d{2}-\d{2}", text):
+        text = text.replace(" ", "..")
+    if text in {"this weekend", "next weekend"}:
+        # Saturday of the current weekend (today's, if it is already the weekend).
+        saturday = today - timedelta(days=1) if today.weekday() == 6 else today + timedelta(days=(5 - today.weekday()) % 7)
+        if text == "next weekend":
+            saturday += timedelta(days=7)
+        days = [d for d in (saturday, saturday + timedelta(days=1)) if d >= today]
+        return ", ".join(d.isoformat() for d in days)
+    if m := EVERY_RE.match(text):
+        kind, month, year = m.group(1), m.group(2), m.group(3)
+        start, end = _month_bounds(MONTHS[month], year, today) if month else (today, today + timedelta(days=29))
+        wanted = {5, 6} if kind == "weekend" else {WEEKDAYS[kind]}
+        days = [start + timedelta(days=i) for i in range((end - start).days + 1)]
+        return ", ".join(d.isoformat() for d in days if d.weekday() in wanted)
+    for sep in (" to ", " until ", " till ", "..", " - ", "–", "—"):
+        if sep in text:
+            left, right = text.split(sep, 1)
+            a, b = _one_date(left, today), _one_date(right, today)
+            if a is None and left.strip().isdigit() and (m := DAY_MONTH_RE.match(right.strip())):
+                a = _next_date(int(left), MONTHS[m.group(2)], m.group(3), today)
+            if a and b:
+                return f"{a.isoformat()}..{b.isoformat()}"
+            return value
+    parts = [part for part in re.split(r",| and ", text) if part.strip()]
+    dates = [_one_date(part, today) for part in parts]
+    if dates and all(dates):
+        return ", ".join(d.isoformat() for d in dates)
+    return value
+
+
 def _parse_dates(value: str, today: date) -> tuple[str, str, list[str]] | None:
+    value = _normalize_dates(value, today)
     parts = [part.strip() for part in value.split(",")]
     if len(parts) > 1:
         if len(parts) > MAX_SPECIFIC_DATES or any(
@@ -476,11 +571,11 @@ def handle_message(
         _save_conversation(
             conn, principal_key, "dates", now, meal=lowered.title()
         )
-        return "Which date(s)? Use YYYY-MM-DD, a range like YYYY-MM-DD..YYYY-MM-DD (max 31 days), or up to 10 comma-separated dates. Singapore dates only."
+        return "Which date(s)? For example: november, 14 Nov, 1 Nov to 15 Nov, weekends in November, or 14 Nov, 21 Nov. Up to 31 days, or up to 10 separate dates."
     if state == "dates":
         parsed = _parse_dates(message, now.astimezone(tft_slots.SGT).date())
         if parsed is None:
-            return "I could not validate those future Singapore dates. Use YYYY-MM-DD, a max-31-day range, or up to 10 comma-separated dates."
+            return "I couldn't read those dates. Try: november, 14 Nov, 1 Nov to 15 Nov, or weekends in November. Dates must be in the future, up to 31 days, or up to 10 separate dates."
         start, end, dates = parsed
         _save_conversation(
             conn, principal_key, "confirm", now,
