@@ -33,7 +33,7 @@ def test_personal_eligibility_returns_document_scope_not_a_decision():
     assert "Singapore-issued Platinum Card" in answer
     assert "does not determine whether a particular person" in answer
     assert "Official T&C - p. 1 - version 7ba815581e6c" in answer
-    assert "captured 07 May 2026, 12:23 UTC" in answer
+    assert "captured 07 May 2026, 20:23 SGT" in answer
     assert "you are eligible" not in answer.casefold()
 
 

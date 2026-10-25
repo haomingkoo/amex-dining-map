@@ -262,7 +262,7 @@ def _date(value: str | None) -> str:
         moment = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
         return "unknown"
-    return moment.astimezone(timezone.utc).strftime("%d %b %Y, %H:%M UTC")
+    return moment.astimezone(SGT).strftime("%d %b %Y, %H:%M SGT")
 
 
 def _date_sgt(value: str | None) -> str:

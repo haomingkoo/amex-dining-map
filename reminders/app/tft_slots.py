@@ -129,6 +129,14 @@ def _in_range(value: str, request: SlotRequest) -> bool:
     return not request.weekend_only or parsed.weekday() >= 5
 
 
+def _day(value: date) -> str:
+    return value.strftime("%a %d %b")
+
+
+def _full_day(value: date) -> str:
+    return value.strftime("%a %d %b %Y")
+
+
 def _date_rows(matches: list[dict], request: SlotRequest) -> list[str]:
     """One line per venue, date and meal, so a range reads as dates rather than slots."""
     groups: dict[tuple[str, str, str], list[dict]] = {}
@@ -138,7 +146,7 @@ def _date_rows(matches: list[dict], request: SlotRequest) -> list[str]:
     for (venue_name, slot_date, meal), items in list(groups.items())[:MAX_RESULTS]:
         times = sorted(item["time"] for item in items)
         span = times[0] if len(times) == 1 else f"{times[0]}–{times[-1]}"
-        day = date.fromisoformat(slot_date).strftime("%a %d %b")
+        day = _day(date.fromisoformat(slot_date))
         checked = max(item["checked_at"] for item in items).astimezone(SGT).strftime("%d %b, %H:%M SGT")
         meal_label = f"{meal.lower()} " if request.meal == "Lunch or Dinner" else ""
         rows.append(
@@ -241,8 +249,8 @@ def answer(
     )
     filters = (
         f"{request.party_size} pax, {request.meal}, "
-        f"{'weekends in the next 30 days' if request.weekend_only else request.start_date.isoformat()}"
-        f"{f' to {request.end_date.isoformat()}' if request.end_date != request.start_date and not request.weekend_only else ''}"
+        f"{'weekends in the next 30 days' if request.weekend_only else _full_day(request.start_date)}"
+        f"{f' to {_full_day(request.end_date)}' if request.end_date != request.start_date and not request.weekend_only else ''}"
         f"{f', within 60 minutes of {request.preferred_time.strftime('%H:%M')} SGT' if request.preferred_time else ''}"
     )
     if matches and request.end_date != request.start_date and preferred is None:
@@ -257,7 +265,7 @@ def answer(
                 else ""
             )
             rows.append(
-                f"• {item['venue_name']} — {item['date']} {item['time']}, "
+                f"• {item['venue_name']} — {_day(date.fromisoformat(item['date']))} {item['time']}, "
                 f"{meal_label}"
                 f"up to {item['max_seats']} pax (checked {checked})"
             )
