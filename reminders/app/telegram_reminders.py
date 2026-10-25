@@ -280,6 +280,14 @@ def _month_bounds(month: int, year: str | None, today: date) -> tuple[date, date
     return max(date(y, month, 1), today), date(y, month, calendar.monthrange(y, month)[1])
 
 
+def date_examples(today: date) -> dict[str, str]:
+    """Examples drawn from next month, so prompts never name a past or stale month."""
+    y, m = (today.year + 1, 1) if today.month == 12 else (today.year, today.month + 1)
+    abbr, name = calendar.month_abbr[m], calendar.month_name[m]
+    return {"month": name.lower(), "day": f"14 {abbr}", "range": f"1 {abbr} to 15 {abbr}",
+            "weekends": f"weekends in {name}", "list": f"14 {abbr}, 21 {abbr}", "Month": name}
+
+
 def _normalize_dates(value: str, today: date) -> str:
     """Turn 'november', '1 Nov to 15 Nov' or 'weekends in nov' into the strict syntax."""
     text = re.sub(r"\s+", " ", value.casefold().strip().rstrip("?.!")).strip()
@@ -571,11 +579,19 @@ def handle_message(
         _save_conversation(
             conn, principal_key, "dates", now, meal=lowered.title()
         )
-        return "Which date(s)? For example: november, 14 Nov, 1 Nov to 15 Nov, weekends in November, or 14 Nov, 21 Nov. Up to 31 days, or up to 10 separate dates."
+        ex = date_examples(now.astimezone(tft_slots.SGT).date())
+        return (
+            f"Which date(s)? For example: {ex['month']}, {ex['day']}, {ex['range']}, "
+            f"{ex['weekends']}, or {ex['list']}. Up to 31 days, or up to 10 separate dates."
+        )
     if state == "dates":
         parsed = _parse_dates(message, now.astimezone(tft_slots.SGT).date())
         if parsed is None:
-            return "I couldn't read those dates. Try: november, 14 Nov, 1 Nov to 15 Nov, or weekends in November. Dates must be in the future, up to 31 days, or up to 10 separate dates."
+            ex = date_examples(now.astimezone(tft_slots.SGT).date())
+            return (
+                f"I couldn't read those dates. Try: {ex['month']}, {ex['day']}, {ex['range']}, "
+                f"or {ex['weekends']}. Dates must be in the future, up to 31 days, or up to 10 separate dates."
+            )
         start, end, dates = parsed
         _save_conversation(
             conn, principal_key, "confirm", now,
