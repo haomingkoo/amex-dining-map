@@ -14,6 +14,7 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app import (
     db,
@@ -177,6 +178,7 @@ app.include_router(router)
 app.include_router(owner_alert_router)
 app.include_router(telegram_bot_router)
 app.include_router(tft_live_api.router)
+app.mount("/fonts", StaticFiles(directory=Path(__file__).parent / "fonts"), name="fonts")
 
 
 APP_DIR = Path(__file__).resolve().parent

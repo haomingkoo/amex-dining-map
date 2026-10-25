@@ -351,12 +351,21 @@ def test_subscribe_rejects_a_venue_not_in_the_catalog(client):
     assert response.status_code == 422
 
 
-def test_reminder_pages_allow_only_google_fonts_beyond_self(client):
-    policy = client.get("/api/unsubscribe?token=x").headers["Content-Security-Policy"]
+def test_reminder_pages_load_fonts_only_from_self(client):
+    response = client.get("/api/unsubscribe?token=x")
+    policy = response.headers["Content-Security-Policy"]
 
-    assert "font-src https://fonts.gstatic.com;" in policy
-    assert "style-src 'unsafe-inline' https://fonts.googleapis.com;" in policy
+    assert "font-src 'self';" in policy
+    assert "style-src 'unsafe-inline';" in policy
     assert "default-src 'none'" in policy
+    assert "googleapis" not in response.text and "gstatic" not in response.text
+
+
+def test_self_hosted_font_is_served(client):
+    response = client.get("/fonts/figtree-latin-normal.woff2")
+
+    assert response.status_code == 200
+    assert response.content[:4] == b"wOF2"
 
 
 def test_manage_page_lists_chosen_venues_first_and_labels_dates(client):
