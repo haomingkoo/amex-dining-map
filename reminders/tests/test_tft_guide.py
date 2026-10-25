@@ -575,3 +575,9 @@ def test_adopt_published_catalog_retains_the_adopted_copy_on_a_later_failure(
     assert adopted is False
     assert tft_guide.catalog_in_use().raw == raw
     assert tft_guide.load_catalog()["roster_checked_at"] == "2099-01-01T00:00:00Z"
+
+
+def test_kaya_alias_resolves_to_kaya_at_the_standard():
+    matches = tft_guide.resolve_venue("Kaya", tft_guide.load_catalog())
+
+    assert [venue["id"] for venue in matches] == ["tft-kaya-at-the-standard"]
