@@ -1000,6 +1000,34 @@ input,
   line-height: 1.45;
 }
 
+.updates-head-actions {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.updates-more {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  color: var(--gold);
+  font: inherit;
+  cursor: pointer;
+}
+
+.updates-more:hover {
+  background: var(--control-bg);
+}
+
+.updates-more:focus-visible,
+.updates-close:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+
 .updates-mark-read {
   min-height: 44px;
   flex: 0 0 auto;
