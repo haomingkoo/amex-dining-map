@@ -363,6 +363,7 @@ def purge_expired_records(
     *,
     unsubscribed_retention_days: int = 30,
     event_retention_hours: int = 24,
+    ended_retention_days: int = 30,
 ) -> None:
     now = _now()
     conn.execute(
@@ -383,6 +384,19 @@ def purge_expired_records(
         "DELETE FROM subscribe_events WHERE created_ts < ?",
         (_iso(now - timedelta(hours=event_retention_hours)),),
     )
+    conn.execute(
+        "DELETE FROM subscribers WHERE date_end < ?",
+        ((now - timedelta(days=ended_retention_days)).date().isoformat(),),
+    )
+
+
+def purge(path: Path | str) -> None:
+    conn = connect(path)
+    try:
+        purge_expired_records(conn)
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def consume_rate_limits(
