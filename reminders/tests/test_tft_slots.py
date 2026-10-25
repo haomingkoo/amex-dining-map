@@ -62,8 +62,8 @@ def test_vue_filters_party_meal_date_and_preferred_time_together():
 
     assert "Observed matching AMEXPlatSG slots" in result
     for value in ("18:00", "18:30", "19:00", "19:30", "20:00"):
-        assert f"2026-10-29 {value}" in result
-    assert "2 pax, Dinner, 2026-10-29, within 60 minutes of 19:00 SGT" in result
+        assert f"Thu 29 Oct {value}" in result
+    assert "2 pax, Dinner, Thu 29 Oct 2026, within 60 minutes of 19:00 SGT" in result
     assert "checked 30 Aug, 10:50 SGT" in result
     assert "Booking and voucher redemption remain in the Amex Experiences App" in result
     assert (
@@ -97,7 +97,7 @@ def test_generic_diningcity_project_is_excluded():
     result = answer("/slots VUE | 2 | dinner | 2026-10-29", payload)
 
     assert "no verifiable AMEXPlatSG slot snapshot" in result
-    assert "2026-10-29 19:00" not in result
+    assert "Thu 29 Oct 19:00" not in result
 
 
 def test_unknown_status_is_unverifiable_not_fresh_empty_coverage():
@@ -157,7 +157,7 @@ def test_weekend_any_uses_transparent_next_30_day_defaults():
 
     result = answer("/slots any | 2 | dinner | weekend", payload)
 
-    assert f"{venue_name} — 2026-09-05 19:00" in result
+    assert f"{venue_name} — Sat 05 Sep: 19:00 (1 time" in result
     assert "2026-09-07" not in result
     assert "weekends in the next 30 days" in result
     assert (
@@ -196,8 +196,8 @@ def test_conversational_weekend_query_defaults_transparently_and_checks_both_mea
         "Which TFT venues have weekend slots?", catalog(), NOW, loader
     )
 
-    assert "VUE — 2026-09-05 19:00, dinner" in result
-    assert f"{lunch_venue_name} — 2026-09-06 19:00, lunch" in result
+    assert "VUE — Sat 05 Sep: dinner 19:00 (1 time" in result
+    assert f"{lunch_venue_name} — Sun 06 Sep: lunch 19:00 (1 time" in result
     assert "Filters: 2 pax, Lunch or Dinner, weekends in the next 30 days" in result
     assert calls == 1
 
@@ -334,7 +334,7 @@ def test_natural_dates_question_with_ambiguous_venue_does_not_guess():
 def test_natural_dates_question_defaults_to_two_pax_both_meals_and_max_range():
     result = answer("which dates is VUE available?")
 
-    assert "Filters: 2 pax, Lunch or Dinner, 2026-08-30 to 2026-09-29." in result
+    assert "Filters: 2 pax, Lunch or Dinner, Sun 30 Aug 2026 to Tue 29 Sep 2026." in result
 
 
 @pytest.mark.parametrize(
@@ -350,7 +350,7 @@ def test_natural_dates_question_defaults_to_two_pax_both_meals_and_max_range():
 def test_natural_dates_modifiers_override_meal_and_party(question, filters):
     result = answer(question)
 
-    assert f"Filters: {filters}2026-08-30 to 2026-09-29." in result
+    assert f"Filters: {filters}Sun 30 Aug 2026 to Tue 29 Sep 2026." in result
 
 
 @pytest.mark.parametrize(
@@ -368,10 +368,10 @@ def test_natural_dates_party_out_of_range_uses_existing_error(question):
 @pytest.mark.parametrize(
     ("question", "date_range"),
     [
-        ("which dates does VUE have in October?", "2026-10-01 to 2026-10-31"),
-        ("which dates does VUE have in August?", "2026-08-30 to 2026-08-31"),
-        ("which dates does VUE have in July?", "2027-07-01 to 2027-07-31"),
-        ("any dates for VUE in february for dinner", "2027-02-01 to 2027-02-28"),
+        ("which dates does VUE have in October?", "Thu 01 Oct 2026 to Sat 31 Oct 2026"),
+        ("which dates does VUE have in August?", "Sun 30 Aug 2026 to Mon 31 Aug 2026"),
+        ("which dates does VUE have in July?", "Thu 01 Jul 2027 to Sat 31 Jul 2027"),
+        ("any dates for VUE in february for dinner", "Mon 01 Feb 2027 to Sun 28 Feb 2027"),
     ],
 )
 def test_natural_dates_month_limits_range_to_that_month(question, date_range):
@@ -383,7 +383,7 @@ def test_natural_dates_month_limits_range_to_that_month(question, date_range):
 def test_natural_dates_month_returns_slots_inside_that_month():
     result = answer("which dates does VUE have in October for dinner?")
 
-    assert "VUE — 2026-10-29 19:00" in result
+    assert "VUE — Thu 29 Oct: 18:00–20:00 (5 times" in result
 
 
 def test_natural_dates_rejects_bad_slot_source_metadata():
@@ -435,3 +435,18 @@ def test_help_mentions_plain_english_dates_question():
     result = tft_guide.handle_message("/help", catalog(), NOW)
 
     assert "which dates is VUE available?" in result
+
+
+def test_range_answer_groups_slots_into_dates_and_links_without_a_date():
+    result = answer("which dates does VUE have in October?")
+
+    assert "Observed matching AMEXPlatSG dates:" in result
+    assert "VUE — Thu 29 Oct: dinner 18:00–20:00 (5 times, checked" in result
+    assert "&date=" not in result
+
+
+def test_single_day_answer_keeps_slot_rows_and_dated_link():
+    result = answer("/slots VUE | 2 | dinner | 2026-10-29")
+
+    assert "Observed matching AMEXPlatSG slots" in result
+    assert "&date=2026-10-29" in result

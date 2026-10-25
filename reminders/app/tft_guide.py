@@ -262,7 +262,7 @@ def _date(value: str | None) -> str:
         moment = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
         return "unknown"
-    return moment.astimezone(timezone.utc).strftime("%d %b %Y, %H:%M UTC")
+    return moment.astimezone(SGT).strftime("%d %b %Y, %H:%M SGT")
 
 
 def _date_sgt(value: str | None) -> str:
@@ -747,7 +747,8 @@ def _slot_answer(
         venue_id=venue_id,
         party_size=parsed.party_size,
         meal=parsed.meal if parsed.meal in {"Lunch", "Dinner"} else None,
-        date_value=None if parsed.weekend_only else parsed.start_date.isoformat(),
+        # A range must not pin the site to its first day, which is usually sold out.
+        date_value=parsed.start_date.isoformat() if parsed.end_date == parsed.start_date else None,
         day="weekend" if parsed.weekend_only else None,
         preferred_time=(
             parsed.preferred_time.strftime("%H:%M")

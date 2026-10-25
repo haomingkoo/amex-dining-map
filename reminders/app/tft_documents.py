@@ -7,6 +7,9 @@ import unicodedata
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo
+
+SGT = ZoneInfo("Asia/Singapore")
 
 
 MAX_REPLY_LENGTH = 3900
@@ -288,7 +291,7 @@ def answer(message: str, catalog: dict, now: datetime) -> str | None:
     label = "T&C" if document["kind"] == "terms" else "FAQ"
     citation = (
         f"Official {label} - p. {page} - version {document['raw_sha256'][:12]} - "
-        f"captured {captured.strftime('%d %b %Y, %H:%M UTC')}"
+        f"captured {captured.astimezone(SGT).strftime('%d %b %Y, %H:%M SGT')}"
     )
     answer_text = (
         f"{_review_notice(document)}{document['title']}\n\n{clause['summary']}\n\n"

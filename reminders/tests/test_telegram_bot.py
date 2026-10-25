@@ -280,7 +280,7 @@ def test_private_slot_query_fetches_once_after_guards_and_replay_deduplicates(
     assert len(fetches) == 1
     assert len(sends) == 1
     assert "Observed matching AMEXPlatSG slots" in sends[0][2]
-    assert "2026-10-29 19:00" in sends[0][2]
+    assert "Thu 29 Oct 19:00" in sends[0][2]
 
 
 def test_slot_source_failure_is_a_completed_bounded_reply(guide_client, monkeypatch):
