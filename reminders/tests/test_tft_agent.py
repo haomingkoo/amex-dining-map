@@ -591,3 +591,26 @@ def test_guard_accepts_grounded_reply_and_rejects_each_claim_class():
     assert tft_agent.ungrounded("It costs S$99.", corpus, allowed, today) == "price"
     assert tft_agent.ungrounded("See https://bad.example", corpus, allowed, today) == "url"
     assert tft_agent.ungrounded("Rated 4.9 overall.", corpus, allowed, today) == "number"
+
+
+def test_reminder_dates_may_arrive_as_one_comma_string(reminder_db):
+    saturdays = ",".join((SATURDAY + timedelta(days=7 * week)).isoformat() for week in range(4))
+    chat = ScriptedChat(call("draft_reminder", venue="Colony", party=2, meal="dinner", dates=saturdays))
+
+    _ask("remind me when Colony has dinner for 2 on Saturdays", chat, drafter=_drafter(reminder_db))
+
+    assert _conversation(reminder_db)["state"] == "confirm"
+
+
+def test_guard_accepts_roster_names_and_user_spelled_names():
+    chat = ScriptedChat(
+        call("find_slots", venue="Brewerkz Riverside Point", start_date=SATURDAY.isoformat(), end_date=SATURDAY.isoformat()),
+        text(f"No slots at Brewerkz Riverside Point at the Ritz-Carlton on {_day(SATURDAY)}."),
+    )
+
+    result = tft_agent.run_detailed(
+        "brewerkz riverside point near ritz carlton on saturday", catalog(), NOW, history=[], chat=chat,
+        slot_loader=lambda: snapshot("tft-brewerkz-riverside-point", []),
+    )
+
+    assert result.outcome == "agent"

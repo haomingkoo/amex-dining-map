@@ -209,9 +209,11 @@ class DraftArgs(_Args):
     venue: str | None = Field(default=None, max_length=80)
     party: int | None = Field(default=None, ge=-1_000, le=1_000)
     meal: str | None = Field(default=None, max_length=10)
-    dates: list[Annotated[str, Field(max_length=10)]] | Annotated[str, Field(max_length=120)] | None = Field(
-        default=None, max_length=31
-    )
+    dates: (
+        Annotated[list[Annotated[str, Field(max_length=10)]], Field(max_length=31)]
+        | Annotated[str, Field(max_length=120)]
+        | None
+    ) = None
 
 
 def _fn(name: str, description: str, properties: dict, required: list[str]) -> dict:
@@ -648,8 +650,8 @@ BOOKING_CLAIM_RE = re.compile(
     re.IGNORECASE,
 )
 UTC_RE = re.compile(r"\b(?:UTC|GMT)\b")
-WORD_RE = re.compile(r"[A-Za-z][A-Za-z'’-]+")
-CAPITAL_RE = re.compile(r"[A-Z][A-Za-z'’-]+")
+WORD_RE = re.compile(r"[A-Za-z][A-Za-z'’]+")
+CAPITAL_RE = re.compile(r"[A-Z][A-Za-z'’]+")
 SENTENCE_START = ".!?:;\n•*-–—(\"“"
 NOVEL_MIN = 8
 NOVEL_RATIO = 0.4
