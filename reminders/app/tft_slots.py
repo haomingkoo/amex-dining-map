@@ -34,11 +34,12 @@ class SlotRequest:
 def usage() -> str:
     example = (datetime.now(SGT).date() + timedelta(days=14)).isoformat()  # always a future date
     return (
-        "Use /slots venue | party size | lunch or dinner | YYYY-MM-DD, "
-        "YYYY-MM-DD..YYYY-MM-DD, or weekend | optional HH:MM.\n"
-        "Examples:\n"
-        f"/slots VUE | 2 | dinner | {example} | 19:00\n"
-        "/slots any | 2 | dinner | weekend"
+        "Use /slots venue, plus lunch or dinner, weekend, or a month if you like:\n"
+        "/slots VUE dinner weekend\n"
+        "/slots colony\n"
+        "/slots any lunch in December\n"
+        "Or the exact form: /slots venue | party | lunch or dinner | date or range | optional HH:MM\n"
+        f"e.g. /slots VUE | 2 | dinner | {example} | 19:00"
     )
 
 
