@@ -410,7 +410,7 @@ VENUE_PROMPT = (
     "New reminder. Which venue? Send its name, e.g. Colony (add 'for 4' if you're bringing paying guests). "
     "/venues lists them all, /cancel stops."
 )
-VENUE_REPROMPT = "I need one exact TFT venue. Use /venues, then reply with its name, or /cancel."
+VENUE_REPROMPT = "I need one exact Table for Two venue. Use /venues, then reply with its name, or /cancel."
 PARTY_REPROMPT = "Party size must be 1 to 10. Send the venue again, e.g. Colony for 4, or /cancel."
 
 
@@ -522,7 +522,7 @@ def handle_message(
     if start_reminder is not None:
         matches = tft_guide.resolve_venue(start_reminder.group(1), catalog)
         if len(matches) != 1:
-            return "That venue link is not in the reviewed TFT roster. Use /venues."
+            return "That venue isn't on the Table for Two list. Use /venues to see the list."
         venue = matches[0]
         _save_conversation(
             conn, principal_key, "meal", now,
@@ -555,9 +555,9 @@ def handle_message(
             (principal_key, MAX_ACTIVE_REMINDERS),
         ).fetchall()
         if not rows:
-            return "You have no active TFT reminders. Send /remind to create one."
-        return "Your active TFT reminders:\n" + "\n".join(
-            f"• {row['id']} — {_summary(row)}" for row in rows
+            return "You have no active Table for Two reminders. Send /remind to create one."
+        return "Your active Table for Two reminders:\n" + "\n".join(
+            f"• {row['id']}: {_summary(row)}" for row in rows
         ) + "\nCancel one with /cancel RXXXXXX."
 
     if lowered.startswith("/cancel "):
@@ -605,7 +605,7 @@ def handle_message(
         _save_conversation(
             conn, principal_key, "delete_confirm", now, created_ts=_iso(now)
         )
-        return "Delete your Telegram reminder data? This removes active reminders, setup state, stored delivery chat ID, reminder receipts, recent guide conversation context, and rate keys. It does not affect email reminders. Reply DELETE within 15 minutes or /cancel."
+        return "Delete your Telegram reminder data? This removes your reminders, any reminder you are setting up, your saved chat ID, delivery records, your recent conversation with the guide and rate-limit records. It does not affect email reminders. Reply DELETE within 15 minutes or /cancel."
 
     if conversation and conversation["state"] == "delete_confirm":
         if message != "DELETE":

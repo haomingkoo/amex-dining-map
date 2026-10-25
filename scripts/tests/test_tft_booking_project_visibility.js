@@ -45,9 +45,9 @@ assert.deepEqual(
 );
 assert.deepEqual(Array.from(context.tableForTwoAlertVenueNames()), ["Legacy Venue", "Sarai"]);
 
-assert.match(source, /Active booking-app restaurants first\. Not currently shown:/);
+assert.match(source, /Restaurants you can book in the Amex app come first\. Not in the app right now:/);
 assert.match(source, /new booking-app venue/);
-assert.match(source, /Historical roster record/);
-assert.match(source, /Booking, availability alerts, and reminders are disabled/);
+assert.match(source, /Earlier listing/);
+assert.match(source, /Booking, alerts and reminders are off/);
 
 console.log("TFT booking-project visibility verification passed");

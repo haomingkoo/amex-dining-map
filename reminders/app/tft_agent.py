@@ -481,13 +481,13 @@ def _long_date(value: Any) -> str | None:
 def _venue_info(venue: dict) -> str:
     info = venue.get("info") or {}
     google = info.get("google") or {}
-    lines = [f"{venue['name']} — venue info (Table for Two roster and Google Maps)"]
+    lines = [f"{venue['name']}: venue info (Table for Two list and Google Maps)"]
     for label, value in (
         ("Address", venue.get("address")),
         ("Area", info.get("area")),
         ("Cuisine", ", ".join(info.get("cuisines") or []) or None),
         ("Description (DiningCity listing)", info.get("description")),
-        ("Listed opening hours (DiningCity; TFT seatings may differ)", info.get("opening_hours")),
+        ("Listed opening hours (Table for Two seatings may differ)", info.get("opening_hours")),
     ):
         text = tft_guide._safe_venue_text(value, 700)
         if text:
@@ -501,7 +501,7 @@ def _venue_info(venue: dict) -> str:
             + (f" (checked {checked})" if checked else "")
         )
     if len(lines) == 1:
-        lines.append("No roster description or rating is stored for this venue.")
+        lines.append("No description or rating is saved for this venue.")
     return "\n".join(lines)
 
 

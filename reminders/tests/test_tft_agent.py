@@ -535,7 +535,7 @@ def test_partial_reminder_starts_at_the_first_missing_step(reminder_db):
 @pytest.mark.parametrize(
     "fields,state,reprompt",
     [
-        ({"venue": "Noma", "party": 2, "meal": "dinner"}, "venue", "I need one exact TFT venue"),
+        ({"venue": "Noma", "party": 2, "meal": "dinner"}, "venue", "I need one exact Table for Two venue"),
         ({"venue": "Colony", "party": 12, "meal": "dinner"}, "venue", "Party size must be 1 to 10"),
         (
             {"venue": "Colony", "party": 2, "meal": "dinner", "dates": [(TODAY - timedelta(days=2)).isoformat()]},
@@ -700,7 +700,7 @@ def test_reply_of_only_unattributed_opinion_falls_back_to_tool_output():
     result = tft_agent.run_detailed("is colony good for a date", catalog(), NOW, history=[], chat=chat)
 
     assert result.outcome == "guard:opinion"
-    assert result.reply.startswith("Colony — venue info")
+    assert result.reply.startswith("Colony: venue info")
 
 
 def test_greeting_words_are_not_treated_as_opinions():

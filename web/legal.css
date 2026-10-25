@@ -51,14 +51,6 @@ body {
 
 .legal-back:hover { color: var(--text); border-color: var(--border-strong); }
 
-.eyebrow {
-  margin: 0 0 0.8rem;
-  font: 600 0.7rem/1 var(--sans);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--gold);
-}
-
 h1 {
   margin: 0 0 0.4rem;
   font: 600 2.4rem/1.05 var(--serif);
@@ -112,8 +104,9 @@ th { color: var(--text); font-weight: 600; }
 }
 
 .legal-footer a { color: inherit; }
+.legal-footer p { margin: 0.25rem 0; }
 
-:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 4px; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
 
 @media (max-width: 30rem) {
   .legal-page { padding: 1.75rem 1.1rem 1.5rem; }

@@ -119,7 +119,7 @@ def test_unknown_reminder_start_link_fails_closed(tmp_path: Path):
             tft_guide.load_catalog(),
             NOW,
         )
-        assert "not in the reviewed TFT roster" in reply
+        assert "isn't on the Table for Two list" in reply
         assert conn.execute(
             "SELECT COUNT(*) FROM telegram_reminder_conversations"
         ).fetchone()[0] == 0
