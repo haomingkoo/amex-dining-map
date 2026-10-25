@@ -316,12 +316,14 @@ def _menu_source_context(menu: dict, catalog: dict, now: datetime) -> str:
 
 
 def _help() -> str:
+    today = datetime.now(SGT).date()
+    month = calendar.month_name[today.month % 12 + 1]  # next month, so the example stays current
     return (
         "Hi! I'm an unofficial guide to Amex Platinum Table for Two in Singapore.\n\n"
         "Just ask, for example:\n"
         "• which dates is VUE available?\n"
         "• when can I book Colony for dinner for 4?\n"
-        "• which dates does Park90 have in December?\n\n"
+        f"• which dates does Park90 have in {month}?\n\n"
         "Get a message when a slot opens:\n"
         "1. Send /remind\n"
         "2. Answer four quick questions: venue, party size, lunch or dinner, date(s)\n"

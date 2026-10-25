@@ -56,3 +56,23 @@ def test_next_weekend_on_a_sunday_is_the_following_saturday_and_sunday() -> None
 @pytest.mark.parametrize("text", ["2025-11-01", "1 jan 2020", "1 nov to 30 dec", "whenever", "31/02", "", "next 60 days"])
 def test_parse_dates_still_rejects_past_too_long_or_unreadable(text: str) -> None:
     assert _parse_dates(text, SUNDAY) is None
+
+
+@pytest.mark.parametrize(
+    ("today", "month", "day"),
+    [(date(2026, 10, 25), "november", "14 Nov"), (date(2026, 12, 3), "january", "14 Jan")],
+)
+def test_date_examples_use_next_month(today: date, month: str, day: str) -> None:
+    from app.telegram_reminders import date_examples
+
+    examples = date_examples(today)
+
+    assert (examples["month"], examples["day"]) == (month, day)
+
+
+def test_date_examples_parse_with_the_same_validator() -> None:
+    from app.telegram_reminders import date_examples
+
+    ex = date_examples(SUNDAY)
+
+    assert all(_parse_dates(ex[k], SUNDAY) for k in ("month", "day", "range", "weekends", "list"))
