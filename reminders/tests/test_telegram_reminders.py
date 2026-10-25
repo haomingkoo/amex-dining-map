@@ -311,9 +311,8 @@ def test_fresh_match_claims_one_bounded_notification_and_replay_none(tmp_path: P
         assert len(first.notifications) == 1
         assert replay.notifications == []
         notification = first.notifications[0]
-        assert "19:00" in notification.text and "19:30" in notification.text
-        assert "not a booking guarantee" in notification.text
-        assert "Seen 11:55 SGT, 30 Aug" in notification.text
+        assert "• Thu 29 Oct: 7:00pm–7:30pm (2 times)" in notification.text
+        assert "Last checked 30 Aug, 11:55am. Times come from DiningCity and can change" in notification.text
         assert (
             "#/table-for-two?venue=tft-vue&party=2&meal=dinner&date=2026-10-29"
             in notification.text

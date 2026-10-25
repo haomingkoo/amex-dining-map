@@ -279,8 +279,8 @@ def test_private_slot_query_fetches_once_after_guards_and_replay_deduplicates(
 
     assert len(fetches) == 1
     assert len(sends) == 1
-    assert "Observed matching AMEXPlatSG slots" in sends[0][2]
-    assert "Thu 29 Oct 19:00" in sends[0][2]
+    assert sends[0][2].startswith("Open tables, dinner for 2 at VUE on Thu 29 Oct")
+    assert "Thu 29 Oct 7:00pm" in sends[0][2]
 
 
 def test_slot_source_failure_is_a_completed_bounded_reply(guide_client, monkeypatch):
@@ -302,7 +302,7 @@ def test_slot_source_failure_is_a_completed_bounded_reply(guide_client, monkeypa
 
     assert _post(client, update).json() == {"ok": True}
     assert len(sends) == 1
-    assert "will not make an availability claim" in sends[0][2]
+    assert sends[0][2].startswith("I cannot load Table for Two times right now.")
     conn = db.connect(settings.db_path)
     try:
         row = conn.execute(
@@ -1050,7 +1050,7 @@ def test_reminder_dispatch_sends_once_then_terminally_closes_destination(
     assert len(first_payload["run_id"]) == len(replay_payload["run_id"]) == 16
     assert len(sends) == 1
     assert sends[0][1] == 4444
-    assert "not a booking guarantee" in sends[0][2]
+    assert "Times come from DiningCity and can change" in sends[0][2]
     conn = db.connect(settings.db_path)
     try:
         row = conn.execute(

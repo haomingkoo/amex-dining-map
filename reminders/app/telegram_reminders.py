@@ -856,25 +856,26 @@ def claim_notifications(
             raise
         if not claimed:
             continue
-        checked = selected[0]["checked_at"].astimezone(tft_slots.SGT).strftime(
-            "%H:%M SGT, %d %b"
-        )
+        checked = tft_slots.checked_label(selected[0]["checked_at"])
         by_day: dict[str, list[str]] = {}
         for item in matches:
             by_day.setdefault(item["date"], []).append(item["time"])
         lines = []
         for slot_date, times in list(by_day.items())[:MAX_NOTIFICATION_SLOTS]:
-            span = times[0] if len(times) == 1 else f"{min(times)}–{max(times)}"
-            lines.append(f"• {_day(slot_date)}: {span} ({len(times)} time{'s' if len(times) > 1 else ''})")
+            span = tft_slots.clock(min(times))
+            if len(times) > 1:
+                span += f"–{tft_slots.clock(max(times))}"
+            day = tft_slots._day(date.fromisoformat(slot_date))
+            lines.append(f"• {day}: {span} ({len(times)} time{'s' if len(times) > 1 else ''})")
         if len(by_day) > MAX_NOTIFICATION_SLOTS:
             lines.append(f"• {len(by_day) - MAX_NOTIFICATION_SLOTS} more dates")
         first = next(iter(by_day))
         text = (
             f"🔔 {row['venue_name']} has {str(row['meal']).lower()} open\n"
             + "\n".join(lines)
-            + f"\n\nBook now in the Amex Experiences App, slots go fast. Seen {checked}; not a booking guarantee.\n"
-            f"Map: {tft_guide.explorer_url(venue_id=row['venue_id'], party_size=row['party_size'], meal=row['meal'], date_value=first)}\n"
-            f"Reminder {row['id']} is now closed. /remind to set another."
+            + f"\n\nTables go fast. Last checked {checked}. {tft_slots.SOURCE_NOTE}\n"
+            f"{tft_guide.EXPLORER_PREFIX}{tft_guide.explorer_url(venue_id=row['venue_id'], party_size=row['party_size'], meal=row['meal'], date_value=first)}\n"
+            f"Reminder {row['id']} is now closed. Send /remind to set another."
         )
         notifications.append(
             Notification(
