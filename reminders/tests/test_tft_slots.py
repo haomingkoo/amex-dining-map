@@ -505,7 +505,7 @@ def test_empty_weekend_offers_weekday_dinners_at_the_same_venue():
         "Weekday dinners are open on 3 days, 1–15 Sep. Earliest: Tue 1 Sep, 6:00pm.",
     ]
     assert result.count("https://") == 1
-    assert "day=weekend" in result
+    assert result.endswith("Open in Amex Explorer: https://amex-explorer.kooexperience.com/#/table-for-two?venue=tft-vue&party=2&meal=dinner")
 
 
 def test_empty_meal_offers_the_other_meal_at_the_same_venue():
@@ -518,6 +518,7 @@ def test_empty_meal_offers_the_other_meal_at_the_same_venue():
         "No dinners on other days either.",
         "Lunches are open on 2 days, 5–12 Sep. Earliest: Sat 5 Sep, 12:00pm.",
     ]
+    assert result.endswith("https://amex-explorer.kooexperience.com/#/table-for-two?venue=tft-vue&party=2&meal=lunch")
 
 
 def test_fully_booked_venue_says_nothing_is_open_in_the_window():
@@ -530,6 +531,14 @@ def test_fully_booked_venue_says_nothing_is_open_in_the_window():
         "Nothing else is open for 2 at VUE in the next 62 days.",
     ]
     assert f"Last checked 30 Aug, 10:50am. {tft_slots.SOURCE_NOTE}" in result
+    assert result.endswith("https://amex-explorer.kooexperience.com/#/table-for-two?venue=tft-vue&party=2&meal=dinner&day=weekend")
+
+
+def test_alternative_link_drops_the_date_and_time_that_found_nothing():
+    result = answer("/slots VUE | 2 | dinner | 2026-10-30 | 19:00")
+
+    assert "Dinners are open on one day: Thu 29 Oct, from 6:00pm." in result
+    assert result.endswith("https://amex-explorer.kooexperience.com/#/table-for-two?venue=tft-vue&party=2&meal=dinner")
 
 
 def test_alternatives_respect_party_size():

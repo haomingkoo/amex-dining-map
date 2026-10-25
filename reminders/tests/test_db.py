@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import replace
-from datetime import date, timedelta
+from datetime import timedelta
 from pathlib import Path
 
 import pytest
@@ -214,8 +214,9 @@ def test_database_file_is_owner_only(tmp_path: Path):
 
 
 def test_purge_deletes_subscriptions_that_ended_over_30_days_ago(conn):
-    old_end = (date.today() - timedelta(days=31)).isoformat()
-    recent_end = (date.today() - timedelta(days=5)).isoformat()
+    today = db._now().date()  # the purge's own clock, so local time zone cannot shift it
+    old_end = (today - timedelta(days=31)).isoformat()
+    recent_end = (today - timedelta(days=5)).isoformat()
     db.upsert_pending(conn, replace(_sub("old@example.com"), date_start=old_end, date_end=old_end), "ip", 168)
     db.upsert_pending(conn, replace(_sub("new@example.com"), date_start=recent_end, date_end=recent_end), "ip", 168)
     conn.execute("UPDATE subscribers SET status = 'active'")
