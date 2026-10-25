@@ -239,6 +239,10 @@ def healthz() -> dict[str, Any]:
             "owner_alerts_enabled": settings.owner_alerts_enabled,
             "telegram_guide_enabled": settings.telegram_guide_enabled,
             "telegram_reminders_enabled": settings.telegram_reminders_enabled,
+            "telegram_guide_llm_enabled": settings.telegram_guide_llm_enabled,
+            "telegram_guide_web_search_enabled": bool(
+                settings.telegram_guide_llm_enabled and settings.brave_api_key
+            ),
             "tft_live_refresh_enabled": settings.tft_live_refresh_enabled,
             "alert_dispatch_enabled": bool(settings.github_dispatch_token),
         },

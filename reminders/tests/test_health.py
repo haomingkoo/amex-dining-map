@@ -51,6 +51,8 @@ def test_healthz_ok(monkeypatch, baked_catalog_state):
         "owner_alerts_enabled": False,
         "telegram_guide_enabled": False,
         "telegram_reminders_enabled": False,
+        "telegram_guide_llm_enabled": False,
+        "telegram_guide_web_search_enabled": False,
         "tft_live_refresh_enabled": False,
         "alert_dispatch_enabled": False,
     }

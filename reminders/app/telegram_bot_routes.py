@@ -23,6 +23,7 @@ from app import (
     telegram_bot_store,
     telegram_reminder_dispatch,
     telegram_reminders,
+    tft_agent,
     tft_guide,
     tft_slot_source,
 )
@@ -106,6 +107,91 @@ def _reminder_answer(
             tft_guide.load_catalog(),
             now,
         )
+    finally:
+        conn.close()
+
+
+BASIC_MODE = "I'm in basic mode for now."
+
+
+def _llm_allowed(settings: Settings, principal_key: str) -> bool:
+    conn = db.connect(settings.db_path)
+    try:
+        return telegram_bot_store.consume_limits(
+            conn,
+            [
+                (principal_key, settings.telegram_llm_user_limit_per_minute, 1),
+                (principal_key, settings.telegram_llm_user_limit_per_day, 1_440),
+                ("global:tft-guide-llm", settings.telegram_llm_global_limit_per_day, 1_440),
+            ],
+            "llm",
+        )
+    finally:
+        conn.close()
+
+
+def _draft_reminder(settings: Settings, principal_key: str, fields: dict) -> str:
+    conn = db.connect(settings.db_path)
+    try:
+        return telegram_reminders.start_from_fields(
+            conn, principal_key, tft_guide.load_catalog(), datetime.now(timezone.utc), fields
+        )
+    finally:
+        conn.close()
+
+
+def _guide_agent(settings: Settings, principal_key: str, text: str) -> str | None:
+    conn = db.connect(settings.db_path)
+    try:
+        history = telegram_bot_store.load_context(conn, principal_key)
+    finally:
+        conn.close()
+    return tft_agent.run(
+        text,
+        tft_guide.load_catalog(),
+        datetime.now(timezone.utc),
+        history=history,
+        chat=tft_agent.groq_chat(settings.groq_api_key),
+        search=(
+            tft_agent.brave_search(settings.brave_api_key)
+            if settings.brave_api_key
+            else None
+        ),
+        drafter=(
+            (lambda fields: _draft_reminder(settings, principal_key, fields))
+            if settings.telegram_reminders_enabled
+            else None
+        ),
+    )
+
+
+def _guide_answer(settings: Settings, principal_key: str, text: str) -> str:
+    """Guide reply; with the LLM on, free text it cannot place goes to the agent."""
+    if not settings.telegram_guide_llm_enabled:
+        return tft_guide.handle_message(text, tft_guide.load_catalog())
+    over_budget = []
+
+    def agent(message: str) -> str | None:
+        if not _llm_allowed(settings, principal_key):
+            over_budget.append(True)
+            return None
+        return _guide_agent(settings, principal_key, message)
+
+    answer = tft_guide.handle_message(text, tft_guide.load_catalog(), agent=agent)
+    if over_budget:
+        answer = f"{BASIC_MODE}\n\n{answer}"
+    conn = db.connect(settings.db_path)
+    try:
+        telegram_bot_store.save_exchange(conn, principal_key, text, answer)
+    finally:
+        conn.close()
+    return answer
+
+
+def _forget_guide_context(settings: Settings, principal_key: str) -> None:
+    conn = db.connect(settings.db_path)
+    try:
+        telegram_bot_store.forget_context(conn, principal_key)
     finally:
         conn.close()
 
@@ -230,15 +316,16 @@ async def telegram_guide_webhook(
                 message.text,
                 datetime.now(timezone.utc),
             )
+        elif first_word == "/delete_me" and settings.telegram_guide_llm_enabled:
+            await run_in_threadpool(_forget_guide_context, settings, user_key)
+            answer = "Deleted your recent guide conversation context. Telegram reminders are not enabled yet."
         elif reminder_command:
             answer = "Telegram reminders are not enabled yet. You can still use /slots for a current observed lookup."
         else:
             answer = None
         if answer is None:
             answer = await run_in_threadpool(
-                tft_guide.handle_message,
-                message.text,
-                tft_guide.load_catalog(),
+                _guide_answer, settings, user_key, message.text
             )
     except (
         OSError,

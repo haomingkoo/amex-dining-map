@@ -45,6 +45,12 @@ class Settings:
     tft_live_snapshot_path: Path = Path("tft-live-slots.json")
     tft_live_single_replica_confirmed: bool = False
     github_dispatch_token: str = ""
+    telegram_guide_llm_enabled: bool = False
+    groq_api_key: str = ""
+    brave_api_key: str = ""
+    telegram_llm_user_limit_per_minute: int = 4
+    telegram_llm_user_limit_per_day: int = 20
+    telegram_llm_global_limit_per_day: int = 1_500
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -147,6 +153,16 @@ def load_settings() -> Settings:
         tft_live_single_replica_confirmed=_env_bool(
             "TFT_LIVE_SINGLE_REPLICA_CONFIRMED"
         ),
+        telegram_guide_llm_enabled=_env_bool("TELEGRAM_GUIDE_LLM_ENABLED"),
+        groq_api_key=os.getenv("GROQ_API_KEY", "").strip(),
+        brave_api_key=os.getenv("BRAVE_API_KEY", "").strip(),
+        telegram_llm_user_limit_per_minute=_env_int(
+            "TELEGRAM_LLM_USER_LIMIT_PER_MINUTE", 4
+        ),
+        telegram_llm_user_limit_per_day=_env_int("TELEGRAM_LLM_USER_LIMIT_PER_DAY", 20),
+        telegram_llm_global_limit_per_day=_env_int(
+            "TELEGRAM_LLM_GLOBAL_LIMIT_PER_DAY", 1_500
+        ),
     )
     if settings.public_base_url.startswith("https://"):
         missing = []
@@ -242,6 +258,25 @@ def load_settings() -> Settings:
         if missing:
             raise RuntimeError(
                 "Telegram guide configuration is incomplete: " + ", ".join(missing)
+            )
+    if settings.telegram_guide_llm_enabled:
+        missing = []
+        if not settings.telegram_guide_enabled:
+            missing.append("TELEGRAM_GUIDE_ENABLED")
+        if (
+            re.fullmatch(r"[A-Za-z0-9_-]{20,256}", settings.groq_api_key) is None
+            or settings.groq_api_key.startswith(("YOUR_", "REPLACE_", "CHANGE_ME"))
+        ):
+            missing.append("GROQ_API_KEY")
+        if min(
+            settings.telegram_llm_user_limit_per_minute,
+            settings.telegram_llm_user_limit_per_day,
+            settings.telegram_llm_global_limit_per_day,
+        ) < 1:
+            missing.append("positive Telegram LLM limits")
+        if missing:
+            raise RuntimeError(
+                "Telegram guide LLM configuration is incomplete: " + ", ".join(missing)
             )
     if settings.telegram_reminders_enabled:
         missing = []

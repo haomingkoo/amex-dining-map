@@ -405,6 +405,82 @@ def _new_id(conn: sqlite3.Connection) -> str:
     raise RuntimeError("could not allocate reminder id")
 
 
+PRIVACY_NOTE = (
+    "If you confirm, I will store this private chat ID and the criteria until the reminder "
+    "ends or is cancelled. /delete_me removes your Telegram reminder data; email reminders "
+    "are separate."
+)
+STEP_PROMPTS = {
+    "venue": (1, "Venue: send one exact venue name. Use /venues to browse, or /cancel."),
+    "party": (2, "How many people (1–10)?"),
+    "meal": (3, "Lunch or dinner?"),
+    "dates": (
+        4,
+        "Which date(s)? Use YYYY-MM-DD, a range like YYYY-MM-DD..YYYY-MM-DD (max 31 days), "
+        "or up to 10 comma-separated dates. Singapore dates only.",
+    ),
+}
+STEP_REPROMPTS = {
+    "venue": "I need one exact TFT venue. Use /venues, then reply with its name, or /cancel.",
+    "party": "Reply with a whole-number party size from 1 to 10, or /cancel.",
+    "meal": "Reply lunch or dinner, or /cancel.",
+    "dates": "I could not validate those future Singapore dates. Use YYYY-MM-DD, a max-31-day range, or up to 10 comma-separated dates.",
+}
+
+
+def start_from_fields(
+    conn: sqlite3.Connection,
+    principal_key: str,
+    catalog: dict,
+    now: datetime,
+    fields: dict[str, Any],
+) -> str:
+    """Pre-fill the /remind state machine and return its prompt for the first missing step."""
+    _purge(conn, now)
+    conn.commit()
+    if conn.execute(
+        "SELECT 1 FROM telegram_reminder_conversations WHERE principal_key = ?",
+        (principal_key,),
+    ).fetchone():
+        return "A reminder setup is already in progress. Send /remind to continue, or /cancel."
+    known: dict[str, Any] = {}
+    invalid: set[str] = set()
+    venue, party, meal, dates = (fields.get(key) for key in ("venue", "party", "meal", "dates"))
+    matches = tft_guide.resolve_venue(str(venue), catalog) if venue else []
+    if len(matches) == 1:
+        known.update(venue_id=matches[0]["id"], venue_name=matches[0]["name"])
+    elif venue:
+        invalid.add("venue")
+    if isinstance(party, int) and 1 <= party <= 10:
+        known["party_size"] = party
+    elif party is not None:
+        invalid.add("party")
+    if isinstance(meal, str) and meal.casefold() in {"lunch", "dinner"}:
+        known["meal"] = meal.casefold().title()
+    elif meal is not None:
+        invalid.add("meal")
+    parsed = _parse_dates(str(dates), now.astimezone(tft_slots.SGT).date()) if dates else None
+    if parsed is not None:
+        known.update(date_start=parsed[0], date_end=parsed[1], dates=json.dumps(parsed[2]))
+    elif dates:
+        invalid.add("dates")
+    required = {"venue": "venue_id", "party": "party_size", "meal": "meal", "dates": "date_start"}
+    state = next((step for step, key in required.items() if key not in known), "confirm")
+    _save_conversation(conn, principal_key, state, now, created_ts=_iso(now), **known)
+    if state == "confirm":
+        draft = conn.execute(
+            "SELECT * FROM telegram_reminder_conversations WHERE principal_key = ?",
+            (principal_key,),
+        ).fetchone()
+        return _confirmation_prompt(draft)
+    step, question = STEP_PROMPTS[state]
+    name = f" for {known['venue_name']}" if "venue_name" in known else ""
+    return (
+        f"Create one Table for Two reminder{name} ({step}/4). Setup expires after 15 idle minutes.\n"
+        f"{STEP_REPROMPTS[state] if state in invalid else question}\n{PRIVACY_NOTE}"
+    )
+
+
 def handle_message(
     conn: sqlite3.Connection,
     principal_key: str,
@@ -532,7 +608,7 @@ def handle_message(
         _save_conversation(
             conn, principal_key, "delete_confirm", now, created_ts=_iso(now)
         )
-        return "Delete your Telegram reminder data? This removes active reminders, setup state, stored delivery chat ID, reminder receipts, and rate keys. It does not affect email reminders. Reply DELETE within 15 minutes or /cancel."
+        return "Delete your Telegram reminder data? This removes active reminders, setup state, stored delivery chat ID, reminder receipts, recent guide conversation context, and rate keys. It does not affect email reminders. Reply DELETE within 15 minutes or /cancel."
 
     if conversation and conversation["state"] == "delete_confirm":
         if message != "DELETE":
@@ -557,6 +633,10 @@ def handle_message(
             )
             conn.execute(
                 "DELETE FROM telegram_rate_events WHERE scope_key = ?",
+                (principal_key,),
+            )
+            conn.execute(
+                "DELETE FROM telegram_guide_context WHERE principal_key = ?",
                 (principal_key,),
             )
             conn.commit()

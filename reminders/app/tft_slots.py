@@ -250,10 +250,14 @@ def answer(
             item["venue_name"].casefold(),
         )
     )
+    today = now.astimezone(SGT).date()
+    default_weekend = request.weekend_only and (request.start_date, request.end_date) == (
+        today, today + timedelta(days=WEEKEND_RANGE_DAYS - 1)
+    )
     filters = (
         f"{request.party_size} pax, {request.meal}, "
-        f"{f'weekends in the next {WEEKEND_RANGE_DAYS} days' if request.weekend_only else _full_day(request.start_date)}"
-        f"{f' to {_full_day(request.end_date)}' if request.end_date != request.start_date and not request.weekend_only else ''}"
+        f"{f'weekends in the next {WEEKEND_RANGE_DAYS} days' if default_weekend else ('weekends only, ' if request.weekend_only else '') + _full_day(request.start_date)}"
+        f"{f' to {_full_day(request.end_date)}' if request.end_date != request.start_date and not default_weekend else ''}"
         f"{f', within 60 minutes of {request.preferred_time.strftime('%H:%M')} SGT' if request.preferred_time else ''}"
     )
     if matches and request.end_date != request.start_date and preferred is None:
