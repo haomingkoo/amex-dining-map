@@ -1,4 +1,4 @@
-# Unofficial Platinum Experience
+# Amex Explorer
 
 Map-first explorer for Singapore-issued American Express Platinum benefits. The
 site keeps official source data separate from enrichment so users can see when

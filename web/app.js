@@ -7977,7 +7977,7 @@ async function applyRoute(routeId) {
   const program = currentProgram();
   const dataKey = dataKeyForRoute(route);
 
-  document.title = `${route.title} | Unofficial Platinum Experience`;
+  document.title = `${route.title} | Amex Explorer`;
   renderJourneyShell(route);
   renderProgramShell(program, route);
   renderProgramBrief(route);
