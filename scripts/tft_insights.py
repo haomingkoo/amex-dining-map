@@ -404,3 +404,127 @@ def tracking_since(observations: list[dict]) -> str | None:
         if item.get("first_seen_sgt") and not item.get("baseline")
     ]
     return min(stamps) if stamps else None
+
+
+# --- Value verdict ---------------------------------------------------------
+
+DEFAULT_PRICES = Path("data/reviews/tft-menu-prices.json")
+# Singapore "++" adds a 10% service charge, then 9% GST on the total.
+PLUS_PLUS = 1.1 * 1.09
+HIGHER_THAN_USUAL = 1.15
+LOWER_THAN_USUAL = 0.85
+WELL_RATED = (4.5, 500)
+
+
+def _price_text(extra: dict) -> str:
+    basis = {"++": "++", "+": "+", "nett": " nett"}[extra["basis"]]
+    if extra["per"] == "pair_at_10_percent_off":
+        return f"S${extra['amount']}{basis} for two at 10% off"
+    return f"S${extra['amount']}{basis}"
+
+
+def _per_head_nett(extra: dict | None) -> float | None:
+    """Comparable per-person price, or None when the basis is ambiguous."""
+    if not extra or extra["basis"] == "+":
+        return None
+    amount = float(extra["amount"])
+    if extra["per"] == "pair_at_10_percent_off":
+        amount = amount / 0.9 / 2
+    return amount * (PLUS_PLUS if extra["basis"] == "++" else 1.0)
+
+
+def reviewed_prices(prices: dict, catalog_menus: dict[str, str]) -> dict[str, dict]:
+    """Reviewed price entries whose menu hash still matches the current Platinum menu."""
+    return {
+        entry["venue_id"]: entry
+        for entry in prices.get("menus") or []
+        if catalog_menus.get(entry["venue_id"]) == entry["menu_sha256"]
+    }
+
+
+def program_typical(entries: dict[str, dict]) -> dict | None:
+    per_head = sorted(
+        value for entry in entries.values() if (value := _per_head_nett(entry.get("extra_diner"))) is not None
+    )
+    stated = Counter(
+        _price_text(entry["extra_diner"])
+        for entry in entries.values()
+        if entry.get("extra_diner") and entry["extra_diner"]["per"] == "person"
+    )
+    if len(per_head) < 5 or not stated:
+        return None
+    return {"per_head_nett": round(statistics.median(per_head), 1), "label": stated.most_common(1)[0][0]}
+
+
+def venue_verdict(venue: dict, entry: dict | None, typical: dict | None, rating: dict | None) -> dict:
+    facts: list[str] = []
+    extra = (entry or {}).get("extra_diner")
+    tier = None
+    if entry:
+        facts.append(
+            "One set is shared between the two of you."
+            if entry["serving"] == "shared"
+            else "Each of you gets a full set."
+        )
+    if extra:
+        price = _price_text(extra)
+        nett = _per_head_nett(extra)
+        if extra["per"] == "pair_at_10_percent_off":
+            facts.append(f"Extra diners pay {price}, so S${round(extra['amount'] / 0.9 / 2)} nett a head before the discount.")
+        elif extra["basis"] == "++":
+            facts.append(f"Extra diners pay {price} a head, about S${round(nett)} with service charge and GST.")
+        else:
+            facts.append(f"Extra diners pay {price} a head.")
+        if typical:
+            ratio = (nett or extra["amount"] * PLUS_PLUS) / typical["per_head_nett"]
+            if nett is not None and ratio >= HIGHER_THAN_USUAL:
+                tier = "higher"
+            elif ratio <= LOWER_THAN_USUAL:
+                tier = "lower"
+            elif nett is not None:
+                tier = "typical"
+    elif entry:
+        facts.append("Amex publishes no extra-diner price for this set; extra diners order à la carte.")
+    google = (rating or {}) if isinstance(rating, dict) else {}
+    stars, reviews = google.get("rating"), google.get("review_count")
+    if isinstance(stars, (int, float)):
+        count = f" from {reviews:,} reviews" if isinstance(reviews, int) else ""
+        facts.append(f"Google rating {stars:g}{count}.")
+    well_rated = (
+        isinstance(stars, (int, float)) and isinstance(reviews, int)
+        and stars >= WELL_RATED[0] and reviews >= WELL_RATED[1]
+    )
+    usual = typical["label"] if typical else None
+    if extra and extra["per"] == "pair_at_10_percent_off":
+        head = f"S${round(extra['amount'] / 0.9 / 2)} nett"
+    elif extra:
+        head = _price_text(extra)
+    if tier == "higher":
+        line = f"Good value: extra diners pay {head} a head for this set, more than the usual {usual}."
+    elif tier == "lower" and extra["per"] == "pair_at_10_percent_off":
+        line = (
+            f"Lower value on paper: extra diners pay {head} a head before a 10% discount, "
+            f"below the usual {usual}."
+        )
+    elif tier == "lower":
+        line = f"Lower value on paper: extra diners pay {head} a head, below the usual {usual}."
+    elif tier == "typical" and head == usual:
+        line = f"Typical value: extra diners pay {head} a head, the usual Table for Two price."
+    elif tier == "typical":
+        line = f"Typical value: extra diners pay {head} a head, close to the usual {usual}."
+    elif venue.get("category") == "buffet":
+        line = (
+            "Buffet. Amex publishes no price for it, so there is no value call"
+            + (f", but it is well rated (Google {stars:g} from {reviews:,} reviews)." if well_rated else ".")
+        )
+    elif entry and entry["serving"] == "shared":
+        line = "One set is shared between two, and Amex publishes no price to compare it with."
+    else:
+        line = "No published set price, so there is no value call" + (
+            f". Well rated: Google {stars:g} from {reviews:,} reviews." if well_rated else "."
+        )
+    return {"line": line, "tier": tier, "facts": facts, "usual_price": usual}
+
+
+def load_prices(path: Path = DEFAULT_PRICES) -> dict:
+    return load_json(path)
