@@ -12,6 +12,7 @@ const TABLE_FOR_TWO_DATA_FALLBACK_URL = "../data/table-for-two.json";
 const TABLE_FOR_TWO_STATIC_SNAPSHOT_URL = "../data/table-for-two-slots.json";
 const TABLE_FOR_TWO_RELEASE_HISTORY_URL = "../data/table-for-two-release-history-summary.json";
 const TABLE_FOR_TWO_RELEASE_HISTORY_FALLBACK_URL = "../data/table-for-two-release-history.json";
+const TABLE_FOR_TWO_INSIGHTS_URL = "../data/table-for-two-insights.json";
 // DiningCity serves photos from a Qiniu CDN that resizes via imageView2.
 const DININGCITY_IMAGE_HOST = "static-assets.diningcity.asia";
 const TABLE_FOR_TWO_PHOTO_WIDTH_PX = 720;
@@ -112,6 +113,7 @@ const TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES = 30;
 const GOOGLE_RATING_STALE_DAYS = 90;
 const REMINDERS_API_BASE = "https://amex-reminders-production.up.railway.app";
 const TABLE_FOR_TWO_LIVE_SNAPSHOT_URL = `${REMINDERS_API_BASE}/api/tft/slots`;
+const TABLE_FOR_TWO_PATTERNS_URL = `${REMINDERS_API_BASE}/api/tft/patterns`;
 const TABLE_FOR_TWO_LIVE_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 const TABLE_FOR_TWO_DATA_REVALIDATE_INTERVAL_MS = 5 * 60 * 1000;
 const TABLE_FOR_TWO_FETCH_TIMEOUT_MS = 12 * 1000;
@@ -127,6 +129,7 @@ const REVALIDATE_DATA_URLS = new Set([
   TABLE_FOR_TWO_STATIC_SNAPSHOT_URL,
   TABLE_FOR_TWO_RELEASE_HISTORY_URL,
   TABLE_FOR_TWO_RELEASE_HISTORY_FALLBACK_URL,
+  TABLE_FOR_TWO_INSIGHTS_URL,
   UPDATES_DATA_URL,
   SOURCE_HEALTH_DATA_URL,
 ]);
@@ -558,6 +561,8 @@ const state = {
   tableForTwoToolbarOpen: false,
   tableForTwo: null,
   tableForTwoReleaseHistory: null,
+  tableForTwoInsights: null,
+  tableForTwoPatterns: null,
   telegramGuideConfig: null,
   tableForTwoFiltered: [],
   tableForTwoMarkers: new Map(),
@@ -2458,7 +2463,7 @@ async function ensureTableForTwoDataLoaded() {
   if (state.dataLoaded.tableForTwo) return;
   if (!dataLoadPromises.tableForTwo) {
     dataLoadPromises.tableForTwo = (async () => {
-      const [tableForTwo, staticSlots, releaseHistory, telegramGuideConfig] = await Promise.all([
+      const [tableForTwo, staticSlots, releaseHistory, telegramGuideConfig, insights] = await Promise.all([
         fetchJson(TABLE_FOR_TWO_DATA_URL)
           .then((payload) => payload || fetchJson(TABLE_FOR_TWO_DATA_FALLBACK_URL)),
         fetchJson(TABLE_FOR_TWO_STATIC_SNAPSHOT_URL),
@@ -2469,6 +2474,7 @@ async function ensureTableForTwoDataLoaded() {
           enabled: false,
           bot_username: null,
         })),
+        fetchJson(TABLE_FOR_TWO_INSIGHTS_URL),
       ]);
       if (!tableForTwo) {
         dataLoadPromises.tableForTwo = null;
@@ -2477,7 +2483,9 @@ async function ensureTableForTwoDataLoaded() {
       state.tableForTwo = tableForTwo;
       applyTableForTwoStaticSnapshot(staticSlots);
       state.tableForTwoReleaseHistory = releaseHistory;
+      state.tableForTwoInsights = insights;
       state.telegramGuideConfig = telegramGuideConfig;
+      refreshTableForTwoPatterns();
       tableForTwoVenues().forEach((record) => {
         record.search_text = tableForTwoSearchText(record);
       });
@@ -5504,12 +5512,13 @@ async function revalidateTableForTwoData({ force = false } = {}) {
 
   state.tableForTwoDataRevalidateInFlight = true;
   try {
-    const [tableForTwo, staticSlots, releaseHistory] = await Promise.all([
+    const [tableForTwo, staticSlots, releaseHistory, insights] = await Promise.all([
       fetchJson(TABLE_FOR_TWO_DATA_URL)
         .then((payload) => payload || fetchJson(TABLE_FOR_TWO_DATA_FALLBACK_URL)),
       fetchJson(TABLE_FOR_TWO_STATIC_SNAPSHOT_URL),
       fetchJson(TABLE_FOR_TWO_RELEASE_HISTORY_URL)
         .then((payload) => payload || fetchJson(TABLE_FOR_TWO_RELEASE_HISTORY_FALLBACK_URL)),
+      fetchJson(TABLE_FOR_TWO_INSIGHTS_URL),
     ]);
     state.tableForTwoDataRevalidatedAt = Date.now();
     // Keep the loaded payload when a fetch fails; a stale roster beats an empty one.
@@ -5517,6 +5526,8 @@ async function revalidateTableForTwoData({ force = false } = {}) {
     state.tableForTwo = tableForTwo;
     applyTableForTwoStaticSnapshot(staticSlots);
     if (releaseHistory) state.tableForTwoReleaseHistory = releaseHistory;
+    if (insights) state.tableForTwoInsights = insights;
+    refreshTableForTwoPatterns();
     tableForTwoVenues().forEach((record) => {
       record.search_text = tableForTwoSearchText(record);
     });
@@ -6792,7 +6803,7 @@ function tableForTwoMenuMetaLabel(record) {
   return "Amex app";
 }
 
-function tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedDate = "", availableDates = new Set()) {
+function tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedDate = "", availableDates = new Set(), blackouts = new Map()) {
   const [year, month] = monthKey.split("-").map(Number);
   const firstDay = new Date(Date.UTC(year, month - 1, 1));
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
@@ -6806,7 +6817,11 @@ function tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedDate = "", 
     const slots = slotsByDate.get(dateValue) || [];
     const isAvailable = slots.length > 0 || availableDates.has(dateValue);
     const summaries = tableForTwoDateSessionSummaries(slots);
-    const title = summaries.map((summary) => summary.label).join(" | ") || (isAvailable ? "Bookable" : "");
+    const blackout = blackouts.get(dateValue) || "";
+    const title = [
+      blackout ? `Blackout day (${blackout})` : "",
+      summaries.map((summary) => summary.label).join(" | ") || (isAvailable ? "Bookable" : ""),
+    ].filter(Boolean).join(". ");
     const sessionPills = summaries
       .slice(0, 2)
       .map((summary) => `<span class="tft-session-pill">${escapeHtml(summary.shortLabel)}</span>`)
@@ -6816,6 +6831,7 @@ function tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedDate = "", 
       "tft-calendar-cell",
       isAvailable ? "is-available" : "",
       selectedDate === dateValue ? "is-selected" : "",
+      blackout ? "is-blackout" : "",
     ].filter(Boolean).join(" ");
     const tag = isAvailable ? "button" : "div";
     const buttonAttrs = isAvailable ? ` type="button" data-tft-calendar-date="${escapeHtml(dateValue)}" aria-label="${escapeHtml(`${tableForTwoDateOptionLabel(dateValue)}: ${title}`)}"` : "";
@@ -6838,7 +6854,7 @@ function tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedDate = "", 
   `;
 }
 
-function tableForTwoSelectedDateSlotsHtml(slots, filters = state.tableForTwoCurrentFilters || {}, selectedDateOverride = "") {
+function tableForTwoSelectedDateSlotsHtml(slots, filters = state.tableForTwoCurrentFilters || {}, selectedDateOverride = "", record = null) {
   const dates = uniqueValues(slots.map((slot) => slot.date).filter(Boolean)).sort();
   const selectedDate = selectedDateOverride || filters.date || dates[0] || "";
   if (!selectedDate) {
@@ -6881,6 +6897,7 @@ function tableForTwoSelectedDateSlotsHtml(slots, filters = state.tableForTwoCurr
   return `
     <div class="tft-date-detail">
       <h5>${escapeHtml(tableForTwoDateOptionLabel(selectedDate))}</h5>
+      ${record ? tableForTwoDateWarningHtml(record, selectedDate, slotsForDate) : ""}
       ${groupedRows}
     </div>
   `;
@@ -6923,7 +6940,9 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
   const selectedMonthKey = selectedCalendarDate ? selectedCalendarDate.slice(0, 7) : "";
   const preferredMonthKey = state.tableForTwoCalendarMonths[record.id] || selectedMonthKey || monthKeys[0] || "";
   const activeMonthKey = monthKeys.includes(preferredMonthKey) ? preferredMonthKey : (selectedMonthKey || monthKeys[0] || "");
-  const monthsHtml = activeMonthKey ? tableForTwoCalendarMonthHtml(activeMonthKey, slotsByDate, selectedCalendarDate) : "";
+  const blackouts = tableForTwoBlackouts(record);
+  const monthsHtml = activeMonthKey ? tableForTwoCalendarMonthHtml(activeMonthKey, slotsByDate, selectedCalendarDate, new Set(), blackouts) : "";
+  const monthHasBlackout = [...blackouts.keys()].some((dateValue) => dateValue.startsWith(activeMonthKey));
   const headingParts = [
     tableForTwoDateRangeSummary(dates),
     `${filters.partySize || tableForTwoSelectedPartySize()} pax`,
@@ -6941,10 +6960,11 @@ function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFi
       </div>
       ${tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey)}
       <div class="tft-calendar-months">${monthsHtml}</div>
-      ${tableForTwoSelectedDateSlotsHtml(slots, filters, selectedCalendarDate)}
+      ${tableForTwoSelectedDateSlotsHtml(slots, filters, selectedCalendarDate, record)}
       <div class="tft-calendar-legend">
         <span><i class="is-available"></i>Available date</span>
         <span><i class="is-selected"></i>Selected date</span>
+        ${monthHasBlackout ? '<span><i class="is-blackout"></i>Blackout day in the Amex terms</span>' : ""}
       </div>
     </div>
   `;
@@ -6954,45 +6974,223 @@ function tableForTwoProfile(record) {
   return record?.amex_app_profile || record?.dining_city_profile || {};
 }
 
-function tableForTwoReleasePatterns(record) {
-  const patterns = state.tableForTwoReleaseHistory?.patterns;
-  if (!Array.isArray(patterns) || !record?.id) return [];
-  return patterns.filter((pattern) => pattern.venue_id === record.id);
+const TFT_WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const TFT_NEXT_BLACKOUT_DAYS = 70;
+const TFT_MIN_SIGHTINGS_FOR_CHART = 5;
+const TFT_RETURN_BUCKETS = [
+  "weekday night", "weekday morning", "weekday afternoon", "weekday evening",
+  "weekend night", "weekend morning", "weekend afternoon", "weekend evening",
+];
+
+function tableForTwoInsights(record) {
+  return state.tableForTwoInsights?.venues?.[record?.id] || null;
 }
 
-function tableForTwoReleasePatternHtml(record) {
-  const patterns = tableForTwoReleasePatterns(record);
-  const observedThrough = state.tableForTwoReleaseHistory?.updated_at
-    ? ` Observed through ${formatTimestamp(state.tableForTwoReleaseHistory.updated_at)}.`
-    : " Observation update time is unavailable.";
-  if (!patterns.length) {
-    return `
-      <div class="tft-release-pattern">
-        <div class="focus-kicker">Observed release pattern</div>
-        <p>Not enough repeat observations yet. Availability alerts still work normally.${escapeHtml(observedThrough)}</p>
-      </div>`;
+async function refreshTableForTwoPatterns() {
+  const payload = await fetchJson(TABLE_FOR_TWO_PATTERNS_URL);
+  if (!payload || payload.schema_version !== 1 || typeof payload.venues !== "object") return;
+  state.tableForTwoPatterns = payload;
+  if (isTableForTwoRoute() && activeTableForTwoRecord()) renderTableForTwoCard();
+}
+
+function tableForTwoClock(value) {
+  const [hours, minutes] = String(value || "").split(":").map(Number);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return "";
+  return `${hours % 12 || 12}:${String(minutes).padStart(2, "0")}${hours < 12 ? "am" : "pm"}`;
+}
+
+function tableForTwoLongDate(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ""));
+  if (!match) return "";
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  return date.toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+}
+
+function tableForTwoBlackouts(record) {
+  const insights = tableForTwoInsights(record);
+  const map = new Map();
+  if (!insights?.eligibility?.terms_current) return map;
+  (insights.eligibility.blackout_dates || []).forEach((item) => {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(item?.date || "") && item.reason) map.set(item.date, String(item.reason));
+  });
+  return map;
+}
+
+function tableForTwoNeverOfferedDay(record, meal, dateValue) {
+  const meals = tableForTwoInsights(record)?.eligibility?.observed_meals || [];
+  const entry = meals.find((item) => item.meal === meal);
+  if (!entry || !Array.isArray(entry.never_days)) return false;
+  const [year, month, day] = String(dateValue).split("-").map(Number);
+  const weekday = TFT_WEEKDAYS[(new Date(Date.UTC(year, month - 1, day)).getUTCDay() + 6) % 7];
+  return entry.never_days.includes(weekday);
+}
+
+function tableForTwoDateWarningHtml(record, dateValue, slotsForDate) {
+  const blackout = tableForTwoBlackouts(record).get(dateValue);
+  if (blackout) {
+    return `<p class="tft-date-warning">The Amex terms black out this day (${escapeHtml(blackout)}). A booking here may not count for Table for Two.</p>`;
   }
-  const rows = patterns.map((pattern) => {
-    const median = Number(pattern.median_lead_days);
-    const medianLabel = Number.isInteger(median) ? String(median) : median.toFixed(1);
-    const range = pattern.lead_days_min === pattern.lead_days_max
-      ? `${medianLabel} days ahead`
-      : `typically ${medianLabel} days ahead; observed range ${pattern.lead_days_min}–${pattern.lead_days_max}`;
-    const time = pattern.typical_first_seen_sgt
-      ? ` Most often first detected near ${pattern.typical_first_seen_sgt} SGT.`
+  const unusual = [...new Set(slotsForDate.map((slot) => slot.meal))]
+    .filter((meal) => tableForTwoNeverOfferedDay(record, meal, dateValue));
+  if (!unusual.length) return "";
+  return `<p class="tft-date-warning">${escapeHtml(unusual.join(" and "))} on this weekday has not been offered here before. Check it is a Table for Two seating before booking.</p>`;
+}
+
+function tableForTwoVerdictHtml(record) {
+  const verdict = tableForTwoInsights(record)?.verdict;
+  if (!verdict?.line) return "";
+  const facts = (verdict.facts || []).map((fact) => `<li>${escapeHtml(fact)}</li>`).join("");
+  const tone = verdict.tier ? ` is-${escapeHtml(verdict.tier)}` : "";
+  return `
+    <section class="tft-verdict${tone}" aria-label="Value">
+      <p class="tft-verdict-line">${escapeHtml(verdict.line)}</p>
+      ${facts ? `<ul class="tft-fact-list">${facts}</ul>` : ""}
+    </section>`;
+}
+
+function tableForTwoWeekStripHtml(meal) {
+  const regular = new Set(meal.days || []);
+  const rare = new Set(meal.rare_days || []);
+  const cells = TFT_WEEKDAYS.map((day) => {
+    const status = regular.has(day) ? "is-on" : rare.has(day) ? "is-rare" : "is-off";
+    const spoken = regular.has(day) ? "offered" : rare.has(day) ? "rarely offered" : "not offered";
+    return `<span class="tft-week-day ${status}" title="${escapeHtml(`${day}: ${spoken}`)}"><span aria-hidden="true">${day.slice(0, 2)}</span><span class="visually-hidden">${escapeHtml(`${day} ${spoken}`)}</span></span>`;
+  }).join("");
+  return `<span class="tft-week-strip">${cells}</span>`;
+}
+
+function tableForTwoEligibilityHtml(record) {
+  const insights = tableForTwoInsights(record);
+  const source = state.tableForTwoInsights?.eligibility_source || {};
+  const intro = `
+    <h4 class="tft-panel-title">When Table for Two applies</h4>
+    <p class="tft-panel-lead"><strong>Days and meals:</strong> Not published. Check before booking.</p>`;
+  if (!insights?.eligibility) {
+    return `<section class="tft-panel">${intro}<p class="tft-panel-note">Blackouts: public holidays and their eves, per the Amex terms.</p></section>`;
+  }
+  const eligibility = insights.eligibility;
+  const meals = (eligibility.observed_meals || []).filter((meal) => meal.days_label);
+  const rows = meals.map((meal) => {
+    const seatings = meal.first_time && meal.last_time
+      ? (meal.first_time === meal.last_time ? tableForTwoClock(meal.first_time) : `${tableForTwoClock(meal.first_time)} to ${tableForTwoClock(meal.last_time)}`)
       : "";
     return `
-      <div class="tft-release-row">
-        <span class="badge blue">${escapeHtml(pattern.meal)}</span>
-        <span><strong>${escapeHtml(range)}</strong>${escapeHtml(time)} ${escapeHtml(`${pattern.observation_count} observations, ${pattern.confidence} confidence.`)}</span>
+      <div class="tft-days-row">
+        <span class="tft-days-meal">${escapeHtml(meal.meal)}</span>
+        ${tableForTwoWeekStripHtml(meal)}
+        <span class="tft-days-detail">${escapeHtml(meal.days_label)}${seatings ? `<span class="tft-days-seatings">Seatings ${escapeHtml(seatings)}</span>` : ""}</span>
       </div>`;
   }).join("");
+  const since = tableForTwoLongDate(source.observed_since);
+  const observed = rows ? `
+    <p class="tft-panel-note">What the Amex booking system has offered${since ? ` since ${escapeHtml(since)}` : ""}:</p>
+    <div class="tft-days">${rows}</div>
+    ${meals.some((meal) => (meal.rare_days || []).length) ? '<p class="tft-panel-note">An outlined day was offered only once or twice.</p>' : ""}` : "";
+  let blackoutsHtml;
+  if (eligibility.terms_current && source.terms_current) {
+    const extra = (eligibility.merchant_blackouts || []).join(", ");
+    const today = singaporeTodayKey();
+    const until = new Date(Date.now() + TFT_NEXT_BLACKOUT_DAYS * 86_400_000).toISOString().slice(0, 10);
+    const upcoming = (eligibility.blackout_dates || [])
+      .filter((item) => item.date >= today && item.date <= until)
+      .slice(0, 6)
+      .map((item) => `<li><span>${escapeHtml(tableForTwoDateOptionLabel(item.date))}</span><span>${escapeHtml(item.reason)}</span></li>`)
+      .join("");
+    blackoutsHtml = `
+      <p class="tft-panel-note"><strong>Blackouts in the Amex terms:</strong> public holidays and their eves${extra ? `, plus ${escapeHtml(extra)}` : ""}.</p>
+      ${upcoming ? `<ul class="tft-blackout-list" aria-label="Next blackout days">${upcoming}</ul>` : ""}`;
+  } else {
+    blackoutsHtml = '<p class="tft-panel-note"><strong>Blackouts:</strong> the Amex terms changed since our last review. Check them before booking.</p>';
+  }
+  return `<section class="tft-panel">${intro}${observed}${blackoutsHtml}</section>`;
+}
+
+function tableForTwoHourChartHtml(counts, caption) {
+  const max = Math.max(...counts, 1);
+  const width = 240;
+  const height = 72;
+  const slot = width / 24;
+  const barWidth = slot - 2;
+  const bars = counts.map((count, hour) => {
+    const label = `${tableForTwoClock(`${String(hour).padStart(2, "0")}:00`).replace(":00", "")}: ${count} new date${count === 1 ? "" : "s"} first seen`;
+    if (!count) {
+      return `<rect class="tft-bar-empty" x="${(hour * slot + 1).toFixed(1)}" y="${height - 1}" width="${barWidth.toFixed(1)}" height="1"><title>${escapeHtml(label)}</title></rect>`;
+    }
+    const barHeight = Math.max(3, (count / max) * (height - 4));
+    const x = hour * slot + 1;
+    const y = height - barHeight;
+    const r = Math.min(2, barWidth / 2);
+    return `<path class="tft-bar" tabindex="0" aria-label="${escapeHtml(label)}" d="M${x.toFixed(1)},${height} V${(y + r).toFixed(1)} Q${x.toFixed(1)},${y.toFixed(1)} ${(x + r).toFixed(1)},${y.toFixed(1)} H${(x + barWidth - r).toFixed(1)} Q${(x + barWidth).toFixed(1)},${y.toFixed(1)} ${(x + barWidth).toFixed(1)},${(y + r).toFixed(1)} V${height} Z"><title>${escapeHtml(label)}</title></path>`;
+  }).join("");
+  const table = counts.map((count, hour) => `<tr><th scope="row">${String(hour).padStart(2, "0")}:00</th><td>${count}</td></tr>`).join("");
   return `
-    <div class="tft-release-pattern">
-      <div class="focus-kicker">Observed release pattern</div>
-      ${rows}
-      <p>First detected by periodic cache checks.${escapeHtml(observedThrough)} This is an observed pattern, not an official Amex or restaurant release policy.</p>
-    </div>`;
+    <figure class="tft-chart">
+      <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${escapeHtml(caption)}">${bars}</svg>
+      <div class="tft-chart-axis" aria-hidden="true"><span>12am</span><span>6am</span><span>noon</span><span>6pm</span><span>12am</span></div>
+      <figcaption>${escapeHtml(caption)}</figcaption>
+      <table class="visually-hidden"><caption>${escapeHtml(caption)}</caption><tr><th scope="col">Hour</th><th scope="col">New dates</th></tr>${table}</table>
+    </figure>`;
+}
+
+function tableForTwoReturnBarsHtml(buckets, total) {
+  const max = Math.max(...TFT_RETURN_BUCKETS.map((name) => Number(buckets[name] || 0)), 1);
+  const rows = TFT_RETURN_BUCKETS.map((name) => {
+    const count = Number(buckets[name] || 0);
+    return `
+      <li class="tft-hbar-row">
+        <span class="tft-hbar-label">${escapeHtml(name.charAt(0).toUpperCase() + name.slice(1))}</span>
+        <span class="tft-hbar-track"><span class="tft-hbar" style="width:${((count / max) * 100).toFixed(1)}%"></span></span>
+        <span class="tft-hbar-value">${count.toLocaleString("en-SG")}</span>
+      </li>`;
+  }).join("");
+  return `
+    <figure class="tft-chart">
+      <ul class="tft-hbar-list" aria-label="Tables that came back, by time of day">${rows}</ul>
+      <figcaption>${escapeHtml(`When the ${total.toLocaleString("en-SG")} tables that came back reappeared (Singapore time). Night is midnight to 6am.`)}</figcaption>
+    </figure>`;
+}
+
+function tableForTwoWhenTablesHtml(record) {
+  const release = tableForTwoInsights(record)?.release;
+  const source = state.tableForTwoInsights?.eligibility_source || {};
+  const live = state.tableForTwoPatterns;
+  const liveVenue = live?.venues?.[record.id];
+  const releaseLines = release?.lines || [];
+  const since = tableForTwoLongDate(source.new_dates_since);
+  const furthest = Object.values(release?.furthest_open_dates || {}).filter(Boolean).sort().pop();
+  const bestTime = liveVenue?.best_time
+    || (release?.best_time ? `Best time to look: ${release.best_time}.` : "");
+  const bestText = bestTime.replace(/^Best time to look:\s*/, "");
+  const chart = release && release.precise_sightings >= TFT_MIN_SIGHTINGS_FOR_CHART
+    ? tableForTwoHourChartHtml(
+      release.hour_counts,
+      `When new dates were first seen, by hour. ${release.precise_sightings} sightings since ${since || "tracking began"}, each pinned to within 90 minutes.`,
+    )
+    : "";
+  const liveSince = tableForTwoLongDate(live?.started_at);
+  let liveHtml = "";
+  if (liveVenue && liveSince) {
+    const lines = (liveVenue.lines || []).map((line) => `<li>${escapeHtml(line)}</li>`).join("");
+    const returned = Number(liveVenue.returned_tables || 0);
+    liveHtml = `
+      <h5 class="tft-panel-sub">How long tables last <span>since ${escapeHtml(liveSince)}</span></h5>
+      ${lines ? `<ul class="tft-line-list">${lines}</ul>` : `<p class="tft-panel-note">Too early to say. ${returned.toLocaleString("en-SG")} table${returned === 1 ? " has" : "s have"} come back so far.</p>`}
+      ${returned >= 10 ? tableForTwoReturnBarsHtml(liveVenue.return_buckets || {}, returned) : ""}`;
+  }
+  if (!release && !liveHtml) {
+    return `<section class="tft-panel"><h4 class="tft-panel-title">When tables appear</h4><p class="tft-panel-note">Not enough history yet. Reminders still work.</p></section>`;
+  }
+  return `
+    <section class="tft-panel">
+      <h4 class="tft-panel-title">When tables appear</h4>
+      ${bestText ? `<p class="tft-best-time"><span>Best time to look</span>${escapeHtml(bestText)}</p>` : ""}
+      <h5 class="tft-panel-sub">New dates${since ? ` <span>since ${escapeHtml(since)}</span>` : ""}</h5>
+      ${releaseLines.length ? `<ul class="tft-line-list">${releaseLines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>` : '<p class="tft-panel-note">No steady pattern yet.</p>'}
+      ${furthest ? `<p class="tft-panel-note">Open dates currently run to ${escapeHtml(tableForTwoDateOptionLabel(furthest))}.</p>` : ""}
+      ${chart}
+      ${liveHtml}
+      <p class="tft-panel-note">Times come from our checks, so they are approximate.</p>
+    </section>`;
 }
 
 function tableForTwoProfileDescription(record) {
@@ -7206,9 +7404,11 @@ function renderTableForTwoCard() {
     </div>
     ${record.address ? `<div class="focus-address">${escapeHtml(record.address)}</div>` : ""}
     ${profileDescription ? `<p class="focus-summary tft-profile-desc">${escapeHtml(profileDescription)}</p>` : ""}
+    ${tableForTwoVerdictHtml(record)}
     ${sourceReviewWarning}
     ${tableForTwoSlotMatchesHtml(record, filters)}
-    ${tableForTwoReleasePatternHtml(record)}
+    ${tableForTwoEligibilityHtml(record)}
+    ${tableForTwoWhenTablesHtml(record)}
     <div class="price-grid tft-status-grid">
       <div class="price-card">
         <span class="price-label">Booking</span>

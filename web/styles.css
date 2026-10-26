@@ -1726,35 +1726,308 @@ input,
   background: var(--surface-soft);
 }
 
-.tft-release-pattern {
-  display: grid;
-  gap: 9px;
-  margin: 14px 0;
-  padding: 14px 0;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+/* Table for Two venue panels: value, eligible days, when tables appear. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-.tft-release-pattern p {
+.tft-verdict {
+  margin: 16px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+}
+
+.tft-verdict.is-higher {
+  border-color: var(--gold-border-strong);
+}
+
+.tft-verdict-line {
   margin: 0;
-  color: var(--text-dim);
-  font-size: 11px;
-  line-height: 1.5;
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text);
 }
 
-.tft-release-row {
+.tft-fact-list,
+.tft-line-list {
+  margin: 10px 0 0;
+  padding: 0 0 0 18px;
   display: grid;
-  grid-template-columns: minmax(72px, auto) minmax(0, 1fr);
-  align-items: start;
-  gap: 9px;
+  gap: 4px;
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1.45;
 }
 
-.tft-release-row strong {
+.tft-panel {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+  padding: 16px 0 4px;
+  border-top: 1px solid var(--border);
+}
+
+.tft-panel-title {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.tft-panel-sub {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.tft-panel-sub span {
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.tft-panel-lead,
+.tft-panel-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.tft-panel-lead strong,
+.tft-panel-note strong {
   color: var(--text);
   font-weight: 600;
+}
+
+.tft-days {
+  display: grid;
+  gap: 8px;
+}
+
+.tft-days-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.tft-days-row .tft-days-detail {
+  grid-column: 2;
+}
+
+.tft-days-meal {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.tft-days-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.tft-days-seatings {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.tft-week-strip {
+  display: inline-grid;
+  grid-template-columns: repeat(7, 26px);
+  gap: 3px;
+}
+
+.tft-week-day {
+  display: grid;
+  place-items: center;
+  height: 24px;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tft-week-day.is-on {
+  background: var(--gold);
+  color: var(--bg);
+}
+
+.tft-week-day.is-rare {
+  border: 1px solid var(--gold-border-max);
+  color: var(--gold);
+}
+
+.tft-week-day.is-off {
+  border: 1px solid var(--surface-border-strong);
+  color: var(--text-dim);
+}
+
+.tft-blackout-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tft-blackout-list li {
+  display: grid;
+  grid-template-columns: minmax(110px, auto) minmax(0, 1fr);
+  gap: 12px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--surface-border-subtle);
+  color: var(--text-secondary);
+}
+
+.tft-blackout-list li span:first-child {
+  color: var(--text);
+}
+
+.tft-best-time {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-sm);
+  background: var(--gold-faint);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.tft-best-time span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.tft-chart {
+  margin: 4px 0 0;
+}
+
+.tft-chart svg {
+  display: block;
+  width: 100%;
+  height: 72px;
+  overflow: visible;
+}
+
+.tft-bar {
+  fill: var(--gold);
+}
+
+.tft-bar:hover,
+.tft-bar:focus-visible {
+  fill: var(--text);
+  outline: none;
+}
+
+.tft-bar-empty {
+  fill: var(--surface-border-strong);
+}
+
+.tft-chart-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--surface-border-strong);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.tft-chart figcaption {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.tft-hbar-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.tft-hbar-row {
+  display: grid;
+  grid-template-columns: minmax(130px, auto) minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.tft-hbar-track {
+  height: 8px;
+}
+
+.tft-hbar {
+  display: block;
+  height: 8px;
+  min-width: 2px;
+  border-radius: 0 4px 4px 0;
+  background: var(--gold);
+}
+
+.tft-hbar-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.tft-date-warning {
+  margin: 6px 0 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--amber-border);
+  border-radius: var(--radius-xs);
+  background: var(--amber-surface);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.tft-calendar-cell.is-blackout {
+  border-style: dashed;
+  border-color: var(--amber);
+}
+
+.tft-calendar-legend i.is-blackout {
+  border: 1px dashed var(--amber);
+  background: transparent;
+}
+
+@media (max-width: 360px) {
+  .tft-days-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tft-days-row .tft-days-detail {
+    grid-column: 1;
+  }
 }
 
 .tft-alert-form {

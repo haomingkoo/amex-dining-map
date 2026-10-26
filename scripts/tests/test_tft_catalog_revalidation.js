@@ -43,6 +43,8 @@ function harness({ catalog, slots = { venues: [] }, releaseHistory = { observati
     TABLE_FOR_TWO_STATIC_SNAPSHOT_URL: "slots",
     TABLE_FOR_TWO_RELEASE_HISTORY_URL: "release",
     TABLE_FOR_TWO_RELEASE_HISTORY_FALLBACK_URL: "release-fallback",
+    TABLE_FOR_TWO_INSIGHTS_URL: "insights",
+    refreshTableForTwoPatterns: () => {},
     TABLE_FOR_TWO_DATA_REVALIDATE_INTERVAL_MS: 5 * 60 * 1000,
     fetchJson: async (url) => {
       calls.fetched.push(url);

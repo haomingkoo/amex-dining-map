@@ -147,3 +147,18 @@ class PublicDataProjectionTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TftInsightsProjectionTest(unittest.TestCase):
+    def test_keeps_only_bot_facing_fields_per_venue(self):
+        from scripts.build_public_data_projections import tft_insights_projection
+        catalog = {
+            "eligibility_source": {"terms_current": True},
+            "verdict_source": {"priced_venues": 1},
+            "venues": [{"id": "tft-a", "name": "A", "menus": {}, "eligibility": {"x": 1}, "release": {"y": 2}, "verdict": {"line": "z"}}],
+        }
+        projected = tft_insights_projection(catalog)
+        self.assertEqual(projected["venues"], {"tft-a": {"eligibility": {"x": 1}, "release": {"y": 2}, "verdict": {"line": "z"}}})
+        self.assertEqual(projected["eligibility_source"], {"terms_current": True})
+        with self.assertRaises(ValueError):
+            tft_insights_projection({"venues": []})
