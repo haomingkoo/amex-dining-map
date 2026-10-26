@@ -216,3 +216,191 @@ def observed_since(observations: list[dict]) -> str | None:
 
 def load_rules(path: Path = DEFAULT_RULES) -> dict:
     return load_json(path)
+
+
+# --- Release patterns ------------------------------------------------------
+
+# A check window wider than this cannot place a release within a time of day.
+PRECISE_WINDOW_MINUTES = 90
+MIN_PRECISE_FOR_TIME = 5
+TIME_CLUSTER_HOURS = 2
+TIME_CLUSTER_SHARE = 0.6
+MIN_DATES_FOR_ROLLING = 6
+ROLLING_LEAD_SHARE = 0.5
+BATCH_MIN_DATES = 5
+
+
+def _utc(value: Any):
+    try:
+        from scripts.timeutil import parse_utc
+    except ImportError:  # running as `python3 scripts/<file>.py`
+        from timeutil import parse_utc
+    return parse_utc(value)
+
+
+def _sgt(moment):
+    from zoneinfo import ZoneInfo
+
+    return moment.astimezone(ZoneInfo("Asia/Singapore"))
+
+
+def _hour_label(hour: int) -> str:
+    hour %= 24
+    if hour == 0:
+        return "midnight"
+    if hour == 12:
+        return "noon"
+    return f"{hour % 12} {'am' if hour < 12 else 'pm'}"
+
+
+def _time_cluster(midpoints: list[float]) -> dict | None:
+    """The two-hour span of the day holding most first sightings, if one does."""
+    if len(midpoints) < MIN_PRECISE_FOR_TIME:
+        return None
+    best_start, best_count = 0, -1
+    for start in range(24):
+        count = sum(1 for value in midpoints if (value - start) % 24 < TIME_CLUSTER_HOURS)
+        if count > best_count:
+            best_start, best_count = start, count
+    share = best_count / len(midpoints)
+    if share < TIME_CLUSTER_SHARE:
+        return None
+    return {
+        "start_hour": best_start,
+        "end_hour": (best_start + TIME_CLUSTER_HOURS) % 24,
+        "share": round(share, 2),
+        "label": (
+            "around midnight"
+            if best_start == 23
+            else f"between {_hour_label(best_start)} and {_hour_label(best_start + TIME_CLUSTER_HOURS)}"
+        ),
+    }
+
+
+def release_patterns(venue_id: str, observations: list[dict], as_of: date) -> dict:
+    """When new dates first appeared for a venue, from the committed first-seen history."""
+    new = [
+        item
+        for item in observations
+        if item.get("venue_id") == venue_id
+        and not item.get("baseline")
+        and int(item.get("lead_days", -1)) >= 0
+        and _utc(item.get("first_seen_at")) is not None
+    ]
+    hours = [0] * 24
+    days_of_month = [0] * 31
+    meals: dict[str, list[dict]] = defaultdict(list)
+    precise = 0
+    for item in new:
+        seen = _utc(item["first_seen_at"])
+        days_of_month[_sgt(seen).day - 1] += 1
+        meals[str(item["meal"])].append(item)
+        after = _utc(item.get("checked_after"))
+        if after and 0 < (seen - after).total_seconds() <= PRECISE_WINDOW_MINUTES * 60:
+            local = _sgt(after + (seen - after) / 2)
+            hours[local.hour] += 1
+            precise += 1
+    meal_patterns = []
+    for meal, items in sorted(meals.items(), key=lambda pair: {"Lunch": 0, "Afternoon Tea": 1, "Dinner": 2}.get(pair[0], 3)):
+        leads = Counter(int(item["lead_days"]) for item in items)
+        lead, lead_count = leads.most_common(1)[0]
+        midpoints = []
+        for item in items:
+            seen, after = _utc(item["first_seen_at"]), _utc(item.get("checked_after"))
+            if after and 0 < (seen - after).total_seconds() <= PRECISE_WINDOW_MINUTES * 60:
+                local = _sgt(after + (seen - after) / 2)
+                midpoints.append(local.hour + local.minute / 60)
+        rolling = len(items) >= MIN_DATES_FOR_ROLLING and lead_count / len(items) >= ROLLING_LEAD_SHARE
+        latest = max(_utc(item["first_seen_at"]) for item in items)
+        meal_patterns.append({
+            "meal": meal,
+            "new_dates": len(items),
+            "rolling_lead_days": lead if rolling else None,
+            "lead_share": round(lead_count / len(items), 2),
+            "precise_sightings": len(midpoints),
+            "time_of_day": _time_cluster(midpoints),
+            "last_new_date_at": latest.isoformat().replace("+00:00", "Z"),
+            "quiet_days": (as_of - _sgt(latest).date()).days,
+        })
+    batches = Counter(item["first_seen_at"] for item in new)
+    big = sorted(
+        ({"at": at, "dates": count} for at, count in batches.items() if count >= BATCH_MIN_DATES),
+        key=lambda item: item["at"],
+    )[-3:]
+    return {
+        "new_dates": len(new),
+        "precise_sightings": precise,
+        "hour_counts": hours,
+        "day_of_month_counts": days_of_month,
+        "meals": meal_patterns,
+        "batches": big,
+    }
+
+
+QUIET_DAYS_WORTH_SAYING = 7
+
+
+def _day_month(moment) -> str:
+    local = _sgt(moment)
+    return f"{local.day} {local:%b}"
+
+
+def release_lines(pattern: dict) -> list[str]:
+    """Plain verdicts, each backed by the counts in the pattern."""
+    lines = []
+    for meal in pattern.get("meals") or []:
+        name = meal["meal"].lower()
+        lead = meal.get("rolling_lead_days")
+        if lead is None:
+            continue
+        timing = meal.get("time_of_day")
+        when = f", usually first seen {timing['label']}" if timing else ""
+        if meal.get("quiet_days", 0) >= QUIET_DAYS_WORTH_SAYING:
+            last = _day_month(_utc(meal["last_new_date_at"]))
+            lines.append(
+                f"Until {last}, new {name} dates opened one day at a time, {lead} days ahead{when}. None since."
+            )
+        else:
+            lines.append(f"New {name} dates open one day at a time, {lead} days ahead{when}.")
+    for batch in pattern.get("batches") or []:
+        lines.append(f"{batch['dates']} new dates appeared at once on {_day_month(_utc(batch['at']))}.")
+    return lines
+
+
+def release_best_time(pattern: dict) -> str | None:
+    """'lunch between 11 am and 1 pm (61 days ahead)' for meals that still release."""
+    parts = []
+    for meal in pattern.get("meals") or []:
+        timing, lead = meal.get("time_of_day"), meal.get("rolling_lead_days")
+        if timing and lead is not None and meal.get("quiet_days", 0) < QUIET_DAYS_WORTH_SAYING:
+            parts.append(f"{meal['meal'].lower()} {timing['label']}, {lead} days ahead")
+    return "; ".join(parts) or None
+
+
+def furthest_open_dates(venue: dict) -> dict[str, str]:
+    furthest: dict[str, str] = {}
+    for meal in (venue.get("availability") or {}).get("meals") or []:
+        for slot in meal.get("slots") or []:
+            if slot.get("date"):
+                name = str(meal.get("meal"))
+                furthest[name] = max(str(slot["date"]), furthest.get(name, ""))
+    return furthest
+
+
+def venue_release(venue: dict, observations: list[dict], as_of: date) -> dict:
+    pattern = release_patterns(str(venue["id"]), observations, as_of)
+    return pattern | {
+        "lines": release_lines(pattern),
+        "best_time": release_best_time(pattern),
+        "furthest_open_dates": furthest_open_dates(venue),
+    }
+
+
+def tracking_since(observations: list[dict]) -> str | None:
+    """First date with a non-baseline sighting: when new-date tracking really began."""
+    stamps = [
+        str(item["first_seen_sgt"])[:10]
+        for item in observations
+        if item.get("first_seen_sgt") and not item.get("baseline")
+    ]
+    return min(stamps) if stamps else None

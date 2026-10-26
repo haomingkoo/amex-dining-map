@@ -25,6 +25,7 @@ from app import (
     telegram_reminders,
     tft_agent,
     tft_guide,
+    tft_patterns,
     tft_slot_source,
 )
 from app.config import Settings, load_settings
@@ -167,8 +168,9 @@ def _guide_agent(settings: Settings, principal_key: str, text: str) -> str | Non
 
 def _guide_answer(settings: Settings, principal_key: str, text: str) -> str:
     """Guide reply; with the LLM on, free text it cannot place goes to the agent."""
+    live = lambda: tft_patterns.live_summary(settings.db_path)  # noqa: E731
     if not settings.telegram_guide_llm_enabled:
-        return tft_guide.handle_message(text, tft_guide.load_catalog())
+        return tft_guide.handle_message(text, tft_guide.load_catalog(), live_loader=live)
     over_budget = []
 
     def agent(message: str) -> str | None:
@@ -179,7 +181,9 @@ def _guide_answer(settings: Settings, principal_key: str, text: str) -> str:
             return None
         return _guide_agent(settings, principal_key, message)
 
-    answer = tft_guide.handle_message(text, tft_guide.load_catalog(), agent=agent)
+    answer = tft_guide.handle_message(
+        text, tft_guide.load_catalog(), agent=agent, live_loader=live
+    )
     if over_budget:
         answer = f"{BASIC_MODE}\n\n{answer}"
     conn = db.connect(settings.db_path)

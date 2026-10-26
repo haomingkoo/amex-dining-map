@@ -144,7 +144,7 @@ def test_release_question_uses_release_pattern():
 
     reply = _ask("when do colony slots usually open", chat)
 
-    assert "observed first-detection pattern" in chat.tool_outputs()[0]
+    assert "Colony: when tables appear" in chat.tool_outputs()[0]
     assert reply.startswith("Colony slots tend to appear")
 
 

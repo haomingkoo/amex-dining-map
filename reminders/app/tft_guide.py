@@ -17,12 +17,11 @@ from urllib.parse import urlparse
 from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
-from app import tft_documents, tft_slot_source, tft_slots
+from app import tft_documents, tft_patterns, tft_slot_source, tft_slots
 
 
 CATALOG_PATH = Path(__file__).with_name("tft_guide_catalog.json")
 MENU_STALE_AFTER = timedelta(hours=36)
-RELEASE_STALE_AFTER = timedelta(hours=36)
 MAX_REPLY_LENGTH = 3900
 PUBLISHED_MAX_BYTES = 1_000_000
 PUBLISHED_TIMEOUT_SECONDS = 4
@@ -479,7 +478,9 @@ def eligibility_text(venue: dict, catalog: dict, now: datetime) -> str:
     return "\n".join(lines)
 
 
-def _venue_details(venue: dict, catalog: dict, now: datetime) -> str:
+def _venue_details(
+    venue: dict, catalog: dict, now: datetime, live_loader: Callable[[], dict] | None = None
+) -> str:
     name = _safe_venue_text(venue.get("name"), 120)
     venue_id = str(venue.get("id") or "")
     if name is None or re.fullmatch(r"[a-z0-9-]{1,80}", venue_id) is None:
@@ -516,6 +517,8 @@ def _venue_details(venue: dict, catalog: dict, now: datetime) -> str:
         )
     return (
         f"{name}\n\n{eligibility_text(venue, catalog, now)}\n\n"
+        + _best_time(venue, live_loader)
+        + "\n\n"
         + "\n".join(details)
         + f"\n\n{_roster_context(catalog, now)}\n"
         + _menu_source_context(catalog.get("menu_source") or {}, catalog, now)
@@ -535,114 +538,14 @@ def _natural_venue_query(message: str) -> tuple[str, str] | None:
     return None
 
 
-def _release_time(value: str | None, now: datetime) -> datetime | None:
-    if not value:
-        return None
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except (AttributeError, ValueError):
-        return None
-    if parsed.tzinfo is None or parsed > now + timedelta(minutes=5):
-        return None
-    return parsed.astimezone(timezone.utc)
+def _best_time(venue: dict, live_loader: Callable[[], dict] | None) -> str:
+    live = (live_loader or (lambda: NO_LIVE_HISTORY))()
+    return tft_patterns.best_time_line(venue, (live.get("venues") or {}).get(str(venue.get("id"))))
 
 
-def _valid_release_pattern(
-    pattern: dict, now: datetime, snapshot: datetime
-) -> bool:
-    try:
-        count = int(pattern["observation_count"])
-        median = float(pattern["median_lead_days"])
-        minimum = int(pattern["lead_days_min"])
-        maximum = int(pattern["lead_days_max"])
-        share = float(pattern.get("typical_time_observation_share") or 0)
-    except (KeyError, TypeError, ValueError):
-        return False
-    typical = pattern.get("typical_first_seen_sgt")
-    latest = _release_time(pattern.get("latest_observation_at"), now)
-    return (
-        count >= 3
-        and 0 <= minimum <= median <= maximum
-        and 0 <= share <= 1
-        and pattern.get("meal") in {"Lunch", "Dinner"}
-        and pattern.get("confidence") in {"early", "medium", "high"}
-        and (
-            typical is None
-            or re.fullmatch(r"(?:[01]\d|2[0-3]):(?:00|30)", str(typical))
-            is not None
-        )
-        and latest is not None
-        and latest <= snapshot
-    )
-
-
-def _release_pattern_line(pattern: dict, now: datetime) -> str:
-    count = int(pattern["observation_count"])
-    median = float(pattern["median_lead_days"])
-    minimum = int(pattern["lead_days_min"])
-    maximum = int(pattern["lead_days_max"])
-    median_label = f"{median:g}"
-    line = (
-        f"{pattern['meal']}: median first-detected lead {median_label} days "
-        f"(range {minimum}–{maximum}); {count} observations; "
-        f"tracker confidence: {pattern['confidence']}."
-    )
-    typical = pattern.get("typical_first_seen_sgt")
-    share = float(pattern.get("typical_time_observation_share") or 0)
-    if typical and share >= 0.6:
-        line += (
-            f" First detected around {typical} SGT in about {share:.0%} of observations; "
-            "scheduled polling can make detection later than the actual release."
-        )
-    line += f" Latest included detection: {_date_sgt(pattern['latest_observation_at'])}."
-    return line
-
-
-def _release_answer(venue: dict, meal: str | None, catalog: dict, now: datetime) -> str:
-    source = catalog.get("release_source") or {}
-    snapshot = _release_time(source.get("updated_at"), now)
-    if source.get("project") != "AMEXPlatSG" or snapshot is None:
-        return (
-            f"{venue['name']} — observed release pattern\n\n"
-            "The bundled history timestamp could not be verified safely, so I will not "
-            "report a timing pattern.\n"
-            f"{_official_source_line(catalog)}\n{_explorer_line(venue)}"
-        )[:MAX_REPLY_LENGTH]
-    patterns = [
-        pattern
-        for pattern in venue.get("release_patterns") or []
-        if _valid_release_pattern(pattern, now, snapshot)
-    ]
-    if meal:
-        patterns = [
-            pattern for pattern in patterns if str(pattern.get("meal")).casefold() == meal
-        ]
-    if not patterns:
-        meal_label = f" {meal.title()}" if meal else ""
-        return (
-            f"{venue['name']} — observed release pattern\n\n"
-            f"There are not enough valid repeated{meal_label} observations to report a pattern. "
-            "I will not extrapolate a release schedule.\n"
-            f"History snapshot: {_date(source.get('updated_at'))}\n"
-            f"{_official_source_line(catalog)}\n{_explorer_line(venue)}"
-        )[:MAX_REPLY_LENGTH]
-    lines = "\n\n".join(_release_pattern_line(pattern, now) for pattern in patterns)
-    if now - snapshot > RELEASE_STALE_AFTER:
-        freshness = "History snapshot is older than 36 hours; treat the pattern as stale."
-    else:
-        freshness = "History snapshot is within 36 hours."
-    review = (
-        " The wider TFT source snapshot is awaiting manual review."
-        if catalog.get("manual_review_required")
-        else ""
-    )
-    return (
-        f"{venue['name']} — observed first-detection pattern\n\n{lines}\n\n"
-        "Observed by scheduled AMEXPlatSG cache checks—not an Amex or restaurant release policy. "
-        "Polling cadence can delay detection. This does not show current seat availability.\n"
-        f"History snapshot: {_date(source.get('updated_at'))}. {freshness}{review}\n"
-        f"{_official_source_line(catalog)}\n{_explorer_line(venue)}"
-    )[:MAX_REPLY_LENGTH]
+def release_answer(venue: dict, catalog: dict, live_loader: Callable[[], dict] | None) -> str:
+    live = (live_loader or (lambda: NO_LIVE_HISTORY))()
+    return tft_patterns.release_reply(venue, catalog, live, _explorer_line(venue))[:MAX_REPLY_LENGTH]
 
 
 def _venues(catalog: dict, now: datetime) -> str:
@@ -917,9 +820,10 @@ def handle_message(
     now: datetime | None = None,
     slot_loader=None,
     agent: Callable[[str], str | None] | None = None,
+    live_loader: Callable[[], dict] | None = None,
 ) -> str:
     """Deterministic answer; free text it cannot place goes to the optional agent."""
-    reply = _deterministic_answer(text, catalog, now, slot_loader)
+    reply = _deterministic_answer(text, catalog, now, slot_loader, live_loader)
     if (
         agent is None
         or not text.strip()
@@ -930,11 +834,15 @@ def handle_message(
     return agent(text) or reply
 
 
+NO_LIVE_HISTORY = {"started_at": None, "venues": {}}
+
+
 def _deterministic_answer(
     text: str,
     catalog: dict,
     now: datetime | None = None,
     slot_loader=None,
+    live_loader: Callable[[], dict] | None = None,
 ) -> str:
     message = " ".join(text.strip().split())
     lowered = message.casefold()
@@ -978,7 +886,7 @@ def _deterministic_answer(
             )
         if venue_intent == "menu":
             return _menu_answer(matches[0], None, catalog, current)
-        return _venue_details(matches[0], catalog, current)
+        return _venue_details(matches[0], catalog, current, live_loader)
 
     document_answer = tft_documents.answer(message, catalog, current)
     if document_answer is not None:
@@ -1031,9 +939,7 @@ def _deterministic_answer(
                 "I could not match that to one exact Table for Two venue. "
                 "Use /venues, then send /release <exact venue> lunch or dinner."
             )
-        return _release_answer(
-            matches[0], meal, catalog, current
-        )
+        return release_answer(matches[0], catalog, live_loader)
 
     is_menu_command = lowered == "/menu" or lowered.startswith("/menu ")
     wants_menu = is_menu_command or "menu" in lowered

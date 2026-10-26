@@ -76,3 +76,83 @@ class ObservedMealTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def _release_obs(n, lead, hour_utc, window_minutes, start=date(2026, 9, 1), meal="Lunch"):
+    from datetime import datetime, timezone
+    items = []
+    for i in range(n):
+        seen = datetime.combine(start + timedelta(days=i), datetime.min.time(), timezone.utc).replace(hour=hour_utc, minute=30)
+        after = seen - timedelta(minutes=window_minutes)
+        items.append({
+            "venue_id": "v", "meal": meal, "lead_days": lead,
+            "slot_date": (start + timedelta(days=i + lead)).isoformat(),
+            "first_seen_at": seen.isoformat().replace("+00:00", "Z"),
+            "checked_after": after.isoformat().replace("+00:00", "Z"),
+        })
+    return items
+
+
+class ReleasePatternTests(unittest.TestCase):
+    def test_rolling_window_with_precise_time(self):
+        obs = _release_obs(10, 61, 4, 30)  # 12:15 SGT midpoint
+        pattern = tft_insights.venue_release({"id": "v"}, obs, date(2026, 9, 11))
+        [meal] = pattern["meals"]
+        self.assertEqual(meal["rolling_lead_days"], 61)
+        self.assertEqual(meal["time_of_day"]["label"], "between 11 am and 1 pm")
+        self.assertEqual(pattern["lines"], [
+            "New lunch dates open one day at a time, 61 days ahead, usually first seen between 11 am and 1 pm."
+        ])
+        self.assertEqual(pattern["best_time"], "lunch between 11 am and 1 pm, 61 days ahead")
+        self.assertEqual(sum(pattern["hour_counts"]), 10)
+
+    def test_wide_check_windows_never_give_a_time_of_day(self):
+        obs = _release_obs(10, 61, 4, 240)
+        pattern = tft_insights.venue_release({"id": "v"}, obs, date(2026, 9, 11))
+        self.assertIsNone(pattern["meals"][0]["time_of_day"])
+        self.assertEqual(pattern["precise_sightings"], 0)
+        self.assertEqual(pattern["lines"], ["New lunch dates open one day at a time, 61 days ahead."])
+
+    def test_quiet_venue_is_described_in_the_past(self):
+        obs = _release_obs(10, 61, 4, 30)
+        pattern = tft_insights.venue_release({"id": "v"}, obs, date(2026, 10, 30))
+        self.assertTrue(pattern["lines"][0].startswith("Until 10 Sep, new lunch dates opened"))
+        self.assertTrue(pattern["lines"][0].endswith("None since."))
+        self.assertIsNone(pattern["best_time"])
+
+    def test_scattered_leads_are_not_called_rolling(self):
+        obs = [dict(item, lead_days=lead) for item, lead in zip(_release_obs(8, 0, 4, 30), [3, 9, 15, 20, 33, 40, 50, 61])]
+        pattern = tft_insights.venue_release({"id": "v"}, obs, date(2026, 9, 10))
+        self.assertIsNone(pattern["meals"][0]["rolling_lead_days"])
+        self.assertEqual(pattern["lines"], [])
+
+    def test_batches_are_reported(self):
+        obs = _release_obs(6, 30, 4, 30)
+        for item in obs:
+            item["first_seen_at"] = obs[0]["first_seen_at"]
+        pattern = tft_insights.venue_release({"id": "v"}, obs, date(2026, 9, 2))
+        self.assertIn("6 new dates appeared at once on 1 Sep.", pattern["lines"])
+
+
+class CheckedAfterTests(unittest.TestCase):
+    def test_previous_check_bounds_each_sighting(self):
+        from datetime import datetime, timezone
+        from scripts import track_table_for_two_releases as tracker
+        t = lambda s: datetime.fromisoformat(s).replace(tzinfo=timezone.utc)
+        obs = [
+            {"first_seen_at": "2026-10-25T12:15:00Z"},
+            {"first_seen_at": "2026-08-20T00:00:00Z", "baseline": True},
+        ]
+        checks = [(t("2026-10-25T12:00:00"), t("2026-10-25T11:54:00")), (t("2026-10-25T12:16:00"), t("2026-10-25T12:10:00"))]
+        self.assertEqual(tracker.annotate_checked_after(obs, checks), 1)
+        self.assertEqual(obs[0]["checked_after"], "2026-10-25T11:54:00Z")
+        self.assertNotIn("checked_after", obs[1])
+
+    def test_new_observations_record_the_window(self):
+        from datetime import datetime, timezone
+        from scripts import track_table_for_two_releases as tracker
+        seen = datetime(2026, 10, 26, 4, 0, tzinfo=timezone.utc)
+        item = tracker.build_observation(("v", "V", "Lunch", "2026-12-26"), seen, seen - timedelta(minutes=21))
+        self.assertEqual(item["checked_after"], "2026-10-26T03:39:00Z")
+        later = tracker.build_observation(("v", "V", "Lunch", "2026-12-26"), seen, seen + timedelta(minutes=1))
+        self.assertNotIn("checked_after", later)

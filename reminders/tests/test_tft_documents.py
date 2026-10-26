@@ -170,7 +170,7 @@ def test_existing_menu_release_and_slot_routes_are_not_captured():
     assert vue["menus"]["platinum"]["filename"] in tft_guide.handle_message(
         "/menu VUE platinum", catalog(), NOW
     )
-    assert "observed first-detection pattern" in tft_guide.handle_message(
+    assert "VUE: when tables appear" in tft_guide.handle_message(
         "/release VUE dinner", catalog(), NOW
     )
     assert "Use /slots venue" in tft_guide.handle_message("/slots", catalog(), NOW)

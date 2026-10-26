@@ -9,6 +9,7 @@ from typing import Any
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
+from app import tft_guide, tft_patterns
 from app.config import Settings, load_settings
 from app.tft_live_refresh import load_snapshot
 
@@ -96,3 +97,30 @@ def tft_live_slots(settings: Settings = Depends(get_settings)) -> JSONResponse:
             headers={"Cache-Control": "no-store"},
         )
     return JSONResponse(snapshot, headers={"Cache-Control": "no-store"})
+
+
+@router.get("/api/tft/patterns")
+def tft_patterns_summary(settings: Settings = Depends(get_settings)) -> JSONResponse:
+    """Per-venue slot timing for the Explorer: durations, returns and the best time to look."""
+    live = tft_patterns.live_summary(settings.db_path)
+    venues = {}
+    for venue in tft_guide.load_catalog().get("venues") or []:
+        venue_id = str(venue.get("id"))
+        entry = (live.get("venues") or {}).get(venue_id) or {}
+        venues[venue_id] = {
+            "best_time": tft_patterns.best_time_line(venue, entry),
+            "lines": entry.get("lines") or [],
+            "new_tables": entry.get("new_tables", 0),
+            "returned_tables": entry.get("returned_tables", 0),
+            "returns_per_day": entry.get("returns_per_day", 0),
+            "return_buckets": entry.get("return_buckets") or {},
+            "new_lasted_minutes": entry.get("new_lasted_minutes") or [],
+        }
+    return JSONResponse(
+        {
+            "schema_version": 1,
+            "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+            "started_at": live.get("started_at"),
+            "venues": venues,
+        },
+    )

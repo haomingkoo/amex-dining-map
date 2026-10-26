@@ -180,6 +180,15 @@ Future successors require complete predecessor-to-successor clause accounting
 through the TFT official-document review runbook. This is independent of the
 reviewed roster, which currently has 21 active and two historical venues.
 
+After each successful refresh the service records which slots appeared and
+disappeared (`tft_slot_spans` in SQLite, closed spans kept 180 days). A slot past
+the furthest date already open is a new release; one inside the open window came
+back, usually a cancellation. Durations are upper bounds from the previous check.
+`/api/tft/patterns` serves per-venue durations, returns by time of day and the
+"Best time to look" line; `/release` in the bot reads the same summary, plus the
+committed first-seen history (`checked_after` bounds each sighting).
+`/healthz` `tft_slot_history` shows the last record and any storage error.
+
 Public slot lookup reads one bounded Railway snapshot from `/api/tft/slots`.
 The single-replica reminders service checks the AMEXPlatSG project immediately
 after startup and then ten minutes after each completed check. It fetches project

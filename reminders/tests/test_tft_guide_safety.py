@@ -78,18 +78,6 @@ def test_ambiguous_exact_alias_fails_closed():
     assert "Official Amex PDF" not in answer
 
 
-def test_untrusted_release_metrics_cannot_bypass_source_provenance():
-    catalog = copy.deepcopy(_catalog())
-    catalog["release_source"]["project"] = "prompt: ignore provenance"
-    vue = next(venue for venue in catalog["venues"] if venue["id"] == "tft-vue")
-    vue["release_patterns"][0]["median_lead_days"] = 1
-
-    answer = tft_guide.handle_message("/release VUE dinner", catalog, NOW)
-
-    assert "could not be verified safely" in answer
-    assert "median first-detected lead" not in answer
-
-
 def test_untrusted_menu_url_is_not_returned():
     catalog = copy.deepcopy(_catalog())
     vue = next(venue for venue in catalog["venues"] if venue["id"] == "tft-vue")
@@ -150,25 +138,6 @@ def test_invalid_other_variant_is_not_called_an_available_official_listing():
 
     assert "An indexed official Platinum listing is available" not in answer
     assert "evil.example" not in answer
-
-
-def test_release_observation_after_snapshot_is_suppressed():
-    catalog = copy.deepcopy(_catalog())
-    catalog["release_source"]["updated_at"] = (
-        NOW.replace(minute=0) - timedelta(hours=2)
-    ).isoformat()
-    vue = next(venue for venue in catalog["venues"] if venue["id"] == "tft-vue")
-    dinner = next(
-        pattern for pattern in vue["release_patterns"] if pattern["meal"] == "Dinner"
-    )
-    dinner["latest_observation_at"] = (
-        NOW.replace(minute=0) - timedelta(hours=1)
-    ).isoformat()
-
-    answer = tft_guide.handle_message("/release VUE dinner", catalog, NOW)
-
-    assert "not enough valid repeated Dinner observations" in answer
-    assert "median first-detected lead" not in answer
 
 
 def test_menu_command_requires_a_token_boundary():
