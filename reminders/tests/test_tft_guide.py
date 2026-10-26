@@ -134,7 +134,7 @@ def test_exact_venue_details_work_for_command_and_safe_common_questions():
     ):
         answer = tft_guide.handle_message(query, _catalog(), NOW)
 
-        assert answer.startswith("VUE — reviewed venue details")
+        assert answer.startswith("VUE\n\nWhen Table for Two applies")
         assert "OUE Bayfront, 50 Collyer Quay" in answer
         assert "Indexed official menus: Centurion, Platinum" in answer
         assert "Roster checked:" in answer

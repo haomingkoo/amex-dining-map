@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "terms_sha256": "7ba815581e6c0cb0c50775e6db642f81b040a65ff5568a70f6aeb4ed4cc0a7ec",
+  "terms_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf",
+  "reviewed_at": "2026-10-26T13:30:00Z",
+  "reviewer": "repository-maintainer",
+  "note": "Transcribed from the 'Blackout Dates for All Merchants' and 'Additional Blackout Dates for each Merchant' table on page 2 of the approved terms. The terms name no per-venue days of the week or meals.",
+  "program_rule": "Public holidays and the eve of each public holiday",
+  "public_holidays_source": "https://www.mom.gov.sg/employment-practices/public-holidays",
+  "public_holidays": [
+    {"date": "2026-01-01", "name": "New Year's Day"},
+    {"date": "2026-02-17", "name": "Chinese New Year"},
+    {"date": "2026-02-18", "name": "Chinese New Year"},
+    {"date": "2026-03-21", "name": "Hari Raya Puasa"},
+    {"date": "2026-04-03", "name": "Good Friday"},
+    {"date": "2026-05-01", "name": "Labour Day"},
+    {"date": "2026-05-27", "name": "Hari Raya Haji"},
+    {"date": "2026-05-31", "name": "Vesak Day"},
+    {"date": "2026-06-01", "name": "Vesak Day holiday"},
+    {"date": "2026-08-09", "name": "National Day"},
+    {"date": "2026-08-10", "name": "National Day holiday"},
+    {"date": "2026-11-08", "name": "Deepavali"},
+    {"date": "2026-11-09", "name": "Deepavali holiday"},
+    {"date": "2026-12-25", "name": "Christmas Day"},
+    {"date": "2027-01-01", "name": "New Year's Day"},
+    {"date": "2027-02-06", "name": "Chinese New Year"},
+    {"date": "2027-02-07", "name": "Chinese New Year"},
+    {"date": "2027-02-08", "name": "Chinese New Year holiday"},
+    {"date": "2027-03-10", "name": "Hari Raya Puasa"},
+    {"date": "2027-03-26", "name": "Good Friday"},
+    {"date": "2027-05-01", "name": "Labour Day"},
+    {"date": "2027-05-17", "name": "Hari Raya Haji"},
+    {"date": "2027-05-20", "name": "Vesak Day"},
+    {"date": "2027-08-09", "name": "National Day"},
+    {"date": "2027-10-28", "name": "Deepavali"},
+    {"date": "2027-12-25", "name": "Christmas Day"}
+  ],
+  "merchants": [
+    {
+      "merchant": "La Brasserie @ Fullerton Bay Hotel",
+      "venue_ids": ["tft-la-brasserie"],
+      "days": ["valentines_day", "easter_weekend", "mothers_day_and_eve", "fathers_day_and_eve", "f1_weekend"]
+    },
+    {
+      "merchant": "TANOKE",
+      "venue_ids": ["tft-tanoke"],
+      "days": ["valentines_day"]
+    },
+    {
+      "merchant": "VUE",
+      "venue_ids": ["tft-vue"],
+      "days": ["valentines_day", "mothers_day", "formula_1"]
+    },
+    {
+      "merchant": "15Stamford Restaurant, Capitol Bistro.Bar.Patisserie, Osteria Mozza",
+      "venue_ids": ["tft-15-stamford-restaurant", "tft-capitol-bistro-bar-patisserie"],
+      "days": ["valentines_day", "easter_sunday", "mothers_day", "fathers_day", "thanksgiving"]
+    },
+    {
+      "merchant": "Colony @ The Ritz-Carlton",
+      "venue_ids": ["tft-colony"],
+      "days": ["lunar_new_year_days_1_to_4", "easter_sunday", "secretaries_day", "mothers_day", "fathers_day", "f1_weekend"]
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import json
 import re
 import unicodedata
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from typing import Any
 try:
@@ -16,9 +17,10 @@ except ImportError:  # running as `python3 scripts/<file>.py`
     from timeutil import parse_utc
 
 try:
-    from scripts import tft_document_reviews, tft_menu_reviews
+    from scripts import tft_document_reviews, tft_insights, tft_menu_reviews
 except ModuleNotFoundError:
     import tft_document_reviews
+    import tft_insights
     import tft_menu_reviews
 
 
@@ -29,6 +31,7 @@ DEFAULT_REVIEW_ROOT = Path("data/reviews/official-documents")
 DEFAULT_RATINGS = Path("data/google-maps-ratings.json")
 INFO_TEXT_LIMIT = 600
 SOURCE_PROJECT = "AMEXPlatSG"
+SGT = ZoneInfo("Asia/Singapore")
 DOCUMENT_SPECS = {
     "tft-terms": (
         "terms",
@@ -271,8 +274,11 @@ def build_catalog(
     release_history: dict | None = None,
     review_root: Path = DEFAULT_REVIEW_ROOT,
     ratings: dict | None = None,
+    blackout_rules: dict | None = None,
 ) -> dict:
     tft_menu_reviews.verify_decision_receipts(source)
+    if blackout_rules is None:
+        blackout_rules = tft_insights.load_rules()
     if release_history is None:
         release_history = json.loads(DEFAULT_RELEASE_HISTORY.read_text())
     if ratings is None:
@@ -284,6 +290,10 @@ def build_catalog(
     ]
     venue_ids = {str(venue["id"]) for venue in active_venues}
     release_patterns = _release_projection(release_history, venue_ids)
+    observations = release_history.get("observations") or []
+    # The roster check date, not the wall clock, so a rebuild is reproducible.
+    as_of = (_parsed_time(source.get("last_verified_at")) or datetime.now(SGT)).astimezone(SGT).date()
+    terms_sha256 = (source.get("source_documents") or {}).get("terms_sha256")
     venues = []
     for venue in active_venues:
         menus = {
@@ -307,6 +317,9 @@ def build_catalog(
                 "release_patterns": release_patterns.get(venue["id"], []),
                 "explorer_route": f"#/table-for-two?venue={venue['id']}",
                 "info": _info_projection(venue, ratings.get(venue["id"])),
+                "eligibility": tft_insights.venue_eligibility(
+                    venue, observations, blackout_rules, terms_sha256, as_of
+                ),
             }
         )
     return {
@@ -329,6 +342,13 @@ def build_catalog(
             "project": release_history.get("source_project"),
             "updated_at": release_history.get("updated_at"),
             "observation_count": len(release_history.get("observations") or []),
+        },
+        "eligibility_source": {
+            "terms_url": blackout_rules.get("terms_url"),
+            "terms_current": bool(terms_sha256) and terms_sha256 == blackout_rules.get("terms_sha256"),
+            "program_rule": blackout_rules.get("program_rule"),
+            "reviewed_at": blackout_rules.get("reviewed_at"),
+            "observed_since": tft_insights.observed_since(observations),
         },
         "slot_source": {
             "url": "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json",
