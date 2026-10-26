@@ -1,4 +1,4 @@
-# Design: Unofficial Platinum Experience
+# Design: Amex Explorer
 
 Inherits the kooexperience design core (`~/.agent-memory/design/DESIGN-core.md`). This file only records what is specific to this app. Amex Explorer is the core's reference app, so refine it; don't restyle it.
 

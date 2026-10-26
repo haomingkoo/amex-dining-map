@@ -319,7 +319,7 @@ def _help() -> str:
     today = datetime.now(SGT).date()
     month = calendar.month_name[today.month % 12 + 1]  # next month, so the example stays current
     return (
-        "Hi! I'm an unofficial guide to Amex Platinum Table for Two in Singapore.\n\n"
+        "Hi! I'm the Amex Explorer guide to Amex Platinum Table for Two in Singapore. Unofficial.\n\n"
         "Just ask, for example:\n"
         "• which dates is VUE available?\n"
         "• when can I book Colony for dinner for 4?\n"

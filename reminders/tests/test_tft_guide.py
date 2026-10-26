@@ -88,7 +88,7 @@ def test_venue_start_link_returns_reviewed_venue_context():
 def test_unknown_start_payload_falls_back_to_help():
     answer = tft_guide.handle_message("/start https://attacker.example", _catalog(), NOW)
 
-    assert answer.startswith("Hi! I'm an unofficial guide")
+    assert answer.startswith("Hi! I'm the Amex Explorer guide")
     assert "attacker.example" not in answer
 
 
