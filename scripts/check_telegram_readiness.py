@@ -177,7 +177,7 @@ def check_guide(api_base: str, values: dict[str, object]) -> None:
         raise ReadinessError("guide bot has no valid public username")
     webhook = telegram_call(str(values["guide_token"]), "getWebhookInfo")
     expected_url = f"{api_base}/api/telegram/guide/webhook"
-    if webhook.get("url") != expected_url or webhook.get("allowed_updates") != ["message"] or webhook.get("last_error_message"):
+    if webhook.get("url") != expected_url or webhook.get("allowed_updates") != ["message", "callback_query"] or webhook.get("last_error_message"):
         raise ReadinessError("guide webhook does not match the deployed endpoint")
     config = request_json(PUBLIC_CONFIG_URL)
     if config != {"schema_version": 1, "enabled": True, "bot_username": username}:

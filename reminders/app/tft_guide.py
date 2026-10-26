@@ -330,7 +330,9 @@ def _help() -> str:
         "2. Answer four quick questions: venue, party size, lunch or dinner, date(s)\n"
         "3. Reply YES. I will message you once when a matching table opens.\n"
         "/reminders lists yours, /cancel R123456 stops one, /delete_me erases your data.\n\n"
-        "More: /venue Colony (days, meals and blackouts), /venues, /menu VUE, /release VUE dinner, /terms, /faq, /about\n\n"
+        "One quiet message a day instead: /digest Colony, VUE lists new tables at the venues "
+        "you follow, around 9am, only on days with something new.\n\n"
+        "More: /venue Colony (value, days and blackouts), /release Colony (best time to look), /venues, /menu VUE, /terms, /faq\n\n"
         f"{tft_slots.SOURCE_NOTE} Not affiliated with American Express.\n"
         "Privacy: https://amex-explorer.kooexperience.com/privacy.html"
     )
@@ -728,6 +730,7 @@ def _natural_dates_request(message: str, now: datetime) -> tft_slots.SlotRequest
 
 
 PIPE_LOOKALIKES = str.maketrans({"｜": "|", "¦": "|", "│": "|", "ǀ": "|"})
+THIS_WEEK_RE = re.compile(r"\b(?:this week|next (?:7|seven) days)\b", re.IGNORECASE)
 WEEKEND_WORD_RE = re.compile(r"\b(?:this |next |on |the )?(?:weekends?|wkends?)\b", re.IGNORECASE)
 
 
@@ -739,6 +742,8 @@ def _slots_command(message: str, now: datetime) -> tft_slots.SlotRequest | str:
     rest = message[len("/slots"):].strip()
     if not rest:
         return tft_slots.usage()
+    this_week = bool(THIS_WEEK_RE.search(rest))
+    rest = THIS_WEEK_RE.sub(" ", rest)
     weekend_only = bool(WEEKEND_WORD_RE.search(rest))
     rest = WEEKEND_WORD_RE.sub(" ", rest)
     words = " ".join(rest.split()) or "any"
@@ -746,6 +751,13 @@ def _slots_command(message: str, now: datetime) -> tft_slots.SlotRequest | str:
     if not isinstance(parsed, tft_slots.SlotRequest):
         return parsed or tft_slots.usage()
     venue = parsed.venue_text or "any"
+    if this_week:
+        today = now.astimezone(SGT).date()
+        return tft_slots.SlotRequest(
+            venue_text=venue, party_size=parsed.party_size, meal=parsed.meal,
+            start_date=today, end_date=today + timedelta(days=6),
+            weekend_only=weekend_only, preferred_time=None,
+        )
     if weekend_only:
         today = now.astimezone(SGT).date()
         return tft_slots.SlotRequest(

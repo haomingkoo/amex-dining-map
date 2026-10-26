@@ -18,15 +18,18 @@ class TelegramDeliveryError(Exception):
     state: str
 
 
-def send_message(bot_token: str, chat_id: int, text: str) -> int:
+def send_message(
+    bot_token: str, chat_id: int, text: str, reply_markup: dict | None = None
+) -> int:
     url = f"{TELEGRAM_API_BASE}/bot{bot_token}/sendMessage"
-    body = json.dumps(
-        {
-            "chat_id": chat_id,
-            "text": text,
-            "disable_web_page_preview": True,
-        }
-    ).encode("utf-8")
+    payload: dict = {
+        "chat_id": chat_id,
+        "text": text,
+        "disable_web_page_preview": True,
+    }
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
+    body = json.dumps(payload).encode("utf-8")
     request = urllib.request.Request(
         url,
         data=body,
@@ -54,3 +57,18 @@ def send_message(bot_token: str, chat_id: int, text: str) -> int:
     except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
         raise TelegramDeliveryError("telegram_response_unknown", "unknown") from exc
     return message_id
+
+
+def answer_callback_query(bot_token: str, callback_query_id: str) -> None:
+    """Stop the button's loading spinner. Best effort: the reply message is what matters."""
+    request = urllib.request.Request(
+        f"{TELEGRAM_API_BASE}/bot{bot_token}/answerCallbackQuery",
+        data=json.dumps({"callback_query_id": callback_query_id}).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=5) as response:
+            response.read(4_096)
+    except (urllib.error.URLError, TimeoutError, socket.timeout) as exc:
+        raise TelegramDeliveryError("telegram_callback_unknown", "unknown") from exc

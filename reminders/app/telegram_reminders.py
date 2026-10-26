@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
-from app import tft_guide, tft_slots
+from app import telegram_digest, tft_guide, tft_slots
 
 
 CONVERSATION_TTL = timedelta(minutes=15)
@@ -101,6 +101,7 @@ def _iso(moment: datetime) -> str:
 
 def init_db(conn: sqlite3.Connection, identity_salt: str = "") -> None:
     conn.executescript(SCHEMA)
+    telegram_digest.init_db(conn)
     if identity_salt:
         fingerprint = hashlib.sha256(identity_salt.encode()).hexdigest()
         current = conn.execute(
@@ -605,7 +606,7 @@ def handle_message(
         _save_conversation(
             conn, principal_key, "delete_confirm", now, created_ts=_iso(now)
         )
-        return "Delete your Telegram reminder data? This removes your reminders, any reminder you are setting up, your saved chat ID, delivery records, your recent conversation with the guide and rate-limit records. It does not affect email reminders. Reply DELETE within 15 minutes or /cancel."
+        return "Delete your Telegram reminder data? This removes your reminders, any reminder you are setting up, your daily digest, your saved chat ID, delivery records, your recent conversation with the guide and rate-limit records. It does not affect email reminders. Reply DELETE within 15 minutes or /cancel."
 
     if conversation and conversation["state"] == "delete_confirm":
         if message != "DELETE":
@@ -636,6 +637,7 @@ def handle_message(
                 "DELETE FROM telegram_guide_context WHERE principal_key = ?",
                 (principal_key,),
             )
+            telegram_digest.forget(conn, principal_key)
             conn.commit()
         except Exception:
             conn.rollback()

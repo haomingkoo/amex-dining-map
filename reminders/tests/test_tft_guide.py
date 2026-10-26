@@ -327,7 +327,7 @@ def test_release_help_uses_current_reviewed_source_context():
     help_text = tft_guide.handle_message("/help", _catalog(), NOW)
     answer = tft_guide.handle_message("/release VUE dinner", _catalog(), NOW)
 
-    assert "/release VUE dinner" in help_text
+    assert "/release Colony (best time to look)" in help_text
     assert "awaiting manual review" not in answer
 
 
