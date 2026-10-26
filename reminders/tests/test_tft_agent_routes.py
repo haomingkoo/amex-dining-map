@@ -196,7 +196,7 @@ def test_llm_settings_load_with_key_and_default_limits(monkeypatch):
         settings.telegram_llm_user_limit_per_minute,
         settings.telegram_llm_user_limit_per_day,
         settings.telegram_llm_global_limit_per_day,
-    ) == (4, 20, 1_500)
+    ) == (4, 20, 250)
 
 
 def test_healthz_reports_llm_fallback_counters(llm_settings, monkeypatch):
@@ -223,3 +223,29 @@ def test_over_budget_is_counted_as_a_fallback(llm_settings, scripted):
 
     assert tft_agent.stats()["outcomes"] == {"agent": 1, "budget": 1}
     tft_agent.reset_stats()
+
+
+def test_provider_quota_error_gets_the_same_plain_reply(llm_settings, monkeypatch):
+    def quota(_key):
+        def chat(*_args):
+            raise tft_agent.AgentError("http_429")
+        return chat
+
+    monkeypatch.setattr(tft_agent, "gemini_chat", quota)
+    reply = telegram_bot_routes._guide_answer(llm_settings, PRINCIPAL, FREE_TEXT)
+
+    assert reply.startswith(telegram_bot_routes.BASIC_MODE)
+    assert "/slots, /venue and /remind work as usual." in reply
+    assert "I could not match that" in reply
+
+
+def test_other_agent_failures_keep_the_deterministic_reply(llm_settings, monkeypatch):
+    def slow(_key):
+        def chat(*_args):
+            raise tft_agent.AgentError("timeout")
+        return chat
+
+    monkeypatch.setattr(tft_agent, "gemini_chat", slow)
+    reply = telegram_bot_routes._guide_answer(llm_settings, PRINCIPAL, FREE_TEXT)
+
+    assert reply.startswith("I could not match that")

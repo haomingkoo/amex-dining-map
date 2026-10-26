@@ -42,7 +42,9 @@
       <h3>If you use the Telegram bot</h3>
       <p>
         Your Telegram ID is only stored in hashed form. If you confirm a reminder, we store your chat ID so the bot
-        can message you, plus the venue, meal and dates you picked. We do not store the text of your messages.
+        can message you, plus the venue, meal and dates you picked. If you confirm a daily digest with
+        <code>/digest yes</code>, we store your chat ID and the venues you follow until you send
+        <code>/digest stop</code>. We do not store the text of your messages.
       </p>
 
       <h2>Why</h2>
@@ -70,7 +72,7 @@
         <li>Unconfirmed sign-ups: until the confirmation link expires.</li>
         <li>Unsubscribed emails: 30 days.</li>
         <li>Alerts whose dates have passed: 30 days after the last date.</li>
-        <li>Telegram chat IDs: until the reminder is sent, cancelled or out of date.</li>
+        <li>Telegram chat IDs: until the reminder is sent, cancelled or out of date, or until you stop the daily digest.</li>
         <li>Finished Telegram reminders: 30 days.</li>
         <li>Anti-abuse records: 24 hours.</li>
       </ul>

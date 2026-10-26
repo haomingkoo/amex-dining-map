@@ -21,6 +21,8 @@ from app import (
     db,
     telegram,
     telegram_bot_store,
+    telegram_digest,
+    telegram_keyboards,
     telegram_reminder_dispatch,
     telegram_reminders,
     tft_agent,
@@ -58,10 +60,25 @@ class TelegramMessage(BaseModel):
     text: Annotated[str | None, Field(max_length=512)] = None
 
 
+class CallbackMessage(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    message_id: Annotated[int, Field(gt=0)]
+    chat: TelegramChat
+
+
+class TelegramCallback(BaseModel):
+    model_config = ConfigDict(extra="ignore", populate_by_name=True)
+    id: Annotated[str, Field(min_length=1, max_length=64)]
+    sender: TelegramUser = Field(alias="from")
+    message: CallbackMessage | None = None
+    data: Annotated[str | None, Field(max_length=64)] = None
+
+
 class TelegramUpdate(BaseModel):
     model_config = ConfigDict(extra="ignore")
     update_id: Annotated[int, Field(ge=0, le=9_223_372_036_854_775_807)]
     message: TelegramMessage | None = None
+    callback_query: TelegramCallback | None = None
 
 
 class ReminderDispatch(BaseModel):
@@ -91,6 +108,17 @@ def _discard(settings: Settings, update_id: int) -> None:
         conn.close()
 
 
+def _digest_answer(
+    settings: Settings, principal_key: str, chat_id: int, text: str, now: datetime
+) -> str | None:
+    conn = db.connect(settings.db_path)
+    try:
+        telegram_digest.init_db(conn)
+        return telegram_digest.handle(conn, principal_key, chat_id, text, tft_guide.load_catalog(), now)
+    finally:
+        conn.close()
+
+
 def _reminder_answer(
     settings: Settings,
     principal_key: str,
@@ -112,7 +140,10 @@ def _reminder_answer(
         conn.close()
 
 
-BASIC_MODE = "I'm in basic mode for now."
+BASIC_MODE = (
+    "I can't take free-form questions right now, so here is the closest plain answer. "
+    "/slots, /venue and /remind work as usual."
+)
 
 
 def _llm_allowed(settings: Settings, principal_key: str) -> bool:
@@ -141,13 +172,13 @@ def _draft_reminder(settings: Settings, principal_key: str, fields: dict) -> str
         conn.close()
 
 
-def _guide_agent(settings: Settings, principal_key: str, text: str) -> str | None:
+def _guide_agent(settings: Settings, principal_key: str, text: str) -> tft_agent.AgentRun:
     conn = db.connect(settings.db_path)
     try:
         history = telegram_bot_store.load_context(conn, principal_key)
     finally:
         conn.close()
-    return tft_agent.run(
+    return tft_agent.run_detailed(
         text,
         tft_guide.load_catalog(),
         datetime.now(timezone.utc),
@@ -179,7 +210,11 @@ def _guide_answer(settings: Settings, principal_key: str, text: str) -> str:
             logger.warning("guide agent skipped reason=budget")
             tft_agent.record_outcome("budget")
             return None
-        return _guide_agent(settings, principal_key, message)
+        run = _guide_agent(settings, principal_key, message)
+        if run.outcome == "fallback:http_429":
+            # The provider's own quota ran out before ours: same plain reply.
+            over_budget.append(True)
+        return run.reply
 
     answer = tft_guide.handle_message(
         text, tft_guide.load_catalog(), agent=agent, live_loader=live
@@ -224,7 +259,34 @@ async def telegram_guide_webhook(
         return {"ok": True}
 
     message = payload.message
-    if (
+    callback = payload.callback_query
+    picker_action = None
+    if callback is not None and message is None:
+        # A button tap: same private-chat checks, then treated as the command it stands for.
+        if (
+            callback.message is None
+            or callback.message.chat.type != "private"
+            or callback.sender.is_bot
+            or callback.message.chat.id != callback.sender.id
+            or not callback.data
+        ):
+            return {"ok": True}
+        if callback.data in {"pick:venue", "pick:best"}:
+            picker_action = callback.data.split(":", 1)[1]
+            text = "/venues"
+        else:
+            text = telegram_keyboards.callback_text(callback.data)
+            if text is None:
+                return {"ok": True}
+        chat_id = callback.message.chat.id
+        sender_id = callback.sender.id
+        try:
+            await run_in_threadpool(
+                telegram.answer_callback_query, settings.telegram_guide_bot_token, callback.id
+            )
+        except telegram.TelegramDeliveryError:
+            pass  # the spinner times out on its own; the reply still goes out
+    elif (
         message is None
         or message.chat.type != "private"
         or message.sender is None
@@ -236,6 +298,10 @@ async def telegram_guide_webhook(
         or message.date > datetime.now(timezone.utc).timestamp() + 300
     ):
         return {"ok": True}
+    else:
+        text = message.text
+        chat_id = message.chat.id
+        sender_id = message.sender.id
 
     conn = db.connect(settings.db_path)
     try:
@@ -255,19 +321,19 @@ async def telegram_guide_webhook(
         return {"ok": True}
 
     started = time.monotonic()
-    first_word = message.text.strip().split(maxsplit=1)[0].lower()
+    first_word = text.strip().split(maxsplit=1)[0].lower()
     command_class = (
         first_word
         if first_word in {
-            "/start", "/help", "/venues", "/menu", "/release", "/slots",
-            "/terms", "/faq",
+            "/start", "/help", "/venues", "/venue", "/menu", "/release", "/slots",
+            "/terms", "/faq", "/digest",
             "/remind", "/reminders", "/cancel", "/delete_me",
         }
         else "query"
     )
 
     user_key = telegram_bot_store.identity_key(
-        "user", message.sender.id, settings.telegram_identity_hash_salt
+        "user", sender_id, settings.telegram_identity_hash_salt
     )
     current = datetime.now(timezone.utc)
     conn = db.connect(settings.db_path)
@@ -275,7 +341,7 @@ async def telegram_guide_webhook(
         management = (
             settings.telegram_reminders_enabled
             and telegram_reminders.is_management_message(
-                conn, user_key, message.text, current
+                conn, user_key, text, current
             )
         )
         if management:
@@ -307,19 +373,27 @@ async def telegram_guide_webhook(
 
     try:
         reminder_command = first_word in {
-            "/remind", "/reminders", "/cancel", "/delete_me"
+            "/remind", "/reminders", "/cancel", "/delete_me", "/digest"
         } or (
             first_word == "/start"
-            and re.fullmatch(r"/start remind_[a-z0-9-]{1,80}", message.text.strip().casefold())
+            and re.fullmatch(r"/start remind_[a-z0-9-]{1,80}", text.strip().casefold())
             is not None
         )
-        if settings.telegram_reminders_enabled:
+        markup = None
+        if picker_action is not None:
+            answer = telegram_keyboards.PICK_VENUE
+            markup = telegram_keyboards.venue_picker(picker_action, tft_guide.load_catalog())
+        elif first_word == "/digest" and settings.telegram_reminders_enabled:
+            answer = await run_in_threadpool(
+                _digest_answer, settings, user_key, chat_id, text, datetime.now(timezone.utc)
+            )
+        elif settings.telegram_reminders_enabled:
             answer = await run_in_threadpool(
                 _reminder_answer,
                 settings,
                 user_key,
-                message.chat.id,
-                message.text,
+                chat_id,
+                text,
                 datetime.now(timezone.utc),
             )
         elif first_word == "/delete_me" and settings.telegram_guide_llm_enabled:
@@ -331,8 +405,10 @@ async def telegram_guide_webhook(
             answer = None
         if answer is None:
             answer = await run_in_threadpool(
-                _guide_answer, settings, user_key, message.text
+                _guide_answer, settings, user_key, text
             )
+        if markup is None:
+            markup = telegram_keyboards.markup_for(text, tft_guide.load_catalog())
     except (
         OSError,
         ValueError,
@@ -356,8 +432,9 @@ async def telegram_guide_webhook(
         message_id = await run_in_threadpool(
             telegram.send_message,
             settings.telegram_guide_bot_token,
-            message.chat.id,
+            chat_id,
             answer,
+            *([markup] if markup else []),
         )
     except telegram.TelegramDeliveryError as exc:
         terminal = "unknown" if exc.state in {"unknown", "retry"} else "dead"

@@ -50,7 +50,8 @@ class Settings:
     brave_api_key: str = ""
     telegram_llm_user_limit_per_minute: int = 4
     telegram_llm_user_limit_per_day: int = 20
-    telegram_llm_global_limit_per_day: int = 1_500
+    # Below the Gemini free tier's daily request quota, so the cap trips first.
+    telegram_llm_global_limit_per_day: int = 250
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -161,7 +162,7 @@ def load_settings() -> Settings:
         ),
         telegram_llm_user_limit_per_day=_env_int("TELEGRAM_LLM_USER_LIMIT_PER_DAY", 20),
         telegram_llm_global_limit_per_day=_env_int(
-            "TELEGRAM_LLM_GLOBAL_LIMIT_PER_DAY", 1_500
+            "TELEGRAM_LLM_GLOBAL_LIMIT_PER_DAY", 250
         ),
     )
     if settings.public_base_url.startswith("https://"):

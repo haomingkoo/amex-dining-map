@@ -20,6 +20,7 @@ from app import (
     db,
     owner_alert_store,
     telegram_bot_store,
+    telegram_digest,
     telegram_reminder_dispatch,
     telegram_reminders,
     tft_agent,
@@ -159,6 +160,16 @@ async def lifespan(_: FastAPI):
                 )
             )
         )
+    if settings.telegram_reminders_enabled:
+        tasks.append(
+            asyncio.create_task(
+                run_periodically(
+                    telegram_digest.DISPATCH_INTERVAL_SECONDS,
+                    telegram_digest.dispatch_and_record,
+                    settings,
+                )
+            )
+        )
     try:
         yield
     finally:
@@ -277,6 +288,7 @@ def healthz() -> dict[str, Any]:
         },
         "alert_dispatch": dict(alert_dispatch.last_dispatch),
         "telegram_reminder_dispatch": dict(telegram_reminder_dispatch.last_dispatch),
+        "telegram_digest_dispatch": dict(telegram_digest.last_dispatch),
     }
     if settings.telegram_guide_llm_enabled:
         response["telegram_guide_llm"] = tft_agent.stats()

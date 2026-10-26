@@ -310,7 +310,8 @@ then a missing API base or dispatch token fails Pages instead of silently
 skipping. Before activation, missing secrets produce a visible workflow warning.
 Keep Railway on one persistent SQLite-backed
 replica. Register `/api/telegram/guide/webhook` with Telegram using the secret
-token, `allowed_updates=["message"]`, and `drop_pending_updates=true` only for
+token, `allowed_updates=["message", "callback_query"]` (button taps arrive as
+callback queries), and `drop_pending_updates=true` only for
 the first activation. Real private-chat, replay, group-ignore, and rate-limit
 acceptance remains mandatory before calling the bot live. Enable in this order:
 configure the separate guide bot and independent secrets; set
@@ -369,7 +370,7 @@ base = f"https://api.telegram.org/bot{os.environ['TELEGRAM_GUIDE_BOT_TOKEN']}"
 payload = urllib.parse.urlencode({
     "url": os.environ["GUIDE_WEBHOOK_URL"],
     "secret_token": os.environ["TELEGRAM_GUIDE_WEBHOOK_SECRET"],
-    "allowed_updates": json.dumps(["message"]),
+    "allowed_updates": json.dumps(["message", "callback_query"]),
     "drop_pending_updates": "true",
 }).encode()
 with urllib.request.urlopen(base + "/setWebhook", data=payload, timeout=30) as response:
