@@ -523,6 +523,8 @@ def venue_verdict(venue: dict, entry: dict | None, typical: dict | None, rating:
         line = "No published set price, so there is no value call" + (
             f". Well rated: Google {stars:g} from {reviews:,} reviews." if well_rated else "."
         )
+    if "Google" in line:
+        facts = [fact for fact in facts if not fact.startswith("Google rating")]
     return {"line": line, "tier": tier, "facts": facts, "usual_price": usual}
 
 

@@ -75,6 +75,22 @@ def release_history_summary(history: dict) -> dict:
     return {key: history[key] for key in RELEASE_SUMMARY_KEYS}
 
 
+def tft_insights_projection(catalog: dict) -> dict:
+    """Per-venue eligibility, release pattern and verdict, as the bot answers them."""
+    venues = catalog.get("venues")
+    if not isinstance(venues, list) or not venues:
+        raise ValueError("TFT guide catalogue must contain venues")
+    return {
+        "schema_version": 1,
+        "eligibility_source": catalog.get("eligibility_source") or {},
+        "verdict_source": catalog.get("verdict_source") or {},
+        "venues": {
+            str(venue["id"]): {key: venue.get(key) for key in ("eligibility", "release", "verdict")}
+            for venue in venues
+        },
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--table-for-two", type=Path, required=True)
@@ -83,6 +99,8 @@ def main() -> int:
     parser.add_argument("--tft-catalog-output", type=Path, required=True)
     parser.add_argument("--tft-ratings-output", type=Path, required=True)
     parser.add_argument("--release-summary-output", type=Path, required=True)
+    parser.add_argument("--tft-guide-catalog", type=Path)
+    parser.add_argument("--tft-insights-output", type=Path)
     args = parser.parse_args()
 
     table_for_two = load_json(args.table_for_two)
@@ -95,6 +113,8 @@ def main() -> int:
     save_json(args.tft_catalog_output, tft_catalog)
     save_json(args.tft_ratings_output, tft_ratings)
     save_json(args.release_summary_output, release_summary)
+    if args.tft_guide_catalog and args.tft_insights_output:
+        save_json(args.tft_insights_output, tft_insights_projection(load_json(args.tft_guide_catalog)))
     print(
         f"Public projections: {len(tft_catalog['venues'])} TFT venues, "
         f"{len(tft_ratings)} TFT ratings, "

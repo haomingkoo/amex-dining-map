@@ -130,7 +130,9 @@ jobs:
             --release-history data/table-for-two-release-history.json \
             --tft-catalog-output site/data/table-for-two-catalog.json \
             --tft-ratings-output site/data/google-maps-ratings-table-for-two.json \
-            --release-summary-output site/data/table-for-two-release-history-summary.json
+            --release-summary-output site/data/table-for-two-release-history-summary.json \
+            --tft-guide-catalog reminders/app/tft_guide_catalog.json \
+            --tft-insights-output site/data/table-for-two-insights.json
           cp .nojekyll site/
           cp CNAME site/
           app_version="$(sha256sum site/app.js | cut -c1-12)"
