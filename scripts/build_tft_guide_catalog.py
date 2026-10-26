@@ -275,10 +275,13 @@ def build_catalog(
     review_root: Path = DEFAULT_REVIEW_ROOT,
     ratings: dict | None = None,
     blackout_rules: dict | None = None,
+    menu_prices: dict | None = None,
 ) -> dict:
     tft_menu_reviews.verify_decision_receipts(source)
     if blackout_rules is None:
         blackout_rules = tft_insights.load_rules()
+    if menu_prices is None:
+        menu_prices = tft_insights.load_prices()
     if release_history is None:
         release_history = json.loads(DEFAULT_RELEASE_HISTORY.read_text())
     if ratings is None:
@@ -323,6 +326,15 @@ def build_catalog(
                 "release": tft_insights.venue_release(venue, observations, as_of),
             }
         )
+    prices = tft_insights.reviewed_prices(
+        menu_prices,
+        {item["id"]: (item["menus"].get("platinum") or {}).get("sha256") for item in venues},
+    )
+    typical = tft_insights.program_typical(prices)
+    for item in venues:
+        item["verdict"] = tft_insights.venue_verdict(
+            item, prices.get(item["id"]), typical, item["info"].get("google")
+        )
     return {
         "schema_version": 4,
         "source": "data/table-for-two.json",
@@ -351,6 +363,16 @@ def build_catalog(
             "reviewed_at": blackout_rules.get("reviewed_at"),
             "observed_since": tft_insights.observed_since(observations),
             "new_dates_since": tft_insights.tracking_since(observations),
+        },
+        "verdict_source": {
+            "reviewed_at": menu_prices.get("reviewed_at"),
+            "priced_venues": len(prices),
+            # A reviewed menu whose PDF changed: re-read it before its price returns.
+            "needs_review": sorted(
+                entry["venue_id"]
+                for entry in menu_prices.get("menus") or []
+                if entry["venue_id"] in venue_ids and entry["venue_id"] not in prices
+            ),
         },
         "slot_source": {
             "url": "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json",

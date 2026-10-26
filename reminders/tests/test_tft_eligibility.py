@@ -130,3 +130,15 @@ def test_slots_without_eligibility_data_are_unflagged():
     )
     assert "Open tables" in answer
     assert "Blackout" not in answer and "usually offers" not in answer
+
+
+def test_venue_reply_leads_with_the_verdict():
+    catalog = _catalog()
+    catalog["venues"][0]["verdict"] = {
+        "line": "Good value: extra diners pay S$128++ a head for this set, more than the usual S$100++.",
+        "facts": ["Each of you gets a full set.", "bad\nfact"],
+    }
+    answer = tft_guide.handle_message("/venue Colony", catalog, NOW)
+    assert answer.startswith("Colony\nGood value: extra diners pay S$128++")
+    assert "• Each of you gets a full set." in answer
+    assert "bad\nfact" not in answer

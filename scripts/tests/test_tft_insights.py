@@ -156,3 +156,43 @@ class CheckedAfterTests(unittest.TestCase):
         self.assertEqual(item["checked_after"], "2026-10-26T03:39:00Z")
         later = tracker.build_observation(("v", "V", "Lunch", "2026-12-26"), seen, seen + timedelta(minutes=1))
         self.assertNotIn("checked_after", later)
+
+
+def _entry(vid, amount, basis="++", per="person", serving="each"):
+    return {"venue_id": vid, "menu_sha256": vid, "serving": serving,
+            "extra_diner": {"amount": amount, "basis": basis, "per": per}}
+
+
+class VerdictTests(unittest.TestCase):
+    def setUp(self):
+        self.entries = {e["venue_id"]: e for e in [
+            _entry("a", 100), _entry("b", 100), _entry("c", 100), _entry("d", 128),
+            _entry("e", 100, "nett"), _entry("f", 180, "nett", "pair_at_10_percent_off"),
+        ]}
+        self.typical = tft_insights.program_typical(self.entries)
+
+    def test_typical_is_the_median_and_most_common_label(self):
+        self.assertEqual(self.typical["label"], "S$100++")
+        self.assertAlmostEqual(self.typical["per_head_nett"], 119.9, places=1)
+
+    def test_tiers_and_lines(self):
+        v = lambda vid: tft_insights.venue_verdict({"category": "restaurant"}, self.entries[vid], self.typical, None)
+        self.assertEqual(v("d")["tier"], "higher")
+        self.assertTrue(v("d")["line"].startswith("Good value: extra diners pay S$128++ a head"))
+        self.assertEqual(v("a")["line"], "Typical value: extra diners pay S$100++ a head, the usual Table for Two price.")
+        self.assertEqual(v("e")["tier"], "lower")
+        self.assertIn("before a 10% discount", v("f")["line"])
+        self.assertIn("so S$100 nett a head before the discount.", " ".join(v("f")["facts"]))
+
+    def test_no_price_means_no_value_call(self):
+        buffet = tft_insights.venue_verdict({"category": "buffet"}, None, self.typical, {"rating": 4.6, "review_count": 3131})
+        self.assertIsNone(buffet["tier"])
+        self.assertIn("no value call", buffet["line"])
+        self.assertIn("Google 4.6 from 3,131 reviews", buffet["line"])
+        shared = tft_insights.venue_verdict({"category": "restaurant"}, {"venue_id": "s", "serving": "shared", "extra_diner": None}, self.typical, None)
+        self.assertEqual(shared["line"], "One set is shared between two, and Amex publishes no price to compare it with.")
+
+    def test_changed_menu_drops_its_reviewed_price(self):
+        prices = {"menus": [_entry("a", 100)]}
+        self.assertEqual(tft_insights.reviewed_prices(prices, {"a": "a"}).keys(), {"a"})
+        self.assertEqual(tft_insights.reviewed_prices(prices, {"a": "new-hash"}), {})

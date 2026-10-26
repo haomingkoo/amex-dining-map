@@ -443,6 +443,16 @@ def outside_usual_days(venue: dict, meal: str, slot_date: str) -> bool:
     return False
 
 
+def verdict_text(venue: dict) -> str:
+    """The value line and its facts, or nothing when the catalogue has none."""
+    verdict = venue.get("verdict") or {}
+    line = _safe_venue_text(verdict.get("line"), 240)
+    if not line:
+        return "\n"
+    facts = [text for value in verdict.get("facts") or [] if (text := _safe_venue_text(value, 200))]
+    return line + "\n" + "".join(f"• {fact}\n" for fact in facts) + "\n"
+
+
 def eligibility_text(venue: dict, catalog: dict, now: datetime) -> str:
     eligibility = venue.get("eligibility") or {}
     source = catalog.get("eligibility_source") or {}
@@ -516,7 +526,7 @@ def _venue_details(
             else "No reviewed official menu PDF is currently matched; this does not prove no menu exists."
         )
     return (
-        f"{name}\n\n{eligibility_text(venue, catalog, now)}\n\n"
+        f"{name}\n{verdict_text(venue)}{eligibility_text(venue, catalog, now)}\n\n"
         + _best_time(venue, live_loader)
         + "\n\n"
         + "\n".join(details)

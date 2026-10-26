@@ -244,6 +244,12 @@ def catalog_health() -> dict[str, Any]:
             "catalog_slot_stale_after_minutes": (
                 catalog.get("slot_source") or {}
             ).get("stale_after_minutes"),
+            "catalog_terms_current": (catalog.get("eligibility_source") or {}).get(
+                "terms_current"
+            ),
+            "catalog_menu_prices_need_review": (catalog.get("verdict_source") or {}).get(
+                "needs_review"
+            ),
         }
     except (OSError, ValueError, TypeError):
         return {"catalog_ok": False}
