@@ -181,7 +181,17 @@ def _search(request: SlotRequest, venue: str | None, today: date) -> str:
     return phrase
 
 
-def _date_rows(matches: list[dict], request: SlotRequest, multi: bool) -> list[str]:
+Flag = Callable[[dict], "str | None"]
+
+
+def _flagged(row: str, flag: Flag | None, item: dict) -> str:
+    note = flag(item) if flag else None
+    return f"{row}. {note}" if note else row
+
+
+def _date_rows(
+    matches: list[dict], request: SlotRequest, multi: bool, flag: Flag | None = None
+) -> list[str]:
     """One line per venue, date and meal, so a range reads as dates rather than slots."""
     groups: dict[tuple[str, str, str], list[dict]] = {}
     for item in matches:
@@ -191,24 +201,30 @@ def _date_rows(matches: list[dict], request: SlotRequest, multi: bool) -> list[s
         times = sorted(item["time"] for item in items)
         span = clock(times[0]) if len(times) == 1 else f"{clock(times[0])}–{clock(times[-1])}"
         meal_label = f"{meal.lower()} " if request.meal == "Lunch or Dinner" else ""
-        rows.append(
+        rows.append(_flagged(
             f"• {venue_name + ', ' if multi else ''}{_day(date.fromisoformat(slot_date))}: "
-            f"{meal_label}{span} ({len(times)} time{'s' if len(times) > 1 else ''})"
-        )
+            f"{meal_label}{span} ({len(times)} time{'s' if len(times) > 1 else ''})",
+            flag,
+            items[0],
+        ))
     if len(groups) > MAX_RESULTS:
         rows.append(f"• {len(groups) - MAX_RESULTS} more dates")
     return rows
 
 
-def _slot_rows(matches: list[dict], request: SlotRequest, multi: bool) -> list[str]:
+def _slot_rows(
+    matches: list[dict], request: SlotRequest, multi: bool, flag: Flag | None = None
+) -> list[str]:
     rows = []
     for item in matches[:MAX_RESULTS]:
         meal_label = f" {str(item['meal']).lower()}" if request.meal == "Lunch or Dinner" else ""
-        rows.append(
+        rows.append(_flagged(
             f"• {item['venue_name'] + ': ' if multi else ''}"
             f"{_day(date.fromisoformat(item['date']))} {clock(item['time'])}{meal_label} "
-            f"(up to {item['max_seats']} people)"
-        )
+            f"(up to {item['max_seats']} people)",
+            flag,
+            item,
+        ))
     if len(matches) > MAX_RESULTS:
         rows.append(f"• {len(matches) - MAX_RESULTS} more times")
     return rows
@@ -269,8 +285,12 @@ def answer(
     snapshot: dict,
     now: datetime,
     explorer_line: Callable[[SlotRequest], str],
+    flag: Flag | None = None,
 ) -> str:
-    """explorer_line(request) gives the link line for the request the reply describes."""
+    """explorer_line(request) gives the link line for the request the reply describes.
+
+    flag(item) may return a short warning for a slot, e.g. a blackout day.
+    """
     if snapshot.get("source_project") != PROJECT:
         return UNAVAILABLE
     names = {str(venue.get("id")): str(venue.get("name")) for venue in catalog_venues}
@@ -350,9 +370,9 @@ def answer(
     who = venue_label or "these venues"
     if matches:
         rows = (
-            _date_rows(matches, request, multi)
+            _date_rows(matches, request, multi, flag)
             if request.end_date != request.start_date and preferred is None
-            else _slot_rows(matches, request, multi)
+            else _slot_rows(matches, request, multi, flag)
         )
         body = f"Open tables, {_search(request, venue_label, today)}:\n" + "\n".join(rows)
     elif fresh_checked:

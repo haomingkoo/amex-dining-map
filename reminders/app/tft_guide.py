@@ -331,7 +331,7 @@ def _help() -> str:
         "2. Answer four quick questions: venue, party size, lunch or dinner, date(s)\n"
         "3. Reply YES. I will message you once when a matching table opens.\n"
         "/reminders lists yours, /cancel R123456 stops one, /delete_me erases your data.\n\n"
-        "More: /venues, /menu VUE, /release VUE dinner, /terms, /faq, /about\n\n"
+        "More: /venue Colony (days, meals and blackouts), /venues, /menu VUE, /release VUE dinner, /terms, /faq, /about\n\n"
         f"{tft_slots.SOURCE_NOTE} Not affiliated with American Express.\n"
         "Privacy: https://amex-explorer.kooexperience.com/privacy.html"
     )
@@ -383,6 +383,102 @@ def _safe_venue_text(value: Any, maximum: int) -> str | None:
     return value
 
 
+MEAL_NAMES = {"Lunch", "Dinner", "Afternoon Tea", "All-day Dining"}
+DAYS_LABEL_RE = re.compile(r"Every day|(?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?:–(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun))?(?:, )?)+")
+NOT_PUBLISHED = "Not published. Check before booking."
+NEXT_BLACKOUT_DAYS = 70
+
+
+def _long_day(value: str) -> str:
+    parsed = date.fromisoformat(value)
+    return f"{parsed.day} {parsed:%b %Y}"
+
+
+def _short_day(value: str) -> str:
+    parsed = date.fromisoformat(value)
+    return f"{parsed:%a} {parsed.day} {parsed:%b}"
+
+
+def observed_meal_lines(venue: dict) -> list[str]:
+    """'Lunch: Mon–Sat, seatings 12:30pm–1:30pm' for each meal the booking system offered."""
+    lines = []
+    for meal in (venue.get("eligibility") or {}).get("observed_meals") or []:
+        name, label = meal.get("meal"), meal.get("days_label")
+        if name not in MEAL_NAMES or not isinstance(label, str) or not DAYS_LABEL_RE.fullmatch(label):
+            continue
+        line = f"{name}: {label}"
+        first, last = meal.get("first_time"), meal.get("last_time")
+        if all(isinstance(value, str) and tft_slots.TIME_RE.fullmatch(value) for value in (first, last)):
+            line += (
+                f", seatings {tft_slots.clock(first)}"
+                if first == last
+                else f", seatings {tft_slots.clock(first)}–{tft_slots.clock(last)}"
+            )
+        rare = [day for day in meal.get("rare_days") or [] if day in WEEKDAY_NAMES]
+        if rare:
+            line += f" (rarely {', '.join(rare)})"
+        lines.append(line)
+    return lines
+
+
+WEEKDAY_NAMES = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+
+
+def blackout_reason(venue: dict, slot_date: str) -> str | None:
+    """Why the terms black out this date for this venue, if they do."""
+    for item in (venue.get("eligibility") or {}).get("blackout_dates") or []:
+        if item.get("date") == slot_date and isinstance(item.get("reason"), str):
+            return _safe_venue_text(item["reason"], 60)
+    return None
+
+
+def outside_usual_days(venue: dict, meal: str, slot_date: str) -> bool:
+    """True when the booking system has never offered this meal on this weekday here."""
+    try:
+        weekday = WEEKDAY_NAMES[date.fromisoformat(slot_date).weekday()]
+    except ValueError:
+        return False
+    for item in (venue.get("eligibility") or {}).get("observed_meals") or []:
+        if item.get("meal") == meal and isinstance(item.get("never_days"), list):
+            return weekday in item["never_days"]
+    return False
+
+
+def eligibility_text(venue: dict, catalog: dict, now: datetime) -> str:
+    eligibility = venue.get("eligibility") or {}
+    source = catalog.get("eligibility_source") or {}
+    lines = ["When Table for Two applies", f"Days and meals: {NOT_PUBLISHED}"]
+    observed = observed_meal_lines(venue)
+    since = source.get("observed_since")
+    if observed and isinstance(since, str) and tft_slots.DATE_RE.fullmatch(since):
+        lines.append(f"Offered in the Amex booking system since {_long_day(since)}:")
+        lines.extend(f"• {line}" for line in observed)
+    if eligibility.get("terms_current") and source.get("terms_current"):
+        extra = [
+            text
+            for value in eligibility.get("merchant_blackouts") or []
+            if (text := _safe_venue_text(value, 80))
+        ]
+        rule = "Blackouts in the Amex terms: public holidays and their eves"
+        lines.append(rule + (f", plus {', '.join(extra)}." if extra else "."))
+        today = now.astimezone(SGT).date()
+        upcoming = [
+            f"{_short_day(item['date'])} ({reason})"
+            for item in eligibility.get("blackout_dates") or []
+            if isinstance(item.get("date"), str)
+            and tft_slots.DATE_RE.fullmatch(item["date"])
+            and today <= date.fromisoformat(item["date"]) <= today + timedelta(days=NEXT_BLACKOUT_DAYS)
+            and (reason := _safe_venue_text(item.get("reason"), 60))
+        ][:6]
+        if upcoming:
+            lines.append("Next blackout days: " + ", ".join(upcoming) + ".")
+    elif source:
+        lines.append("Blackouts: the Amex terms changed since our last review. Check them before booking.")
+    else:
+        lines.append("Blackouts: public holidays and their eves, per the Amex terms.")
+    return "\n".join(lines)
+
+
 def _venue_details(venue: dict, catalog: dict, now: datetime) -> str:
     name = _safe_venue_text(venue.get("name"), 120)
     venue_id = str(venue.get("id") or "")
@@ -419,7 +515,7 @@ def _venue_details(venue: dict, catalog: dict, now: datetime) -> str:
             else "No reviewed official menu PDF is currently matched; this does not prove no menu exists."
         )
     return (
-        f"{name} — reviewed venue details\n\n"
+        f"{name}\n\n{eligibility_text(venue, catalog, now)}\n\n"
         + "\n".join(details)
         + f"\n\n{_roster_context(catalog, now)}\n"
         + _menu_source_context(catalog.get("menu_source") or {}, catalog, now)
@@ -795,7 +891,18 @@ def _slot_answer(
         snapshot = (slot_loader or tft_slot_source.load_snapshot)()
     except tft_slot_source.SlotSourceUnavailable:
         return f"{tft_slots.UNAVAILABLE}\n{explorer_for(parsed)}"
-    return tft_slots.answer(parsed, venues, snapshot, current, explorer_for)[:MAX_REPLY_LENGTH]
+    by_id = {str(venue.get("id")): venue for venue in venues}
+
+    def flag(item: dict) -> str | None:
+        venue = by_id.get(str(item.get("venue_id")), {})
+        reason = blackout_reason(venue, str(item.get("date")))
+        if reason:
+            return f"Blackout day in the Amex terms ({reason})"
+        if outside_usual_days(venue, str(item.get("meal")), str(item.get("date"))):
+            return "Not a day this venue usually offers Table for Two. Check before booking"
+        return None
+
+    return tft_slots.answer(parsed, venues, snapshot, current, explorer_for, flag)[:MAX_REPLY_LENGTH]
 
 
 NO_MATCH_PREFIXES = (
