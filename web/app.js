@@ -8698,6 +8698,25 @@ document.addEventListener("click", (event) => {
   if (clear) document.getElementById(clear.dataset.clearFilters)?.click();
 });
 
+const tourDialog = document.getElementById("tour-dialog");
+const tourOpenButton = document.getElementById("tour-open");
+
+function openTour() {
+  if (tourDialog && !tourDialog.open) tourDialog.showModal();
+}
+
+tourOpenButton?.addEventListener("click", openTour);
+document.getElementById("tour-close")?.addEventListener("click", () => tourDialog.close());
+// Clicks on the dialog element itself land on the backdrop.
+tourDialog?.addEventListener("click", (event) => {
+  if (event.target === tourDialog) tourDialog.close();
+});
+tourDialog?.addEventListener("close", () => {
+  document.getElementById("tour-video")?.pause();
+  tourOpenButton?.focus();
+});
+if (new URLSearchParams(window.location.search).get("tour") === "1") openTour();
+
 installRenderedUrlSanitizer();
 
 init().catch(() => renderLoadFailure());

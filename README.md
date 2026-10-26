@@ -1,5 +1,13 @@
 # Amex Explorer
 
+<p align="center">
+  <a href="https://amex-explorer.kooexperience.com/"><img src="docs/media/amex-preview.webp" width="800" alt="Searching Table for Two for Colony, opening its calendar and seeing five lunch times open"></a>
+  <br>
+  <a href="https://amex-explorer.kooexperience.com/?tour=1">▶ 30-second tour</a> · <a href="https://amex-explorer.kooexperience.com/">Live app</a> · <a href="https://kooexperience.com/">kooexperience.com</a>
+  <br>
+  <sub>Music: Sascha Ende, ende.app (CC BY 4.0)</sub>
+</p>
+
 Map-first explorer for Singapore-issued American Express Platinum benefits. The
 site keeps official source data separate from enrichment so users can see when
 each dataset was cached, where it came from, and when a human review is needed.
