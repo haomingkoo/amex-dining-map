@@ -10,6 +10,8 @@ on:
 
 permissions:
   contents: write
+  # Reads the previous run's start time to bound when new dates appeared.
+  actions: read
 
 concurrency:
   group: table-for-two-availability-refresh
@@ -59,7 +61,14 @@ jobs:
         id: release_patterns
         if: always() && steps.live_availability.outcome == 'success'
         continue-on-error: true
-        run: python3 scripts/track_table_for_two_releases.py --data /tmp/table-for-two-live.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Without it new dates are still recorded, just without a check window.
+          previous="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow table-for-two-alerts.yml \
+            --status success --limit 1 --json createdAt --jq '.[0].createdAt // ""' || true)"
+          python3 scripts/track_table_for_two_releases.py --data /tmp/table-for-two-live.json \
+            ${previous:+--previous-run-at "$previous"}
 
       - name: Rebuild Telegram release catalogue
         id: guide_catalogue

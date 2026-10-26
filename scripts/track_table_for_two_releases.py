@@ -9,7 +9,8 @@ import json
 import statistics
 import subprocess
 from collections import Counter, defaultdict
-from datetime import date, datetime
+import bisect
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Iterable
 from zoneinfo import ZoneInfo
@@ -27,6 +28,8 @@ except ImportError:  # running as `python3 scripts/<file>.py`
 
 SGT = ZoneInfo("Asia/Singapore")
 SOURCE_PROJECT = "AMEXPlatSG"
+# The alert run reads Railway's snapshot, which is up to five minutes older than the run.
+LIVE_SNAPSHOT_MAX_AGE = timedelta(minutes=6)
 
 
 def parse_time(value: str | None) -> datetime | None:
@@ -81,7 +84,13 @@ def observation_id(venue_id: str, meal: str, slot_date: str) -> str:
     return hashlib.sha256(f"{venue_id}|{meal}|{slot_date}".encode()).hexdigest()[:20]
 
 
-def build_observation(key: tuple[str, str, str, str], observed_at: datetime) -> dict[str, Any]:
+def iso_z(value: datetime) -> str:
+    return value.isoformat().replace("+00:00", "Z")
+
+
+def build_observation(
+    key: tuple[str, str, str, str], observed_at: datetime, checked_after: datetime | None = None
+) -> dict[str, Any]:
     venue_id, venue_name, meal, slot_date = key
     observed_sgt = observed_at.astimezone(SGT)
     lead_days = (date.fromisoformat(slot_date) - observed_sgt.date()).days
@@ -94,7 +103,30 @@ def build_observation(key: tuple[str, str, str, str], observed_at: datetime) -> 
         "first_seen_at": observed_at.isoformat().replace("+00:00", "Z"),
         "first_seen_sgt": observed_sgt.strftime("%Y-%m-%d %H:%M"),
         "lead_days": lead_days,
-    }
+    } | ({"checked_after": iso_z(checked_after)} if checked_after and checked_after < observed_at else {})
+
+
+def annotate_checked_after(
+    observations: list[dict[str, Any]], checks: list[tuple[datetime, datetime]]
+) -> int:
+    """Give each observation the check before it, bounding when it really appeared.
+
+    checks holds (started, observed_from) pairs: a run that read Railway's snapshot
+    started after the snapshot it saw, so it only proves availability from a little
+    before it started.
+    """
+    ordered = sorted(set(checks))
+    starts = [started for started, _ in ordered]
+    annotated = 0
+    for item in observations:
+        if item.get("baseline") or item.get("checked_after"):
+            continue
+        seen = parse_time(item.get("first_seen_at"))
+        index = bisect.bisect_left(starts, seen) if seen else 0
+        if index:
+            item["checked_after"] = iso_z(min(ordered[index - 1][1], seen))
+            annotated += 1
+    return annotated
 
 
 def half_hour_bucket(observation: dict[str, Any]) -> str:
@@ -139,7 +171,9 @@ def build_patterns(observations: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return patterns
 
 
-def append_current(payload: dict[str, Any], history: dict[str, Any]) -> int:
+def append_current(
+    payload: dict[str, Any], history: dict[str, Any], checked_after: datetime | None = None
+) -> int:
     require_source_project(payload)
     require_history_project(history)
     observed_at = snapshot_time(payload)
@@ -148,7 +182,7 @@ def append_current(payload: dict[str, Any], history: dict[str, Any]) -> int:
     known = {item["id"] for item in history.get("observations") or []}
     additions = []
     for key in availability_keys(payload):
-        item = build_observation(key, observed_at)
+        item = build_observation(key, observed_at, checked_after)
         if item["id"] not in known:
             additions.append(item)
             known.add(item["id"])
@@ -190,6 +224,10 @@ def main() -> int:
     parser.add_argument("--output", default="data/table-for-two-release-history.json")
     parser.add_argument("--from-git", action="store_true")
     parser.add_argument("--history-limit", type=int, default=300)
+    parser.add_argument(
+        "--previous-run-at",
+        help="start of the previous successful check run (ISO); bounds when new dates appeared",
+    )
     args = parser.parse_args()
 
     data_path = Path(args.data)
@@ -197,7 +235,10 @@ def main() -> int:
     history = rebuild_from_git(args.data, args.history_limit) if args.from_git else (
         load_json(output_path) if output_path.exists() else {"schema_version": 1, "observations": []}
     )
-    added = append_current(load_json(data_path), history)
+    previous = parse_time(args.previous_run_at) if args.previous_run_at else None
+    added = append_current(
+        load_json(data_path), history, previous - LIVE_SNAPSHOT_MAX_AGE if previous else None
+    )
     observations = history.get("observations") or []
     # Patterns derive only from observations, so an unchanged set needs no rewrite or commit.
     if not added and not args.from_git and output_path.exists():

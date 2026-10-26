@@ -632,7 +632,7 @@ def _dispatch(name: str, raw_args: str, turn: _Turn) -> str:
             return tft_guide._menu_answer(_venue(args.venue, catalog), args.card, catalog, now)
         if name == "release_pattern":
             args = ReleaseArgs.model_validate(payload)
-            return tft_guide._release_answer(_venue(args.venue, catalog), args.meal, catalog, now)
+            return tft_guide.release_answer(_venue(args.venue, catalog), catalog, None)
         if name == "venue_details":
             return tft_guide._venue_details(_venue(VenueArgs.model_validate(payload).venue, catalog), catalog, now)
         if name == "venue_info":

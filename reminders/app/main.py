@@ -25,6 +25,7 @@ from app import (
     tft_agent,
     tft_guide,
     tft_live_api,
+    tft_patterns,
 )
 from app import alert_dispatch
 from app.config import load_settings
@@ -48,6 +49,20 @@ live_refresher = TFTLiveRefresher(
     tft_guide.load_catalog,
     settings.tft_live_snapshot_path,
 )
+
+class RecordingRefresher:
+    """Refresh, then record how long each slot stayed open."""
+
+    def __init__(self, refresher: TFTLiveRefresher, db_path: Path) -> None:
+        self.refresher = refresher
+        self.db_path = db_path
+
+    def refresh(self) -> dict | None:
+        snapshot = self.refresher.refresh()
+        if snapshot is not None:
+            tft_patterns.record_snapshot(self.db_path, snapshot)
+        return snapshot
+
 
 # The site publishes the same catalogue the image bakes in; following it stops the
 # deployed copy drifting between redeploys. Half the 30-minute Monitor Source Health
@@ -99,7 +114,7 @@ async def lifespan(_: FastAPI):
         tasks.append(
             asyncio.create_task(
                 run_live_refresh_loop(
-                    live_refresher,
+                    RecordingRefresher(live_refresher, settings.db_path),
                     settings.tft_live_refresh_interval_seconds,
                 )
             )
@@ -263,6 +278,7 @@ def healthz() -> dict[str, Any]:
     response["tft_live"] = tft_live_api.snapshot_health(
         settings.tft_live_snapshot_path
     )
+    response["tft_slot_history"] = dict(tft_patterns.last_record)
     if settings.tft_live_refresh_enabled:
         response["ok"] = response["tft_live"]["status"] == "success"
     return response

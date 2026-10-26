@@ -320,6 +320,7 @@ def build_catalog(
                 "eligibility": tft_insights.venue_eligibility(
                     venue, observations, blackout_rules, terms_sha256, as_of
                 ),
+                "release": tft_insights.venue_release(venue, observations, as_of),
             }
         )
     return {
@@ -349,6 +350,7 @@ def build_catalog(
             "program_rule": blackout_rules.get("program_rule"),
             "reviewed_at": blackout_rules.get("reviewed_at"),
             "observed_since": tft_insights.observed_since(observations),
+            "new_dates_since": tft_insights.tracking_since(observations),
         },
         "slot_source": {
             "url": "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json",
