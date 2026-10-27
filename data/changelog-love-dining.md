@@ -92,3 +92,13 @@ Source: `data/love-dining.json`
 - **Removed (2)**
   - CHIFA! / Singapore
   - Soi Social / Singapore
+
+<!-- source-change:2367264051a74f86374920e06dd298491d2570fdf62672bbc1738efb5f0d5a54 -->
+## 2026-10-27 00:52 UTC — Love Dining
+
+Source: `data/love-dining.json`
+
+- **Added (1)**
+  - earthember / Singapore
+- **Removed (1)**
+  - Café 2000 / Singapore

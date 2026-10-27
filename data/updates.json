@@ -1,7 +1,252 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-27T00:40:21Z",
+  "updated_at": "2026-10-27T00:52:29Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "details_updated",
+      "subject": "SKAI Bar / Singapore",
+      "detected_at": "2026-10-27T00:52:29Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "SKAI Bar",
+          "Hotel": "Swissôtel The Stamford",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "2 Stamford Rd, Singapore 178882",
+          "Cuisine": "Vibrant Craft Cocktails",
+          "Opening hours": "Wed - Fri:; 4PM - 11PM; Sat & Sun:; 3PM - 11PM; Closed on Mondays & Tuesdays"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "SKAI Bar",
+          "Hotel": "Swissôtel The Stamford",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "2 Stamford Rd, Singapore 178882",
+          "Cuisine": "Vibrant Craft Cocktails",
+          "Opening hours": "Mon - Sun:; 5PM - 1AM"
+        }
+      },
+      "changes": [
+        {
+          "field": "Opening hours",
+          "before": "Wed - Fri:; 4PM - 11PM; Sat & Sun:; 3PM - 11PM; Closed on Mondays & Tuesdays",
+          "after": "Mon - Sun:; 5PM - 1AM"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+      "transition_id": "3c085e22c731f43af759",
+      "stream_id": "ef73659a122d64d12cb2",
+      "occurrence": 1,
+      "id": "d94391cd704c453910b0"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "added",
+      "subject": "earthember / Singapore",
+      "detected_at": "2026-10-27T00:52:29Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "earthember",
+          "Hotel": "M Hotel Singapore",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "81 Anson Road, Singapore 079908",
+          "Cuisine": "Asian/Western Fusion",
+          "Notes": "Advanced reservations are required. Please make your reservations here and indicate \"AmexLD\" under the Request field.",
+          "Opening hours": "Mon – Sun:; 12PM – 10PM"
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+      "transition_id": "a39e740a94a00fb9f66e",
+      "stream_id": "efaf481fa19a57d55f9a",
+      "occurrence": 1,
+      "id": "7e32b13e21aa24d42252"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_updated",
+      "subject": "Love Dining source",
+      "detected_at": "2026-10-27T00:52:29Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "a01f3ae586a3",
+          "Hotel T&C PDF hash": "0d32857cf380"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "6c962542b577",
+          "Hotel T&C PDF hash": "040b0e309127"
+        }
+      },
+      "changes": [
+        {
+          "field": "Official records SHA-256",
+          "before": "a01f3ae586a3",
+          "after": "6c962542b577"
+        },
+        {
+          "field": "Hotel T&C PDF hash",
+          "before": "0d32857cf380",
+          "after": "040b0e309127"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "a6174dfe21f75adf647b",
+      "stream_id": "915d672147e8dd8f713f",
+      "occurrence": 1,
+      "id": "7765b85c55f8c6ca492b"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-27T00:52:29Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3000/3011 (99.6%), 11 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2999/3011 (99.6%), 12 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3000/3011 (99.6%), 11 unavailable",
+          "after": "2999/3011 (99.6%), 12 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "07f988256e94c4968634",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "26dcadf38c6bea90e29e"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "removed",
+      "subject": "Café 2000 / Singapore",
+      "detected_at": "2026-10-27T00:52:29Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Café 2000",
+          "Hotel": "M Hotel Singapore",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "81 Anson Road, Singapore 079908",
+          "Cuisine": "International Buffet",
+          "Notes": "Advanced reservations are required. Please make your reservations here and indicate \"AmexLD\" under the Request field.",
+          "Opening hours": "Mon – Sun:; 12PM – 10PM"
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+      "transition_id": "fd5ffed0a9ea5901893a",
+      "stream_id": "11c58ae15ff238ad9dbe",
+      "occurrence": 1,
+      "id": "227ca77e3e2df5dd8a31"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "details_updated",
+      "subject": "The Stamford Brasserie / Singapore",
+      "detected_at": "2026-10-27T00:52:29Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "The Stamford Brasserie",
+          "Hotel": "Swissôtel The Stamford",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "2 Stamford Rd, Singapore 178882",
+          "Cuisine": "Bistro Fare & Craft Beers",
+          "Opening hours": "Mon - Sun:; 8AM - 5PM"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "The Stamford Brasserie",
+          "Hotel": "Swissôtel The Stamford",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "2 Stamford Rd, Singapore 178882",
+          "Cuisine": "Bistro Fare & Craft Beers",
+          "Opening hours": "Mon - Sun:; 12PM - 12.30AM"
+        }
+      },
+      "changes": [
+        {
+          "field": "Opening hours",
+          "before": "Mon - Sun:; 8AM - 5PM",
+          "after": "Mon - Sun:; 12PM - 12.30AM"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+      "transition_id": "f1b0afedad5aacd80691",
+      "stream_id": "b2d04f9c9c2c18563c8a",
+      "occurrence": 1,
+      "id": "19d286c2b83406c44eff"
+    },
     {
       "program": "Global Dining",
       "program_id": "global-dining",
@@ -13981,261 +14226,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "source_review_cleared",
-      "subject": "Global Dining",
-      "detected_at": "2026-09-27T07:39:17Z",
-      "status": "published",
-      "before": {
-        "state": "review_required",
-        "fields": {
-          "Source state": "review_required",
-          "Review": "required",
-          "Review items": 1
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Review": "clear",
-          "Review items": 0
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "review_required",
-          "after": "current"
-        },
-        {
-          "field": "Review",
-          "before": "required",
-          "after": "clear"
-        },
-        {
-          "field": "Review items",
-          "before": 1,
-          "after": 0
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "d03e8d97cb01efd6f547",
-      "stream_id": "d03cc6f867310ca61cf7",
-      "occurrence": 1,
-      "id": "062460f641ef984d316a",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "added",
-      "subject": "Kuriya Dining",
-      "detected_at": "2026-09-27T06:30:00Z",
-      "status": "published",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Kuriya Dining",
-          "Category": "restaurant",
-          "Address": "1 Kim Seng Promenade, #01-127 Great World, Singapore 237994",
-          "Booking channel": "Amex Experiences App"
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.diningcity.sg/singapore/kuriya_dining",
-      "transition_id": "fef44f3b73d9441a3dbd",
-      "stream_id": "8db1b670d73682b8fe54",
-      "occurrence": 1,
-      "id": "de271cb9c8fbe9d15064",
-      "reviewed_at": "2026-09-27T06:30:00Z",
-      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source.",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "details_updated",
-      "subject": "Brewerkz East Coast Park",
-      "detected_at": "2026-09-27T06:30:00Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Brewerkz East Coast Park",
-          "Category": "restaurant",
-          "Address": "920 East Coast Parkway, #01-20/24, Singapore 449875",
-          "Booking channel": "Amex Experiences App"
-        }
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Brewerkz East Coast Park",
-          "Category": "cafe",
-          "Address": "920 East Coast Parkway, #01-20/24, Singapore 449875",
-          "Booking channel": "Amex Experiences App"
-        }
-      },
-      "changes": [
-        {
-          "field": "Category",
-          "before": "restaurant",
-          "after": "cafe"
-        }
-      ],
-      "source_url": "https://www.diningcity.sg/singapore/brewerkz_eastcoast",
-      "transition_id": "ee7b9aa769184442a35e",
-      "stream_id": "23536599609c38bae956",
-      "occurrence": 1,
-      "id": "bec560dcf3475965f48f",
-      "reviewed_at": "2026-09-27T06:30:00Z",
-      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source.",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "added",
-      "subject": "Zui Yu Xuan Teochew Cuisine",
-      "detected_at": "2026-09-27T06:30:00Z",
-      "status": "published",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Zui Yu Xuan Teochew Cuisine",
-          "Category": "restaurant",
-          "Address": "130/131 Amoy Street, Far East Square, Singapore 049959",
-          "Booking channel": "Amex Experiences App"
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
-      "transition_id": "a18f6ba38a25d86a2808",
-      "stream_id": "ab726279faf42df8d6d2",
-      "occurrence": 1,
-      "id": "8c63b1377d53b4ee23a2",
-      "reviewed_at": "2026-09-27T06:30:00Z",
-      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source.",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "details_updated",
-      "subject": "One-Ninety",
-      "detected_at": "2026-09-27T06:30:00Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "One-Ninety",
-          "Category": "restaurant",
-          "Address": "Four Seasons Hotel Singapore, Lobby Level, 190 Orchard Boulevard, Singapore 248646",
-          "Booking channel": "Amex Experiences App"
-        }
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "One-Ninety",
-          "Category": "buffet",
-          "Address": "Four Seasons Hotel Singapore, Lobby Level, 190 Orchard Boulevard, Singapore 248646",
-          "Booking channel": "Amex Experiences App"
-        }
-      },
-      "changes": [
-        {
-          "field": "Category",
-          "before": "restaurant",
-          "after": "buffet"
-        }
-      ],
-      "source_url": "https://www.diningcity.sg/singapore/one-ninety_restaurant",
-      "transition_id": "8b9cc08e6bb00ae30b4d",
-      "stream_id": "2e755479632f9b13715c",
-      "occurrence": 1,
-      "id": "815616083dc8878479d8",
-      "reviewed_at": "2026-09-27T06:30:00Z",
-      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source.",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "removed",
-      "subject": "Osteria Mozza",
-      "detected_at": "2026-09-27T06:30:00Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Osteria Mozza",
-          "Category": "restaurant",
-          "Address": "Hilton Singapore Orchard, Level 5, 333 Orchard Road, Singapore 238867",
-          "Booking channel": "Amex Experiences App",
-          "Menu file": "Osteria-Mozza-Menu_Platinum.pdf",
-          "Menu version": "3347607d4108",
-          "Platinum menu file": "Osteria-Mozza-Menu_Platinum.pdf",
-          "Platinum menu version": "3347607d4108",
-          "Centurion menu file": "Osteria-Mozza-Menu-Centurion.pdf",
-          "Centurion menu version": "2b7fd9a097fa"
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Osteria-Mozza-Menu_Platinum.pdf",
-      "transition_id": "74a774a958ccbfa3ccfa",
-      "stream_id": "1005828a82ddd143feea",
-      "occurrence": 1,
-      "id": "76ae4f55c7c78afb9c1e",
-      "reviewed_at": "2026-09-27T06:30:00Z",
-      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source.",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Table for Two",
       "program_id": "table-for-two",
       "route": "#/table-for-two",
@@ -20603,6 +20593,12 @@
           "6c96cf18e7eba7438124": 1
         }
       },
+      "11c58ae15ff238ad9dbe": {
+        "latest_transition_id": "fd5ffed0a9ea5901893a",
+        "occurrences": {
+          "fd5ffed0a9ea5901893a": 1
+        }
+      },
       "128d0d698ba4426680b0": {
         "latest_transition_id": "4cadef5f63f5acf8dfcf",
         "occurrences": {
@@ -21331,9 +21327,10 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "3031e98ad62e4c0de17e",
+        "latest_transition_id": "07f988256e94c4968634",
         "occurrences": {
           "0487850cfd076512beed": 1,
+          "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
           "115ecbdf7edd8b04fc52": 1,
           "1ab8e0fbb8680e92c68d": 1,
@@ -21530,10 +21527,11 @@
         }
       },
       "915d672147e8dd8f713f": {
-        "latest_transition_id": "fb3ff7e67d787864ffe9",
+        "latest_transition_id": "a6174dfe21f75adf647b",
         "occurrences": {
           "529bca112c6849717caa": 1,
           "a0a9bd6099c50e729407": 1,
+          "a6174dfe21f75adf647b": 1,
           "e84cc285cf3a411e0d24": 1,
           "e94f1e64d26636b508c7": 1,
           "fb3ff7e67d787864ffe9": 1
@@ -21718,6 +21716,12 @@
         "latest_transition_id": "b416e885928958e63c71",
         "occurrences": {
           "b416e885928958e63c71": 1
+        }
+      },
+      "b2d04f9c9c2c18563c8a": {
+        "latest_transition_id": "f1b0afedad5aacd80691",
+        "occurrences": {
+          "f1b0afedad5aacd80691": 1
         }
       },
       "b34233fda28c26205329": {
@@ -21999,6 +22003,18 @@
         "latest_transition_id": "d488b44369cdc012f6f3",
         "occurrences": {
           "d488b44369cdc012f6f3": 1
+        }
+      },
+      "ef73659a122d64d12cb2": {
+        "latest_transition_id": "3c085e22c731f43af759",
+        "occurrences": {
+          "3c085e22c731f43af759": 1
+        }
+      },
+      "efaf481fa19a57d55f9a": {
+        "latest_transition_id": "a39e740a94a00fb9f66e",
+        "occurrences": {
+          "a39e740a94a00fb9f66e": 1
         }
       },
       "f016760f3ade2de88ca1": {
