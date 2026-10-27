@@ -1,7 +1,493 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-27T00:16:55Z",
+  "updated_at": "2026-10-27T00:40:08Z",
   "updates": [
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Global Dining",
+      "detected_at": "2026-10-27T00:40:08Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "1972/1972 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "1964/1964 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "1972/1972 (100%), 0 unavailable",
+          "after": "1964/1964 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "c81c7287d14a3f1082ae",
+      "stream_id": "d03cc6f867310ca61cf7",
+      "occurrence": 1,
+      "id": "7e2760879b8ac3bf3a00"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-27T00:40:08Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3010/3019 (99.7%), 9 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3000/3011 (99.6%), 11 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3010/3019 (99.7%), 9 unavailable",
+          "after": "3000/3011 (99.6%), 11 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "3031e98ad62e4c0de17e",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "53cb7c4dd0d5a7dd2d51"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Yauatcha Soho / London",
+      "detected_at": "2026-10-27T00:40:07Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Yauatcha Soho",
+          "Country": "United Kingdom",
+          "Region": "London",
+          "City": "London",
+          "Address": "15-17 Broadwick Street, London, W1F 0DL, United Kingdom",
+          "Cuisine": [
+            "Cantonese"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "e087bca9bb84ef5300d4",
+      "stream_id": "62c1d39e2d5cee13ea02",
+      "occurrence": 1,
+      "id": "eec3872f8109adac20ca"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_updated",
+      "subject": "Global Dining source",
+      "detected_at": "2026-10-27T00:40:07Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 1972,
+          "Mapped count": 1914
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 1964,
+          "Mapped count": 1906
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 1972,
+          "after": 1964
+        },
+        {
+          "field": "Mapped count",
+          "before": 1914,
+          "after": 1906
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "4cadef5f63f5acf8dfcf",
+      "stream_id": "128d0d698ba4426680b0",
+      "occurrence": 1,
+      "id": "e8e8e0e89f0837f3a6e4"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "added",
+      "subject": "Maison Roland / Paris",
+      "detected_at": "2026-10-27T00:40:07Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Maison Roland",
+          "Country": "France",
+          "Region": "Paris",
+          "City": "Paris",
+          "Address": "10 avenue d'Iéna, Paris, 75116, France",
+          "Cuisine": [
+            "Asian"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "a9118101ccd9c8ee97ad",
+      "stream_id": "70ffdc24b582dd0648de",
+      "occurrence": 1,
+      "id": "b8171494bf4050900915"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "National Kitchen by Violet Oon Singapore / Singapore",
+      "detected_at": "2026-10-27T00:40:07Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "National Kitchen by Violet Oon Singapore",
+          "Country": "Singapore",
+          "Region": "Singapore",
+          "City": "Singapore",
+          "Address": "1 St. Andrew Road #02-01 National Gallery Singapore, Singapore, 178957, Singapore",
+          "Cuisine": [
+            "Western"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "e09d832a700d5aef64f6",
+      "stream_id": "1aadaa664581f008c244",
+      "occurrence": 1,
+      "id": "ae121439b8cdf7a00e67"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Porfirios Toreo / Estado de México",
+      "detected_at": "2026-10-27T00:40:07Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Porfirios Toreo",
+          "Country": "Mexico",
+          "Region": "Estado de México",
+          "City": "Estado de México",
+          "Address": "Blvd Manuel Avila Camacho 5 Pb L 01, Lomas De Sotelo. Naucalpan De Juarez, Estado de México, 53390, Mexico",
+          "Cuisine": [
+            "Mexican"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "5ec47ea040e7bb0e4ebd",
+      "stream_id": "5ab20dc22088ab05c407",
+      "occurrence": 1,
+      "id": "8c03feb356b7d0a6803d"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Saké Restaurant & Bar Hammer Hall / Victoria",
+      "detected_at": "2026-10-27T00:40:07Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Saké Restaurant & Bar Hammer Hall",
+          "Country": "Australia",
+          "Region": "Victoria",
+          "City": "Victoria",
+          "Address": "Hamer Hall Precinct, Southbank Promenade, Southbank, Victoria, 3006, Australia",
+          "Cuisine": [
+            "Japanese"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "3b56da6933d2533cb6d7",
+      "stream_id": "68b2259e0e3ddd5f3ca7",
+      "occurrence": 1,
+      "id": "8a9ffe1a499c9e19ab9e"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Via Monte Napoleone / Frankfurt am Main",
+      "detected_at": "2026-10-27T00:40:07Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Via Monte Napoleone",
+          "Country": "Germany",
+          "Region": "Frankfurt am Main",
+          "City": "Frankfurt am Main",
+          "Address": "Bockenheimer Landstraße 55, Frankfurt am Main, 60325, Germany",
+          "Cuisine": [
+            "Italian"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "d701fb03c7a5c6f84835",
+      "stream_id": "547eceb444ea18e30b34",
+      "occurrence": 1,
+      "id": "7f3e36bdaf333d8dd239"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Pompette / Toronto",
+      "detected_at": "2026-10-27T00:40:07Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Pompette",
+          "Country": "Canada",
+          "Region": "Toronto",
+          "City": "Toronto",
+          "Address": "597 College St, Toronto, M6G 1B5, Canada",
+          "Cuisine": [
+            "French"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "71fb13bc86c5aaf7fecd",
+      "stream_id": "7a8f69b94b08ffadcd17",
+      "occurrence": 1,
+      "id": "59e32121b32a3b8a2612"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Gucci Osteria Da Massimo Bottura / Firenze",
+      "detected_at": "2026-10-27T00:40:07Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Gucci Osteria Da Massimo Bottura",
+          "Country": "Italy",
+          "Region": "Firenze",
+          "City": "Firenze",
+          "Address": "Piazza Della Signoria 10, Firenze, 50122, Italy",
+          "Cuisine": [
+            "Italian"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "5fdba3aeb4f0f05779a5",
+      "stream_id": "077d8f1fe23b4b7c03d0",
+      "occurrence": 1,
+      "id": "591c613867e0ce094d17"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "The Sky Boss / Tsim Sha Tsui",
+      "detected_at": "2026-10-27T00:40:07Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "The Sky Boss",
+          "Country": "Hong Kong",
+          "Region": "Tsim Sha Tsui",
+          "City": "Tsim Sha Tsui",
+          "Address": "Shop B2, 101/F, International Commerce Centre, 1 Austin Road West, Tsim Sha Tsui, Hong Kong",
+          "Cuisine": [
+            "Chinese"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "d0e7bc1a1df55cad6744",
+      "stream_id": "06b2ce273acb807c935c",
+      "occurrence": 1,
+      "id": "55b03930e8e5082ddf93"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "removed",
+      "subject": "Brasserie Stadthaus / Düsseldorf",
+      "detected_at": "2026-10-27T00:40:07Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Brasserie Stadthaus",
+          "Country": "Germany",
+          "Region": "Düsseldorf",
+          "City": "Düsseldorf",
+          "Address": "Mühlenstr. 31, Düsseldorf, 40213, Germany",
+          "Cuisine": [
+            "French"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "d91edf58f9a4e00f7ff6",
+      "stream_id": "83106dea7697dbc77411",
+      "occurrence": 1,
+      "id": "3b0156c00df65494b264"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -13727,135 +14213,6 @@
       "program": "Table for Two",
       "program_id": "table-for-two",
       "route": "#/table-for-two",
-      "kind": "details_updated",
-      "subject": "Brewerkz Riverside Point",
-      "detected_at": "2026-09-27T06:30:00Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Brewerkz Riverside Point",
-          "Category": "restaurant",
-          "Address": "30 Merchant Road, #01-07 Riverside Point, Singapore 058282",
-          "Booking channel": "Amex Experiences App"
-        }
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Brewerkz Riverside Point",
-          "Category": "cafe",
-          "Address": "30 Merchant Road, #01-07 Riverside Point, Singapore 058282",
-          "Booking channel": "Amex Experiences App"
-        }
-      },
-      "changes": [
-        {
-          "field": "Category",
-          "before": "restaurant",
-          "after": "cafe"
-        }
-      ],
-      "source_url": "https://www.diningcity.sg/singapore/brewerkz_riversidepoint",
-      "transition_id": "d28c1f750c5b17d21a95",
-      "stream_id": "70920b298a51d80c2521",
-      "occurrence": 1,
-      "id": "4de401a17cc3e9ae34ce",
-      "reviewed_at": "2026-09-27T06:30:00Z",
-      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source.",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "details_updated",
-      "subject": "The Feather Blade",
-      "detected_at": "2026-09-27T06:30:00Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "The Feather Blade",
-          "Category": "restaurant",
-          "Address": "61 Tanjong Pagar Road, Singapore 088482",
-          "Booking channel": "Amex Experiences App",
-          "Menu file": "Feather-Blade_Menu.pdf",
-          "Menu version": "0f1a63a10718",
-          "Platinum menu file": "Feather-Blade_Menu.pdf",
-          "Platinum menu version": "0f1a63a10718"
-        }
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "The Feather Blade",
-          "Category": "cafe",
-          "Address": "61 Tanjong Pagar Road, Singapore 088482",
-          "Booking channel": "Amex Experiences App",
-          "Menu file": "Feather-Blade_Menu.pdf",
-          "Menu version": "0f1a63a10718",
-          "Platinum menu file": "Feather-Blade_Menu.pdf",
-          "Platinum menu version": "0f1a63a10718"
-        }
-      },
-      "changes": [
-        {
-          "field": "Category",
-          "before": "restaurant",
-          "after": "cafe"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Feather-Blade_Menu.pdf",
-      "transition_id": "a1e1dc5cdb90a07cea9e",
-      "stream_id": "2cf28a85f27a48d31c6b",
-      "occurrence": 1,
-      "id": "2e178267e01feee4f93a",
-      "reviewed_at": "2026-09-27T06:30:00Z",
-      "review_note": "Approved the Sep-Oct Chic Restaurants (20) and Cafes and Buffets (11) images, with Brewerkz as two outlets. Osteria Mozza is in neither image and leaves the roster. The Zui Teochew Cuisine logo is mapped to Zui Yu Xuan from the owner's review on 2026-09-27, not from an Amex source.",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-09-27T01:52:18Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "29/29 (100%), 0 unavailable",
-          "after": "28/29 (96.6%), 1 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "98997d254b5dfdda4b93",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 7,
-      "id": "eea5fb7c857a3186dbd2",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
       "kind": "source_updated",
       "subject": "Table for Two source",
       "detected_at": "2026-09-27T01:52:16Z",
@@ -13902,41 +14259,6 @@
       "stream_id": "5a285967ca2795c90124",
       "occurrence": 4,
       "id": "dfdc03de48e0cb6b891e"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-09-27T00:09:40Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "27/29 (93.1%), 2 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "27/29 (93.1%), 2 unavailable",
-          "after": "29/29 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "957cb551d4d32c436358",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 4,
-      "id": "4ffb5c56a0eebe268154",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
       "program": "Table for Two",
@@ -13990,41 +14312,6 @@
       "id": "90e3e6f30b612e0cb7ea"
     },
     {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-09-26T23:46:40Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "27/29 (93.1%), 2 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "28/29 (96.6%), 1 unavailable",
-          "after": "27/29 (93.1%), 2 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "76601cc403e616114c7f",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 6,
-      "id": "454335bf08753c10ead6",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Japan Dining",
       "program_id": "japan-dining",
       "route": "#/dining/japan/top",
@@ -14056,342 +14343,6 @@
       "stream_id": "144a07273fbc23853124",
       "occurrence": 1,
       "id": "fe331d324ffd0b778696"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-09-26T21:25:05Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "26/29 (89.7%), 3 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "26/29 (89.7%), 3 unavailable",
-          "after": "28/29 (96.6%), 1 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "1c1fff4679ee3bdf92aa",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 4,
-      "id": "f981e0fc412eef2f8fdc",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-09-26T18:22:55Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "26/29 (89.7%), 3 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "28/29 (96.6%), 1 unavailable",
-          "after": "26/29 (89.7%), 3 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "26e57ec40c3a4d347fd1",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 4,
-      "id": "9bf2ef83a731cf1c817d",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-09-26T14:54:41Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "29/29 (100%), 0 unavailable",
-          "after": "28/29 (96.6%), 1 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "98997d254b5dfdda4b93",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 6,
-      "id": "62354c9be84957003106",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_recovered",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-09-26T10:54:06Z",
-      "status": "published",
-      "before": {
-        "state": "stale",
-        "fields": {
-          "Source state": "stale",
-          "Freshness": "stale",
-          "Stale records": 29
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Freshness": "current",
-          "Stale records": 0
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Freshness",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Stale records",
-          "before": 29,
-          "after": 0
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "69ee8827e7535e6e03ce",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 2,
-      "id": "798df5c2c2dbdecd9a50",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_stale",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-09-26T09:57:02Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Freshness": "current",
-          "Stale records": 0
-        }
-      },
-      "after": {
-        "state": "stale",
-        "fields": {
-          "Source state": "stale",
-          "Freshness": "stale",
-          "Stale records": 29
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "current",
-          "after": "stale"
-        },
-        {
-          "field": "Freshness",
-          "before": "current",
-          "after": "stale"
-        },
-        {
-          "field": "Stale records",
-          "before": 0,
-          "after": 29
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "7a0c2ed47a14576abcae",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 2,
-      "id": "21647ededf5f9c64d1e9",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_recovered",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-09-26T05:10:52Z",
-      "status": "published",
-      "before": {
-        "state": "stale",
-        "fields": {
-          "Source state": "stale",
-          "Freshness": "stale",
-          "Stale records": 29
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Freshness": "current",
-          "Stale records": 0
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Freshness",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Stale records",
-          "before": 29,
-          "after": 0
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "69ee8827e7535e6e03ce",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 1,
-      "id": "6b6add37fea1e85bcc9f",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_stale",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-09-26T05:08:55Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Freshness": "current",
-          "Stale records": 0
-        }
-      },
-      "after": {
-        "state": "stale",
-        "fields": {
-          "Source state": "stale",
-          "Freshness": "stale",
-          "Stale records": 29
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "current",
-          "after": "stale"
-        },
-        {
-          "field": "Freshness",
-          "before": "current",
-          "after": "stale"
-        },
-        {
-          "field": "Stale records",
-          "before": 0,
-          "after": 29
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "7a0c2ed47a14576abcae",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 1,
-      "id": "99c4a5a51d3fd83ff73d",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-09-26T00:56:02Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "28/29 (96.6%), 1 unavailable",
-          "after": "29/29 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "252e3c33201e3823a27b",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 7,
-      "id": "956e55246861018d0a55",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
       "program": "Table for Two",
@@ -20552,6 +20503,18 @@
           "0839a4195034968443a0": 1
         }
       },
+      "06b2ce273acb807c935c": {
+        "latest_transition_id": "d0e7bc1a1df55cad6744",
+        "occurrences": {
+          "d0e7bc1a1df55cad6744": 1
+        }
+      },
+      "077d8f1fe23b4b7c03d0": {
+        "latest_transition_id": "5fdba3aeb4f0f05779a5",
+        "occurrences": {
+          "5fdba3aeb4f0f05779a5": 1
+        }
+      },
       "0902bdeaa40f90de655d": {
         "latest_transition_id": "a92cc224dddce291fafb",
         "occurrences": {
@@ -20615,11 +20578,12 @@
         }
       },
       "128d0d698ba4426680b0": {
-        "latest_transition_id": "bd27f3f0c5b774d75975",
+        "latest_transition_id": "4cadef5f63f5acf8dfcf",
         "occurrences": {
           "0e729905cd142da50a20": 1,
           "169e0a4cd65f0463852d": 1,
           "44a7b1e2dc2c865eba80": 1,
+          "4cadef5f63f5acf8dfcf": 1,
           "7fdc71a5a4f3bb71f791": 1,
           "872e22a3410e4ca5cbb8": 1,
           "a4db0856a25b145eb59d": 1,
@@ -20761,6 +20725,12 @@
         "latest_transition_id": "690fc1be9df77090bf70",
         "occurrences": {
           "690fc1be9df77090bf70": 1
+        }
+      },
+      "1aadaa664581f008c244": {
+        "latest_transition_id": "e09d832a700d5aef64f6",
+        "occurrences": {
+          "e09d832a700d5aef64f6": 1
         }
       },
       "1b03ce8bc5ba320714e3": {
@@ -21109,6 +21079,12 @@
           "2da26ef0ef3697ea188e": 1
         }
       },
+      "547eceb444ea18e30b34": {
+        "latest_transition_id": "d701fb03c7a5c6f84835",
+        "occurrences": {
+          "d701fb03c7a5c6f84835": 1
+        }
+      },
       "54aaae4a02eae051664c": {
         "latest_transition_id": "a9591017d3b72a8bdf94",
         "occurrences": {
@@ -21158,6 +21134,12 @@
           "f8a5a660da737a62d021": 1
         }
       },
+      "5ab20dc22088ab05c407": {
+        "latest_transition_id": "5ec47ea040e7bb0e4ebd",
+        "occurrences": {
+          "5ec47ea040e7bb0e4ebd": 1
+        }
+      },
       "5bff13dcbd5e8cd9478d": {
         "latest_transition_id": "3758f4eb1a6ba8606a18",
         "occurrences": {
@@ -21192,6 +21174,12 @@
         "latest_transition_id": "a9fa523838f2babfee03",
         "occurrences": {
           "a9fa523838f2babfee03": 1
+        }
+      },
+      "62c1d39e2d5cee13ea02": {
+        "latest_transition_id": "e087bca9bb84ef5300d4",
+        "occurrences": {
+          "e087bca9bb84ef5300d4": 1
         }
       },
       "62ffb17eba5e37f8acae": {
@@ -21241,6 +21229,12 @@
         "latest_transition_id": "6eddfacc772b60371f30",
         "occurrences": {
           "6eddfacc772b60371f30": 1
+        }
+      },
+      "68b2259e0e3ddd5f3ca7": {
+        "latest_transition_id": "3b56da6933d2533cb6d7",
+        "occurrences": {
+          "3b56da6933d2533cb6d7": 1
         }
       },
       "6984e03dd7bd4525020b": {
@@ -21298,6 +21292,12 @@
           "d28c1f750c5b17d21a95": 1
         }
       },
+      "70ffdc24b582dd0648de": {
+        "latest_transition_id": "a9118101ccd9c8ee97ad",
+        "occurrences": {
+          "a9118101ccd9c8ee97ad": 1
+        }
+      },
       "74755a6c5148fbefa8d1": {
         "latest_transition_id": "2b54acdd226ee6d14b14",
         "occurrences": {
@@ -21305,7 +21305,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "45fbeae50e4fbb48dc4e",
+        "latest_transition_id": "3031e98ad62e4c0de17e",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "0bd25ff4da05675b0406": 1,
@@ -21318,6 +21318,7 @@
           "2c9cfaa8dc40d88a2308": 1,
           "2d4ce67bacad8f77cc37": 1,
           "2e0896223097482f8813": 1,
+          "3031e98ad62e4c0de17e": 1,
           "37ba731247907465333f": 1,
           "3d07ff7f35ab35cde0d8": 1,
           "3f69c4d5e73544c80c60": 1,
@@ -21397,6 +21398,12 @@
           "2c11bff4d4231594e688": 1
         }
       },
+      "7a8f69b94b08ffadcd17": {
+        "latest_transition_id": "71fb13bc86c5aaf7fecd",
+        "occurrences": {
+          "71fb13bc86c5aaf7fecd": 1
+        }
+      },
       "7e57fa76edf888c59c2a": {
         "latest_transition_id": "795a16238968974fbd31",
         "occurrences": {
@@ -21439,6 +21446,12 @@
         "latest_transition_id": "f1b74c592d63df610792",
         "occurrences": {
           "f1b74c592d63df610792": 1
+        }
+      },
+      "83106dea7697dbc77411": {
+        "latest_transition_id": "d91edf58f9a4e00f7ff6",
+        "occurrences": {
+          "d91edf58f9a4e00f7ff6": 1
         }
       },
       "855e4e4629d9b2224f75": {
@@ -21775,10 +21788,11 @@
         }
       },
       "d03cc6f867310ca61cf7": {
-        "latest_transition_id": "45857e201fb52728e322",
+        "latest_transition_id": "c81c7287d14a3f1082ae",
         "occurrences": {
           "45857e201fb52728e322": 1,
           "a20ff02a298973b75640": 1,
+          "c81c7287d14a3f1082ae": 1,
           "d03e8d97cb01efd6f547": 1,
           "ee9a1c9e140f6b412f3d": 1,
           "faa16f7c83a868d1e87f": 1

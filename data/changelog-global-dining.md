@@ -249,3 +249,21 @@ Source: `data/global-restaurants.json`
 
 - **Removed (1)**
   - La Bauhinia / Paris
+
+<!-- source-change:a5b85bae807bdce5f7b5fcb8d80fe039cbfc3630363dce651aed0ecd8781e99e -->
+## 2026-10-27 00:40 UTC — Global Dining
+
+Source: `data/global-restaurants.json`
+
+- **Added (1)**
+  - Maison Roland / Paris
+- **Removed (9)**
+  - Brasserie Stadthaus / Düsseldorf
+  - Gucci Osteria Da Massimo Bottura / Firenze
+  - National Kitchen by Violet Oon Singapore / Singapore
+  - Pompette / Toronto
+  - Porfirios Toreo / Estado de México
+  - Saké Restaurant & Bar Hammer Hall / Victoria
+  - The Sky Boss / Tsim Sha Tsui
+  - Via Monte Napoleone / Frankfurt am Main
+  - Yauatcha Soho / London
