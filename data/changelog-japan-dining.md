@@ -534,3 +534,12 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Sincere / Tokyo
+
+<!-- source-change:25698640560602c6739717a695337398df863ec6608f34cbca4e9ad63dac660e -->
+## 2026-10-27 00:16 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (2)**
+  - Oku Akasaka Sushi Tanji / Tokyo
+  - Sushi Sanji / Tokyo

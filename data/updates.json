@@ -1,7 +1,231 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-25T07:29:01Z",
+  "updated_at": "2026-10-27T00:16:47Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-10-27T00:16:47Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "861/861 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "863/863 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "861/861 (100%), 0 unavailable",
+          "after": "863/863 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "79aaada59d36dbc4e171",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "55b3b617b1affafa753d"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-10-27T00:16:47Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "774/861 (89.9%), 87 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "774/863 (89.7%), 89 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "774/861 (89.9%), 87 unavailable",
+          "after": "774/863 (89.7%), 89 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "bc58dd4059a032a58035",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "2b4574f55c2b3ba037cc"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-27T00:16:47Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3010/3017 (99.8%), 7 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3010/3019 (99.7%), 9 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3010/3017 (99.8%), 7 unavailable",
+          "after": "3010/3019 (99.7%), 9 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "45fbeae50e4fbb48dc4e",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "0439cd1f62e64393d850"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Oku Akasaka Sushi Tanji / Tokyo",
+      "detected_at": "2026-10-27T00:16:46Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Oku Akasaka Sushi Tanji",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Akasaka",
+          "Address": "1F, 6-15-4, Akasaka, Minato-ku, Tokyo",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245706/",
+      "transition_id": "690fc1be9df77090bf70",
+      "stream_id": "18b826499b3bb98abffe",
+      "occurrence": 1,
+      "id": "be9d5374b66424e0d3d6"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Sushi Sanji / Tokyo",
+      "detected_at": "2026-10-27T00:16:46Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sushi Sanji",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Akasaka",
+          "Address": "6F, 3-14-9, Akasaka, Minato-ku, Tokyo",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245674/",
+      "transition_id": "48d80db839f001128ed0",
+      "stream_id": "a5ab0b6548ee8b7a6a77",
+      "occurrence": 1,
+      "id": "76e47614e3e0c9c22c6c"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-10-27T00:16:46Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 861,
+          "Mapped count": 861,
+          "Official records SHA-256": "5eb20f8d65a6"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 863,
+          "Mapped count": 863,
+          "Official records SHA-256": "7ba16603e169"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 861,
+          "after": 863
+        },
+        {
+          "field": "Mapped count",
+          "before": 861,
+          "after": 863
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "5eb20f8d65a6",
+          "after": "7ba16603e169"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "4720e933f17e0285f607",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "39d7adaccbf20e6faa88"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -14260,234 +14484,6 @@
       "id": "4cda699d10eda491a5c6"
     },
     {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two?venue=tft-forage",
-      "kind": "menu_updated",
-      "subject": "Forage · Platinum menu",
-      "detected_at": "2026-09-26T00:21:45Z",
-      "status": "published",
-      "before": {
-        "state": "published",
-        "fields": {
-          "Menu file": "Forage-Menu_Platinium.pdf",
-          "Menu version": "72c0b83a7423"
-        }
-      },
-      "after": {
-        "state": "published",
-        "fields": {
-          "Menu file": "Forage-Menu_Platinium.pdf",
-          "Menu version": "a66905a7eff3"
-        }
-      },
-      "changes": [
-        {
-          "field": "Menu file",
-          "before": "Forage-Menu_Platinium.pdf",
-          "after": "Forage-Menu_Platinium.pdf"
-        },
-        {
-          "field": "Menu version",
-          "before": "72c0b83a7423",
-          "after": "a66905a7eff3"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Forage-Menu_Platinium.pdf",
-      "reviewed_at": "2026-09-27T15:03:21Z",
-      "review_note": "Forage-Menu_Platinium.pdf changed at the same URL: new courses (Hokkaido scallop, king salmon, duck, white chocolate) replacing the caviar, chutoro, black cod and pork menu, with unchanged Table for Two terms. Approved as the active Platinum menu.",
-      "transition_id": "5cc4501cb7aed4661c63",
-      "stream_id": "de2f6e2fecadba275c3c",
-      "occurrence": 1,
-      "id": "c1114bbcdc9de2eb9d88",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two?venue=tft-vue",
-      "kind": "menu_updated",
-      "subject": "VUE · Platinum menu",
-      "detected_at": "2026-09-26T00:21:45Z",
-      "status": "published",
-      "before": {
-        "state": "published",
-        "fields": {
-          "Menu file": "VUE-Menu_Platinum.pdf",
-          "Menu version": "af9a1807f718"
-        }
-      },
-      "after": {
-        "state": "published",
-        "fields": {
-          "Menu file": "VUE-Menu_Platinium.pdf",
-          "Menu version": "559b3b04c699"
-        }
-      },
-      "changes": [
-        {
-          "field": "Menu file",
-          "before": "VUE-Menu_Platinum.pdf",
-          "after": "VUE-Menu_Platinium.pdf"
-        },
-        {
-          "field": "Menu version",
-          "before": "af9a1807f718",
-          "after": "559b3b04c699"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/VUE-Menu_Platinium.pdf",
-      "reviewed_at": "2026-09-27T15:03:07Z",
-      "review_note": "VUE-Menu_Platinium.pdf (AEM 2026-06-30) is a newer menu than the published 2026-04-30 file: new courses (chilled somen, Eyrewoolf abalone, Kokuou A5 wagyu, summer stone fruits) with unchanged Table for Two terms. Approved as the active Platinum menu.",
-      "transition_id": "8eaa83bb07e7aa3e2209",
-      "stream_id": "e31b7b9144c4a5f0291c",
-      "occurrence": 1,
-      "id": "2fa2fd1ca31e19638e12",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Explorer ratings",
-      "program_id": "explorer-ratings",
-      "route": "#/dining/world",
-      "kind": "source_health_changed",
-      "subject": "Google Maps ratings",
-      "detected_at": "2026-09-26T00:01:22Z",
-      "status": "published",
-      "before": {
-        "state": "mixed_age",
-        "fields": {
-          "Stale records": 1726
-        }
-      },
-      "after": {
-        "state": "mixed_age",
-        "fields": {
-          "Stale records": 1784
-        }
-      },
-      "changes": [
-        {
-          "field": "Stale records",
-          "before": 1726,
-          "after": 1784
-        }
-      ],
-      "source_url": "https://www.google.com/maps",
-      "transition_id": "597b5f61e2e836b13c25",
-      "stream_id": "75dc7ff790819667042f",
-      "occurrence": 1,
-      "id": "863919b1c5b581f25828",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Explorer ratings",
-      "program_id": "explorer-ratings",
-      "route": "#/dining/world",
-      "kind": "source_health_changed",
-      "subject": "Google Maps ratings",
-      "detected_at": "2026-09-25T23:48:54Z",
-      "status": "published",
-      "before": {
-        "state": "mixed_age",
-        "fields": {
-          "Coverage": "2967/3022 (98.2%), 55 unavailable"
-        }
-      },
-      "after": {
-        "state": "mixed_age",
-        "fields": {
-          "Coverage": "2967/3023 (98.1%), 56 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "2967/3022 (98.2%), 55 unavailable",
-          "after": "2967/3023 (98.1%), 56 unavailable"
-        }
-      ],
-      "source_url": "https://www.google.com/maps",
-      "transition_id": "773cfd96350cd8793f78",
-      "stream_id": "75dc7ff790819667042f",
-      "occurrence": 1,
-      "id": "c8ebf672b30c3fae3f5e",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Explorer ratings",
-      "program_id": "explorer-ratings",
-      "route": "#/dining/japan/top",
-      "kind": "source_health_changed",
-      "subject": "Tabelog ratings",
-      "detected_at": "2026-09-25T23:48:54Z",
-      "status": "published",
-      "before": {
-        "state": "stale",
-        "fields": {
-          "Coverage": "775/852 (91%), 77 unavailable"
-        }
-      },
-      "after": {
-        "state": "stale",
-        "fields": {
-          "Coverage": "775/853 (90.9%), 78 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "775/852 (91%), 77 unavailable",
-          "after": "775/853 (90.9%), 78 unavailable"
-        }
-      ],
-      "source_url": "https://tabelog.com/en/",
-      "transition_id": "81469570479e26998d74",
-      "stream_id": "1343644c36ca05961a55",
-      "occurrence": 1,
-      "id": "5cfcba8db1ac4e281641",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_health_changed",
-      "subject": "Japan Dining",
-      "detected_at": "2026-09-25T23:48:54Z",
-      "status": "published",
-      "before": {
-        "state": "review_required",
-        "fields": {
-          "Coverage": "852/852 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "review_required",
-        "fields": {
-          "Coverage": "853/853 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "852/852 (100%), 0 unavailable",
-          "after": "853/853 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "4cbb85a7c317c300d511",
-      "stream_id": "2815ef390a27dbc3e9e6",
-      "occurrence": 1,
-      "id": "03f0ddeb451a4bca43fa",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Japan Dining",
       "program_id": "japan-dining",
       "route": "#/dining/japan/top",
@@ -20628,7 +20624,7 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "fb4e3e5726a57f8c4730",
+        "latest_transition_id": "bc58dd4059a032a58035",
         "occurrences": {
           "0e86b64ab05f97a7ae46": 1,
           "1373702923712cbf4100": 1,
@@ -20649,6 +20645,7 @@
           "95c6d44cb209c0ce8da2": 1,
           "a7b8231070342f91601d": 1,
           "a99a7d69a18906e35bb6": 1,
+          "bc58dd4059a032a58035": 1,
           "be2c6f6034c3a6c73f80": 1,
           "be8786bcd58599df6c59": 1,
           "bf2d43448230e25274b0": 1,
@@ -20673,7 +20670,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "94b84e3c06290be15bb7",
+        "latest_transition_id": "4720e933f17e0285f607",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
           "13d4c2a8f5927f024200": 1,
@@ -20686,6 +20683,7 @@
           "38187411348a7313bb86": 1,
           "3bda87f3d7165ef0aed7": 1,
           "43aff7ccfa2d78995407": 1,
+          "4720e933f17e0285f607": 1,
           "4b16a84d84aaa9a04d5e": 1,
           "4e505240640c1eefc3dd": 1,
           "521fd5f7344a85cb5626": 1,
@@ -20745,6 +20743,12 @@
         "latest_transition_id": "540e51aaacfadabf3507",
         "occurrences": {
           "540e51aaacfadabf3507": 1
+        }
+      },
+      "18b826499b3bb98abffe": {
+        "latest_transition_id": "690fc1be9df77090bf70",
+        "occurrences": {
+          "690fc1be9df77090bf70": 1
         }
       },
       "1b03ce8bc5ba320714e3": {
@@ -20898,7 +20902,7 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "da668e638e0d5b19646c",
+        "latest_transition_id": "79aaada59d36dbc4e171",
         "occurrences": {
           "0024ea21d692def9b91b": 1,
           "023dbb9237dd583b8431": 1,
@@ -20913,6 +20917,7 @@
           "5b416ddace2ab713a3d8": 1,
           "630fba426215e10e413a": 1,
           "76df09d58e4670fbd1c9": 1,
+          "79aaada59d36dbc4e171": 1,
           "8c661fda8625deb97e56": 1,
           "951fc017d5e31f520818": 2,
           "a3fe4bea4f38e3ac4033": 1,
@@ -21288,7 +21293,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "0bd25ff4da05675b0406",
+        "latest_transition_id": "45fbeae50e4fbb48dc4e",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "0bd25ff4da05675b0406": 1,
@@ -21305,6 +21310,7 @@
           "3d07ff7f35ab35cde0d8": 1,
           "3f69c4d5e73544c80c60": 1,
           "4258225d5117a5d79957": 1,
+          "45fbeae50e4fbb48dc4e": 1,
           "4fc17cb16c0e54f69535": 1,
           "503524f40cdf0c1d8ac8": 1,
           "5852ab5ce4e4d11561b4": 1,
@@ -21583,6 +21589,12 @@
         "latest_transition_id": "7dbd319df522d3f39075",
         "occurrences": {
           "7dbd319df522d3f39075": 1
+        }
+      },
+      "a5ab0b6548ee8b7a6a77": {
+        "latest_transition_id": "48d80db839f001128ed0",
+        "occurrences": {
+          "48d80db839f001128ed0": 1
         }
       },
       "a6657d2e0aaa3b3db487": {
