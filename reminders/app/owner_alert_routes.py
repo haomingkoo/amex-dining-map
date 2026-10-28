@@ -169,6 +169,9 @@ async def ingest_owner_batch(
             "withheld",
             "before_activation",
             "deduplicated",
+            "sending",
+            "unknown",
+            "dead",
             "conflict",
             "schema_rejected",
             "unidentified_rejected",
@@ -214,7 +217,8 @@ async def ingest_owner_batch(
                 counts["conflict"] += 1
             elif not claimed.should_send:
                 results.append({"id": event.id, "state": claimed.state})
-                counts["deduplicated"] += 1
+                # Only an already-sent replay is a harmless duplicate.
+                counts["deduplicated" if claimed.state == "sent" else claimed.state] += 1
             else:
                 results.append({"id": event.id, "state": "sending"})
                 pending.append((event, len(results) - 1))
@@ -259,7 +263,8 @@ async def ingest_owner_batch(
         "owner_alert_digest",
         level=(
             logging.WARNING
-            if state in FAILURE_STATES or counts["conflict"] or counts["schema_rejected"]
+            if any(item["state"] in FAILURE_STATES for item in results)
+            or counts["schema_rejected"]
             or counts["unidentified_rejected"]
             else logging.INFO
         ),

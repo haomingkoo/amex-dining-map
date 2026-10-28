@@ -83,13 +83,34 @@ while `OWNER_ALERT_NOT_BEFORE` prevents enabling the integration from flooding
 the channel with historical events and still permits a later-reviewed event.
 Each run sends every selected event in one request to `/api/owner-alerts/batch`
 (derived from `OWNER_ALERT_INGEST_URL`, which must end in
-`/api/owner-alerts/events`; up to 500 events per request). The service claims
-each new event and sends one Telegram digest per batch: a total, one section per
-program with per-kind counts, up to five item lines (`+` added, `−` removed,
-`~` changed fields), and the program's Explorer link. Item lines shrink first,
-so the message stays under 4,000 characters. Every claimed event shares the
-digest's outcome and Telegram message ID. Before this, each event was its own
-message, and a 145-event refresh hit Telegram's rate limit. Railway is
+`/api/owner-alerts/events`; up to 500 events per request). The script also
+splits a request above 1.5 MB. The batch route accepts bodies up to 2 MiB when
+the request carries a Bearer token. Every other `/api/` POST keeps the 16 KB cap,
+and an anonymous oversized batch gets HTTP 413. The service claims each new
+event and sends one Telegram digest per batch: a total, then one section per
+program with per-kind counts, item lines and the program's Explorer link.
+Item lines are `+` added, `−` removed and `~` changed fields. Source lines show
+numeric before → after values and drop hash fields. Programs take turns adding
+items until the message reaches 3,900 characters. Each program shows one item of
+every kind first, and the rest become "…and N more". When 20 or more events in
+one program change the same field set, they collapse into one warning line with
+two examples. A section holding a single venue keeps its `?venue=` link. Every
+claimed event shares the digest's outcome and Telegram message ID. Before this,
+each event was its own message, and a 145-event refresh hit Telegram's rate
+limit.
+
+Example digest for the 2026-10-28 Japan Dining burst:
+
+```
+Amex Explorer · 101 updates
+
+Japan Dining · 100 details updated, 1 source updated
+⚠ 100 venues changed Name, District, Cuisine at once. Possible source glitch; check before trusting.
+~ 南青山エッセンス / Tokyo: Name MINAMIAOYAMA Essence → 南青山エッセンス, District Minamiaoyama → 南青山, Cuisine Chinese → 中華
+~ 日本料理　伯雲（はくうん） / Tokyo: Name Hakuun → 日本料理　伯雲（はくうん）, District Minamiaoyama → 南青山, Cuisine Japanese, Kaiseki, Washoku → 和食
+~ Source: records changed
+Explorer: https://amex-explorer.kooexperience.com/#/dining/japan/top
+``` Railway is
 the only component that holds the Telegram bot token and the exact private
 channel ID. The request body cannot select a destination. Confirmed deliveries
 are durably deduplicated in SQLite; review-required entries are withheld without
@@ -518,6 +539,9 @@ HTTP 200 can still contain a terminal Telegram outcome, so alert on `unknown`,
 Owner and Telegram delivery failures (`retry`, `unknown`, `dead`, `conflict`)
 log at WARNING with the same JSON line; `owner_alert_digest` also records
 Telegram's `retry_after` on a 429 and per-outcome counts, never subjects or IDs.
+Only a replay of an already-sent event counts as `deduplicated`. A stale
+`sending` claim that turns `unknown`, or a replayed `unknown` or `dead` event, is
+counted under its own state and logs the digest at WARNING.
 Reminder dispatch emits `telegram_reminder_run` aggregate counts and
 `telegram_reminder_delivery` terminal outcomes. These logs never include chat
 IDs, principal hashes, reminder IDs, venue/date criteria, message text, provider

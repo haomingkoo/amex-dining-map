@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections import Counter
 from datetime import datetime, timezone
 from typing import Annotated, Literal
@@ -148,6 +149,8 @@ class OwnerAlertRequest(BaseModel):
 
 
 OWNER_ALERT_BATCH_LIMIT = 500
+# 500 events at ~2.6 KB each is ~1.3 MB; the sender splits above 1.5 MB.
+OWNER_ALERT_BATCH_MAX_BYTES = 2 * 1024 * 1024
 
 
 class OwnerAlertBatchRequest(BaseModel):
@@ -207,55 +210,135 @@ def format_owner_alert(event: OwnerAlertEvent, explorer_base_url: str) -> str:
 
 
 DIGEST_LIMIT = 3900
-# Shrink item lines before anything else; program headers and counts stay.
-DIGEST_LAYOUTS = ((5, 160), (5, 80), (3, 60), (1, 60), (0, 0))
+DIGEST_ITEM_WIDTH = 160
+BULK_THRESHOLD = 20
 KIND_ORDER = {"added": 0, "removed": 1}
+HASH_FIELD = re.compile(r"sha-?256|hash|fingerprint|version", re.IGNORECASE)
+COUNT_NOUNS = {"Record count": "records", "Mapped count": "mapped"}
 
 
-def _digest_item(event: OwnerAlertEvent, width: int) -> str:
+def _is_number(value: PublicValue) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _change_text(change: OwnerAlertChange, width: int = 60) -> str:
+    if _is_number(change.before) and _is_number(change.after):
+        noun = COUNT_NOUNS.get(change.field, change.field.lower())
+        if noun.endswith(" count"):
+            noun = noun.removesuffix(" count") + "s"
+        return f"{change.before} → {change.after} {noun}"
+    return f"{change.field} {_short(change.before, width)} → {_short(change.after, width)}"
+
+
+def _meta_item(event: OwnerAlertEvent) -> str:
+    label = event.subject.strip()
+    if label.lower().startswith(event.program.lower()):
+        label = label[len(event.program) :].strip()
+    label = label[:1].upper() + label[1:] if label else "Source"
+    parts = [_change_text(change) for change in event.changes if not HASH_FIELD.search(change.field)]
+    return f"~ {label}: {', '.join(parts) or 'records changed'}"
+
+
+def _digest_item(event: OwnerAlertEvent) -> str:
     if event.kind == "added":
         text = f"+ {event.subject.strip()}"
     elif event.kind == "removed":
         text = f"− {event.subject.strip()}"
+    elif event.kind.startswith("source_"):
+        text = _meta_item(event)
     else:
         fields = ", ".join(change.field for change in event.changes)
         text = f"~ {event.subject.strip()}: {fields}"
-    return _short(text, width)
+    return _short(text, DIGEST_ITEM_WIDTH)
 
 
-def _render_digest(header: str, sections: list, limit: int, width: int) -> str:
-    lines = [header]
-    for title, items, link in sections:
-        shown = items[:limit]
-        lines.extend(["", title, *(_digest_item(event, width) for event in shown)])
-        if len(items) > len(shown):
-            lines.append(f"…and {len(items) - len(shown)} more")
-        lines.append(link)
-    return "\n".join(lines)
+def _bulk_lines(members: list[OwnerAlertEvent], fields: tuple[str, ...]) -> list[str]:
+    head = (
+        f"⚠ {len(members)} venues changed {', '.join(fields)} at once. "
+        "Possible source glitch; check before trusting."
+    )
+    examples = [
+        f"~ {event.subject.strip()}: " + ", ".join(_change_text(c, 40) for c in event.changes)
+        for event in members[:2]
+    ]
+    return [_short(line, DIGEST_ITEM_WIDTH) for line in (_short(head, 400), *examples)]
+
+
+def _kind_key(kind: str) -> tuple[int, str]:
+    return (KIND_ORDER.get(kind, 2), kind)
+
+
+def _program_units(events: list[OwnerAlertEvent]) -> list[tuple[list[str], int]]:
+    """Lines plus event count per unit; one item of every kind leads."""
+    groups: dict[tuple[str, tuple[str, ...]], list[OwnerAlertEvent]] = {}
+    for event in events:
+        fields = tuple(change.field for change in event.changes)
+        groups.setdefault((event.kind, fields), []).append(event)
+    units = []
+    for (kind, fields), members in groups.items():
+        if len(members) >= BULK_THRESHOLD and kind not in KIND_ORDER:
+            units.append((_kind_key(kind), 0, _bulk_lines(members, fields), len(members)))
+        else:
+            units.extend((_kind_key(kind), 1, [_digest_item(e)], 1) for e in members)
+    units.sort(key=lambda unit: unit[:2])
+    leads, rest, seen = [], [], set()
+    for key, _bulk, lines, count in units:
+        (rest if key in seen else leads).append((lines, count))
+        seen.add(key)
+    return leads + rest
 
 
 def format_owner_digest(events: list[OwnerAlertEvent], explorer_base_url: str) -> str:
     total = len(events)
-    header = f"Amex Explorer updates · {total} change{'' if total == 1 else 's'}"
+    header = f"Amex Explorer · {total} update{'' if total == 1 else 's'}"
     groups: dict[str, list[OwnerAlertEvent]] = {}
     for event in events:
         groups.setdefault(event.program, []).append(event)
     base = explorer_base_url.rstrip("/")
     sections = []
     for program in sorted(groups):
-        items = sorted(groups[program], key=lambda e: (KIND_ORDER.get(e.kind, 2), e.kind))
+        items = groups[program]
         counts = Counter(event.kind for event in items)
         count_text = ", ".join(
-            f"{counts[kind]} {kind.replace('_', ' ')}" for kind in dict.fromkeys(e.kind for e in items)
+            f"{counts[kind]} {kind.replace('_', ' ')}" for kind in sorted(counts, key=_kind_key)
         )
-        # Most common route wins; ties go to the first in sorted order.
-        routes = Counter(event.route.split("?", 1)[0] for event in items)
-        route = min(routes, key=lambda r: (-routes[r], r))
+        if len(items) == 1 and "?venue=" in items[0].route:
+            route = items[0].route
+        else:
+            # Most common route wins; ties go to the first in sorted order.
+            routes = Counter(event.route.split("?", 1)[0] for event in items)
+            route = min(routes, key=lambda r: (-routes[r], r))
         sections.append(
-            (f"{_short(program, 80)} · {count_text}", items, f"Explorer: {base}/{route}")
+            (f"{_short(program, 80)} · {count_text}", _program_units(items), len(items),
+             f"Explorer: {base}/{route}")
         )
-    for limit, width in DIGEST_LAYOUTS:
-        message = _render_digest(header, sections, limit, width)
-        if len(message) <= DIGEST_LIMIT:
-            return message
-    return message[: DIGEST_LIMIT - 1].rstrip() + "…"
+    shown = [0] * len(sections)
+
+    def render() -> str:
+        lines = [header]
+        for (title, units, count, link), visible in zip(sections, shown):
+            lines.extend(["", title])
+            for unit_lines, _count in units[:visible]:
+                lines.extend(unit_lines)
+            hidden = count - sum(unit_count for _lines, unit_count in units[:visible])
+            if hidden:
+                lines.append(f"…and {hidden} more")
+            lines.append(link)
+        return "\n".join(lines)
+
+    message = render()
+    if len(message) > DIGEST_LIMIT:
+        return message[: DIGEST_LIMIT - 1].rstrip() + "…"
+    # Round-robin one unit per program until the budget is spent.
+    growing = [index for index, section in enumerate(sections) if section[1]]
+    while growing:
+        for index in list(growing):
+            shown[index] += 1
+            candidate = render()
+            if len(candidate) <= DIGEST_LIMIT:
+                message = candidate
+            else:
+                shown[index] -= 1
+            if len(candidate) > DIGEST_LIMIT or shown[index] == len(sections[index][1]):
+                growing.remove(index)
+    return message

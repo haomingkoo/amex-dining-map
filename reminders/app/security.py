@@ -84,9 +84,25 @@ class SecurityHeadersMiddleware:
 
 
 class RequestBodyLimitMiddleware:
-    def __init__(self, app: ASGIApp, max_bytes: int = 16_384) -> None:
+    def __init__(
+        self,
+        app: ASGIApp,
+        max_bytes: int = 16_384,
+        bearer_limits: dict[str, int] | None = None,
+    ) -> None:
         self.app = app
         self.max_bytes = max_bytes
+        self.bearer_limits = bearer_limits or {}
+
+    def _limit(self, scope: dict) -> int:
+        limit = self.bearer_limits.get(scope.get("path", ""))
+        if limit is None:
+            return self.max_bytes
+        # The route still verifies the token; anonymous callers keep the small cap.
+        for name, value in scope.get("headers", []):
+            if name.lower() == b"authorization" and value[:7].lower() == b"bearer ":
+                return limit
+        return self.max_bytes
 
     async def __call__(self, scope: dict, receive: Callable, send: Callable) -> None:
         if (
@@ -97,6 +113,7 @@ class RequestBodyLimitMiddleware:
             await self.app(scope, receive, send)
             return
 
+        max_bytes = self._limit(scope)
         body = bytearray()
         more = True
         while more:
@@ -105,7 +122,7 @@ class RequestBodyLimitMiddleware:
                 return
             chunk = message.get("body", b"")
             body.extend(chunk)
-            if len(body) > self.max_bytes:
+            if len(body) > max_bytes:
                 response = JSONResponse(
                     {"detail": "Request body is too large."},
                     status_code=413,

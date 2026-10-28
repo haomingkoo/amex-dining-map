@@ -92,7 +92,7 @@ def test_published_batch_sends_exactly_one_message(owner_client, monkeypatch):
     assert {row["telegram_message_id"] for row in rows} == {501}
 
 
-def test_digest_groups_by_program_with_counts_and_caps_items():
+def test_digest_groups_by_program_with_counts_and_shows_all_that_fit():
     raw = [
         _program_event(i, PROGRAMS[0], "added", f"Sushi {i}") for i in range(4)
     ] + [
@@ -105,19 +105,113 @@ def test_digest_groups_by_program_with_counts_and_caps_items():
 
     message = format_owner_digest(events, EXPLORER)
 
-    assert message.splitlines()[0] == "Amex Explorer updates · 10 changes"
+    assert message.splitlines()[0] == "Amex Explorer · 10 updates"
     assert "Japan Dining · 4 added, 2 removed, 3 details updated" in message
     assert "Plat Stay · 1 added" in message
     japan = message.split("Japan Dining ·")[1].split("Plat Stay ·")[0]
     item_lines = [line for line in japan.splitlines() if line[:2] in {"+ ", "− ", "~ "}]
-    assert len(item_lines) == 5
-    assert "…and 4 more" in japan
-    assert "+ Sushi 0" in japan
-    assert "− Gone 0" in japan
+    assert len(item_lines) == 9
+    assert "more" not in japan
     assert f"Explorer: {EXPLORER}/#/japan" in japan
-    assert "~ Changed" not in japan
     assert f"Explorer: {EXPLORER}/#/stays" in message
     assert "Before:" not in message
+
+
+def test_digest_shares_budget_fairly_and_shows_every_kind():
+    kinds = ["details_updated"] * 60 + ["added", "source_updated"]
+    raw = [
+        _program_event(i, PROGRAMS[0], kind, f"Japan venue {i} " + "x" * 120)
+        for i, kind in enumerate(kinds)
+    ] + [
+        _program_event(100 + i, PROGRAMS[2], "removed", f"Global venue {i} " + "y" * 120)
+        for i in range(60)
+    ]
+    for i, event in enumerate(raw[:60]):
+        event["changes"] = [{"field": f"Field {i}", "before": "a", "after": "b"}]
+    raw[61]["subject"] = "Japan Dining source"
+    raw[61]["changes"] = [{"field": "Record count", "before": 863, "after": 865}]
+    events = [OwnerAlertEvent.model_validate(event) for event in raw]
+
+    message = format_owner_digest(events, EXPLORER)
+
+    assert len(message) <= 3900
+    japan = message.split("Japan Dining ·")[1]
+    global_ = message.split("Global Dining ·")[1].split("Japan Dining ·")[0]
+    japan_items = [line for line in japan.splitlines() if line[:2] in {"+ ", "~ "}]
+    global_items = [line for line in global_.splitlines() if line.startswith("− ")]
+    assert abs(len(japan_items) - len(global_items)) <= 1
+    assert len(japan_items) >= 3
+    assert japan_items[0].startswith("+ Japan venue 60")
+    assert japan_items[1].startswith("~ Japan venue 0")
+    assert "~ Source: 863 → 865 records" in japan
+    assert f"…and {62 - len(japan_items)} more" in japan
+    assert f"…and {60 - len(global_items)} more" in global_
+
+
+def test_digest_source_line_shows_numbers_and_hides_hashes():
+    raw = _program_event(1, PROGRAMS[0], "source_updated", "Japan Dining source")
+    raw["changes"] = [
+        {"field": "Record count", "before": 863, "after": 865},
+        {"field": "Hotel outlet count", "before": 94, "after": 95},
+        {"field": "Official records SHA-256", "before": "7ba16603e169", "after": "4ce966fa3074"},
+    ]
+    only_hash = _program_event(2, PROGRAMS[5], "source_updated", "Plat Stay source")
+    only_hash["changes"] = [
+        {"field": "Hotel T&C PDF hash", "before": "0d32857cf380", "after": "040b0e309127"}
+    ]
+    ratings = _program_event(3, PROGRAMS[3], "source_review_required", "Tabelog ratings")
+    ratings["changes"] = [{"field": "Review items", "before": 0, "after": 2}]
+    events = [OwnerAlertEvent.model_validate(event) for event in (raw, only_hash, ratings)]
+
+    message = format_owner_digest(events, EXPLORER)
+
+    assert "~ Source: 863 → 865 records, 94 → 95 hotel outlets" in message
+    assert "~ Source: records changed" in message
+    assert "~ Tabelog ratings: 0 → 2 review items" in message
+    assert "SHA" not in message and "hash" not in message
+    assert "7ba16603e169" not in message
+    assert "Japan Dining source" not in message
+
+
+def test_digest_collapses_bulk_identical_changes_into_one_warning():
+    raw = [
+        _program_event(i, PROGRAMS[0], "details_updated", f"Venue {i}") for i in range(25)
+    ] + [_program_event(50 + i, PROGRAMS[2], "details_updated", f"Global {i}") for i in range(19)]
+    for event in raw[:25]:
+        event["changes"] = [
+            {"field": "Name", "before": "Den", "after": "傳"},
+            {"field": "District", "before": "Jingumae", "after": "神宮前"},
+        ]
+    events = [OwnerAlertEvent.model_validate(event) for event in raw]
+
+    message = format_owner_digest(events, EXPLORER)
+
+    japan = message.split("Japan Dining ·")[1]
+    assert (
+        "⚠ 25 venues changed Name, District at once. "
+        "Possible source glitch; check before trusting." in japan
+    )
+    assert "~ Venue 0: Name Den → 傳, District Jingumae → 神宮前" in japan
+    assert "~ Venue 1: Name Den → 傳" in japan
+    assert "Venue 2:" not in japan
+    assert "more" not in japan
+    global_ = message.split("Global Dining ·")[1].split("Japan Dining ·")[0]
+    assert "⚠" not in global_
+    assert global_.count("~ Global") == 19
+
+
+def test_digest_keeps_venue_route_for_single_item_section():
+    venue = _program_event(1, (*PROGRAMS[0][:2], "#/japan?venue=den"), "added", "Den")
+    pair = [
+        _program_event(2, (*PROGRAMS[2][:2], "#/global?venue=a"), "added", "A"),
+        _program_event(3, (*PROGRAMS[2][:2], "#/global?venue=b"), "added", "B"),
+    ]
+    events = [OwnerAlertEvent.model_validate(event) for event in (venue, *pair)]
+
+    message = format_owner_digest(events, EXPLORER)
+
+    assert f"Explorer: {EXPLORER}/#/japan?venue=den" in message
+    assert f"Explorer: {EXPLORER}/#/global\n" in message + "\n"
 
 
 def test_digest_updates_list_changed_fields():
@@ -129,7 +223,7 @@ def test_digest_updates_list_changed_fields():
     message = format_owner_digest([OwnerAlertEvent.model_validate(raw)], EXPLORER)
 
     assert "~ VUE: Address, Phone" in message
-    assert message.splitlines()[0] == "Amex Explorer updates · 1 change"
+    assert message.splitlines()[0] == "Amex Explorer · 1 update"
 
 
 def test_digest_stays_under_telegram_limit_for_huge_batches():
@@ -143,7 +237,7 @@ def test_digest_stays_under_telegram_limit_for_huge_batches():
     message = format_owner_digest(events, EXPLORER)
 
     assert len(message) < 4000
-    assert message.splitlines()[0] == "Amex Explorer updates · 500 changes"
+    assert message.splitlines()[0] == "Amex Explorer · 500 updates"
     for name, _program_id, route in PROGRAMS:
         assert f"{name} · " in message
         assert f"Explorer: {EXPLORER}/{route}" in message
@@ -446,28 +540,157 @@ def test_digest_golden_text_for_mixed_batch():
 
     assert format_owner_digest(events, EXPLORER) == "\n".join(
         [
-            "Amex Explorer updates · 25 changes",
+            "Amex Explorer · 25 updates",
             "",
             "Global Dining · 9 removed",
-            "− Global venue 0",
-            "− Global venue 1",
-            "− Global venue 2",
-            "− Global venue 3",
-            "− Global venue 4",
-            "…and 4 more",
+            *(f"− Global venue {i}" for i in range(9)),
             f"Explorer: {EXPLORER}/#/global",
             "",
             "Japan Dining · 2 added, 1 removed, 12 details updated",
             "+ Sushi Saito",
-            "+ Den",
             "− Kanda",
             "~ Japan venue 0: Address, Phone",
-            "~ Japan venue 1: Listing",
-            "…and 10 more",
+            "+ Den",
+            *(f"~ Japan venue {i}: Listing" for i in range(1, 12)),
             f"Explorer: {EXPLORER}/#/japan",
             "",
             "Love Dining · 1 source updated",
-            "~ Love Dining venue list: Listing",
+            "~ Venue list: Listing Not listed → Listed",
             f"Explorer: {EXPLORER}/#/love-dining",
         ]
     )
+
+
+BURST = json.loads(
+    (Path(__file__).parent / "fixtures" / "owner_alert_burst-2026-10-28.json").read_text()
+)
+
+
+def test_real_burst_posts_in_one_request_and_one_message(owner_client, monkeypatch):
+    client, _settings_value = owner_client
+    calls = _record_sends(monkeypatch)
+    assert len(BURST) == 101
+    assert len(json.dumps({"events": BURST}).encode()) > 16_384
+
+    response = _post_batch(client, BURST)
+
+    assert response.status_code == 200
+    assert set(_states(response).values()) == {"sent"}
+    assert len(calls) == 1
+    text = calls[0][2]
+    assert text.splitlines()[0] == "Amex Explorer · 101 updates"
+    assert "⚠ 100 venues changed Name, District, Cuisine at once." in text
+    assert "~ Source: records changed" in text
+    assert len(text) <= 3900
+
+
+def test_padded_500_event_batch_fits_authenticated_limit(owner_client, monkeypatch):
+    client, _settings_value = owner_client
+    calls = _record_sends(monkeypatch)
+    events = []
+    for i in range(500):
+        event = _program_event(i, PROGRAMS[i % 6], "details_updated", f"Venue {i}")
+        event["review_note"] = "n" * 500
+        event["after"]["fields"] = {f"F{j}": "v" * 450 for j in range(4)}
+        events.append(event)
+    body = json.dumps({"events": events}).encode()
+    assert 1_300_000 < len(body) < 2 * 1024 * 1024
+
+    response = client.post(
+        "/api/owner-alerts/batch",
+        content=body,
+        headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"},
+    )
+
+    assert response.status_code == 200
+    assert len(calls) == 1
+
+
+def test_oversized_bodies_without_bearer_or_on_other_routes_stay_413(owner_client, monkeypatch):
+    client, _settings_value = owner_client
+    calls = _record_sends(monkeypatch)
+    body = json.dumps({"events": BURST}).encode()
+    json_header = {"Content-Type": "application/json"}
+
+    anonymous = client.post("/api/owner-alerts/batch", content=body, headers=json_header)
+    basic = client.post(
+        "/api/owner-alerts/batch",
+        content=body,
+        headers={**json_header, "Authorization": "Basic abc"},
+    )
+    wrong_bearer = client.post(
+        "/api/owner-alerts/batch",
+        content=body,
+        headers={**json_header, "Authorization": "Bearer wrong"},
+    )
+    single_route = client.post(
+        "/api/owner-alerts/events",
+        content=b"x" * 20_000,
+        headers={**json_header, "Authorization": f"Bearer {TOKEN}"},
+    )
+    too_big = client.post(
+        "/api/owner-alerts/batch",
+        content=b"x" * (2 * 1024 * 1024 + 1),
+        headers={**json_header, "Authorization": f"Bearer {TOKEN}"},
+    )
+
+    assert anonymous.status_code == 413
+    assert basic.status_code == 413
+    assert wrong_bearer.status_code == 401
+    assert single_route.status_code == 413
+    assert too_big.status_code == 413
+    assert calls == []
+
+
+def test_stale_sending_counts_as_unknown_and_warns(owner_client, monkeypatch, caplog):
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
+    client, settings = owner_client
+    calls = _record_sends(monkeypatch)
+    stuck = _program_event(1, PROGRAMS[0], "added", "Stuck")
+    delivered = _program_event(2, PROGRAMS[0], "added", "Delivered")
+    _post_batch(client, [delivered])
+    conn = db.connect(settings.db_path)
+    try:
+        owner_alert_store.claim(
+            conn,
+            stuck["id"],
+            settings.telegram_owner_chat_id,
+            OwnerAlertEvent.model_validate(stuck).digest(),
+        )
+        conn.execute(
+            "UPDATE owner_alert_deliveries SET updated_ts = '2000-01-01T00:00:00+00:00' "
+            "WHERE event_id = ?",
+            (stuck["id"],),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    caplog.clear()
+
+    response = _post_batch(client, [stuck, delivered])
+
+    assert _states(response) == {
+        "event-batch-000001": "unknown",
+        "event-batch-000002": "sent",
+    }
+    assert len(calls) == 1
+    record = next(r for r in caplog.records if '"event":"owner_alert_digest"' in r.getMessage())
+    logged = json.loads(record.getMessage())
+    assert record.levelno == logging.WARNING
+    assert logged["unknown"] == 1
+    assert logged["deduplicated"] == 1
+
+
+def test_sent_replay_logs_info(owner_client, monkeypatch, caplog):
+    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
+    client, _settings_value = owner_client
+    _record_sends(monkeypatch)
+    event = _program_event(1, PROGRAMS[0], "added", "Venue")
+    _post_batch(client, [event])
+    caplog.clear()
+
+    _post_batch(client, [event])
+
+    record = next(r for r in caplog.records if '"event":"owner_alert_digest"' in r.getMessage())
+    assert record.levelno == logging.INFO
+    assert json.loads(record.getMessage())["deduplicated"] == 1

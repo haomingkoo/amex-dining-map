@@ -31,6 +31,7 @@ from app import (
 from app import alert_dispatch
 from app.config import load_settings
 from app.owner_alert_routes import router as owner_alert_router
+from app.owner_alerts import OWNER_ALERT_BATCH_MAX_BYTES
 from app.observability import configure_logging
 from app.telegram_bot_routes import router as telegram_bot_router
 from app.tft_live_refresh import TFTLiveRefresher
@@ -194,7 +195,11 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 app.add_middleware(GZipMiddleware, minimum_size=100)
-app.add_middleware(RequestBodyLimitMiddleware, max_bytes=16_384)
+app.add_middleware(
+    RequestBodyLimitMiddleware,
+    max_bytes=16_384,
+    bearer_limits={"/api/owner-alerts/batch": OWNER_ALERT_BATCH_MAX_BYTES},
+)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
 
