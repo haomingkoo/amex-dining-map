@@ -543,3 +543,12 @@ Source: `data/japan-restaurants.json`
 - **Added (2)**
   - Oku Akasaka Sushi Tanji / Tokyo
   - Sushi Sanji / Tokyo
+
+<!-- source-change:30884aebd2fee96cef3f0ab4dc49cf68d308eb20732c781a127173134edf5370 -->
+## 2026-10-28 11:38 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (2)**
+  - Rikki Kako176 / Hagi
+  - hugan / Tokyo

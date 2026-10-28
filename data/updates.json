@@ -1,7 +1,238 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-28T09:41:52Z",
+  "updated_at": "2026-10-28T11:38:16Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-10-28T11:38:16Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "774/863 (89.7%), 89 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "774/865 (89.5%), 91 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "774/863 (89.7%), 89 unavailable",
+          "after": "774/865 (89.5%), 91 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "18bdc569ef02dcd73162",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "ecfb908b2cb176ae813e"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-28T11:38:16Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2999/3011 (99.6%), 12 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2999/3013 (99.5%), 14 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "2999/3011 (99.6%), 12 unavailable",
+          "after": "2999/3013 (99.5%), 14 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "6be63510fd7f5d617346",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "98e8c4de6507e6f4aa9a"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-10-28T11:38:16Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "863/863 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "865/865 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "863/863 (100%), 0 unavailable",
+          "after": "865/865 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "83d8136fef23036d1795",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "603ef3e745ad7e9196ae"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-10-28T11:38:14Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 863,
+          "Mapped count": 863,
+          "City count": 94,
+          "Official records SHA-256": "fd48d8c09463"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 865,
+          "Mapped count": 865,
+          "City count": 95,
+          "Official records SHA-256": "424a2d6a8ace"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 863,
+          "after": 865
+        },
+        {
+          "field": "Mapped count",
+          "before": 863,
+          "after": 865
+        },
+        {
+          "field": "City count",
+          "before": 94,
+          "after": 95
+        },
+        {
+          "field": "Official records SHA-256",
+          "before": "fd48d8c09463",
+          "after": "424a2d6a8ace"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "bd4f80b3983c999c7a1d",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "84b9e3017ea78f0c68e3"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "hugan / Tokyo",
+      "detected_at": "2026-10-28T11:38:14Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "hugan",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Tsukishima",
+          "Address": "3-12-7, Tsukishima, Chuo-ku, Tokyo",
+          "Cuisine": [
+            "Chinese"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245679/",
+      "transition_id": "ed47d0939e450ee471ec",
+      "stream_id": "a828d997b60d381fcb04",
+      "occurrence": 1,
+      "id": "56466f1204ee97e781da"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Rikki Kako176 / Hagi",
+      "detected_at": "2026-10-28T11:38:14Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Rikki Kako176",
+          "Country": "Japan",
+          "Region": "Chugoku/Shikoku",
+          "City": "Hagi",
+          "District": "Hamasaki-cho",
+          "Address": "176, Hamasaki-cho, Hagi-shi, Yamaguchi",
+          "Cuisine": [
+            "French"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245690/",
+      "transition_id": "af30b163376dcc816a1a",
+      "stream_id": "dffe3d0aa41ff19c032a",
+      "occurrence": 1,
+      "id": "52048dc25caf5abe339d"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -16516,285 +16747,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "removed",
-      "subject": "Nukumi / Sapporo",
-      "detected_at": "2026-10-06T01:49:25Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Nukumi",
-          "Country": "Japan",
-          "Region": "Hokkaido",
-          "City": "Sapporo",
-          "District": "Minami10-jonishi",
-          "Address": "6-3-2, Minami10-jonishi, Chuo-ku, Sapporo-shi, Hokkaido",
-          "Cuisine": [
-            "Japanese, Kaiseki, Washoku"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/244580/",
-      "transition_id": "02856df0c0fe23376af5",
-      "stream_id": "caf476f3faac6f6cbb2b",
-      "occurrence": 1,
-      "id": "74f123baeda2beb52d00",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-10-06T01:49:25Z",
-      "status": "published",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "c48a5a7f730f"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "c05348dd758b"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "c48a5a7f730f",
-          "after": "c05348dd758b"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "4e505240640c1eefc3dd",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "11cfaecea31c86e6e1bd",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_recovered",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-06T00:59:52Z",
-      "status": "published",
-      "before": {
-        "state": "stale",
-        "fields": {
-          "Source state": "stale",
-          "Freshness": "stale",
-          "Stale records": 29,
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Freshness": "current",
-          "Stale records": 0,
-          "Coverage": "27/29 (93.1%), 2 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Freshness",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Stale records",
-          "before": 29,
-          "after": 0
-        },
-        {
-          "field": "Coverage",
-          "before": "29/29 (100%), 0 unavailable",
-          "after": "27/29 (93.1%), 2 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "bd00b76c3c97a49bb786",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 1,
-      "id": "a12f254465351cbcbf91",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_stale",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-06T00:23:27Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Freshness": "current",
-          "Stale records": 0
-        }
-      },
-      "after": {
-        "state": "stale",
-        "fields": {
-          "Source state": "stale",
-          "Freshness": "stale",
-          "Stale records": 29
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "current",
-          "after": "stale"
-        },
-        {
-          "field": "Freshness",
-          "before": "current",
-          "after": "stale"
-        },
-        {
-          "field": "Stale records",
-          "before": 0,
-          "after": 29
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "7a0c2ed47a14576abcae",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 8,
-      "id": "b91301b965b4d9f9d8b3",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_recovered",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-05T18:36:09Z",
-      "status": "published",
-      "before": {
-        "state": "stale",
-        "fields": {
-          "Source state": "stale",
-          "Freshness": "stale",
-          "Stale records": 29
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Freshness": "current",
-          "Stale records": 0
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Freshness",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Stale records",
-          "before": 29,
-          "after": 0
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "69ee8827e7535e6e03ce",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 6,
-      "id": "1d8e3691e75176d9c74d",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_stale",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-05T18:34:26Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Freshness": "current",
-          "Stale records": 0
-        }
-      },
-      "after": {
-        "state": "stale",
-        "fields": {
-          "Source state": "stale",
-          "Freshness": "stale",
-          "Stale records": 29
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "current",
-          "after": "stale"
-        },
-        {
-          "field": "Freshness",
-          "before": "current",
-          "after": "stale"
-        },
-        {
-          "field": "Stale records",
-          "before": 0,
-          "after": 29
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "7a0c2ed47a14576abcae",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 7,
-      "id": "bcbce97b4035e0219d42",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Table for Two",
       "program_id": "table-for-two",
       "route": "#/table-for-two",
@@ -23209,10 +23161,11 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "1f8ff4070cf35b4b4a5f",
+        "latest_transition_id": "18bdc569ef02dcd73162",
         "occurrences": {
           "0e86b64ab05f97a7ae46": 1,
           "1373702923712cbf4100": 1,
+          "18bdc569ef02dcd73162": 1,
           "1f8ff4070cf35b4b4a5f": 2,
           "21e13cd6db6f8de0e836": 1,
           "2988498f4c17e4f22ac3": 1,
@@ -23255,7 +23208,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "a8f7a2ed48f9d90d9e51",
+        "latest_transition_id": "bd4f80b3983c999c7a1d",
         "occurrences": {
           "04514ecd0f76bb86d085": 1,
           "13d4c2a8f5927f024200": 1,
@@ -23299,6 +23252,7 @@
           "af1745554b2845798fab": 1,
           "af667c9a723df3e47a14": 1,
           "b9acef5ccde9cc17c509": 1,
+          "bd4f80b3983c999c7a1d": 1,
           "be63932baeeb2ff4892b": 1,
           "bf82c69c69cc6c52a28f": 1,
           "c1d28318da2111657e70": 1,
@@ -23548,7 +23502,7 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "79aaada59d36dbc4e171",
+        "latest_transition_id": "83d8136fef23036d1795",
         "occurrences": {
           "0024ea21d692def9b91b": 1,
           "023dbb9237dd583b8431": 1,
@@ -23564,6 +23518,7 @@
           "630fba426215e10e413a": 1,
           "76df09d58e4670fbd1c9": 1,
           "79aaada59d36dbc4e171": 1,
+          "83d8136fef23036d1795": 1,
           "8c661fda8625deb97e56": 1,
           "951fc017d5e31f520818": 2,
           "a3fe4bea4f38e3ac4033": 1,
@@ -24120,7 +24075,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "07f988256e94c4968634",
+        "latest_transition_id": "6be63510fd7f5d617346",
         "occurrences": {
           "0487850cfd076512beed": 1,
           "07f988256e94c4968634": 1,
@@ -24149,6 +24104,7 @@
           "60dc180f760c021d210c": 1,
           "63a5bd704752e39cbb00": 1,
           "6788d36d5c8844e749a7": 1,
+          "6be63510fd7f5d617346": 1,
           "6c48f3c93029a0c4e8c8": 1,
           "6f692e210315547883d9": 1,
           "773cfd96350cd8793f78": 1,
@@ -24583,6 +24539,12 @@
           "b97d6bfd830c4dfe9397": 1
         }
       },
+      "a828d997b60d381fcb04": {
+        "latest_transition_id": "ed47d0939e450ee471ec",
+        "occurrences": {
+          "ed47d0939e450ee471ec": 1
+        }
+      },
       "a8d329c3a9066ed6619d": {
         "latest_transition_id": "1075b794401203ae4a3a",
         "occurrences": {
@@ -25006,6 +24968,12 @@
         "occurrences": {
           "5cc4501cb7aed4661c63": 1,
           "b6c7b06ec3f61777993e": 1
+        }
+      },
+      "dffe3d0aa41ff19c032a": {
+        "latest_transition_id": "af30b163376dcc816a1a",
+        "occurrences": {
+          "af30b163376dcc816a1a": 1
         }
       },
       "e0575f70c674407d0df8": {
