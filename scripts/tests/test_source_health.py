@@ -110,6 +110,23 @@ class SourceHealthTest(unittest.TestCase):
         self.assertEqual(source["freshness_state"], "current")
         self.assertEqual(source["checked_at"], "2026-08-30T11:55:00Z")
 
+    def test_availability_links_to_the_official_page_not_the_api(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            self.fixture(root)
+            tft = json.loads((root / "table-for-two.json").read_text(encoding="utf-8"))
+            tft["availability_source"] = {"api_base": "https://api.diningcity.asia/public"}
+            self.write(root, "table-for-two.json", tft)
+            payload = MODULE.build_source_health(root, NOW, tft_live=self.live())
+
+        self.assertEqual(self.availability(payload)["source_url"], "https://example.com/tft")
+
+    def test_source_url_change_alone_emits_no_owner_event(self):
+        old = {"sources": [{"id": "table-for-two-availability", "source_url": "https://api.diningcity.asia/public"}]}
+        new = {"sources": [{"id": "table-for-two-availability", "source_url": "https://example.com/tft"}]}
+
+        self.assertEqual(MODULE.build_transition_events(old, new, "2026-08-30T12:00:00Z"), [])
+
     def test_live_snapshot_older_than_the_limit_is_stale(self):
         old = MODULE.format_time(NOW - MODULE.timedelta(hours=MODULE.AVAILABILITY_STALE_HOURS + 1))
         with tempfile.TemporaryDirectory() as temp:
