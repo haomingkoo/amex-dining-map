@@ -1,6 +1,14 @@
 version: 2
 updates:
   - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - ready-for-agent
+    open-pull-requests-limit: 5
+  # requirements-dev.txt includes ../requirements-pdf.txt; pypdf is bumped from / only.
+  - package-ecosystem: pip
     directory: /reminders
     schedule:
       interval: weekly
@@ -8,8 +16,6 @@ updates:
       - ready-for-agent
     open-pull-requests-limit: 5
     ignore:
-      # Reviewed PDF manifests store extracted-text hashes; 6.20.1 changed 2 of 44.
-      # Upgrade by hand: compare hashes, re-review changed documents, then bump PYPDF_VERSION.
       - dependency-name: pypdf
   - package-ecosystem: github-actions
     directory: /

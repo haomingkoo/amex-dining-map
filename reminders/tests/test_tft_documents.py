@@ -218,3 +218,23 @@ def test_clean_but_false_document_title_fails_closed():
     assert "Gold Card" not in answer
     assert "Singapore-issued Platinum Card" not in answer
     assert "will not summarize" in answer
+
+
+@pytest.mark.parametrize(
+    "extractor, served",
+    [
+        ("pypdf 6.21.3 extract_text normalized-whitespace-v1", True),
+        ("pypdf 7.0.0 extract_text normalized-whitespace-v1", True),
+        ("pypdf latest extract_text normalized-whitespace-v1", False),
+        ("pdfminer 6.21.3 extract_text normalized-whitespace-v1", False),
+        ("pypdf 6.21.3 extract_text normalized-whitespace-v2", False),
+    ],
+)
+def test_reviewed_document_accepts_any_pinned_pypdf_extractor_label(extractor, served):
+    changed = copy.deepcopy(catalog())
+    terms = next(item for item in changed["documents"] if item["id"] == "tft-terms")
+    terms["extractor"] = extractor
+
+    answer = tft_guide.handle_message("/terms eligibility", changed, NOW)
+
+    assert ("Singapore-issued Platinum Card" in answer) is served

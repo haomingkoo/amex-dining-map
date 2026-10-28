@@ -7,6 +7,7 @@ import io
 import re
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
@@ -17,10 +18,16 @@ from scripts import source_change_alert
 from scripts.jsonio import manifest_sha256
 
 
-PYPDF_VERSION = "6.19.0"
+# Page hashes depend on pypdf output, so verification runs only the pinned version.
+PYPDF_VERSION = re.search(
+    r"^pypdf==(\S+)$",
+    (Path(__file__).resolve().parents[1] / "requirements-pdf.txt").read_text(),
+    re.MULTILINE,
+).group(1)
 EXTRACTOR = f"pypdf {PYPDF_VERSION} extract_text normalized-whitespace-v1"
 SUPPORTED_EXTRACTORS = {
     EXTRACTOR,
+    "pypdf 6.19.0 extract_text normalized-whitespace-v1",
     "pypdf 6.16.2 extract_text normalized-whitespace-v1",
     "pypdf 6.15.0 extract_text normalized-whitespace-v1",
 }
