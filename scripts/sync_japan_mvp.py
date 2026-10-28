@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import copy
 import html
 import hashlib
 import json
@@ -244,7 +245,12 @@ def source_record_projection(record: dict) -> dict:
     return {key: value for key, value in record.items() if key not in ignored}
 
 
-def build_source_meta(records: list[dict], fetched_at: str) -> dict:
+def build_source_meta(
+    records: list[dict],
+    fetched_at: str,
+    locale_retained_count: int = 0,
+    locale_unretained_count: int = 0,
+) -> dict:
     mapped = sum(1 for record in records if record.get("lat") is not None and record.get("lng") is not None)
     cities = sorted({record["city"] for record in records if record.get("city")})
     source_projection = [
@@ -264,6 +270,8 @@ def build_source_meta(records: list[dict], fetched_at: str) -> dict:
         "source_url": "https://pocket-concierge.jp/en/",
         "api_url": GRAPHQL_URL,
         "records_sha256": source_hash,
+        "locale_retained_count": locale_retained_count,
+        "locale_unretained_count": locale_unretained_count,
     }
 
 
@@ -677,6 +685,55 @@ def build_record_from_search_result(venue: dict, area_name: str) -> dict:
     }
 
 
+JAPANESE_SCRIPT = re.compile(r"[぀-ヿ一-鿿]")
+LOCALE_RETAINED_FIELDS = ("name", "cuisines", "summary_official", "source_search_town", "prefecture")
+
+
+def is_localized_search_record(record: dict) -> bool:
+    # Prefecture and cuisines are an English taxonomy in /en; names can be bilingual.
+    fields = [record.get("prefecture") or "", *(record.get("cuisines") or [])]
+    return any(JAPANESE_SCRIPT.search(field) for field in fields)
+
+
+def retain_english_details(records: list[dict], previous_by_id: dict[str, dict]) -> tuple[int, int]:
+    retained = unretained = 0
+    for record in records:
+        if not is_localized_search_record(record):
+            continue
+        previous = previous_by_id.get(record["id"])
+        if not previous or is_localized_search_record(previous):
+            unretained += 1
+            continue
+        for field in LOCALE_RETAINED_FIELDS:
+            record[field] = copy.deepcopy(previous.get(field))
+        prefecture = record["prefecture"]
+        record["city"] = "Tokyo" if prefecture == "Tokyo" else (titlecase_geo(prefecture) or "Japan")
+        record["district"] = infer_district(record["source_search_town"], record["region"], record["city"])
+        record["city_color"] = CITY_COLORS.get(record["city"], "slate")
+        retained += 1
+    if retained or unretained:
+        print(
+            f"::warning title=Japan Dining locale::{retained + unretained} venue(s) returned in Japanese; "
+            f"kept previous English details for {retained}, {unretained} had no English record to keep."
+        )
+    return retained, unretained
+
+
+def normalize_website_url(raw_url: str | None) -> str | None:
+    url = (raw_url or "").strip()
+    if not url:
+        return None
+    if url.startswith("//"):
+        url = f"https:{url}"
+    elif re.match(r"^[\w-]+(\.[\w-]+)+(:\d+)?(/|$)", url):
+        url = f"https://{url}"
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme.lower() not in {"http", "https"} or not parsed.netloc:
+        print(f"Rejected venue website URL {raw_url!r}: not an http(s) URL.")
+        return None
+    return url
+
+
 def merge_record(existing: dict, incoming: dict) -> None:
     for area_id in incoming["source_search_area_ids"]:
         if area_id not in existing["source_search_area_ids"]:
@@ -854,7 +911,7 @@ def enrich_from_source(record: dict, cache: dict, geocode_cache: dict) -> None:
     )
     record["nearest_stations"] = venue.get("nearestStations") or []
     record["nearest_stations_text"] = " ".join(record["nearest_stations"]) or None
-    record["website_url"] = venue.get("websiteUrl")
+    record["website_url"] = normalize_website_url(venue.get("websiteUrl"))
     record["phone_number"] = venue.get("phoneNumber")
     record["recommendation_count"] = len(venue.get("recommendations") or [])
     record["course_count"] = len(venue.get("courses") or [])
@@ -1046,6 +1103,11 @@ def main() -> None:
     geocode_cache = load_json_or(CACHE_PATH, {})
     detail_cache = load_json_or(DETAIL_CACHE_PATH, {})
     quality_signals = load_json_or(QUALITY_SIGNALS_PATH, {})
+    previous_by_id = {
+        record["id"]: record
+        for record in load_json_or(JSON_PATH, [])
+        if isinstance(record, dict) and record.get("id")
+    }
 
     areas = select_target_areas(fetch_search_properties())
     deduped: dict[str, dict] = {}
@@ -1061,6 +1123,7 @@ def main() -> None:
                 continue
             deduped[record["id"]] = record
 
+    locale_retained, locale_unretained = retain_english_details(list(deduped.values()), previous_by_id)
     normalized = sorted(
         deduped.values(),
         key=lambda item: (item["city"], item.get("district") or "", item["name"]),
@@ -1076,7 +1139,7 @@ def main() -> None:
             print(f"Enriched {index}/{len(normalized)} venues...")
 
     save_json(JSON_PATH, normalized)
-    source_meta = build_source_meta(normalized, fetched_at)
+    source_meta = build_source_meta(normalized, fetched_at, locale_retained, locale_unretained)
     previous_source_meta = load_json_or(SOURCE_PATH, {})
     for key in ("manual_review_required", "major_change_reasons"):
         if previous_source_meta.get(key):
