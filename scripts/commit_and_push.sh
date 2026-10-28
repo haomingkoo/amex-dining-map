@@ -17,8 +17,15 @@
 #   MAX_ATTEMPTS          - default 3
 #   REMOTE                - default origin
 #   BRANCH                - default main
+#   GIT_BOT_EMAIL         - Actions commit email override
 
 set -uo pipefail
+
+# Actions commits as the bot; local runs keep the caller's identity.
+if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+  git config user.name "github-actions[bot]"
+  git config user.email "${GIT_BOT_EMAIL:-41898282+github-actions[bot]@users.noreply.github.com}"
+fi
 
 REMOTE="${REMOTE:-origin}"
 BRANCH="${BRANCH:-main}"

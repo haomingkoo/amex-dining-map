@@ -17,16 +17,13 @@ if str(ROOT) not in sys.path:
 
 from reminders.app.owner_alerts import OwnerAlertEvent
 from scripts import build_tft_guide_catalog, source_change_alert, tft_menu_reviews
+from scripts.jsonio import load_json as _load
 
 
 DEFAULT_DATA = Path("data/table-for-two.json")
 DEFAULT_UPDATES = Path("data/updates.json")
 DEFAULT_CATALOG = Path("reminders/app/tft_guide_catalog.json")
 DEFAULT_PDF_ROOT = Path("data/reviews/tft-menu-pdfs")
-
-
-def _load(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _retained_pdf(manifest: dict, root: Path) -> bytes:

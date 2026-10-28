@@ -6,18 +6,8 @@ const vm = require("node:vm");
 const source = fs.readFileSync("web/app.js", "utf8");
 const styles = fs.readFileSync("web/styles.css", "utf8");
 
-function extractFunction(name) {
-  const start = source.indexOf(`function ${name}(`);
-  if (start < 0) throw new Error(`Missing ${name}`);
-  const bodyStart = source.indexOf("{", source.indexOf(")", start));
-  let depth = 0;
-  for (let index = bodyStart; index < source.length; index += 1) {
-    if (source[index] === "{") depth += 1;
-    if (source[index] === "}") depth -= 1;
-    if (depth === 0) return source.slice(start, index + 1);
-  }
-  throw new Error(`Unclosed ${name}`);
-}
+const { extractFunction: extractFrom } = require("./extract_function");
+const extractFunction = (name) => extractFrom(source, name);
 
 const AVAILABLE = "#5fb9a6";
 const context = {

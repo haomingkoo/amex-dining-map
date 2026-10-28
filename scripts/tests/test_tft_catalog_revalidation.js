@@ -5,27 +5,8 @@ const vm = require("node:vm");
 
 const source = fs.readFileSync("web/app.js", "utf8");
 
-function extractFunction(name) {
-  const start = source.indexOf(`function ${name}(`);
-  if (start < 0) throw new Error(`Missing ${name}`);
-  // The parameter list destructures an options object, so skip past its parens
-  // before looking for the body brace.
-  let parens = 0;
-  let cursor = source.indexOf("(", start);
-  for (; cursor < source.length; cursor += 1) {
-    if (source[cursor] === "(") parens += 1;
-    if (source[cursor] === ")") parens -= 1;
-    if (parens === 0) break;
-  }
-  const bodyStart = source.indexOf("{", cursor);
-  let depth = 0;
-  for (let index = bodyStart; index < source.length; index += 1) {
-    if (source[index] === "{") depth += 1;
-    if (source[index] === "}") depth -= 1;
-    if (depth === 0) return `async ${source.slice(start, index + 1)}`;
-  }
-  throw new Error(`Unclosed ${name}`);
-}
+const { extractFunction: extractFrom } = require("./extract_function");
+const extractFunction = (name) => extractFrom(source, name);
 
 function harness({ catalog, slots = { venues: [] }, releaseHistory = { observations: [] } }) {
   const calls = { fetched: [], rendered: 0, liveRefreshed: 0, snapshots: [] };

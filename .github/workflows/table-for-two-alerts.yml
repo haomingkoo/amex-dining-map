@@ -106,8 +106,6 @@ jobs:
             data/table-for-two-release-history.json
             reminders/app/tft_guide_catalog.json
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           bash scripts/commit_and_push.sh
 
       - name: Fail after preserving alert evidence

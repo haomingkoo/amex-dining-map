@@ -115,8 +115,6 @@ jobs:
             data/source-health.json
             data/updates.json
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           bash scripts/commit_and_push.sh
 
       - name: Commit source health
@@ -128,8 +126,6 @@ jobs:
             data/source-health.json
             data/updates.json
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           bash scripts/commit_and_push.sh
 
       - name: Dispatch published owner updates
@@ -146,8 +142,6 @@ jobs:
           COMMIT_MESSAGE: "chore: record owner alert delivery"
           MUST_STAGE: data/updates.json
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           bash scripts/commit_and_push.sh
 
       - name: Open Plat Stay alert issue
