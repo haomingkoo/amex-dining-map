@@ -6,7 +6,9 @@ from pathlib import Path
 
 import yaml
 
-WORKFLOWS = sorted(Path(".github/workflows").glob("*.yml"))
+ROOT = Path(__file__).resolve().parents[2]
+WORKFLOWS = sorted((ROOT / ".github/workflows").glob("*.yml"))
+assert WORKFLOWS, "no workflows found"
 LEDGER_PATHSPECS = {"data/updates.json", "data/", "data", ".", "./", "-A", "--all"}
 
 
