@@ -13,6 +13,7 @@ SGT = ZoneInfo("Asia/Singapore")
 
 
 MAX_REPLY_LENGTH = 3900
+EXTRACTOR_LABEL = re.compile(r"pypdf \d+\.\d+\.\d+ extract_text normalized-whitespace-v1")
 DOCUMENT_IDENTITIES = {
     ("tft-terms", "terms"): "Table for Two - Platinum Edition Terms and Conditions",
     ("tft-faq", "faq"): "Table for Two - Frequently Asked Questions",
@@ -116,12 +117,7 @@ def _valid_document(document: dict, now: datetime) -> bool:
         identity in DOCUMENT_IDENTITIES
         and document.get("review_status") in {"approved", "current_baseline"}
         and document.get("title") == DOCUMENT_IDENTITIES.get(identity)
-        and document.get("extractor")
-        in {
-            "pypdf 6.15.0 extract_text normalized-whitespace-v1",
-            "pypdf 6.16.2 extract_text normalized-whitespace-v1",
-            "pypdf 6.19.0 extract_text normalized-whitespace-v1",
-        }
+        and EXTRACTOR_LABEL.fullmatch(str(document.get("extractor"))) is not None
         and document.get("lexical_index_version") == "reviewed-topics-v1"
         and _trusted_amex_url(document.get("source_url")) is not None
         and isinstance(raw_hash, str)
