@@ -242,7 +242,6 @@ input,
 .primary-link,
 .toolbar-toggle,
 .ghost-btn,
-.download-btn,
 .inline-link,
 #map,
 #stays-map,
@@ -427,87 +426,6 @@ input,
   font-family: var(--sans);
   font-size: 12px;
   color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-.intro-guide {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 22px;
-}
-
-.intro-guide-card {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 14px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--surface-overlay-subtle);
-}
-
-.guide-step {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--gold-border-mid);
-  border-radius: 999px;
-  background: var(--gold-subtle);
-  color: var(--gold);
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-
-.intro-guide-card h3 {
-  margin: 0;
-  color: var(--text);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.intro-guide-card p {
-  margin: 7px 0 0;
-  color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1.55;
-}
-
-.intro-trust-panel {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.intro-trust-panel div {
-  padding: 14px 16px;
-  border: 1px solid var(--gold-soft);
-  border-radius: 14px;
-  background: var(--gold-subtle);
-}
-
-.intro-trust-panel strong,
-.intro-trust-panel span {
-  display: block;
-}
-
-.intro-trust-panel strong {
-  color: var(--gold);
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.intro-trust-panel span {
-  margin-top: 6px;
-  color: var(--text-secondary);
-  font-size: 12px;
   line-height: 1.5;
 }
 
@@ -1632,11 +1550,6 @@ input,
   }
 }
 
-.map-downloads {
-  padding: 12px 16px;
-  border-top: 1px solid var(--border);
-}
-
 .map-legend {
   display: flex;
   flex-wrap: wrap;
@@ -1670,7 +1583,6 @@ input,
 .legend-love-hotel { background: var(--legend-love-hotel); }
 .legend-tft-available { background: var(--teal); }
 .legend-tft-no-match  { background: var(--gold); }
-.legend-tft-pending   { background: #c9a55a; }
 
 .tft-marker-dot {
   pointer-events: none;
@@ -2609,12 +2521,6 @@ button.tft-calendar-cell:hover {
   background: transparent;
 }
 
-.tft-calendar-cell.is-seen {
-  border-color: var(--gold-border);
-  background: var(--gold-subtle);
-  color: var(--gold);
-}
-
 .tft-calendar-cell.is-available {
   border-color: var(--teal-border-strong);
   background: var(--teal-surface-strong);
@@ -2750,22 +2656,12 @@ button.tft-calendar-cell:hover {
   border-radius: 999px;
 }
 
-.tft-calendar-legend i.is-seen {
-  background: var(--gold);
-}
-
 .tft-calendar-legend i.is-available {
   background: var(--teal);
 }
 
 .tft-calendar-legend i.is-selected {
   background: var(--gold);
-}
-
-.tft-calendar-meals {
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--surface-border-soft);
 }
 
 .focus-note-warn {
@@ -4064,46 +3960,6 @@ a.google-badge:hover {
   text-underline-offset: 3px;
 }
 
-.stat-label {
-  color: var(--text-dim);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-
-.download-stack {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.download-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 14px;
-  border: 1px solid var(--surface-border-strong);
-  border-radius: 999px;
-  background: var(--surface-overlay);
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: 600;
-  transition: border-color 0.18s, color 0.18s, transform 0.15s;
-}
-
-.download-btn:hover {
-  border-color: var(--border);
-  color: var(--text);
-  transform: translateY(-1px);
-}
-
-.download-btn.primary {
-  border-color: var(--gold-soft-border);
-  color: var(--gold);
-}
-
 
 /* ═══════════════════════════════════════════════════════════
    EMPTY STATES
@@ -4328,18 +4184,6 @@ h1, h2, h3 {
   font-weight: 600;
 }
 
-/* Preset strip (stay filter) */
-.preset-wrap {
-  display: flex;
-  flex-direction: column;
-}
-
-.preset-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
 
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE
@@ -4379,9 +4223,7 @@ h1, h2, h3 {
   /* Hide header clutter on mobile - map should fill screen */
   .context-strip,
   .context-title,
-  .summary-strip,
-  .map-instructions,
-  .refine-panel {
+  .summary-strip {
     display: none !important;
   }
 
@@ -4920,10 +4762,6 @@ h1, h2, h3 {
     border-radius: var(--radius-xl);
   }
 
-  .map-downloads {
-    display: none;
-  }
-
   .intro-choices {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
@@ -4940,11 +4778,6 @@ h1, h2, h3 {
 
   .intro-subtitle {
     font-size: 13px;
-  }
-
-  .intro-guide,
-  .intro-trust-panel {
-    grid-template-columns: 1fr;
   }
 
   .context-strip {

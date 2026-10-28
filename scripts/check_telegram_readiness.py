@@ -164,7 +164,7 @@ def check_owner(api_base: str) -> None:
     features = health(api_base).get("feature_state") or {}
     if features.get("owner_alerts_enabled") is not True:
         raise ReadinessError("owner alerts are not enabled in deployed health")
-    expect_status(f"{api_base}/api/owner-alerts/events", {"Authorization": "Bearer deliberately-wrong"}, 401)
+    expect_status(f"{api_base}/api/owner-alerts/batch", {"Authorization": "Bearer deliberately-wrong"}, 401)
 
 
 def check_guide(api_base: str, values: dict[str, object]) -> None:

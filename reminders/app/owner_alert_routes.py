@@ -15,8 +15,6 @@ from app.config import Settings, load_settings
 from app.owner_alerts import (
     OwnerAlertBatchRequest,
     OwnerAlertEvent,
-    OwnerAlertRequest,
-    format_owner_alert,
     format_owner_digest,
 )
 from app.observability import log_event
@@ -42,113 +40,6 @@ def _authenticate(authorization: str | None, settings: Settings) -> None:
     expected = f"Bearer {settings.owner_alert_ingest_token}"
     if not authorization or not hmac.compare_digest(authorization, expected):
         raise HTTPException(status_code=401, detail="Unauthorized")
-
-
-@router.post("/api/owner-alerts/events")
-async def ingest_owner_events(
-    request: Request,
-    authorization: str | None = Header(default=None),
-    settings: Settings = Depends(get_settings),
-) -> dict:
-    _authenticate(authorization, settings)
-    try:
-        payload = OwnerAlertRequest.model_validate(await request.json())
-    except (ValueError, TypeError, ValidationError):
-        raise HTTPException(status_code=422, detail="Invalid owner alert payload.")
-    event = payload.event
-    event_ref = event.digest()[:12]
-    if event.status != "published":
-        return {"ok": True, "id": event.id, "state": "withheld"}
-    effective_at = event.reviewed_at or event.detected_at
-    if settings.owner_alert_not_before and effective_at < settings.owner_alert_not_before:
-        return {"ok": True, "id": event.id, "state": "before_activation"}
-
-    conn = db.connect(settings.db_path)
-    try:
-        claimed = owner_alert_store.claim(
-            conn,
-            event.id,
-            settings.telegram_owner_chat_id,
-            event.digest(),
-        )
-    finally:
-        conn.close()
-    if claimed.state == "conflict":
-        log_event(
-            logger,
-            "owner_alert_delivery",
-            level=logging.WARNING,
-            event_ref=event_ref,
-            state="conflict",
-            error_code="digest_conflict",
-            attempt=claimed.attempt_count,
-            duration_ms=0,
-        )
-        raise HTTPException(
-            status_code=409,
-            detail=f"Event {event.id} conflicts with its recorded digest.",
-        )
-    if not claimed.should_send:
-        log_event(
-            logger,
-            "owner_alert_delivery",
-            level=_level(claimed.state),
-            event_ref=event_ref,
-            state=claimed.state,
-            error_code="stale_sending" if claimed.state == "unknown" else "deduplicated",
-            attempt=claimed.attempt_count,
-            duration_ms=0,
-        )
-        return {
-            "ok": True,
-            "id": event.id,
-            "state": claimed.state,
-            "attempt": claimed.attempt_count,
-        }
-
-    state = "sent"
-    error_code = None
-    message_id = None
-    started = time.monotonic()
-    try:
-        message_id = telegram.send_message(
-            settings.telegram_bot_token,
-            settings.telegram_owner_chat_id,
-            format_owner_alert(event, settings.explorer_base_url),
-        )
-    except telegram.TelegramDeliveryError as exc:
-        state = exc.state
-        error_code = exc.code
-
-    conn = db.connect(settings.db_path)
-    try:
-        owner_alert_store.complete(
-            conn,
-            event.id,
-            settings.telegram_owner_chat_id,
-            state,
-            message_id=message_id,
-            error_code=error_code,
-        )
-    finally:
-        conn.close()
-    log_event(
-        logger,
-        "owner_alert_delivery",
-        level=_level(state),
-        event_ref=event_ref,
-        state=state,
-        error_code=error_code or "sent",
-        attempt=claimed.attempt_count,
-        duration_ms=round((time.monotonic() - started) * 1000),
-    )
-    return {
-        "ok": True,
-        "id": event.id,
-        "state": state,
-        "attempt": claimed.attempt_count,
-        "error_code": error_code,
-    }
 
 
 @router.post("/api/owner-alerts/batch")

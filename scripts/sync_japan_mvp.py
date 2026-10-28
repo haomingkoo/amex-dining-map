@@ -28,7 +28,6 @@ except ImportError:  # running as `python3 scripts/<file>.py`
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
-KML_DIR = DATA_DIR / "kml"
 JSON_PATH = DATA_DIR / "japan-restaurants.json"
 SOURCE_PATH = DATA_DIR / "japan-dining-source.json"
 GEOJSON_PATH = DATA_DIR / "japan-restaurants.geojson"
@@ -1005,98 +1004,6 @@ def to_geojson(records: list[dict]) -> dict:
     return {"type": "FeatureCollection", "features": features}
 
 
-def kml_description(record: dict) -> str:
-    lines = [
-        f"<strong>{html.escape(record['name'])}</strong>",
-        html.escape(
-            f"{record['city']} / {record.get('district') or record.get('region') or record.get('prefecture')}"
-        ),
-    ]
-    if record.get("source_localized_address"):
-        lines.append(html.escape("Address: " + record["source_localized_address"]))
-    if record.get("nearest_stations"):
-        lines.append(html.escape("Nearest: " + "; ".join(record["nearest_stations"])))
-    if record.get("cuisines"):
-        lines.append(html.escape("Cuisine: " + ", ".join(record["cuisines"])))
-    if record.get("reservation_type"):
-        lines.append(html.escape("Reservation: " + record["reservation_type"]))
-    if record.get("price_dinner_min_jpy"):
-        dinner_band = " ".join(
-            part
-            for part in [record.get("price_dinner_band_tier"), record.get("price_dinner_band_label")]
-            if part
-        )
-        if dinner_band:
-            lines.append(html.escape("Dinner range: " + dinner_band))
-    if record.get("price_lunch_min_jpy"):
-        lunch_band = " ".join(
-            part
-            for part in [record.get("price_lunch_band_tier"), record.get("price_lunch_band_label")]
-            if part
-        )
-        if lunch_band:
-            lines.append(html.escape("Lunch range: " + lunch_band))
-    if record.get("child_policy_raw"):
-        lines.append(html.escape("Child policy: " + record["child_policy_raw"]))
-    if record.get("summary_official"):
-        lines.append(html.escape("Summary: " + record["summary_official"]))
-    if record.get("known_for_tags"):
-        lines.append(html.escape("Known for: " + ", ".join(record["known_for_tags"])))
-    if record.get("signature_dish_tags"):
-        lines.append(html.escape("Signature cues: " + ", ".join(record["signature_dish_tags"])))
-    if record.get("source_url"):
-        lines.append(
-            f'<a href="{html.escape(record["source_url"], quote=True)}" target="_blank" rel="noopener">Pocket Concierge</a>'
-        )
-    lines.append(html.escape(record["map_pin_note"]))
-    return "<br/>".join(lines)
-
-
-def build_kml(records: list[dict], name: str) -> str:
-    placemarks = []
-    for record in records:
-        if record.get("lat") is None or record.get("lng") is None:
-            continue
-        placemarks.append(
-            "\n".join(
-                [
-                    "    <Placemark>",
-                    f"      <name>{html.escape(record['name'])}</name>",
-                    f"      <description><![CDATA[{kml_description(record)}]]></description>",
-                    "      <Point>",
-                    f"        <coordinates>{record['lng']},{record['lat']},0</coordinates>",
-                    "      </Point>",
-                    "    </Placemark>",
-                ]
-            )
-        )
-
-    return "\n".join(
-        [
-            '<?xml version="1.0" encoding="UTF-8"?>',
-            '<kml xmlns="http://www.opengis.net/kml/2.2">',
-            "  <Document>",
-            f"    <name>{html.escape(name)}</name>",
-            *placemarks,
-            "  </Document>",
-            "</kml>",
-            "",
-        ]
-    )
-
-
-def write_kml_outputs(records: list[dict]) -> None:
-    KML_DIR.mkdir(parents=True, exist_ok=True)
-    groups = {
-        "japan-all.kml": ("Japan Dining Map - All", records),
-        "tokyo.kml": ("Japan Dining Map - Tokyo", [r for r in records if r["city"] == "Tokyo"]),
-        "kyoto.kml": ("Japan Dining Map - Kyoto", [r for r in records if r["city"] == "Kyoto"]),
-        "osaka.kml": ("Japan Dining Map - Osaka", [r for r in records if r["city"] == "Osaka"]),
-    }
-    for filename, (title, group_records) in groups.items():
-        (KML_DIR / filename).write_text(build_kml(group_records, title))
-
-
 def main() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     fetched_at = datetime.now(UTC).isoformat()
@@ -1146,7 +1053,6 @@ def main() -> None:
             source_meta[key] = previous_source_meta[key]
     save_json(SOURCE_PATH, source_meta)
     save_json(GEOJSON_PATH, to_geojson(normalized))
-    write_kml_outputs(normalized)
 
     mapped = sum(1 for record in normalized if record.get("lat") is not None)
     cities = sorted({record["city"] for record in normalized})
