@@ -393,3 +393,81 @@ def test_single_event_failure_logs_at_warning(owner_client, monkeypatch, caplog)
 
     records = [r for r in caplog.records if '"event":"owner_alert_delivery"' in r.getMessage()]
     assert records[-1].levelno == logging.WARNING
+
+
+def test_digest_link_uses_most_common_route_regardless_of_order():
+    ratings = ("Explorer ratings", "explorer-ratings", "#/ratings")
+    raw = [
+        _program_event(1, ratings, "details_updated", "A"),
+        _program_event(2, (*ratings[:2], "#/japan?venue=b"), "details_updated", "B"),
+        _program_event(3, (*ratings[:2], "#/japan"), "details_updated", "C"),
+    ]
+    events = [OwnerAlertEvent.model_validate(event) for event in raw]
+
+    for ordered in (events, events[::-1]):
+        assert f"Explorer: {EXPLORER}/#/japan" in format_owner_digest(ordered, EXPLORER)
+
+
+def test_digest_route_tie_breaks_by_sorted_route():
+    ratings = ("Explorer ratings", "explorer-ratings", "#/ratings")
+    raw = [
+        _program_event(1, ratings, "details_updated", "A"),
+        _program_event(2, (*ratings[:2], "#/japan"), "details_updated", "B"),
+    ]
+    events = [OwnerAlertEvent.model_validate(event) for event in raw]
+
+    for ordered in (events, events[::-1]):
+        assert f"Explorer: {EXPLORER}/#/japan" in format_owner_digest(ordered, EXPLORER)
+
+
+def test_digest_golden_text_for_mixed_batch():
+    japan, global_dining, love = PROGRAMS[0], PROGRAMS[2], PROGRAMS[4]
+    raw = (
+        [
+            _program_event(1, japan, "added", "Sushi Saito"),
+            _program_event(2, japan, "added", "Den"),
+            _program_event(3, japan, "removed", "Kanda"),
+        ]
+        + [
+            _program_event(10 + i, japan, "details_updated", f"Japan venue {i}")
+            for i in range(12)
+        ]
+        + [
+            _program_event(30 + i, global_dining, "removed", f"Global venue {i}")
+            for i in range(9)
+        ]
+        + [_program_event(50, love, "source_updated", "Love Dining venue list")]
+    )
+    raw[3]["changes"] = [
+        {"field": "Address", "before": "A", "after": "B"},
+        {"field": "Phone", "before": "1", "after": "2"},
+    ]
+    events = [OwnerAlertEvent.model_validate(event) for event in raw]
+
+    assert format_owner_digest(events, EXPLORER) == "\n".join(
+        [
+            "Amex Explorer updates · 25 changes",
+            "",
+            "Global Dining · 9 removed",
+            "− Global venue 0",
+            "− Global venue 1",
+            "− Global venue 2",
+            "− Global venue 3",
+            "− Global venue 4",
+            "…and 4 more",
+            f"Explorer: {EXPLORER}/#/global",
+            "",
+            "Japan Dining · 2 added, 1 removed, 12 details updated",
+            "+ Sushi Saito",
+            "+ Den",
+            "− Kanda",
+            "~ Japan venue 0: Address, Phone",
+            "~ Japan venue 1: Listing",
+            "…and 10 more",
+            f"Explorer: {EXPLORER}/#/japan",
+            "",
+            "Love Dining · 1 source updated",
+            "~ Love Dining venue list: Listing",
+            f"Explorer: {EXPLORER}/#/love-dining",
+        ]
+    )

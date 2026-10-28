@@ -248,7 +248,9 @@ def format_owner_digest(events: list[OwnerAlertEvent], explorer_base_url: str) -
         count_text = ", ".join(
             f"{counts[kind]} {kind.replace('_', ' ')}" for kind in dict.fromkeys(e.kind for e in items)
         )
-        route = groups[program][0].route.split("?", 1)[0]
+        # Most common route wins; ties go to the first in sorted order.
+        routes = Counter(event.route.split("?", 1)[0] for event in items)
+        route = min(routes, key=lambda r: (-routes[r], r))
         sections.append(
             (f"{_short(program, 80)} · {count_text}", items, f"Explorer: {base}/{route}")
         )
