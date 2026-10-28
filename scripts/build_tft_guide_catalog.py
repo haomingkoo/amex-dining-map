@@ -32,6 +32,7 @@ DEFAULT_RATINGS = Path("data/google-maps-ratings.json")
 INFO_TEXT_LIMIT = 600
 SOURCE_PROJECT = "AMEXPlatSG"
 SGT = ZoneInfo("Asia/Singapore")
+EXTRACTOR_LABEL = re.compile(r"pypdf \d+\.\d+\.\d+ extract_text normalized-whitespace-v1")
 DOCUMENT_SPECS = {
     "tft-terms": (
         "terms",
@@ -208,11 +209,7 @@ def _document_projection(source: dict, review_root: Path) -> list[dict]:
             or decision.get("source_url") != source_url
             or decision.get("raw_sha256") != raw_sha256
             or decision.get("review_status") not in {"approved", "current_baseline"}
-            or decision.get("extractor") not in {
-                "pypdf 6.15.0 extract_text normalized-whitespace-v1",
-                "pypdf 6.16.2 extract_text normalized-whitespace-v1",
-                "pypdf 6.19.0 extract_text normalized-whitespace-v1",
-            }
+            or EXTRACTOR_LABEL.fullmatch(str(decision.get("extractor"))) is None
             or decision.get("lexical_index_version") != "reviewed-topics-v1"
             or decision.get("title") != title
             or state.get("approved_manifest_sha256")
