@@ -30,7 +30,7 @@ jobs:
 
       - name: Install Playwright
         run: |
-          pip install playwright==1.62.0 pypdf==6.19.0
+          pip install playwright==1.62.0 -r requirements-pdf.txt
           playwright install --with-deps chromium
 
       - name: Refresh official Love Dining snapshot
