@@ -12,7 +12,7 @@ import urllib.request
 from datetime import date, datetime, time as clock_time, timezone
 from typing import Any, Callable
 
-from app import tft_live_api
+from app import tft_live_api, tft_live_refresh
 from app.config import load_settings
 
 
@@ -149,7 +149,7 @@ def _fetch(opener: Callable = _opener) -> dict[str, Any]:
 def live_snapshot(now: datetime | None = None) -> dict[str, Any] | None:
     """The service's own live snapshot when valid and fresh, else None."""
     try:
-        snapshot = tft_live_api.validated_snapshot(load_settings().tft_live_snapshot_path)
+        snapshot = tft_live_refresh.load_snapshot(load_settings().tft_live_snapshot_path)
         if snapshot is None:
             return None
         validate_snapshot(snapshot)
