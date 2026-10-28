@@ -142,6 +142,13 @@ def dispatch(
     terminal_outcomes: dict[str, str] | None = None,
 ) -> int:
     target = batch_url(url)
+    # Results are keyed by id, so a duplicate would mask one event's outcome.
+    seen = set()
+    for event in events:
+        event_id = str(event.get("id"))
+        if event_id in seen:
+            raise RuntimeError(f"Duplicate owner event id in batch: {event_id}")
+        seen.add(event_id)
     complete = 0
     failures = []
     for offset in range(0, len(events), BATCH_LIMIT):

@@ -392,3 +392,12 @@ def test_delivery_receipts_are_persisted_without_changing_transition_identity(
     assert stored["owner_delivery_state"] == "sent"
     assert stored["owner_delivery_recorded_at"] == "2026-08-30T01:00:00Z"
     assert MODULE.source_change_alert.update_event_id(stored) == before
+
+
+def test_dispatch_rejects_duplicate_ids_before_posting(monkeypatch):
+    requests = _fake_batch(monkeypatch, [{"id": "one", "state": "sent"}])
+    events = [{"id": "one"}, {"id": "two"}, {"id": "one"}]
+
+    with pytest.raises(RuntimeError, match="Duplicate owner event id in batch: one"):
+        MODULE.dispatch(INGEST_URL, "x" * 43, events, {})
+    assert requests == []
