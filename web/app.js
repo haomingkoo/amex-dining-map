@@ -936,8 +936,6 @@ const staysGoogleRatingFilter = document.getElementById("stays-google-rating-fil
 const staysSortFilter = document.getElementById("stays-sort-filter");
 const staysResetFiltersButton = document.getElementById("stays-reset-filters");
 const staysSummaryStripText = document.getElementById("stays-summary-strip-text");
-const staysDownloadsSection = document.getElementById("stays-downloads-section");
-const staysDownloadStack = document.getElementById("stays-download-stack");
 const staysMapSummary = document.getElementById("stays-map-summary");
 const staysResultsText = document.getElementById("stays-results-text");
 const staysFocusCard = document.getElementById("stays-focus-card");
@@ -5126,20 +5124,6 @@ function renderStayStats() {
   renderStayTableToggle();
 }
 
-function renderStayDownloads(route) {
-  const downloads = route.downloads || [];
-  staysDownloadStack.innerHTML = "";
-  staysDownloadsSection.hidden = downloads.length === 0;
-  downloads.forEach((item) => {
-    const link = document.createElement("a");
-    link.className = `download-btn${item.primary ? " primary" : ""}`;
-    link.href = item.href;
-    link.download = "";
-    link.textContent = item.label;
-    staysDownloadStack.appendChild(link);
-  });
-}
-
 function renderStayMarkers() {
   if (!hasLeaflet || !staysMap) return;
   stayMarkerClusterGroup = ensureMarkerClusterGroup(staysMap, stayMarkerClusterGroup);
@@ -8196,7 +8180,6 @@ async function applyRoute(routeId) {
     ensureMapForRoute(route);
     await ensureRouteDataLoaded(route);
     if (applyToken !== routeApplyToken) return;
-    renderStayDownloads(route);
     refreshStayFilterOptions();
     filterStays();
     if (hasLeaflet && staysMap) {

@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import difflib
 import hashlib
-import html
 import http.client
 from http import HTTPStatus
 import json
@@ -36,10 +35,8 @@ except ImportError:  # running as `python3 scripts/<file>.py`
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
-KML_DIR = DATA_DIR / "kml"
 JSON_PATH = DATA_DIR / "plat-stays.json"
 GEOJSON_PATH = DATA_DIR / "plat-stays.geojson"
-KML_PATH = KML_DIR / "plat-stays-all.kml"
 SOURCE_META_PATH = DATA_DIR / "plat-stay-source.json"
 GEOCODE_CACHE_PATH = DATA_DIR / "plat_stay_geocode_cache.json"
 GEOAPIFY_CACHE_PATH = DATA_DIR / "plat_stay_geoapify_cache.json"
@@ -1266,59 +1263,6 @@ def geojson(records: list[dict]) -> dict:
     return {"type": "FeatureCollection", "features": features}
 
 
-def kml_description(record: dict) -> str:
-    lines = [
-        f"<strong>{html.escape(record['name'])}</strong>",
-        html.escape(f"{record.get('city') or 'City unknown'} / {record.get('country') or 'Country unknown'}"),
-        html.escape("Address: " + record["address"]),
-        html.escape("Eligible room: " + record["eligible_room_type"]),
-    ]
-    if record.get("blackout_raw"):
-        lines.append(html.escape("Blackout notes: " + record["blackout_raw"]))
-    if record.get("reservation_raw"):
-        lines.append(html.escape("Reservation: " + record["reservation_raw"]))
-    if record.get("breakfast_note"):
-        lines.append(html.escape("Breakfast: " + record["breakfast_note"]))
-    if record.get("source_url"):
-        lines.append(
-            f'<a href="{html.escape(record["source_url"], quote=True)}" target="_blank" rel="noopener">Official Plat Stay source</a>'
-        )
-    lines.append(html.escape(record["map_pin_note"]))
-    return "<br/>".join(lines)
-
-
-def build_kml(records: list[dict], name: str) -> str:
-    placemarks = []
-    for record in records:
-        if record.get("lat") is None or record.get("lng") is None:
-            continue
-        placemarks.append(
-            "\n".join(
-                [
-                    "    <Placemark>",
-                    f"      <name>{html.escape(record['name'])}</name>",
-                    f"      <description><![CDATA[{kml_description(record)}]]></description>",
-                    "      <Point>",
-                    f"        <coordinates>{record['lng']},{record['lat']},0</coordinates>",
-                    "      </Point>",
-                    "    </Placemark>",
-                ]
-            )
-        )
-    return "\n".join(
-        [
-            '<?xml version="1.0" encoding="UTF-8"?>',
-            '<kml xmlns="http://www.opengis.net/kml/2.2">',
-            "  <Document>",
-            f"    <name>{html.escape(name)}</name>",
-            *placemarks,
-            "  </Document>",
-            "</kml>",
-            "",
-        ]
-    )
-
-
 def build_records(pdf_bytes: bytes, resolved_url: str, fetched_at: str, page_count: int | None) -> list[dict]:
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as handle:
         handle.write(pdf_bytes)
@@ -1439,7 +1383,6 @@ def attach_reservation_links(records: list[dict], mailto_links: list[str], booki
 
 def main() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    KML_DIR.mkdir(parents=True, exist_ok=True)
 
     fetched_at = datetime.now(UTC).isoformat()
     pdf_bytes, resolved_url = fetch_pdf(CANONICAL_SOURCE_URL)
@@ -1474,7 +1417,6 @@ def main() -> None:
 
     save_json(JSON_PATH, records)
     save_json(GEOJSON_PATH, geojson(records))
-    KML_PATH.write_text(build_kml(records, "Plat Stay - All Properties"))
     save_json(
         SOURCE_META_PATH,
         {
