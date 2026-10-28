@@ -11,9 +11,11 @@ from pathlib import Path
 
 try:
     from scripts import scrape_love_dining, source_change_alert
+    from scripts.jsonio import load_json as _load
 except ModuleNotFoundError:
     import scrape_love_dining
     import source_change_alert
+    from jsonio import load_json as _load
 
 
 DEFAULT_MANIFEST = Path(
@@ -26,10 +28,6 @@ OFFICIAL_URL = (
     "https://www.americanexpress.com/sg/benefits/love-dining/"
     "love-dining-hotels.html"
 )
-
-
-def _load(path: Path):
-    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _records_digest(records: list[dict]) -> str:
