@@ -1,9 +1,17 @@
 name: Monitor Source Health
 
 on:
+  # GitHub drops most of these; kept as the fallback when Table for Two Alerts stops.
   schedule:
-    # Five minutes after each TFT availability refresh window.
     - cron: "22,52 * * * *"
+  # Railway dispatches Table for Two Alerts about every 15 minutes; the gate thins this to one pass per ~30 minutes.
+  workflow_run:
+    workflows:
+      - Table for Two Alerts
+    types:
+      - completed
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -11,14 +19,32 @@ permissions:
   actions: write
   issues: write
 
-concurrency:
-  group: source-ledger-refresh
-  cancel-in-progress: false
-
 jobs:
+  gate:
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      due: ${{ steps.due.outputs.due }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check time since the last monitor pass
+        id: due
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 scripts/monitor_due.py
+
   monitor:
+    needs: gate
+    if: ${{ !cancelled() && (github.event_name != 'workflow_run' || needs.gate.outputs.due == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Job-level so gate-only runs never take the pending slot from a queued refresh.
+    concurrency:
+      group: source-ledger-refresh
+      cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
