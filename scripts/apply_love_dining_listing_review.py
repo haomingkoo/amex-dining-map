@@ -5,14 +5,15 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
+import json
 from pathlib import Path
 
 try:
-    from scripts import source_change_alert
-    from scripts.apply_love_dining_review import _load, _records_digest
+    from scripts import scrape_love_dining, source_change_alert
 except ModuleNotFoundError:
+    import scrape_love_dining
     import source_change_alert
-    from apply_love_dining_review import _load, _records_digest
 
 
 DEFAULT_DATA = Path("data/love-dining.json")
@@ -20,6 +21,18 @@ DEFAULT_META = Path("data/love-dining-source.json")
 DEFAULT_UPDATES = Path("data/updates.json")
 LISTING_REASON = "Official Love Dining listing content changed"
 RECORD_EVENT_KINDS = {"added", "removed", "details_updated"}
+
+
+def _load(path: Path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _records_digest(records: list[dict]) -> str:
+    official = [
+        scrape_love_dining.official_record_projection(record) for record in records
+    ]
+    raw = json.dumps(official, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
 
 
 def _love_event(events: dict, event_id: str, kinds: set[str]) -> dict:

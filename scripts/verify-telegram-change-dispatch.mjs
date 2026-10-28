@@ -58,7 +58,6 @@ execFileSync("uv", [
   "scripts/tests/test_tft_official_documents.py",
   "scripts/tests/test_tft_document_review_application.py",
   "scripts/tests/test_apply_love_dining_document_review.py",
-  "scripts/tests/test_apply_love_dining_review.py",
   "scripts/tests/test_tft_release_patterns.py",
   "reminders/tests/test_owner_alerts.py",
   "-q",
