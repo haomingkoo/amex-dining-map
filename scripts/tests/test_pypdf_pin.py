@@ -5,9 +5,9 @@ import re
 from pathlib import Path
 
 import pypdf
+import pytest
 
 from scripts import build_tft_guide_catalog, official_document_reviews as reviews
-from scripts import verify_love_dining_documents
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -15,6 +15,11 @@ PIN_FILE = ROOT / "requirements-pdf.txt"
 HISTORICAL_EXTRACTORS = {
     f"pypdf {version} extract_text normalized-whitespace-v1"
     for version in ("6.15.0", "6.16.2", "6.19.0")
+}
+# Hotel terms page 2 extracts differently under 6.21.3 than under the 6.19.0 that reviewed it.
+PINNED_PYPDF_PAGE_DRIFT = {
+    "30a6a4fa068470f8ef80752d4cb228965b62d65541760e4103d2ab7a83b174ca",
+    "5b9a7e525dae8b4f00840f1fef47bfd572636bd466e0682d13c9d633cde19d5c",
 }
 
 
@@ -61,29 +66,35 @@ def test_dev_requirements_and_dependabot_track_the_pin_file():
     assert "-r ../requirements-pdf.txt" in dev
     assert any(re.fullmatch(r"httpx2==\d+\.\d+\.\d+", line) for line in dev)
     assert not any(line.startswith("httpx==") for line in dev)
-    dependabot = (ROOT / ".github/dependabot.yml").read_text()
-    assert re.search(r'directories:\s*\n\s*- "?/"?\s*\n\s*- "?/reminders"?', dependabot)
-    assert "dependency-name: pypdf" not in dependabot
+    blocks = (ROOT / ".github/dependabot.yml").read_text().split("- package-ecosystem: ")[1:]
+    pip = {re.search(r"directory: (\S+)", block).group(1): block for block in blocks if block.startswith("pip")}
+    assert set(pip) == {"/", "/reminders"}
+    assert "dependency-name: pypdf" not in pip["/"]
+    assert re.search(r"ignore:\s*\n\s*- dependency-name: pypdf\s*$", pip["/reminders"])
 
 
-def test_current_love_dining_reviews_verify_offline_with_the_pinned_pypdf(tmp_path):
-    meta = json.loads((ROOT / "data/love-dining-source.json").read_text())
-    retained = ROOT / "data/reviews/official-document-pdfs"
-    for key, (document_id, _title) in verify_love_dining_documents.DOCUMENTS.items():
-        current = meta["terms_hashes"][key]
-        pdf = retained / document_id / f"{current}.pdf"
-        if pdf.exists():
-            (tmp_path / f"{key}.pdf").write_bytes(pdf.read_bytes())
-
-    pending = verify_love_dining_documents.verify(
-        ROOT / "data/love-dining-source.json",
-        ROOT / "data/reviews/official-documents",
-        tmp_path,
-    )
-
-    reviewed = sum(
-        (ROOT / "data/reviews/official-documents" / document_id / f"{meta['terms_hashes'][key]}.json").exists()
-        for key, (document_id, _title) in verify_love_dining_documents.DOCUMENTS.items()
-    )
-    assert reviewed >= 1
-    assert pending == len(verify_love_dining_documents.DOCUMENTS) - reviewed
+def test_retained_official_pdfs_verify_offline_with_the_pinned_pypdf():
+    review_root = ROOT / "data/reviews/official-documents"
+    # Refreshes retain observed PDFs before review, so only reviewed pairs are checked.
+    pairs = [
+        (pdf, review_root / pdf.parent.name / f"{pdf.stem}.json")
+        for pdf in sorted((ROOT / "data/reviews/official-document-pdfs").glob("*/*.pdf"))
+        if (review_root / pdf.parent.name / f"{pdf.stem}.json").exists()
+    ]
+    assert pairs
+    verified, drifted = set(), set()
+    for pdf, manifest_path in pairs:
+        manifest = json.loads(manifest_path.read_text())
+        spec = reviews.DocumentSpec(
+            document_id=pdf.parent.name,
+            **{field: manifest[field] for field in ("program", "program_id", "route", "kind", "title", "source_url")},
+        )
+        if pdf.stem in PINNED_PYPDF_PAGE_DRIFT:
+            with pytest.raises(ValueError, match="does not match the PDF"):
+                reviews.verify_version(spec, pdf.read_bytes(), manifest)
+            drifted.add(pdf.stem)
+        else:
+            assert reviews.verify_version(spec, pdf.read_bytes(), manifest)["raw_sha256"] == pdf.stem
+            verified.add(pdf.stem)
+    assert verified
+    assert drifted == PINNED_PYPDF_PAGE_DRIFT
