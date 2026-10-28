@@ -34,3 +34,31 @@ def test_claude_md_runs_scripts_suite_with_the_ci_dependencies() -> None:
     assert "reminders/.venv/bin/python -m pytest scripts/tests -q" in text
     assert "reminders/requirements-dev.txt" in text
     assert "`python3 -m pytest scripts/tests -q`" not in text
+
+
+def test_tests_workflow_runs_only_static_verifiers() -> None:
+    text = TESTS.read_text(encoding="utf-8")
+    assert "node scripts/verify-project.mjs --static-only" in text
+
+
+def test_static_only_skips_suite_reruns_but_local_run_keeps_them() -> None:
+    text = PROJECT.read_text(encoding="utf-8")
+    assert 'process.argv.includes("--static-only")' in text
+    gated = text.split("if (!staticOnly) {", 1)[1].split("\n}\n", 1)[0]
+    assert '"pytest", "reminders/tests", "scripts/tests"' in gated
+    assert "scripts/tests/${name}" in gated
+
+
+def test_deploy_pages_ignores_gated_monitor_runs() -> None:
+    text = PAGES.read_text(encoding="utf-8")
+    changed_if = text.split("  changed:\n", 1)[1].split("\n    runs-on:", 1)[0]
+    assert "github.event.workflow_run.name != 'Monitor Source Health'" in changed_if
+    assert "github.event.workflow_run.event != 'workflow_run'" in changed_if
+
+
+def test_deploy_pages_concurrency_is_on_the_deploy_job() -> None:
+    text = PAGES.read_text(encoding="utf-8")
+    # Workflow-level concurrency would let a skipped run cancel a live deploy.
+    assert "\nconcurrency:" not in text
+    deploy = text.split("\n  deploy:\n", 1)[1].split("\n    steps:", 1)[0]
+    assert "concurrency:\n      group: pages\n      cancel-in-progress: true" in deploy

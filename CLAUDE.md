@@ -9,7 +9,7 @@
 - Python: `reminders/.venv/bin/python -m pytest scripts/tests -q` (needs `reminders/requirements-dev.txt`, as in CI; system python3 lacks pypdf)
 - Reminders: `python3 -m pytest reminders/tests -q` (local venv `reminders/.venv`, Python 3.11–3.13; Railway runs 3.12)
 - JS: `for f in scripts/tests/*.js; do node "$f"; done`
-- Verifiers: `node scripts/verify-project.mjs` (needs `uv`). `verify-tft-browser-evidence.mjs` probes production and stays manual.
+- Verifiers: `node scripts/verify-project.mjs` (needs `uv`; CI passes `--static-only` to skip the suite re-runs). `verify-tft-browser-evidence.mjs` probes production and stays manual.
 - The `Tests` workflow runs all of these on PRs and main. It is not a deploy gate.
 
 ## Deploys

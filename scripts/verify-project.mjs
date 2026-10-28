@@ -11,17 +11,22 @@ const run = (command, args, options = {}) => execFileSync(command, args, {
   ...options,
 });
 
+// CI passes --static-only because the Tests job already ran the full suites.
+const staticOnly = process.argv.includes("--static-only");
+
 run("node", ["--check", "web/app.js"]);
-for (const name of fs.readdirSync(path.join(root, "scripts/tests")).filter((item) => item.endsWith(".js")).sort()) {
-  run("node", [`scripts/tests/${name}`]);
+if (!staticOnly) {
+  for (const name of fs.readdirSync(path.join(root, "scripts/tests")).filter((item) => item.endsWith(".js")).sort()) {
+    run("node", [`scripts/tests/${name}`]);
+  }
+  run("uv", [
+    "run",
+    "--python", "3.12",
+    "--with-requirements", "reminders/requirements.txt",
+    "--with-requirements", "reminders/requirements-dev.txt",
+    "pytest", "reminders/tests", "scripts/tests", "-q",
+  ], { env: { ...process.env, PYTHONPATH: root } });
 }
-run("uv", [
-  "run",
-  "--python", "3.12",
-  "--with-requirements", "reminders/requirements.txt",
-  "--with-requirements", "reminders/requirements-dev.txt",
-  "pytest", "reminders/tests", "scripts/tests", "-q",
-], { env: { ...process.env, PYTHONPATH: root } });
 run("python3", ["-m", "compileall", "-q", "reminders/app", "scripts"]);
 // verify-tft-browser-evidence.mjs probes production and needs a fresh capture, so it stays manual.
 for (const verifier of [

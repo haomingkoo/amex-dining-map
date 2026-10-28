@@ -46,8 +46,8 @@ jobs:
           done
           exit "$status"
 
-      # Contract verifiers; they shell out to uv for isolated pytest runs.
+      # Contract verifiers only; the suites above already ran. Some verifiers use uv for targeted pytest runs.
       - name: Project verifiers
         run: |
           python3 -m pip install --disable-pip-version-check uv==0.9.24
-          node scripts/verify-project.mjs
+          node scripts/verify-project.mjs --static-only
