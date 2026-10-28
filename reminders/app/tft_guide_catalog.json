@@ -12,8 +12,8 @@
   "release_source": {
     "source": "data/table-for-two-release-history.json",
     "project": "AMEXPlatSG",
-    "updated_at": "2026-10-27T16:25:31+00:00",
-    "observation_count": 4318
+    "updated_at": "2026-10-28T03:27:12+00:00",
+    "observation_count": 4320
   },
   "eligibility_source": {
     "terms_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf",
@@ -5195,14 +5195,14 @@
       "release_patterns": [
         {
           "meal": "Lunch",
-          "observation_count": 6,
+          "observation_count": 8,
           "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "lead_days_min": 10,
           "lead_days_max": 90,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.33,
+          "typical_time_observation_share": 0.25,
           "confidence": "medium",
-          "latest_observation_at": "2026-09-06T16:17:37Z"
+          "latest_observation_at": "2026-10-28T03:27:12Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-one-ninety",
@@ -5226,7 +5226,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 26,
+            "dates_seen": 28,
             "days": [
               "Sat",
               "Sun"
@@ -5349,8 +5349,8 @@
         ]
       },
       "release": {
-        "new_dates": 6,
-        "precise_sightings": 2,
+        "new_dates": 8,
+        "precise_sightings": 4,
         "hour_counts": [
           2,
           0,
@@ -5363,7 +5363,7 @@
           0,
           0,
           0,
-          0,
+          2,
           0,
           0,
           0,
@@ -5405,7 +5405,7 @@
           0,
           0,
           0,
-          0,
+          2,
           0,
           1,
           1
@@ -5413,18 +5413,18 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 6,
+            "new_dates": 8,
             "rolling_lead_days": 90,
-            "lead_share": 1.0,
-            "precise_sightings": 2,
+            "lead_share": 0.75,
+            "precise_sightings": 4,
             "time_of_day": null,
-            "last_new_date_at": "2026-09-06T16:17:37Z",
-            "quiet_days": 51
+            "last_new_date_at": "2026-10-28T03:27:12Z",
+            "quiet_days": 0
           }
         ],
         "batches": [],
         "lines": [
-          "Until 7 Sep, new lunch dates opened one day at a time, 90 days ahead. None since."
+          "New lunch dates open one day at a time, 90 days ahead."
         ],
         "best_time": null,
         "furthest_open_dates": {
