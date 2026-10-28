@@ -5,18 +5,8 @@ const vm = require("vm");
 
 const source = fs.readFileSync("web/app.js", "utf8");
 
-function extractFunction(name) {
-  const start = source.indexOf(`function ${name}(`);
-  if (start === -1) throw new Error(`Missing ${name}`);
-  const bodyStart = source.indexOf("{", start);
-  let depth = 0;
-  for (let i = bodyStart; i < source.length; i += 1) {
-    if (source[i] === "{") depth += 1;
-    if (source[i] === "}") depth -= 1;
-    if (depth === 0) return source.slice(start, i + 1);
-  }
-  throw new Error(`Unclosed ${name}`);
-}
+const { extractFunction: extractFrom } = require("./extract_function");
+const extractFunction = (name) => extractFrom(source, name);
 
 const functionNames = [
   "uniqueValues",
