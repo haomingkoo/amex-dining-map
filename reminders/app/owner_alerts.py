@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections import Counter
 from datetime import datetime, timezone
 from typing import Annotated, Literal
 from urllib.parse import urlparse
@@ -146,6 +147,15 @@ class OwnerAlertRequest(BaseModel):
     event: OwnerAlertEvent
 
 
+OWNER_ALERT_BATCH_LIMIT = 500
+
+
+class OwnerAlertBatchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    events: Annotated[list, Field(max_length=OWNER_ALERT_BATCH_LIMIT)]
+
+
 def _short(value: PublicValue, limit: int = 240) -> str:
     if value is None:
         rendered = "Not available"
@@ -194,3 +204,56 @@ def format_owner_alert(event: OwnerAlertEvent, explorer_base_url: str) -> str:
     if len(body) > body_budget:
         body = body[: body_budget - 1].rstrip() + "…"
     return f"{body}\n\n{footer}"
+
+
+DIGEST_LIMIT = 3900
+# Shrink item lines before anything else; program headers and counts stay.
+DIGEST_LAYOUTS = ((5, 160), (5, 80), (3, 60), (1, 60), (0, 0))
+KIND_ORDER = {"added": 0, "removed": 1}
+
+
+def _digest_item(event: OwnerAlertEvent, width: int) -> str:
+    if event.kind == "added":
+        text = f"+ {event.subject.strip()}"
+    elif event.kind == "removed":
+        text = f"− {event.subject.strip()}"
+    else:
+        fields = ", ".join(change.field for change in event.changes)
+        text = f"~ {event.subject.strip()}: {fields}"
+    return _short(text, width)
+
+
+def _render_digest(header: str, sections: list, limit: int, width: int) -> str:
+    lines = [header]
+    for title, items, link in sections:
+        shown = items[:limit]
+        lines.extend(["", title, *(_digest_item(event, width) for event in shown)])
+        if len(items) > len(shown):
+            lines.append(f"…and {len(items) - len(shown)} more")
+        lines.append(link)
+    return "\n".join(lines)
+
+
+def format_owner_digest(events: list[OwnerAlertEvent], explorer_base_url: str) -> str:
+    total = len(events)
+    header = f"Amex Explorer updates · {total} change{'' if total == 1 else 's'}"
+    groups: dict[str, list[OwnerAlertEvent]] = {}
+    for event in events:
+        groups.setdefault(event.program, []).append(event)
+    base = explorer_base_url.rstrip("/")
+    sections = []
+    for program in sorted(groups):
+        items = sorted(groups[program], key=lambda e: (KIND_ORDER.get(e.kind, 2), e.kind))
+        counts = Counter(event.kind for event in items)
+        count_text = ", ".join(
+            f"{counts[kind]} {kind.replace('_', ' ')}" for kind in dict.fromkeys(e.kind for e in items)
+        )
+        route = groups[program][0].route.split("?", 1)[0]
+        sections.append(
+            (f"{_short(program, 80)} · {count_text}", items, f"Explorer: {base}/{route}")
+        )
+    for limit, width in DIGEST_LAYOUTS:
+        message = _render_digest(header, sections, limit, width)
+        if len(message) <= DIGEST_LIMIT:
+            return message
+    return message[: DIGEST_LIMIT - 1].rstrip() + "…"

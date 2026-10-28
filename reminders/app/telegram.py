@@ -16,6 +16,15 @@ TELEGRAM_API_BASE = "https://api.telegram.org"
 class TelegramDeliveryError(Exception):
     code: str
     state: str
+    retry_after: int | None = None
+
+
+def _retry_after(exc: urllib.error.HTTPError) -> int | None:
+    try:
+        value = json.loads(exc.read(4_096))["parameters"]["retry_after"]
+    except (OSError, KeyError, TypeError, ValueError):
+        return None
+    return value if isinstance(value, int) and value >= 0 else None
 
 
 def send_message(
@@ -40,7 +49,11 @@ def send_message(
         with urllib.request.urlopen(request, timeout=8) as response:
             raw = response.read(65_537)
     except urllib.error.HTTPError as exc:
-        if exc.code == 429 or 500 <= exc.code <= 599:
+        if exc.code == 429:
+            raise TelegramDeliveryError(
+                "telegram_http_429", "retry", _retry_after(exc)
+            ) from exc
+        if 500 <= exc.code <= 599:
             raise TelegramDeliveryError(f"telegram_http_{exc.code}", "retry") from exc
         raise TelegramDeliveryError(f"telegram_http_{exc.code}", "dead") from exc
     except (urllib.error.URLError, TimeoutError, socket.timeout) as exc:
