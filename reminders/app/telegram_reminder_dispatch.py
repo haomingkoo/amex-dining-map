@@ -54,6 +54,7 @@ def log_dead_run(run_id: str, error_code: str, started: float) -> None:
     log_event(
         logger,
         "telegram_reminder_run",
+        level=logging.WARNING,
         run_id=run_id,
         state="dead",
         error_code=error_code,
@@ -113,6 +114,7 @@ def run_dispatch(
             log_event(
                 logger,
                 "telegram_reminder_delivery",
+                level=logging.WARNING,
                 run_id=result.run_id,
                 state="dead",
                 error_code="store_unavailable",
@@ -156,6 +158,7 @@ def run_dispatch(
             log_event(
                 logger,
                 "telegram_reminder_delivery",
+                level=logging.WARNING,
                 run_id=result.run_id,
                 state="unknown",
                 error_code="receipt_conflict",
@@ -165,6 +168,7 @@ def run_dispatch(
         log_event(
             logger,
             "telegram_reminder_delivery",
+            level=logging.INFO if state == "done" else logging.WARNING,
             run_id=result.run_id,
             state=state,
             error_code=code,
@@ -179,6 +183,7 @@ def run_dispatch(
     log_event(
         logger,
         "telegram_reminder_run",
+        level=logging.WARNING if result.error_code else logging.INFO,
         run_id=result.run_id,
         state="dead" if result.error_code else "done",
         error_code=result.error_code or "completed",

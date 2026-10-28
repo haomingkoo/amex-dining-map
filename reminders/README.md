@@ -30,7 +30,8 @@ cp .env.example .env              # fill in values
 | POST | `/api/unsubscribe?token=` | Unsubscribe, including email-provider one-click requests |
 | GET/POST | `/api/manage?token=` | View or update reminder settings with the dedicated manage token |
 | GET  | `/api/subscribers` | Active subscribers export (Bearer `ALERT_EXPORT_TOKEN`) |
-| POST | `/api/owner-alerts/events` | Reviewed update ingestion (Bearer `OWNER_ALERT_INGEST_TOKEN`) |
+| POST | `/api/owner-alerts/batch` | Reviewed update batch, delivered as one digest (Bearer `OWNER_ALERT_INGEST_TOKEN`) |
+| POST | `/api/owner-alerts/events` | Single reviewed update (legacy; same token) |
 | POST | `/api/telegram/guide/webhook` | Authenticated private-chat Telegram guide ingress |
 
 ## Deployment (Railway)
@@ -80,8 +81,36 @@ The source refresh workflows replay a bounded recent window of
 Railway ingestion endpoint. Backend idempotency makes confirmed replays cheap,
 while `OWNER_ALERT_NOT_BEFORE` prevents enabling the integration from flooding
 the channel with historical events and still permits a later-reviewed event.
-Each event uses its own HTTP request so one slow Telegram call cannot hold a
-batch open. Railway is
+Each run sends every selected event in one request to `/api/owner-alerts/batch`
+(derived from `OWNER_ALERT_INGEST_URL`, which must end in
+`/api/owner-alerts/events`; up to 500 events per request). The script also
+splits a request above 1.5 MB. The batch route accepts bodies up to 2 MiB when
+the request carries a Bearer token. Every other `/api/` POST keeps the 16 KB cap,
+and an anonymous oversized batch gets HTTP 413. The service claims each new
+event and sends one Telegram digest per batch: a total, then one section per
+program with per-kind counts, item lines and the program's Explorer link.
+Item lines are `+` added, `−` removed and `~` changed fields. Source lines show
+numeric before → after values and drop hash fields. Programs take turns adding
+items until the message reaches 3,900 characters. Each program shows one item of
+every kind first, and the rest become "…and N more". When 20 or more events in
+one program change the same field set, they collapse into one warning line with
+two examples. A section holding a single venue keeps its `?venue=` link. Every
+claimed event shares the digest's outcome and Telegram message ID. Before this,
+each event was its own message, and a 145-event refresh hit Telegram's rate
+limit.
+
+Example digest for the 2026-10-28 Japan Dining burst:
+
+```
+Amex Explorer · 101 updates
+
+Japan Dining · 100 details updated, 1 source updated
+⚠ 100 venues changed Name, District, Cuisine at once. Possible source glitch; check before trusting.
+~ 南青山エッセンス / Tokyo: Name MINAMIAOYAMA Essence → 南青山エッセンス, District Minamiaoyama → 南青山, Cuisine Chinese → 中華
+~ 日本料理　伯雲（はくうん） / Tokyo: Name Hakuun → 日本料理　伯雲（はくうん）, District Minamiaoyama → 南青山, Cuisine Japanese, Kaiseki, Washoku → 和食
+~ Source: records changed
+Explorer: https://amex-explorer.kooexperience.com/#/dining/japan/top
+``` Railway is
 the only component that holds the Telegram bot token and the exact private
 channel ID. The request body cannot select a destination. Confirmed deliveries
 are durably deduplicated in SQLite; review-required entries are withheld without
@@ -128,10 +157,14 @@ trusted Telegram update/API inspection. Verify the ID against a test channel
 message before enabling. Enable in this order: configure the bot, channel,
 cutoff, and ingestion token; set `OWNER_ALERTS_ENABLED=true`; deploy; verify
 `/healthz` reports `owner_alerts_enabled=true`; send one reviewed test event;
-then verify its single `sent` row. While disabled, probe only for the expected
+then verify its single `sent` row. Deploy the service before merging script
+changes that call `/api/owner-alerts/batch`: refresh workflows run the script
+from main, and a missing batch route fails with an HTTP 404 error naming the
+digest deploy. While disabled, probe only for the expected
 `503`; authenticated ingestion acceptance is possible only after the enabled
 deployment. On `unknown` or `dead`, inspect aggregate owner delivery state and
-the Railway `owner_alert_delivery` event; never blindly replay an ambiguous
+the Railway `owner_alert_digest` event (`owner_alert_delivery` for the legacy
+single-event route); never blindly replay an ambiguous
 delivery. Rotate by disabling, replacing the bot token and ingestion token
 independently, redeploying, testing, then enabling. Roll back by setting
 `OWNER_ALERTS_ENABLED=false`, deploying, and removing both
@@ -503,6 +536,12 @@ Guide and owner delivery attempts also emit privacy-safe outcome events with
 state, bounded error code, command class where applicable, attempt, and latency.
 HTTP 200 can still contain a terminal Telegram outcome, so alert on `unknown`,
 `dead`, and `catalog_invalid`, and inspect their SQLite rows before intervention.
+Owner and Telegram delivery failures (`retry`, `unknown`, `dead`, `conflict`)
+log at WARNING with the same JSON line; `owner_alert_digest` also records
+Telegram's `retry_after` on a 429 and per-outcome counts, never subjects or IDs.
+Only a replay of an already-sent event counts as `deduplicated`. A stale
+`sending` claim that turns `unknown`, or a replayed `unknown` or `dead` event, is
+counted under its own state and logs the digest at WARNING.
 Reminder dispatch emits `telegram_reminder_run` aggregate counts and
 `telegram_reminder_delivery` terminal outcomes. These logs never include chat
 IDs, principal hashes, reminder IDs, venue/date criteria, message text, provider

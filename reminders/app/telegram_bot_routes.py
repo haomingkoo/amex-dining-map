@@ -313,6 +313,7 @@ async def telegram_guide_webhook(
             log_event(
                 logger,
                 "telegram_guide_delivery",
+                level=logging.WARNING,
                 command_class="replay",
                 state="unknown",
                 error_code="stale_processing",
@@ -422,6 +423,7 @@ async def telegram_guide_webhook(
         log_event(
             logger,
             "telegram_guide_delivery",
+            level=logging.WARNING,
             command_class=command_class,
             state="dead",
             error_code="catalog_invalid",
@@ -442,6 +444,7 @@ async def telegram_guide_webhook(
         log_event(
             logger,
             "telegram_guide_delivery",
+            level=logging.WARNING,
             command_class=command_class,
             state=terminal,
             error_code=exc.code,
