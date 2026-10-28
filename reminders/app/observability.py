@@ -25,6 +25,8 @@ def configure_logging() -> None:
         logger.propagate = False
 
 
-def log_event(logger: logging.Logger, event: str, **fields: Any) -> None:
+def log_event(
+    logger: logging.Logger, event: str, *, level: int = logging.INFO, **fields: Any
+) -> None:
     payload = {"event": event, **fields}
-    logger.info(json.dumps(payload, separators=(",", ":"), sort_keys=True))
+    logger.log(level, json.dumps(payload, separators=(",", ":"), sort_keys=True))
