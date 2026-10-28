@@ -23,7 +23,16 @@ run("uv", [
   "pytest", "reminders/tests", "scripts/tests", "-q",
 ], { env: { ...process.env, PYTHONPATH: root } });
 run("python3", ["-m", "compileall", "-q", "reminders/app", "scripts"]);
-run("node", ["scripts/verify-operations-docs.mjs"]);
-run("node", ["scripts/verify-source-health.mjs"]);
+// verify-tft-browser-evidence.mjs probes production and needs a fresh capture, so it stays manual.
+for (const verifier of [
+  "verify-operations-docs.mjs",
+  "verify-source-health.mjs",
+  "verify-security-audit.mjs",
+  "verify-telegram-change-dispatch.mjs",
+  "verify-telegram-deep-links.mjs",
+  "verify-telegram-guide.mjs",
+  "verify-telegram-security.mjs",
+  "verify-telegram-safety.mjs",
+]) run("node", [`scripts/${verifier}`]);
 
 console.log("project verification passed");

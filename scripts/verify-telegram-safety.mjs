@@ -6,9 +6,11 @@ import fs from "node:fs";
 const root = process.cwd();
 const guide = fs.readFileSync("reminders/app/tft_guide.py", "utf8");
 const documents = fs.readFileSync("reminders/app/tft_documents.py", "utf8");
+const slots = fs.readFileSync("reminders/app/tft_slots.py", "utf8");
 
 assert.match(guide, /len\(matches\) != 1/);
-assert.match(guide, /project"\) != "AMEXPlatSG"/);
+assert.match(guide, /project"\) != tft_slots\.PROJECT/);
+assert.match(slots, /^PROJECT = "AMEXPlatSG"$/m);
 assert.match(guide, /def _trusted_amex_url/);
 assert.doesNotMatch(guide, /\b(?:requests|httpx|urlopen)\b/);
 assert.doesNotMatch(guide, /\b(?:eval|exec)\s*\(/);
@@ -24,7 +26,7 @@ assert.match(guide, /_opener = urllib\.request\.build_opener\(_NoRedirect\(\)\)\
 assert.match(guide, /class _NoRedirect\(urllib\.request\.HTTPRedirectHandler\):/);
 assert.match(main, /^PUBLISHED_CATALOG_URL = f"\{settings\.explorer_base_url\}\/data\//m,
   "the fetched URL must be built from configuration, never from a request");
-assert.match(main, /run_catalog_refresh_loop\(\s*PUBLISHED_CATALOG_URL,/,
+assert.match(main, /run_periodically\(\s*CATALOG_REFRESH_INTERVAL_SECONDS,\s*tft_guide\.adopt_published_catalog,\s*PUBLISHED_CATALOG_URL,\s*\)/,
   "the refresh loop must be started with that constant and nothing else");
 assert.equal((guide.match(/urllib\.request\.Request\(/g) || []).length, 1,
   "the guide must build exactly one request, the published-catalogue read");
