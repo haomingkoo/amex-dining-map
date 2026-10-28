@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Send published public-ledger events to the private owner-alert ingress."""
+"""Send published public-ledger events to the private owner-alert ingress as one digest."""
 
 from __future__ import annotations
 
@@ -95,60 +95,87 @@ def select_owner_notifications(events: list[dict]) -> tuple[list[dict], dict[str
     return selected, withheld
 
 
+INGEST_SUFFIX = "/api/owner-alerts/events"
+BATCH_LIMIT = 500
+
+
+def batch_url(ingest_url: str) -> str:
+    if not ingest_url.endswith(INGEST_SUFFIX):
+        raise RuntimeError(f"OWNER_ALERT_INGEST_URL must end with {INGEST_SUFFIX}")
+    return ingest_url[: -len("/events")] + "/batch"
+
+
+def _post_batch(url: str, token: str, events: list[dict]) -> dict[str, dict]:
+    request = urllib.request.Request(
+        url,
+        data=json.dumps({"events": events}).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            body = response.read(1_048_577)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            raise RuntimeError(
+                "Owner alert batch route returned HTTP 404; the reminders service "
+                "needs the owner-alert digest deploy before this script can run"
+            ) from exc
+        raise RuntimeError(f"Owner alert ingress returned HTTP {exc.code}") from exc
+    payload = json.loads(body)
+    if payload.get("ok") is not True or not isinstance(payload.get("results"), list):
+        raise RuntimeError("Owner alert ingress did not acknowledge the batch")
+    return {
+        str(result.get("id")): result
+        for result in payload["results"]
+        if isinstance(result, dict)
+    }
+
+
 def dispatch(
     url: str,
     token: str,
     events: list[dict],
     terminal_outcomes: dict[str, str] | None = None,
 ) -> int:
+    target = batch_url(url)
     complete = 0
     failures = []
-    for event in events:
-        request = urllib.request.Request(
-            url,
-            data=json.dumps({"event": event}).encode("utf-8"),
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
-            },
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=15) as response:
-                body = response.read(65_537)
-        except urllib.error.HTTPError as exc:
-            if exc.code == 422:
+    for offset in range(0, len(events), BATCH_LIMIT):
+        chunk = events[offset : offset + BATCH_LIMIT]
+        results = _post_batch(target, token, chunk)
+        for event in chunk:
+            event_id = str(event.get("id"))
+            result = results.get(event_id)
+            state = result.get("state") if result else None
+            if state in {"sent", "before_activation", "withheld"}:
                 if terminal_outcomes is not None:
-                    terminal_outcomes[str(event.get("id"))] = "schema_rejected"
+                    terminal_outcomes[event_id] = str(state)
+                complete += 1
+            elif state in {"unknown", "dead"}:
+                if terminal_outcomes is not None:
+                    terminal_outcomes[event_id] = str(state)
+                error_code = result.get("error_code") or "not_reported"
                 print(
-                    f"::warning title=Owner alert schema rejected::{event.get('id')} "
+                    f"::warning title=Owner alert quarantined::{event_id} is {state} "
+                    f"({error_code}); it will not be retried automatically.",
+                    file=sys.stderr,
+                )
+                complete += 1
+            elif state == "schema_rejected":
+                if terminal_outcomes is not None:
+                    terminal_outcomes[event_id] = "schema_rejected"
+                print(
+                    f"::warning title=Owner alert schema rejected::{event_id} "
                     "was quarantined; later events will still be attempted.",
                     file=sys.stderr,
                 )
                 complete += 1
-                continue
-            raise RuntimeError(f"Owner alert ingress returned HTTP {exc.code}") from exc
-        payload = json.loads(body)
-        if payload.get("ok") is not True:
-            raise RuntimeError("Owner alert ingress did not acknowledge the event")
-        state = payload.get("state")
-        if state in {"sent", "before_activation", "withheld"}:
-            if terminal_outcomes is not None:
-                terminal_outcomes[str(event.get("id"))] = str(state)
-            complete += 1
-        elif state in {"unknown", "dead"}:
-            if terminal_outcomes is not None:
-                terminal_outcomes[str(event.get("id"))] = str(state)
-            event_id = event.get("id")
-            error_code = payload.get("error_code") or "not_reported"
-            print(
-                f"::warning title=Owner alert quarantined::{event_id} is {state} "
-                f"({error_code}); it will not be retried automatically.",
-                file=sys.stderr,
-            )
-            complete += 1
-        else:
-            failures.append(f"{event.get('id')}:{state or 'invalid_response'}")
+            else:
+                failures.append(f"{event_id}:{state or 'missing'}")
     if failures:
         raise RuntimeError("Owner alert delivery incomplete: " + ", ".join(failures))
     return complete
@@ -166,6 +193,7 @@ def main() -> int:
         return 0
     if not url.startswith("https://") or re.fullmatch(r"[A-Za-z0-9_-]{43,}", token) is None:
         raise RuntimeError("Owner alert ingress configuration is incomplete")
+    batch_url(url)
     if not 1 <= args.days <= 365:
         raise RuntimeError("Owner alert replay window must be between 1 and 365 days")
     events, terminal_outcomes = select_owner_notifications(

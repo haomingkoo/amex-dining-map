@@ -168,109 +168,196 @@ def test_invalid_published_timestamp_fails_closed(tmp_path: Path):
         MODULE.published_events(path, now=NOW)
 
 
-def test_dispatch_posts_one_event_and_accepts_terminal_state(monkeypatch):
+INGEST_URL = "https://alerts.example.test/api/owner-alerts/events"
+BATCH_URL = "https://alerts.example.test/api/owner-alerts/batch"
+
+
+class BatchResponse:
+    def __init__(self, payload):
+        self.payload = payload
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_args):
+        return None
+
+    def read(self, _limit):
+        return json.dumps(self.payload).encode()
+
+
+def _fake_batch(monkeypatch, results):
     requests = []
-
-    class Response:
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *_args):
-            return None
-
-        def read(self, _limit):
-            return b'{"ok": true, "state": "sent"}'
 
     def fake_open(request, timeout):
         requests.append((request, timeout))
-        return Response()
+        return BatchResponse({"ok": True, "results": results, "message_count": 1})
 
     monkeypatch.setattr(MODULE.urllib.request, "urlopen", fake_open)
+    return requests
+
+
+def test_batch_url_replaces_events_suffix():
+    assert MODULE.batch_url(INGEST_URL) == BATCH_URL
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://alerts.example.test/api/owner-alerts/event",
+        "https://alerts.example.test/events",
+        "https://alerts.example.test/api/owner-alerts/events/",
+    ],
+)
+def test_batch_url_fails_closed_for_unexpected_ingest_url(url):
+    with pytest.raises(RuntimeError, match="must end with /api/owner-alerts/events"):
+        MODULE.batch_url(url)
+
+
+def test_dispatch_posts_all_events_in_one_request(monkeypatch):
+    requests = _fake_batch(
+        monkeypatch,
+        [
+            {"id": "one", "state": "sent"},
+            {"id": "two", "state": "before_activation"},
+            {"id": "three", "state": "withheld"},
+        ],
+    )
 
     outcomes = {}
     assert MODULE.dispatch(
-        "https://alerts.example.test/events", "x" * 32, [{"id": "one"}], outcomes
-    ) == 1
-    assert json.loads(requests[0][0].data) == {"event": {"id": "one"}}
-    assert requests[0][1] == 15
+        INGEST_URL,
+        "x" * 43,
+        [{"id": "one"}, {"id": "two"}, {"id": "three"}],
+        outcomes,
+    ) == 3
+    assert len(requests) == 1
+    request, timeout = requests[0]
+    assert request.full_url == BATCH_URL
+    assert request.get_header("Authorization") == "Bearer " + "x" * 43
+    assert json.loads(request.data) == {
+        "events": [{"id": "one"}, {"id": "two"}, {"id": "three"}]
+    }
+    assert timeout == 30
+    assert outcomes == {"one": "sent", "two": "before_activation", "three": "withheld"}
+
+
+def test_dispatch_skips_request_when_nothing_selected(monkeypatch):
+    requests = _fake_batch(monkeypatch, [])
+    assert MODULE.dispatch(INGEST_URL, "x" * 43, [], {}) == 0
+    assert requests == []
+
+
+def test_dispatch_chunks_beyond_service_batch_limit(monkeypatch):
+    requests = []
+
+    def fake_open(request, timeout):
+        requests.append(request)
+        ids = [event["id"] for event in json.loads(request.data)["events"]]
+        return BatchResponse(
+            {"ok": True, "results": [{"id": i, "state": "sent"} for i in ids]}
+        )
+
+    monkeypatch.setattr(MODULE.urllib.request, "urlopen", fake_open)
+    events = [{"id": f"event-{i}"} for i in range(501)]
+
+    assert MODULE.dispatch(INGEST_URL, "x" * 43, events, {}) == 501
+    assert [len(json.loads(r.data)["events"]) for r in requests] == [500, 1]
+
+
+@pytest.mark.parametrize("state", ["retry", "sending", "conflict"])
+def test_dispatch_fails_loudly_for_non_terminal_state(monkeypatch, state):
+    _fake_batch(
+        monkeypatch,
+        [{"id": "one", "state": "sent"}, {"id": "two", "state": state}],
+    )
+
+    outcomes = {}
+    with pytest.raises(RuntimeError, match=f"two:{state}"):
+        MODULE.dispatch(INGEST_URL, "x" * 43, [{"id": "one"}, {"id": "two"}], outcomes)
     assert outcomes == {"one": "sent"}
 
 
-def test_dispatch_fails_loudly_for_retry_state(monkeypatch):
-    class Response:
-        def __enter__(self):
-            return self
+def test_dispatch_fails_loudly_for_missing_result(monkeypatch):
+    _fake_batch(monkeypatch, [{"id": "one", "state": "sent"}])
 
-        def __exit__(self, *_args):
-            return None
-
-        def read(self, _limit):
-            return b'{"ok": true, "state": "retry"}'
-
-    monkeypatch.setattr(MODULE.urllib.request, "urlopen", lambda *_args, **_kwargs: Response())
-
-    with pytest.raises(RuntimeError, match="one:retry"):
-        MODULE.dispatch("https://alerts.example.test/events", "x" * 32, [{"id": "one"}])
+    with pytest.raises(RuntimeError, match="two:missing"):
+        MODULE.dispatch(INGEST_URL, "x" * 43, [{"id": "one"}, {"id": "two"}], {})
 
 
 @pytest.mark.parametrize("state", ["unknown", "dead"])
 def test_dispatch_quarantines_terminal_state_without_sticking_workflow(
     monkeypatch, capsys, state
 ):
-    class Response:
-        def __enter__(self):
-            return self
+    _fake_batch(
+        monkeypatch,
+        [{"id": "one", "state": state, "error_code": "telegram_terminal"}],
+    )
 
-        def __exit__(self, *_args):
-            return None
-
-        def read(self, _limit):
-            return json.dumps(
-                {"ok": True, "state": state, "error_code": "telegram_terminal"}
-            ).encode()
-
-    monkeypatch.setattr(MODULE.urllib.request, "urlopen", lambda *_args, **_kwargs: Response())
-
-    assert MODULE.dispatch(
-        "https://alerts.example.test/events", "x" * 32, [{"id": "one"}]
-    ) == 1
+    outcomes = {}
+    assert MODULE.dispatch(INGEST_URL, "x" * 43, [{"id": "one"}], outcomes) == 1
     assert "::warning title=Owner alert quarantined::one" in capsys.readouterr().err
+    assert outcomes == {"one": state}
 
 
 def test_dispatch_quarantines_schema_rejection_and_continues(monkeypatch, capsys):
-    calls = 0
-
-    class Response:
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *_args):
-            return None
-
-        def read(self, _limit):
-            return b'{"ok": true, "state": "sent"}'
-
-    def fake_open(request, timeout):
-        nonlocal calls
-        calls += 1
-        if calls == 1:
-            raise urllib.error.HTTPError(
-                request.full_url, 422, "Unprocessable Entity", {}, io.BytesIO()
-            )
-        return Response()
-
-    monkeypatch.setattr(MODULE.urllib.request, "urlopen", fake_open)
+    _fake_batch(
+        monkeypatch,
+        [{"id": "broken", "state": "schema_rejected"}, {"id": "valid", "state": "sent"}],
+    )
 
     outcomes = {}
     assert MODULE.dispatch(
-        "https://alerts.example.test/events",
-        "x" * 43,
-        [{"id": "broken"}, {"id": "valid"}],
-        outcomes,
+        INGEST_URL, "x" * 43, [{"id": "broken"}, {"id": "valid"}], outcomes
     ) == 2
-    assert calls == 2
     assert "::warning title=Owner alert schema rejected::broken" in capsys.readouterr().err
     assert outcomes == {"broken": "schema_rejected", "valid": "sent"}
+
+
+def test_dispatch_explains_missing_digest_deploy(monkeypatch):
+    def not_found(request, timeout):
+        raise urllib.error.HTTPError(request.full_url, 404, "Not Found", {}, io.BytesIO())
+
+    monkeypatch.setattr(MODULE.urllib.request, "urlopen", not_found)
+
+    with pytest.raises(RuntimeError, match="needs the owner-alert digest deploy"):
+        MODULE.dispatch(INGEST_URL, "x" * 43, [{"id": "one"}], {})
+
+
+def test_dispatch_rejects_unacknowledged_batch(monkeypatch):
+    monkeypatch.setattr(
+        MODULE.urllib.request,
+        "urlopen",
+        lambda *_args, **_kwargs: BatchResponse({"ok": False}),
+    )
+
+    with pytest.raises(RuntimeError, match="did not acknowledge"):
+        MODULE.dispatch(INGEST_URL, "x" * 43, [{"id": "one"}], {})
+
+
+def test_main_records_terminal_states_into_ledger(tmp_path: Path, monkeypatch):
+    path = tmp_path / "updates.json"
+    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    updates = [
+        {"id": "sent-one", "status": "published", "kind": "added", "detected_at": now},
+        {"id": "retry-one", "status": "published", "kind": "removed", "detected_at": now},
+        {"id": "noise", "status": "published", "kind": "source_stale", "detected_at": now},
+    ]
+    path.write_text(json.dumps({"schema_version": 1, "updates": updates}))
+    requests = _fake_batch(
+        monkeypatch,
+        [{"id": "sent-one", "state": "sent"}, {"id": "retry-one", "state": "retry"}],
+    )
+    monkeypatch.setenv("OWNER_ALERT_INGEST_URL", INGEST_URL)
+    monkeypatch.setenv("OWNER_ALERT_INGEST_TOKEN", "x" * 43)
+    monkeypatch.setattr(MODULE.sys, "argv", ["dispatch", "--updates", str(path)])
+
+    with pytest.raises(RuntimeError, match="retry-one:retry"):
+        MODULE.main()
+
+    assert len(requests) == 1
+    stored = {e["id"]: e.get("owner_delivery_state") for e in json.loads(path.read_text())["updates"]}
+    assert stored == {"sent-one": "sent", "retry-one": None, "noise": "withheld"}
 
 
 def test_delivery_receipts_are_persisted_without_changing_transition_identity(
