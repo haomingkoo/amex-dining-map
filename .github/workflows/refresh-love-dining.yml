@@ -68,27 +68,18 @@ jobs:
           python3 scripts/build_source_health.py --source love-dining --attempt-outcome "$outcome"
 
       - name: Commit refreshed Love Dining data
+        env:
+          COMMIT_MESSAGE: "chore: refresh love dining data"
+          MUST_STAGE: |
+            data/love-dining.json
+            data/love-dining-source.json
+            data/changelog-love-dining.md
+            data/updates.json
+            data/source-health.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/love-dining.json data/love-dining-source.json data/updates.json data/source-health.json
-          if [ -f data/changelog-love-dining.md ]; then
-            git add data/changelog-love-dining.md
-          fi
-          if git diff --cached --quiet; then
-            echo "No Love Dining changes detected."
-            exit 0
-          fi
-          git commit -m "chore: refresh love dining data"
-          for attempt in 1 2 3; do
-            git pull --rebase origin main
-            if git push origin HEAD:main; then
-              exit 0
-            fi
-            echo "Push failed on attempt ${attempt}; retrying after remote sync."
-            sleep $((attempt * 5))
-          done
-          exit 1
+          bash scripts/commit_and_push.sh
 
       - name: Commit source health
         # Success paths ship health in the data commit; this records failed runs.

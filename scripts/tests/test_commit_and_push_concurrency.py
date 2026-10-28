@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
+import yaml
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -91,12 +92,14 @@ def edit(repo: Path, source_id: str, field: str, value: str, event_id: str) -> N
     write_json(repo / LEDGER, ledger)
 
 
-def commit_and_push(repo: Path, message: str) -> subprocess.CompletedProcess:
+def commit_and_push(
+    repo: Path, message: str, must_stage: str = f"{HEALTH}\n{LEDGER}\n"
+) -> subprocess.CompletedProcess:
     env = {
         "PATH": "/usr/bin:/bin:/usr/local/bin",
         "HOME": str(repo),
         "COMMIT_MESSAGE": message,
-        "MUST_STAGE": f"{HEALTH}\n{LEDGER}\n",
+        "MUST_STAGE": must_stage,
         "MAX_ATTEMPTS": "1",
     }
     return subprocess.run(
@@ -136,3 +139,23 @@ def test_same_field_health_conflict_fails_loudly_without_overwriting(remote: Pat
 
     final = clone(remote, "final")
     assert source(read_json(final / HEALTH), "global-dining")["status"] == "stale"
+
+
+def test_refresh_data_commit_step_merges_a_concurrent_monitor_ledger_write(remote: Path) -> None:
+    workflow = yaml.safe_load((ROOT / ".github/workflows/refresh-data.yml").read_text(encoding="utf-8"))
+    step = next(s for s in workflow["jobs"]["refresh"]["steps"] if s.get("name") == "Commit refreshed data")
+    refresh = clone(remote, "refresh")
+    monitor = clone(remote, "monitor")
+    edit(refresh, "japan-dining", "last_success_at", stamp(5), "refresh-event")
+    write_json(refresh / "data/japan-restaurants.json", {"restaurants": ["refreshed"]})
+    edit(monitor, "table-for-two-availability", "checked_at", stamp(1), "monitor-event")
+
+    assert commit_and_push(monitor, "chore: update source health").returncode == 0
+    pushed = commit_and_push(refresh, step["env"]["COMMIT_MESSAGE"], step["env"]["MUST_STAGE"])
+    assert pushed.returncode == 0, pushed.stdout + pushed.stderr
+
+    final = clone(remote, "final")
+    assert read_json(final / "data/japan-restaurants.json") == {"restaurants": ["refreshed"]}
+    assert source(read_json(final / HEALTH), "japan-dining")["last_success_at"] == stamp(5)
+    ids = {item["id"] for item in read_json(final / LEDGER)["updates"]}
+    assert ids == {"seed", "refresh-event", "monitor-event"}

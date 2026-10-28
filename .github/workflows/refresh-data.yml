@@ -97,24 +97,32 @@ jobs:
           record plat-stay "$(outcome_of ${{ steps.plat_stay_refresh.outcome }} ${{ steps.plat_stay_alert.outcome }})"
 
       - name: Commit refreshed data
+        env:
+          COMMIT_MESSAGE: "chore: refresh explorer data"
+          MUST_STAGE: |
+            data/japan-restaurants.json
+            data/japan-restaurants.geojson
+            data/japan-dining-source.json
+            data/geocode_cache.json
+            data/venue_detail_cache.json
+            data/pocket-availability.json
+            data/changelog-japan-dining.md
+            data/plat-stays.json
+            data/plat-stays.geojson
+            data/plat-stay-source.json
+            data/plat_stay_geocode_cache.json
+            data/changelog-plat-stay.md
+            data/kml/japan-all.kml
+            data/kml/tokyo.kml
+            data/kml/kyoto.kml
+            data/kml/osaka.kml
+            data/kml/plat-stays-all.kml
+            data/source-health.json
+            data/updates.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/
-          if git diff --cached --quiet; then
-            echo "No data changes detected."
-            exit 0
-          fi
-          git commit -m "chore: refresh explorer data"
-          for attempt in 1 2 3; do
-            git pull --rebase origin main
-            if git push origin HEAD:main; then
-              exit 0
-            fi
-            echo "Push failed on attempt ${attempt}; retrying after remote sync."
-            sleep $((attempt * 5))
-          done
-          exit 1
+          bash scripts/commit_and_push.sh
 
       - name: Commit source health
         # Success paths ship health in the data commit; this records failed runs.
