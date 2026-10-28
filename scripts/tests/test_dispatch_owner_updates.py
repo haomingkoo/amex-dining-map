@@ -265,6 +265,24 @@ def test_dispatch_chunks_beyond_service_batch_limit(monkeypatch):
     assert [len(json.loads(r.data)["events"]) for r in requests] == [500, 1]
 
 
+def test_dispatch_splits_batches_above_request_byte_cap(monkeypatch):
+    requests = []
+
+    def fake_open(request, timeout):
+        requests.append(request)
+        ids = [event["id"] for event in json.loads(request.data)["events"]]
+        return BatchResponse(
+            {"ok": True, "results": [{"id": i, "state": "sent"} for i in ids]}
+        )
+
+    monkeypatch.setattr(MODULE.urllib.request, "urlopen", fake_open)
+    events = [{"id": f"event-{i}", "pad": "x" * 400_000} for i in range(5)]
+
+    assert MODULE.dispatch(INGEST_URL, "x" * 43, events, {}) == 5
+    assert [len(json.loads(r.data)["events"]) for r in requests] == [3, 2]
+    assert all(len(r.data) <= MODULE.BATCH_MAX_BYTES for r in requests)
+
+
 @pytest.mark.parametrize("state", ["retry", "sending", "conflict"])
 def test_dispatch_fails_loudly_for_non_terminal_state(monkeypatch, state):
     _fake_batch(

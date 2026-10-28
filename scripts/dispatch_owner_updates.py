@@ -97,12 +97,30 @@ def select_owner_notifications(events: list[dict]) -> tuple[list[dict], dict[str
 
 INGEST_SUFFIX = "/api/owner-alerts/events"
 BATCH_LIMIT = 500
+# The service accepts 2 MiB per batch; stay well under it.
+BATCH_MAX_BYTES = 1_500_000
 
 
 def batch_url(ingest_url: str) -> str:
     if not ingest_url.endswith(INGEST_SUFFIX):
         raise RuntimeError(f"OWNER_ALERT_INGEST_URL must end with {INGEST_SUFFIX}")
     return ingest_url[: -len("/events")] + "/batch"
+
+
+def _chunks(events: list[dict]) -> list[list[dict]]:
+    chunks: list[list[dict]] = []
+    current: list[dict] = []
+    size = 0
+    for event in events:
+        event_bytes = len(json.dumps(event).encode("utf-8")) + 1
+        if current and (len(current) == BATCH_LIMIT or size + event_bytes > BATCH_MAX_BYTES):
+            chunks.append(current)
+            current, size = [], 0
+        current.append(event)
+        size += event_bytes
+    if current:
+        chunks.append(current)
+    return chunks
 
 
 def _post_batch(url: str, token: str, events: list[dict]) -> dict[str, dict]:
@@ -151,8 +169,7 @@ def dispatch(
         seen.add(event_id)
     complete = 0
     failures = []
-    for offset in range(0, len(events), BATCH_LIMIT):
-        chunk = events[offset : offset + BATCH_LIMIT]
+    for chunk in _chunks(events):
         results = _post_batch(target, token, chunk)
         for event in chunk:
             event_id = str(event.get("id"))
