@@ -204,8 +204,7 @@ RESEND_FROM=<verified sender>
 ```
 
 See [`reminders/README.md`](reminders/README.md) for service endpoints and local
-development. The older Google Apps Script setup remains under `docs/` as a
-historical migration reference and is not the active architecture.
+development.
 
 ## Telegram Companions
 
