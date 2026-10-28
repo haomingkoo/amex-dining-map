@@ -31,7 +31,6 @@ cp .env.example .env              # fill in values
 | GET/POST | `/api/manage?token=` | View or update reminder settings with the dedicated manage token |
 | GET  | `/api/subscribers` | Active subscribers export (Bearer `ALERT_EXPORT_TOKEN`) |
 | POST | `/api/owner-alerts/batch` | Reviewed update batch, delivered as one digest (Bearer `OWNER_ALERT_INGEST_TOKEN`) |
-| POST | `/api/owner-alerts/events` | Single reviewed update (legacy; same token) |
 | POST | `/api/telegram/guide/webhook` | Authenticated private-chat Telegram guide ingress |
 
 ## Deployment (Railway)
