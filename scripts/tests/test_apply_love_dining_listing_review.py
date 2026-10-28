@@ -3,14 +3,13 @@ from __future__ import annotations
 import pytest
 
 from scripts import apply_love_dining_listing_review as listing_review
-from scripts.apply_love_dining_review import _records_digest
 
 RECORDS = [{"id": "love-a", "name": "A", "type": "restaurant"}]
 OLD_DIGEST = "0" * 64
 
 
 def case() -> tuple[dict, dict, dict]:
-    digest = _records_digest(RECORDS)
+    digest = listing_review._records_digest(RECORDS)
     manifest = {
         "schema_version": 1,
         "kind": "listing_review",

@@ -117,7 +117,7 @@ for (const key of ["REMINDERS_API_BASE", "TELEGRAM_REMINDER_DISPATCH_TOKEN", "TE
 assert.match(pages, /Dispatch Telegram reminders from deployed snapshot/);
 for (const event of [
   "confirmation_email_failed",
-  "owner_alert_delivery",
+  "owner_alert_digest",
   "telegram_guide_delivery",
   "telegram_reminder_run",
   "telegram_reminder_delivery",

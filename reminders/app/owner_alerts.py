@@ -142,12 +142,6 @@ class OwnerAlertEvent(BaseModel):
         return hashlib.sha256(encoded).hexdigest()
 
 
-class OwnerAlertRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    event: OwnerAlertEvent
-
-
 OWNER_ALERT_BATCH_LIMIT = 500
 # 500 events at ~2.6 KB each is ~1.3 MB; the sender splits above 1.5 MB.
 OWNER_ALERT_BATCH_MAX_BYTES = 2 * 1024 * 1024
@@ -183,37 +177,6 @@ def _short(value: PublicValue, limit: int = 240) -> str:
             cut = cut[:boundary]
             break
     return cut.rstrip(" ,") + "…"
-
-
-def format_owner_alert(event: OwnerAlertEvent, explorer_base_url: str) -> str:
-    kind = event.kind.replace("_", " ").title()
-    lines = [f"Amex Explorer update · {kind}", "", event.program, event.subject]
-    detected = event.detected_at.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    explorer_url = f"{explorer_base_url.rstrip('/')}/{event.route}"
-    footer = "\n".join(
-        [f"Detected: {detected}", f"Source: {event.source_url}", f"Explorer: {explorer_url}"]
-    )
-    body_budget = 3900 - len(footer) - 2
-    included = 0
-    for change in event.changes:
-        block = [
-            "",
-            change.field,
-            f"Before: {_short(change.before)}",
-            f"After: {_short(change.after)}",
-        ]
-        candidate = "\n".join([*lines, *block])
-        if len(candidate) > body_budget - 40:
-            break
-        lines.extend(block)
-        included += 1
-    remaining = len(event.changes) - included
-    if remaining:
-        lines.extend(["", f"…and {remaining} more change(s)"])
-    body = "\n".join(lines)
-    if len(body) > body_budget:
-        body = body[: body_budget - 1].rstrip() + "…"
-    return f"{body}\n\n{footer}"
 
 
 DIGEST_LIMIT = 3900

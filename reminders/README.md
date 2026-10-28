@@ -31,7 +31,6 @@ cp .env.example .env              # fill in values
 | GET/POST | `/api/manage?token=` | View or update reminder settings with the dedicated manage token |
 | GET  | `/api/subscribers` | Active subscribers export (Bearer `ALERT_EXPORT_TOKEN`) |
 | POST | `/api/owner-alerts/batch` | Reviewed update batch, delivered as one digest (Bearer `OWNER_ALERT_INGEST_TOKEN`) |
-| POST | `/api/owner-alerts/events` | Single reviewed update (legacy; same token) |
 | POST | `/api/telegram/guide/webhook` | Authenticated private-chat Telegram guide ingress |
 
 ## Deployment (Railway)
@@ -163,8 +162,7 @@ from main, and a missing batch route fails with an HTTP 404 error naming the
 digest deploy. While disabled, probe only for the expected
 `503`; authenticated ingestion acceptance is possible only after the enabled
 deployment. On `unknown` or `dead`, inspect aggregate owner delivery state and
-the Railway `owner_alert_digest` event (`owner_alert_delivery` for the legacy
-single-event route); never blindly replay an ambiguous
+the Railway `owner_alert_digest` event; never blindly replay an ambiguous
 delivery. Rotate by disabling, replacing the bot token and ingestion token
 independently, redeploying, testing, then enabling. Roll back by setting
 `OWNER_ALERTS_ENABLED=false`, deploying, and removing both

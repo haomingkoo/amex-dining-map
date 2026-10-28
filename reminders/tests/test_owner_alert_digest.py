@@ -472,24 +472,6 @@ def test_telegram_429_exposes_retry_after(monkeypatch):
     assert exc_info.value.retry_after == 33
 
 
-def test_single_event_failure_logs_at_warning(owner_client, monkeypatch, caplog):
-    caplog.set_level(logging.INFO, logger="amex_reminders.delivery")
-    client, _settings_value = owner_client
-
-    def fail(*_args):
-        raise TelegramDeliveryError("telegram_http_503", "retry")
-
-    monkeypatch.setattr("app.owner_alert_routes.telegram.send_message", fail)
-    client.post(
-        "/api/owner-alerts/events",
-        json={"event": _event()},
-        headers={"Authorization": f"Bearer {TOKEN}"},
-    )
-
-    records = [r for r in caplog.records if '"event":"owner_alert_delivery"' in r.getMessage()]
-    assert records[-1].levelno == logging.WARNING
-
-
 def test_digest_link_uses_most_common_route_regardless_of_order():
     ratings = ("Explorer ratings", "explorer-ratings", "#/ratings")
     raw = [
@@ -716,8 +698,8 @@ def test_oversized_bodies_without_bearer_or_on_other_routes_stay_413(owner_clien
         content=body,
         headers={**json_header, "Authorization": "Bearer wrong"},
     )
-    single_route = client.post(
-        "/api/owner-alerts/events",
+    other_route = client.post(
+        "/api/subscribe",
         content=b"x" * 20_000,
         headers={**json_header, "Authorization": f"Bearer {TOKEN}"},
     )
@@ -730,7 +712,7 @@ def test_oversized_bodies_without_bearer_or_on_other_routes_stay_413(owner_clien
     assert anonymous.status_code == 413
     assert basic.status_code == 413
     assert wrong_bearer.status_code == 401
-    assert single_route.status_code == 413
+    assert other_route.status_code == 413
     assert too_big.status_code == 413
     assert calls == []
 

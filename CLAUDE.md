@@ -29,7 +29,7 @@
 - `scripts/scrape_google_ratings_playwright.py`: use `--missing-only` for incremental or concurrent runs.
 
 ## Safety
-- Never commit `.env`. Env vars: `GROQ_API_KEY`, `MICHELIN_ALGOLIA_APP_ID`, `MICHELIN_ALGOLIA_API_KEY` (public read-only Algolia keys from guide.michelin.com; requests need a `Referer: guide.michelin.com` header).
+- Never commit `.env`. Env var: `GROQ_API_KEY`.
 - The local pre-commit hook rejects added lines containing a key name followed by `=` (Groq, Michelin, MapTiler), placeholders included. Name env vars in docs without `=`.
 - Do not delete these caches: `data/tabelog-match-http-cache.json`, `data/tabelog-url-cache.json`, `data/tabelog-match-results.json`, `data/geocode_cache.json`, `data/venue_detail_cache.json`. Several are gitignored and exist only locally.
 - Reminders and alert secrets live in Railway and GitHub Actions. See `reminders/.env.example` for names.

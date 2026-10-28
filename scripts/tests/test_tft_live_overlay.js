@@ -10,9 +10,7 @@ const extractFunction = (name) => extractFrom(source, name);
 
 const names = [
   "tableForTwoSlotSnapshotIsValid",
-  "tableForTwoLiveSnapshotIsValid",
   "tableForTwoAvailabilityFromSlotVenue",
-  "tableForTwoAvailabilityFromLiveVenue",
   "applyTableForTwoSlotSnapshot",
   "applyTableForTwoStaticSnapshot",
   "applyTableForTwoLiveSnapshot",
@@ -94,14 +92,14 @@ const payload = {
   ],
 };
 
-assert.equal(context.tableForTwoLiveSnapshotIsValid(payload), true);
+assert.equal(context.tableForTwoSlotSnapshotIsValid(payload, true), true);
 assert.equal(context.applyTableForTwoLiveSnapshot(payload), true);
 assert.equal(context.state.tableForTwo.venues[0].availability.status, "live_available");
 assert.equal(context.state.tableForTwo.venues[0].availability.live_result, "fresh");
 assert.equal(context.state.tableForTwo.venues[1].booking_project_status, "not_listed");
 assert.equal(context.state.tableForTwo.venues[2].availability.status, "live_no_seats");
 assert.equal(context.state.tableForTwo.availability_source.refresh_status, "partial");
-assert.equal(context.tableForTwoLiveSnapshotIsValid({ ...payload, source_project: "other" }), false);
-assert.equal(context.tableForTwoLiveSnapshotIsValid({ ...payload, venues: [payload.venues[0], payload.venues[0]] }), false);
+assert.equal(context.tableForTwoSlotSnapshotIsValid({ ...payload, source_project: "other" }, true), false);
+assert.equal(context.tableForTwoSlotSnapshotIsValid({ ...payload, venues: [payload.venues[0], payload.venues[0]] }, true), false);
 
 console.log("Table for Two live overlay verification passed");

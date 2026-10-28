@@ -11,7 +11,7 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-from app import main, telegram_reminder_dispatch, tft_guide, tft_live_api, tft_slot_source
+from app import main, telegram_reminder_dispatch, tft_guide, tft_live_refresh, tft_slot_source
 from app.main import app
 from app.telegram_bot_routes import get_settings
 from tests.test_telegram_bot import (  # noqa: F401
@@ -95,7 +95,7 @@ def test_load_snapshot_prefers_fresh_live_file_without_fetching_pages(sources):
 
     loaded = tft_slot_source.load_snapshot()
 
-    assert tft_live_api.validated_snapshot(sources.live_path) is not None
+    assert tft_live_refresh.load_snapshot(sources.live_path) is not None
     assert loaded["generated_at"] == live["generated_at"]
     assert sources.fetches == []
 
