@@ -156,6 +156,17 @@ def _source(
     }
 
 
+def japan_locale_detail(meta: dict[str, Any]) -> str | None:
+    retained = int(meta.get("locale_retained_count") or 0)
+    unretained = int(meta.get("locale_unretained_count") or 0)
+    parts = []
+    if retained:
+        parts.append(f"{retained} venue(s) returned in Japanese; kept previous English details.")
+    if unretained:
+        parts.append(f"{unretained} new venue(s) returned in Japanese with no English record to keep.")
+    return " ".join(parts) or None
+
+
 def build_source_health(
     data_dir: Path, now: datetime, tft_live: dict[str, Any] | None = None
 ) -> dict[str, Any]:
@@ -234,6 +245,7 @@ def build_source_health(
             review_required=bool(japan_meta.get("manual_review_required")),
             review_count=len(japan_meta.get("major_change_reasons") or []),
             record_count=japan_meta.get("record_count", 0),
+            detail=japan_locale_detail(japan_meta),
             source_url=japan_meta.get("source_url"),
         ),
         _source(
