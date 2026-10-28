@@ -35,7 +35,7 @@ assert.ok(!shellInjection.test(workflows), "Workflow input still reaches an unsa
 const actionLines = workflows.split("\n").filter((line) => /uses:\s+actions\//.test(line));
 assert.ok(actionLines.length > 0, "No GitHub-owned actions were inspected");
 for (const line of actionLines) {
-  assert.match(line, /uses:\s+actions\/[\w-]+@[0-9a-f]{40}(?:\s+#\s+v\d+)?\s*$/);
+  assert.match(line, /uses:\s+actions\/[\w-]+@[0-9a-f]{40}(?:\s+#\s+v\d+(?:\.\d+)*)?\s*$/);
 }
 
 assert.ok(routes.includes("db.consume_rate_limits("));

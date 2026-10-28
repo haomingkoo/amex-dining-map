@@ -22,14 +22,15 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
   # Upstream workflows trigger this on completion even when they commit nothing.
+  # Gated monitor runs follow each TFT Alerts run, whose own completion already triggers this.
   changed:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       (github.event.workflow_run.name != 'Monitor Source Health' ||
+        github.event.workflow_run.event != 'workflow_run'))
     runs-on: ubuntu-latest
     outputs:
       deploy: ${{ steps.check.outputs.deploy }}
@@ -63,6 +64,10 @@ jobs:
     needs: changed
     if: needs.changed.outputs.deploy == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    # Job-level so a run whose jobs are skipped never cancels a live deploy.
+    concurrency:
+      group: pages
+      cancel-in-progress: true
     environment:
       name: github-pages
       url: ${{ steps.deploy_1.outputs.page_url || steps.deploy_2.outputs.page_url || steps.deployment.outputs.page_url }}

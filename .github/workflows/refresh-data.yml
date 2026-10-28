@@ -40,6 +40,7 @@ jobs:
         run: /usr/bin/time -p python3 scripts/sync_japan_mvp.py
 
       - name: Refresh Pocket Concierge availability
+        id: pocket_refresh
         env:
           PYTHONUNBUFFERED: "1"
         run: /usr/bin/time -p python3 scripts/scrape_pocket_availability.py
@@ -77,38 +78,51 @@ jobs:
       - name: Finalize source health
         if: always()
         run: |
-          if [ "${{ job.status }}" = "success" ]; then
-            japan_outcome=success
-          else
-            japan_outcome=failure
-          fi
-          if [ "${{ job.status }}" = "success" ]; then
-            stay_outcome=success
-          else
-            stay_outcome=failure
-          fi
-          python3 scripts/build_source_health.py --source japan-dining --attempt-outcome "$japan_outcome"
-          python3 scripts/build_source_health.py --source plat-stay --attempt-outcome "$stay_outcome"
+          # A source whose steps never ran was not attempted, so it gets no outcome.
+          outcome_of() {
+            case " $* " in
+              *" failure "*|*" cancelled "*) echo failure ;;
+              *" skipped "*) echo skipped ;;
+              *) echo success ;;
+            esac
+          }
+          record() {
+            if [ "$2" = "skipped" ]; then
+              echo "::warning::$1 refresh did not run; leaving its source health unchanged."
+            else
+              python3 scripts/build_source_health.py --source "$1" --attempt-outcome "$2"
+            fi
+          }
+          record japan-dining "$(outcome_of ${{ steps.japan_refresh.outcome }} ${{ steps.pocket_refresh.outcome }} ${{ steps.japan_alert.outcome }})"
+          record plat-stay "$(outcome_of ${{ steps.plat_stay_refresh.outcome }} ${{ steps.plat_stay_alert.outcome }})"
 
       - name: Commit refreshed data
+        env:
+          COMMIT_MESSAGE: "chore: refresh explorer data"
+          MUST_STAGE: |
+            data/japan-restaurants.json
+            data/japan-restaurants.geojson
+            data/japan-dining-source.json
+            data/geocode_cache.json
+            data/venue_detail_cache.json
+            data/pocket-availability.json
+            data/changelog-japan-dining.md
+            data/plat-stays.json
+            data/plat-stays.geojson
+            data/plat-stay-source.json
+            data/plat_stay_geocode_cache.json
+            data/changelog-plat-stay.md
+            data/kml/japan-all.kml
+            data/kml/tokyo.kml
+            data/kml/kyoto.kml
+            data/kml/osaka.kml
+            data/kml/plat-stays-all.kml
+            data/source-health.json
+            data/updates.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/
-          if git diff --cached --quiet; then
-            echo "No data changes detected."
-            exit 0
-          fi
-          git commit -m "chore: refresh explorer data"
-          for attempt in 1 2 3; do
-            git pull --rebase origin main
-            if git push origin HEAD:main; then
-              exit 0
-            fi
-            echo "Push failed on attempt ${attempt}; retrying after remote sync."
-            sleep $((attempt * 5))
-          done
-          exit 1
+          bash scripts/commit_and_push.sh
 
       - name: Commit source health
         # Success paths ship health in the data commit; this records failed runs.

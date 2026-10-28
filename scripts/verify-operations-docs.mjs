@@ -11,6 +11,7 @@ const main = read("reminders/app/main.py");
 const ownerRoutes = read("reminders/app/owner_alert_routes.py");
 const telegramRoutes = read("reminders/app/telegram_bot_routes.py");
 const routes = read("reminders/app/routes.py");
+const reminderDispatch = read("reminders/app/telegram_reminder_dispatch.py");
 const dispatch = read("scripts/dispatch_owner_updates.py");
 const pages = read(".github/workflows/deploy-pages.yml");
 const projectVerifier = read("scripts/verify-project.mjs");
@@ -40,7 +41,7 @@ const configKeys = new Set(
     .map((match) => match[1]),
 );
 for (const key of configKeys) assert.ok(envEntries.has(key), `.env.example omits ${key}`);
-for (const key of ["OWNER_ALERTS_ENABLED", "TELEGRAM_GUIDE_ENABLED", "TELEGRAM_REMINDERS_ENABLED", "TFT_LIVE_REFRESH_ENABLED"]) {
+for (const key of ["OWNER_ALERTS_ENABLED", "TELEGRAM_GUIDE_ENABLED", "TELEGRAM_GUIDE_LLM_ENABLED", "TELEGRAM_REMINDERS_ENABLED", "TFT_LIVE_REFRESH_ENABLED"]) {
   assert.equal(envEntries.get(key), "false", `${key} must default to false`);
 }
 const secretKeys = [
@@ -120,7 +121,7 @@ for (const event of [
   "telegram_guide_delivery",
   "telegram_reminder_run",
   "telegram_reminder_delivery",
-]) assert.ok(`${routes}\n${ownerRoutes}\n${telegramRoutes}`.includes(event), `runtime event missing: ${event}`);
+]) assert.ok(`${routes}\n${ownerRoutes}\n${telegramRoutes}\n${reminderDispatch}`.includes(event), `runtime event missing: ${event}`);
 assert.match(projectVerifier, /verify-operations-docs\.mjs/);
 assert.match(railway, /--log-config uvicorn-log-config\.json/);
 assert.equal(uvicornLogs.handlers.default.stream, "ext://sys.stdout");

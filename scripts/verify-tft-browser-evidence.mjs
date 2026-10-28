@@ -146,9 +146,10 @@ assert.equal(health.ok, true);
 assert.equal(health.catalog_ok, true);
 assert.equal(health.catalog_menu_checked_at, evidence.menu_checked_at);
 assert.equal(health.feature_state.email_delivery_configured, true);
-assert.equal(health.feature_state.owner_alerts_enabled, false);
-assert.equal(health.feature_state.telegram_guide_enabled, false);
-assert.equal(health.feature_state.telegram_reminders_enabled, false);
+// Activated per the runbook since capture; only require health to report each switch.
+for (const flag of ["owner_alerts_enabled", "telegram_guide_enabled", "telegram_reminders_enabled"]) {
+  assert.equal(typeof health.feature_state[flag], "boolean", `health omits ${flag}`);
+}
 assert.equal(
   preflightResponse.headers.get("access-control-allow-origin"),
   evidence.site_url.replace(/\/$/, ""),

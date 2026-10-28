@@ -182,8 +182,6 @@ def build_source_health(
     love_records = load_json(data_dir / "love-dining.json", [])
     stay_records = load_json(data_dir / "plat-stays.json", [])
 
-    availability_source = tft.get("availability_source") or {}
-    availability_source = availability_source if isinstance(availability_source, dict) else {}
     live_counts = (tft_live or {}).get("counts") or {}
     live_total = int(live_counts.get("eligible") or 0)
     live_failed = int(live_counts.get("failed") or 0)
@@ -332,7 +330,7 @@ def build_source_health(
             covered_count=max(0, live_total - live_failed),
             unavailable_count=live_failed,
             detail=f"{max(0, live_total - live_failed)} of {live_total} venues checked",
-            source_url=availability_source.get("api_base"),
+            source_url=tft.get("official_url"),
         ),
         _source(
             source_id="google-maps-ratings",
