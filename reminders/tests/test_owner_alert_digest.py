@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import json
 import logging
+import re
 import urllib.error
 from dataclasses import replace
 from pathlib import Path
@@ -166,7 +167,7 @@ def test_digest_source_line_shows_numbers_and_hides_hashes():
     message = format_owner_digest(events, EXPLORER)
 
     assert "~ Source: 863 → 865 records, 94 → 95 hotel outlets" in message
-    assert "~ Source: records changed" in message
+    assert "~ Source: official records changed" in message
     assert "~ Tabelog ratings: 0 → 2 review items" in message
     assert "SHA" not in message and "hash" not in message
     assert "7ba16603e169" not in message
@@ -188,7 +189,7 @@ def test_digest_collapses_bulk_identical_changes_into_one_warning():
 
     japan = message.split("Japan Dining ·")[1]
     assert (
-        "⚠ 25 venues changed Name, District at once. "
+        "⚠ 25 restaurants changed Name, District at once. "
         "Possible source glitch; check before trusting." in japan
     )
     assert "~ Venue 0: Name Den → 傳, District Jingumae → 神宮前" in japan
@@ -561,6 +562,86 @@ def test_digest_golden_text_for_mixed_batch():
     )
 
 
+def test_digest_merges_identical_lines_with_count():
+    raw = [
+        _program_event(i, PROGRAMS[0], "source_updated", "Japan Dining source") for i in range(10)
+    ]
+    for event in raw:
+        event["changes"] = [{"field": "Official records SHA-256", "before": "aaa", "after": "bbb"}]
+    raw.append(_program_event(20, PROGRAMS[0], "added", "Den"))
+    raw.append(_program_event(21, PROGRAMS[0], "added", "Den"))
+    events = [OwnerAlertEvent.model_validate(event) for event in raw]
+
+    message = format_owner_digest(events, EXPLORER)
+
+    assert "~ Source: official records changed (×10)" in message
+    assert "+ Den (×2)" in message
+    assert message.count("official records changed") == 1
+    assert "more" not in message
+
+
+def test_digest_review_lines_use_plain_wording():
+    love, tft = PROGRAMS[4], PROGRAMS[1]
+    required = _program_event(1, love, "source_review_required", "Love Dining")
+    required["changes"] = [
+        {"field": "Source state", "before": "current", "after": "review_required"},
+        {"field": "Review", "before": "clear", "after": "required"},
+        {"field": "Review items", "before": 0, "after": 2},
+        {
+            "field": "Coverage",
+            "before": "80/80 (100%), 0 unavailable",
+            "after": "78/78 (100%), 0 unavailable",
+        },
+    ]
+    cleared = _program_event(2, tft, "source_review_cleared", "Table for Two menus")
+    cleared["changes"] = [
+        {"field": "Source state", "before": "review_required", "after": "current"},
+        {"field": "Review", "before": "required", "after": "clear"},
+        {"field": "Review items", "before": 9, "after": 0},
+        {
+            "field": "Coverage",
+            "before": {"covered": 18, "total": 32, "unavailable": 14, "percent": 56.2},
+            "after": {"covered": 19, "total": 32, "unavailable": 13, "percent": 59.4},
+        },
+    ]
+    roster = _program_event(3, tft, "source_review_required", "Table for Two roster")
+    roster["changes"] = [
+        {"field": "Review", "before": "clear", "after": "required"},
+        {"field": "Review items", "before": 0, "after": 1},
+    ]
+    events = [OwnerAlertEvent.model_validate(event) for event in (required, cleared, roster)]
+
+    message = format_owner_digest(events, EXPLORER)
+
+    assert "~ Source: needs review (2 items), 80/80 → 78/78 covered" in message
+    assert "~ Menus: review cleared, 18/32 → 19/32 covered" in message
+    assert "~ Roster: needs review (1 item)" in message
+    assert "review_required" not in message and "unavailab" not in message
+
+
+def test_digest_truncates_long_lines_at_a_boundary():
+    raw = _program_event(1, PROGRAMS[0], "details_updated", "Venue")
+    raw["changes"] = [
+        {"field": f"Field number {i}", "before": "a", "after": "b"} for i in range(20)
+    ]
+    message = format_owner_digest([OwnerAlertEvent.model_validate(raw)], EXPLORER)
+
+    line = next(line for line in message.splitlines() if line.startswith("~ Venue"))
+    assert len(line) <= 160
+    assert re.search(r", Field number \d+…$", line)
+
+
+def test_digest_bulk_warning_names_hotels_for_plat_stay():
+    raw = [_program_event(i, PROGRAMS[5], "details_updated", f"Hotel {i}") for i in range(20)]
+    for event in raw:
+        event["changes"] = [{"field": "Blackout dates", "before": "a", "after": "b"}]
+    events = [OwnerAlertEvent.model_validate(event) for event in raw]
+
+    message = format_owner_digest(events, EXPLORER)
+
+    assert "⚠ 20 hotels changed Blackout dates at once." in message
+
+
 BURST = json.loads(
     (Path(__file__).parent / "fixtures" / "owner_alert_burst-2026-10-28.json").read_text()
 )
@@ -579,9 +660,21 @@ def test_real_burst_posts_in_one_request_and_one_message(owner_client, monkeypat
     assert len(calls) == 1
     text = calls[0][2]
     assert text.splitlines()[0] == "Amex Explorer · 101 updates"
-    assert "⚠ 100 venues changed Name, District, Cuisine at once." in text
-    assert "~ Source: records changed" in text
-    assert len(text) <= 3900
+    assert text == "\n".join(
+        [
+            "Amex Explorer · 101 updates",
+            "",
+            "Japan Dining · 100 details updated, 1 source updated",
+            "⚠ 100 restaurants changed Name, District, Cuisine at once. "
+            "Possible source glitch; check before trusting.",
+            "~ 南青山エッセンス / Tokyo: Name MINAMIAOYAMA Essence → 南青山エッセンス, "
+            "District Minamiaoyama → 南青山, Cuisine Chinese → 中華",
+            "~ 日本料理　伯雲（はくうん） / Tokyo: Name Hakuun → 日本料理　伯雲（はくうん）, "
+            "District Minamiaoyama → 南青山, Cuisine Japanese, Kaiseki, Washoku → 和食",
+            "~ Source: official records changed",
+            f"Explorer: {EXPLORER}/#/dining/japan/top",
+        ]
+    )
 
 
 def test_padded_500_event_batch_fits_authenticated_limit(owner_client, monkeypatch):

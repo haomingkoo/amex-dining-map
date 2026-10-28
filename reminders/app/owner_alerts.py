@@ -175,7 +175,14 @@ def _short(value: PublicValue, limit: int = 240) -> str:
         rendered = str(value).replace("\r", " ").replace("\n", " ").strip()
     if len(rendered) <= limit:
         return rendered
-    return rendered[: limit - 1].rstrip() + "…"
+    cut = rendered[: limit - 1]
+    # Prefer a clause break, then a word break; CJK text without spaces cuts hard.
+    for separator in (", ", " "):
+        boundary = cut.rfind(separator)
+        if boundary >= limit // 2:
+            cut = cut[:boundary]
+            break
+    return cut.rstrip(" ,") + "…"
 
 
 def format_owner_alert(event: OwnerAlertEvent, explorer_base_url: str) -> str:
@@ -215,6 +222,9 @@ BULK_THRESHOLD = 20
 KIND_ORDER = {"added": 0, "removed": 1}
 HASH_FIELD = re.compile(r"sha-?256|hash|fingerprint|version", re.IGNORECASE)
 COUNT_NOUNS = {"Record count": "records", "Mapped count": "mapped"}
+PROGRAM_NOUNS = {"plat-stay": "hotels"}
+COVERAGE_TEXT = re.compile(r"^(\d+/\d+)\b")
+REVIEW_FIELDS = {"Source state", "Review", "Review items"}
 
 
 def _is_number(value: PublicValue) -> bool:
@@ -230,31 +240,67 @@ def _change_text(change: OwnerAlertChange, width: int = 60) -> str:
     return f"{change.field} {_short(change.before, width)} → {_short(change.after, width)}"
 
 
+def _covered(value: PublicValue) -> str | None:
+    if isinstance(value, CoverageValue):
+        return f"{value.covered}/{value.total}"
+    match = COVERAGE_TEXT.match(value) if isinstance(value, str) else None
+    return match.group(1) if match else None
+
+
+def _review_text(changes: dict[str, OwnerAlertChange]) -> str | None:
+    review, state = changes.get("Review"), changes.get("Source state")
+    if (review and review.after == "required") or (state and state.after == "review_required"):
+        items = changes.get("Review items")
+        count = items.after if items and _is_number(items.after) else None
+        return "needs review" + (f" ({count} item{'' if count == 1 else 's'})" if count else "")
+    if (review and review.before == "required") or (state and state.before == "review_required"):
+        return "review cleared"
+    return None
+
+
 def _meta_item(event: OwnerAlertEvent) -> str:
     label = event.subject.strip()
     if label.lower().startswith(event.program.lower()):
         label = label[len(event.program) :].strip()
     label = label[:1].upper() + label[1:] if label else "Source"
-    parts = [_change_text(change) for change in event.changes if not HASH_FIELD.search(change.field)]
-    return f"~ {label}: {', '.join(parts) or 'records changed'}"
+    changes = {change.field: change for change in event.changes}
+    review = _review_text(changes)
+    parts = [review] if review else []
+    for change in event.changes:
+        if HASH_FIELD.search(change.field) or (review and change.field in REVIEW_FIELDS):
+            continue
+        before, after = _covered(change.before), _covered(change.after)
+        if change.field == "Coverage" and before and after:
+            parts.append(f"{before} → {after} covered")
+        elif change.field == "Source state" and isinstance(change.after, str):
+            parts.append(f"{str(change.before).replace('_', ' ')} → {change.after.replace('_', ' ')}")
+        else:
+            parts.append(_change_text(change))
+    if parts:
+        return f"~ {label}: {', '.join(parts)}"
+    hashed = any(HASH_FIELD.search(change.field) for change in event.changes)
+    return f"~ {label}: {'official records' if hashed else 'records'} changed"
 
 
-def _digest_item(event: OwnerAlertEvent) -> str:
+def _digest_text(event: OwnerAlertEvent) -> str:
     if event.kind == "added":
-        text = f"+ {event.subject.strip()}"
-    elif event.kind == "removed":
-        text = f"− {event.subject.strip()}"
-    elif event.kind.startswith("source_"):
-        text = _meta_item(event)
-    else:
-        fields = ", ".join(change.field for change in event.changes)
-        text = f"~ {event.subject.strip()}: {fields}"
-    return _short(text, DIGEST_ITEM_WIDTH)
+        return f"+ {event.subject.strip()}"
+    if event.kind == "removed":
+        return f"− {event.subject.strip()}"
+    if event.kind.startswith("source_"):
+        return _meta_item(event)
+    return f"~ {event.subject.strip()}: " + ", ".join(change.field for change in event.changes)
+
+
+def _merged_line(text: str, count: int) -> str:
+    suffix = f" (×{count})" if count > 1 else ""
+    return _short(text, DIGEST_ITEM_WIDTH - len(suffix)) + suffix
 
 
 def _bulk_lines(members: list[OwnerAlertEvent], fields: tuple[str, ...]) -> list[str]:
+    noun = PROGRAM_NOUNS.get(members[0].program_id, "restaurants")
     head = (
-        f"⚠ {len(members)} venues changed {', '.join(fields)} at once. "
+        f"⚠ {len(members)} {noun} changed {', '.join(fields)} at once. "
         "Possible source glitch; check before trusting."
     )
     examples = [
@@ -274,12 +320,14 @@ def _program_units(events: list[OwnerAlertEvent]) -> list[tuple[list[str], int]]
     for event in events:
         fields = tuple(change.field for change in event.changes)
         groups.setdefault((event.kind, fields), []).append(event)
-    units = []
+    units, repeats = [], Counter()
     for (kind, fields), members in groups.items():
         if len(members) >= BULK_THRESHOLD and kind not in KIND_ORDER:
             units.append((_kind_key(kind), 0, _bulk_lines(members, fields), len(members)))
         else:
-            units.extend((_kind_key(kind), 1, [_digest_item(e)], 1) for e in members)
+            repeats.update((_kind_key(kind), _digest_text(event)) for event in members)
+    # Identical lines collapse into one with a count, in first-seen order.
+    units.extend((key, 1, [_merged_line(text, n)], n) for (key, text), n in repeats.items())
     units.sort(key=lambda unit: unit[:2])
     leads, rest, seen = [], [], set()
     for key, _bulk, lines, count in units:
