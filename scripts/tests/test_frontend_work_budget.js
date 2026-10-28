@@ -19,7 +19,7 @@ assert.match(
   "opening TFT must request the single Railway live snapshot",
 );
 const liveRefresh = app.slice(
-  app.indexOf("function tableForTwoLiveSnapshotIsValid("),
+  app.indexOf("function tableForTwoAvailabilityFromSlotVenue("),
   app.indexOf("function activeTableForTwoRecord("),
 );
 assert.match(liveRefresh, /fetch\(TABLE_FOR_TWO_LIVE_SNAPSHOT_URL/);

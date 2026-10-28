@@ -5387,10 +5387,6 @@ function tableForTwoSlotSnapshotIsValid(payload, live = false) {
   });
 }
 
-function tableForTwoLiveSnapshotIsValid(payload) {
-  return tableForTwoSlotSnapshotIsValid(payload, true);
-}
-
 function tableForTwoAvailabilityFromSlotVenue(venue, live = false) {
   return {
     status: venue.status,
@@ -5413,10 +5409,6 @@ function tableForTwoAvailabilityFromSlotVenue(venue, live = false) {
     meals: venue.meals,
     notes: ["From the Amex booking system. Book and redeem in the Amex Experiences App."],
   };
-}
-
-function tableForTwoAvailabilityFromLiveVenue(venue) {
-  return tableForTwoAvailabilityFromSlotVenue(venue, true);
 }
 
 function applyTableForTwoSlotSnapshot(payload, live = false) {
@@ -6742,12 +6734,6 @@ function tableForTwoBestAvailabilityLine(record, filters = state.tableForTwoCurr
     return tableForTwoNoMatchLine(record, filters);
   }
   return tableForTwoSlotGroupSummaries(matchingSlots).join(" | ");
-}
-
-function tableForTwoFreshnessLabel(record) {
-  const capturedAt = record.availability?.checked_at || record.availability?.captured_at;
-  if (!capturedAt) return "No availability check yet";
-  return `Checked ${formatTimestamp(capturedAt)}`;
 }
 
 function tableForTwoAvailabilityIsStale(record) {
