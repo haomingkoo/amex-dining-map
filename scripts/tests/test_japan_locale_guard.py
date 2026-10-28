@@ -98,6 +98,19 @@ def test_previous_record_that_is_also_localized_is_not_reused():
     assert records[0]["name"] == VENUES[HAKONE]["search_result"]["name"]
 
 
+def test_localized_cuisines_with_english_prefecture_are_restored():
+    previous = previous_by_id(REPRICED)
+    item = VENUES[REPRICED]["search_result"]
+    result = copy.deepcopy(item)
+    result["name"] = previous[REPRICED]["name"]
+    result["address"] = {"prefecture": {"name": "Tokyo"}, "town": {"name": "Shinjuku"}}
+    records = [sync_japan_mvp.build_record_from_search_result(result, VENUES[REPRICED]["area_name"])]
+    assert records[0]["cuisines"] == ["寿司"]
+
+    assert sync_japan_mvp.retain_english_details(records, previous) == (1, 0)
+    assert records[0]["cuisines"] == previous[REPRICED]["cuisines"] == ["Sushi"]
+
+
 def test_bilingual_name_with_english_prefecture_is_untouched(capsys):
     previous = previous_by_id(HIRAMATSU)
     previous[HIRAMATSU]["name"] = "Old English name"
@@ -105,6 +118,8 @@ def test_bilingual_name_with_english_prefecture_is_untouched(capsys):
 
     assert sync_japan_mvp.retain_english_details(records, previous) == (0, 0)
     assert records[0]["name"] == "Sushi Hiramatsu（寿し ひらまつ）"
+    assert records[0]["cuisines"] == ["Sushi"]
+    assert not sync_japan_mvp.is_localized_search_record(records[0])
     assert "::warning" not in capsys.readouterr().out
 
 
@@ -190,9 +205,14 @@ def test_replay_without_guard_reproduces_the_bogus_events():
         ("http://example.jp/", "http://example.jp/"),
         ("kunn.jp/cunn/index.html", "https://kunn.jp/cunn/index.html"),
         ("//www.example.jp/menu", "https://www.example.jp/menu"),
+        ("www.example.jp:8080/menu", "https://www.example.jp:8080/menu"),
+        ("example.jp", "https://example.jp"),
+        ("javascript://example.jp/%0Aalert(1)", None),
         ("javascript:alert(1)", None),
         ("mailto:owner@example.jp", None),
+        ("mailto:x@y", None),
         ("ftp://example.jp/file", None),
+        ("ftp://x", None),
         ("not a website", None),
     ],
 )

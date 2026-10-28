@@ -690,8 +690,9 @@ LOCALE_RETAINED_FIELDS = ("name", "cuisines", "summary_official", "source_search
 
 
 def is_localized_search_record(record: dict) -> bool:
-    # Pocket Concierge never returns a Japanese-script prefecture in English mode.
-    return bool(JAPANESE_SCRIPT.search(record.get("prefecture") or ""))
+    # Prefecture and cuisines are an English taxonomy in /en; names can be bilingual.
+    fields = [record.get("prefecture") or "", *(record.get("cuisines") or [])]
+    return any(JAPANESE_SCRIPT.search(field) for field in fields)
 
 
 def retain_english_details(records: list[dict], previous_by_id: dict[str, dict]) -> tuple[int, int]:
@@ -724,7 +725,7 @@ def normalize_website_url(raw_url: str | None) -> str | None:
         return None
     if url.startswith("//"):
         url = f"https:{url}"
-    elif not re.match(r"^[a-z][a-z0-9+.-]*:", url, flags=re.I) and re.match(r"^[\w-]+(\.[\w-]+)+(/|$)", url):
+    elif re.match(r"^[\w-]+(\.[\w-]+)+(:\d+)?(/|$)", url):
         url = f"https://{url}"
     parsed = urllib.parse.urlparse(url)
     if parsed.scheme.lower() not in {"http", "https"} or not parsed.netloc:
