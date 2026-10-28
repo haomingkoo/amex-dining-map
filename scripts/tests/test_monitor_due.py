@@ -36,6 +36,12 @@ def test_gate_only_runs_do_not_reset_the_clock() -> None:
     assert "31" in reason
 
 
+def test_cancelled_monitor_does_not_hold_the_clock() -> None:
+    due, reason = decide({3: job("cancelled"), 2: job("cancelled", 2), 1: job("success", 40)})
+    assert due is True
+    assert "40" in reason
+
+
 def test_queued_or_running_monitor_blocks_another() -> None:
     due, _ = decide({2: job("", status="queued"), 1: job("success", 90)})
     assert due is False

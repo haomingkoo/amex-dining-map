@@ -32,7 +32,8 @@ def decide(
 ) -> tuple[bool, str]:
     for run_id in run_ids:
         job = next((item for item in jobs_for(run_id) if item.get("name") == MONITOR_JOB), None)
-        if job is None or job.get("conclusion") == "skipped":
+        # A cancelled monitor did no pass, so it must not hold the clock.
+        if job is None or job.get("conclusion") in ("skipped", "cancelled"):
             continue
         if job.get("status") != "completed":
             return False, f"monitor run {run_id} is already {job.get('status')}"
