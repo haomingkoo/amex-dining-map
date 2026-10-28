@@ -99,14 +99,28 @@ def test_monitor_follows_table_for_two_alerts_on_main_and_keeps_cron() -> None:
     assert 'cron: "22,52 * * * *"' in text
 
 
-def test_gate_runs_outside_the_shared_refresh_queue() -> None:
+def test_monitor_never_joins_the_shared_refresh_queue() -> None:
     text = workflow_text()
     header, jobs = text.split("\njobs:\n", 1)
-    # A workflow-level group would let gate-only runs cancel pending refresh runs.
+    # Gate-only runs must not join any group; only the monitor job queues.
     assert "concurrency" not in header
     gate, monitor = jobs.split("\n  monitor:\n", 1)
-    assert "source-ledger-refresh" not in gate
+    assert "concurrency" not in gate
     assert "scripts/monitor_due.py" in gate
-    assert "group: source-ledger-refresh" in monitor
-    assert "cancel-in-progress: false" in monitor
+    # Sharing a group with refreshes would let a due monitor cancel a pending refresh.
+    assert "source-ledger-refresh" not in text
+    assert "concurrency:\n      group: source-health-monitor\n      cancel-in-progress: false" in monitor
     assert "needs.gate.outputs.due == 'true'" in monitor
+
+
+def test_refresh_workflows_still_share_the_ledger_queue() -> None:
+    for name in (
+        "refresh-data.yml",
+        "refresh-global-dining.yml",
+        "refresh-love-dining.yml",
+        "refresh-ratings.yml",
+        "refresh-tabelog.yml",
+        "refresh-table-for-two.yml",
+    ):
+        text = (WORKFLOW.parent / name).read_text(encoding="utf-8")
+        assert "group: source-ledger-refresh\n  cancel-in-progress: false" in text, name

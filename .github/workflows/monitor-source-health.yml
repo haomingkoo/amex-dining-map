@@ -41,9 +41,10 @@ jobs:
     if: ${{ !cancelled() && (github.event_name != 'workflow_run' || needs.gate.outputs.due == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Job-level so gate-only runs never take the pending slot from a queued refresh.
+    # Own group: a shared one keeps one pending run, so a monitor would cancel a queued refresh.
+    # Writes to shared ledgers are serialised by commit_and_push.sh's rebase and ledger merge.
     concurrency:
-      group: source-ledger-refresh
+      group: source-health-monitor
       cancel-in-progress: false
 
     steps:
