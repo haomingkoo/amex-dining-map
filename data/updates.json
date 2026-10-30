@@ -1,7 +1,333 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-30T02:33:35Z",
+  "updated_at": "2026-10-30T03:44:34Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_review_required",
+      "subject": "Love Dining",
+      "detected_at": "2026-10-30T03:44:34Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 0
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 1
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "review_required"
+        },
+        {
+          "field": "Review",
+          "before": "clear",
+          "after": "required"
+        },
+        {
+          "field": "Review items",
+          "before": 0,
+          "after": 1
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "88bbbac82ec0b9b3631c",
+      "stream_id": "325506f85300a0ec65a3",
+      "occurrence": 1,
+      "id": "f43855d9e056e6f72dd5"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "details_updated",
+      "subject": "SKAI Bar / Singapore",
+      "detected_at": "2026-10-30T03:44:34Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "SKAI Bar",
+          "Hotel": "Swissôtel The Stamford",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "2 Stamford Rd, Singapore 178882",
+          "Cuisine": "Vibrant Craft Cocktails",
+          "Opening hours": "Mon - Sun:; 5PM - 1AM"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "SKAI Bar",
+          "Hotel": "Swissôtel The Stamford",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "2 Stamford Rd, Singapore 178882",
+          "Cuisine": "Vibrant Craft Cocktails",
+          "Opening hours": "Mon - Sun:; 5PM - 1AM",
+          "Fixed discount": 20
+        }
+      },
+      "changes": [
+        {
+          "field": "Fixed discount",
+          "before": null,
+          "after": 20
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+      "transition_id": "6d36cd8312bc6740736b",
+      "stream_id": "ef73659a122d64d12cb2",
+      "occurrence": 1,
+      "id": "d30efafa7bb46ab46a96"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_updated",
+      "subject": "Love Dining source",
+      "detected_at": "2026-10-30T03:44:34Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "6c962542b577"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Official records SHA-256": "53f93533e99c"
+        }
+      },
+      "changes": [
+        {
+          "field": "Official records SHA-256",
+          "before": "6c962542b577",
+          "after": "53f93533e99c"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "3ff929d2fb97e0ab544e",
+      "stream_id": "915d672147e8dd8f713f",
+      "occurrence": 1,
+      "id": "79e8f5fd64a4c0e73fc1"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "details_updated",
+      "subject": "Hua Ting Restaurant / Singapore",
+      "detected_at": "2026-10-30T03:44:34Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Hua Ting Restaurant",
+          "Hotel": "Orchard Hotel Singapore",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "442 Orchard Road, Singapore 238879",
+          "Cuisine": "Chinese",
+          "Notes": "Advanced reservations are required. Please make your reservations here. Kindly refer to Terms and Conditions for dining privilege details.",
+          "Opening hours": "Mon – Fri:; 11.30AM – 2.30PM; 6PM – 10PM; Sat – Sun:; 11AM – 2.30PM; 6PM – 10PM"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Hua Ting Restaurant",
+          "Hotel": "Orchard Hotel Singapore",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "442 Orchard Road, Singapore 238879",
+          "Cuisine": "Chinese",
+          "Notes": "Advanced reservations are required. Please make your reservations here. Kindly refer to Terms and Conditions for dining privilege details.",
+          "Opening hours": "Mon – Fri:; 11.30AM – 2.30PM; 6PM – 10PM; Sat – Sun:; 11AM – 2.30PM; 6PM – 10PM",
+          "Fixed discount": 35
+        }
+      },
+      "changes": [
+        {
+          "field": "Fixed discount",
+          "before": null,
+          "after": 35
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+      "transition_id": "e43e4944264f66813321",
+      "stream_id": "cbeb868231213287794d",
+      "occurrence": 1,
+      "id": "718b7c0f394aee6ad7a4"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "details_updated",
+      "subject": "Connections Lounge / Singapore",
+      "detected_at": "2026-10-30T03:44:34Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Connections Lounge",
+          "Hotel": "Copthorne King’s Hotel Singapore",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "403 Havelock Road, Singapore 169632",
+          "Cuisine": "Bar Snacks",
+          "Notes": "Advanced reservations are required. Please make your reservations here. Kindly refer to Terms and Conditions for dining privilege details.",
+          "Opening hours": "Mon – Sun:; 3PM – 12AM"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Connections Lounge",
+          "Hotel": "Copthorne King’s Hotel Singapore",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "403 Havelock Road, Singapore 169632",
+          "Cuisine": "Bar Snacks",
+          "Notes": "Advanced reservations are required. Please make your reservations here. Kindly refer to Terms and Conditions for dining privilege details.",
+          "Opening hours": "Mon – Sun:; 3PM – 12AM",
+          "Fixed discount": 35
+        }
+      },
+      "changes": [
+        {
+          "field": "Fixed discount",
+          "before": null,
+          "after": 35
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+      "transition_id": "552a8bfcffbb70ff85dc",
+      "stream_id": "5a1262ab877190dfd868",
+      "occurrence": 1,
+      "id": "466a60ff7274db02b1ef"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "details_updated",
+      "subject": "Tien Court Restaurant / Singapore",
+      "detected_at": "2026-10-30T03:44:34Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Tien Court Restaurant",
+          "Hotel": "Copthorne King’s Hotel Singapore",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "403 Havelock Road, Singapore 169632",
+          "Cuisine": "Chinese",
+          "Notes": "Advanced reservations are required. Please make your reservations here. Kindly refer to Terms and Conditions for dining privilege details.",
+          "Opening hours": "Mon – Sun:; 12PM – 2.30PM; 6PM – 10PM"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Tien Court Restaurant",
+          "Hotel": "Copthorne King’s Hotel Singapore",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "403 Havelock Road, Singapore 169632",
+          "Cuisine": "Chinese",
+          "Notes": "Advanced reservations are required. Please make your reservations here. Kindly refer to Terms and Conditions for dining privilege details.",
+          "Opening hours": "Mon – Sun:; 12PM – 2.30PM; 6PM – 10PM",
+          "Fixed discount": 35
+        }
+      },
+      "changes": [
+        {
+          "field": "Fixed discount",
+          "before": null,
+          "after": 35
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+      "transition_id": "49883884835bdb58992b",
+      "stream_id": "885d56e6427652651567",
+      "occurrence": 1,
+      "id": "3b4f4b45812707af026a"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "details_updated",
+      "subject": "Crossroads Bar / Singapore",
+      "detected_at": "2026-10-30T03:44:34Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Crossroads Bar",
+          "Hotel": "Paradox Singapore",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "20 Merchant Rd, Singapore 058281",
+          "Cuisine": "Asian-Inspired Tapas & Afternoon Tea",
+          "Opening hours": "Mon - Sun:; 10AM - 12AM"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Crossroads Bar",
+          "Hotel": "Paradox Singapore",
+          "Type": "hotel",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "20 Merchant Rd, Singapore 058281",
+          "Cuisine": "Asian-Inspired Tapas & Afternoon Tea",
+          "Opening hours": "Mon - Sun:; 10AM - 12AM",
+          "Fixed discount": 20
+        }
+      },
+      "changes": [
+        {
+          "field": "Fixed discount",
+          "before": null,
+          "after": 20
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-dining-hotels.html",
+      "transition_id": "d672d516392e13cf3c78",
+      "stream_id": "ad2c04886d3be666fd13",
+      "occurrence": 1,
+      "id": "2077d6fd756cc2293aa2"
+    },
     {
       "program": "Love Dining",
       "program_id": "love-dining",
@@ -16473,314 +16799,6 @@
       "program": "Table for Two",
       "program_id": "table-for-two",
       "route": "#/table-for-two",
-      "kind": "source_stale",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-06T14:16:46Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Freshness": "current",
-          "Stale records": 0
-        }
-      },
-      "after": {
-        "state": "stale",
-        "fields": {
-          "Source state": "stale",
-          "Freshness": "stale",
-          "Stale records": 29
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "current",
-          "after": "stale"
-        },
-        {
-          "field": "Freshness",
-          "before": "current",
-          "after": "stale"
-        },
-        {
-          "field": "Stale records",
-          "before": 0,
-          "after": 29
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "7a0c2ed47a14576abcae",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 10,
-      "id": "4c6321177b3d55d13aad",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-06T07:20:52Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "27/29 (93.1%), 2 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "27/29 (93.1%), 2 unavailable",
-          "after": "29/29 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "957cb551d4d32c436358",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 10,
-      "id": "fc06e37f5209b18b2ec5",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_recovered",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-06T06:56:28Z",
-      "status": "published",
-      "before": {
-        "state": "stale",
-        "fields": {
-          "Source state": "stale",
-          "Freshness": "stale",
-          "Stale records": 29,
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Freshness": "current",
-          "Stale records": 0,
-          "Coverage": "27/29 (93.1%), 2 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Freshness",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Stale records",
-          "before": 29,
-          "after": 0
-        },
-        {
-          "field": "Coverage",
-          "before": "29/29 (100%), 0 unavailable",
-          "after": "27/29 (93.1%), 2 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "bd00b76c3c97a49bb786",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 2,
-      "id": "995a112a8346d12b9e07",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_stale",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-06T06:54:42Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Freshness": "current",
-          "Stale records": 0
-        }
-      },
-      "after": {
-        "state": "stale",
-        "fields": {
-          "Source state": "stale",
-          "Freshness": "stale",
-          "Stale records": 29
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "current",
-          "after": "stale"
-        },
-        {
-          "field": "Freshness",
-          "before": "current",
-          "after": "stale"
-        },
-        {
-          "field": "Stale records",
-          "before": 0,
-          "after": 29
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "7a0c2ed47a14576abcae",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 9,
-      "id": "8f08a16eaf4fea46e758",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-06T02:04:03Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "27/29 (93.1%), 2 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "27/29 (93.1%), 2 unavailable",
-          "after": "29/29 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "957cb551d4d32c436358",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 9,
-      "id": "6867b2048da00291d303",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_review_cleared",
-      "subject": "Table for Two menus",
-      "detected_at": "2026-10-06T02:04:03Z",
-      "status": "published",
-      "before": {
-        "state": "review_required",
-        "fields": {
-          "Source state": "review_required",
-          "Review": "required",
-          "Review items": 9
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Review": "clear",
-          "Review items": 8
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "review_required",
-          "after": "current"
-        },
-        {
-          "field": "Review",
-          "before": "required",
-          "after": "clear"
-        },
-        {
-          "field": "Review items",
-          "before": 9,
-          "after": 8
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
-      "transition_id": "b7194678b771b7d798a7",
-      "stream_id": "1d6c201fff0933553df2",
-      "occurrence": 2,
-      "id": "561a00bf91ffb57c359a",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Explorer ratings",
-      "program_id": "explorer-ratings",
-      "route": "#/dining/world",
-      "kind": "source_health_changed",
-      "subject": "Google Maps ratings",
-      "detected_at": "2026-10-06T01:49:26Z",
-      "status": "published",
-      "before": {
-        "state": "mixed_age",
-        "fields": {
-          "Stale records": 25
-        }
-      },
-      "after": {
-        "state": "mixed_age",
-        "fields": {
-          "Stale records": 26
-        }
-      },
-      "changes": [
-        {
-          "field": "Stale records",
-          "before": 25,
-          "after": 26
-        }
-      ],
-      "source_url": "https://www.google.com/maps",
-      "transition_id": "c01a46f372f5a09dff8a",
-      "stream_id": "75dc7ff790819667042f",
-      "occurrence": 1,
-      "id": "e3e5240eeccc52af6a28",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
       "kind": "source_updated",
       "subject": "Table for Two source",
       "detected_at": "2026-09-27T01:52:16Z",
@@ -23636,13 +23654,14 @@
         }
       },
       "325506f85300a0ec65a3": {
-        "latest_transition_id": "494c890d5cec9722be8e",
+        "latest_transition_id": "88bbbac82ec0b9b3631c",
         "occurrences": {
           "1721cde76de73061427b": 1,
           "36eb17b495facd558088": 1,
           "3d93a8994faef3d34eef": 1,
           "494c890d5cec9722be8e": 3,
           "6d25cfe12d49db98b041": 1,
+          "88bbbac82ec0b9b3631c": 1,
           "8f89d57217161da1ee19": 1,
           "cea2d37ee2da89ff16c6": 2,
           "f07cb3104e4317089870": 1,
@@ -23837,6 +23856,12 @@
         "latest_transition_id": "039a01fd1a1b4d242c83",
         "occurrences": {
           "039a01fd1a1b4d242c83": 1
+        }
+      },
+      "5a1262ab877190dfd868": {
+        "latest_transition_id": "552a8bfcffbb70ff85dc",
+        "occurrences": {
+          "552a8bfcffbb70ff85dc": 1
         }
       },
       "5a285967ca2795c90124": {
@@ -24338,6 +24363,12 @@
           "c7018aa9fb960b24939f": 1
         }
       },
+      "885d56e6427652651567": {
+        "latest_transition_id": "49883884835bdb58992b",
+        "occurrences": {
+          "49883884835bdb58992b": 1
+        }
+      },
       "8880d6039551e51bbee4": {
         "latest_transition_id": "268a91f37a58d4bee0ff",
         "occurrences": {
@@ -24381,8 +24412,9 @@
         }
       },
       "915d672147e8dd8f713f": {
-        "latest_transition_id": "a6174dfe21f75adf647b",
+        "latest_transition_id": "3ff929d2fb97e0ab544e",
         "occurrences": {
+          "3ff929d2fb97e0ab544e": 1,
           "529bca112c6849717caa": 1,
           "a0a9bd6099c50e729407": 1,
           "a6174dfe21f75adf647b": 1,
@@ -24609,9 +24641,10 @@
         }
       },
       "ad2c04886d3be666fd13": {
-        "latest_transition_id": "b289993978c55110dc59",
+        "latest_transition_id": "d672d516392e13cf3c78",
         "occurrences": {
-          "b289993978c55110dc59": 1
+          "b289993978c55110dc59": 1,
+          "d672d516392e13cf3c78": 1
         }
       },
       "ad7c23ac9b7c7f07f23c": {
@@ -24859,6 +24892,12 @@
         "latest_transition_id": "02856df0c0fe23376af5",
         "occurrences": {
           "02856df0c0fe23376af5": 1
+        }
+      },
+      "cbeb868231213287794d": {
+        "latest_transition_id": "e43e4944264f66813321",
+        "occurrences": {
+          "e43e4944264f66813321": 1
         }
       },
       "cd510955457dc7a4cdf9": {
@@ -25118,9 +25157,10 @@
         }
       },
       "ef73659a122d64d12cb2": {
-        "latest_transition_id": "3c085e22c731f43af759",
+        "latest_transition_id": "6d36cd8312bc6740736b",
         "occurrences": {
-          "3c085e22c731f43af759": 1
+          "3c085e22c731f43af759": 1,
+          "6d36cd8312bc6740736b": 1
         }
       },
       "efaea44357222e0404dc": {
