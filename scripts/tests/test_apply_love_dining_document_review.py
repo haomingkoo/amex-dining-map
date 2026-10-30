@@ -174,3 +174,16 @@ def test_second_baseline_rejects_split_events_missing_one_hash():
 
     with pytest.raises(ValueError, match="source review event is missing"):
         apply_review.apply_baseline(meta, ledger, "hotels", reviewed)
+
+
+def test_hotel_only_change_does_not_require_unchanged_restaurant_event():
+    meta, ledger, reviewed = split_ledger_case()
+    meta["terms_reviewed_at"] = "2026-09-01T00:00:00Z"
+    meta["terms_reviewed_at_by_document"]["restaurants"] = "2026-09-01T00:00:00Z"
+    ledger["updates"].pop(0)
+
+    updated_meta, updated_ledger = apply_review.apply_baseline(meta, ledger, "hotels", reviewed)
+
+    assert updated_meta["manual_review_required"] is False
+    assert updated_meta["terms_reviewed_at"] == reviewed["reviewed_at"]
+    assert [event["status"] for event in updated_ledger["updates"]] == ["rejected"]

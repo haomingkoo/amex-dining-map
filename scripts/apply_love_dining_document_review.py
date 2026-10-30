@@ -69,9 +69,15 @@ def apply_baseline(meta: dict, ledger: dict, key: str, reviewed: dict):
     updated_meta["manual_review_required"] = bool(reasons)
     updated_ledger = copy.deepcopy(ledger)
     if not pending:
+        # Only documents reviewed since the last full approval changed in this cycle.
+        previous_cycle = meta.get("terms_reviewed_at") or ""
         expected = {
-            "Restaurant T&C PDF hash": updated_meta["terms_hashes"]["restaurants"][:12],
-            "Hotel T&C PDF hash": updated_meta["terms_hashes"]["hotels"][:12],
+            field: updated_meta["terms_hashes"][candidate][:12]
+            for candidate, field in (
+                ("restaurants", "Restaurant T&C PDF hash"),
+                ("hotels", "Hotel T&C PDF hash"),
+            )
+            if review_times.get(candidate, "") > previous_cycle
         }
         # Each document's hash may arrive in its own source event; together they must cover both.
         candidates = []
