@@ -1088,14 +1088,14 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
-function safeRenderedUrl(value, baseHref = "https://amex-explorer.kooexperience.com/") {
+function safeRenderedUrl(value, baseHref = "https://amex-explorer.kooexperience.com/", { allowHttp = false } = {}) {
   const raw = String(value || "").trim();
   if (!raw) return "";
   if (raw.startsWith("#/")) return raw;
   try {
     const url = new URL(raw, baseHref);
     if (url.protocol === "https:") return url.href;
-    if (url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)) {
+    if (url.protocol === "http:" && (allowHttp || ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname))) {
       return url.href;
     }
     if (url.protocol === "mailto:") return url.href;
@@ -1114,7 +1114,9 @@ function sanitizeRenderedUrls(root) {
   elements.forEach((element) => {
     const attribute = element instanceof HTMLAnchorElement ? "href" : "src";
     const value = element.getAttribute(attribute);
-    const safe = safeRenderedUrl(value, window.location.href);
+    const safe = safeRenderedUrl(value, window.location.href, {
+      allowHttp: element instanceof HTMLAnchorElement,
+    });
     if (safe) {
       if (safe !== value) element.setAttribute(attribute, safe);
     } else {
