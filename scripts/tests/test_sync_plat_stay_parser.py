@@ -73,3 +73,32 @@ def test_collapse_blackout_items_subject_to_line_is_separate_note() -> None:
     items = MODULE.collapse_blackout_items(["• 31 December 2026", "Subject to hotel’s availability and", "confirmation"])
 
     assert items == ["• 31 December 2026", "Subject to hotel’s availability and confirmation"]
+
+
+def test_yearless_range_is_annual_not_a_guessed_year() -> None:
+    exact, note = MODULE.parse_blackout_item("• 7 November – 10 December")
+
+    assert note is None
+    assert exact == {
+        "recurring": "annual",
+        "start_month_day": "11-07",
+        "end_month_day": "12-10",
+        "label": "7 November - 10 December",
+        "tentative": False,
+    }
+
+
+def test_yearless_same_month_and_new_year_ranges_parse() -> None:
+    december, _ = MODULE.parse_blackout_item("• 27– 31 December")
+    new_year, _ = MODULE.parse_blackout_item("28 December - 3 January")
+
+    assert (december["start_month_day"], december["end_month_day"]) == ("12-27", "12-31")
+    assert (new_year["start_month_day"], new_year["end_month_day"]) == ("12-28", "01-03")
+
+
+def test_dated_range_keeps_its_stated_year() -> None:
+    exact, _ = MODULE.parse_blackout_item("24 - 26 December 2027")
+
+    assert (exact["start"], exact["end"]) == ("2027-12-24", "2027-12-26")
+    assert "recurring" not in exact
+    assert not hasattr(MODULE, "DEFAULT_BLACKOUT_YEAR")

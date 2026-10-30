@@ -4779,6 +4779,18 @@ function stayDateRange() {
 }
 
 function stayRangeOverlaps(range, selected) {
+  if (range.recurring === "annual") {
+    // Test the window in every year the stay touches, starting a year early for New Year spans.
+    const wraps = range.end_month_day < range.start_month_day;
+    for (let year = selected.start.getUTCFullYear() - 1; year <= selected.end.getUTCFullYear(); year += 1) {
+      const dated = {
+        start: `${year}-${range.start_month_day}`,
+        end: `${wraps ? year + 1 : year}-${range.end_month_day}`,
+      };
+      if (stayRangeOverlaps(dated, selected)) return true;
+    }
+    return false;
+  }
   const start = new Date(`${range.start}T00:00:00Z`);
   const endInclusive = new Date(`${range.end}T00:00:00Z`);
   const endExclusive = new Date(endInclusive);
