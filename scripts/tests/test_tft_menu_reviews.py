@@ -17,7 +17,7 @@ PDF = b"%PDF reviewed candidate"
 NOW = datetime(2026, 8, 30, 9, 0, tzinfo=timezone.utc)
 
 
-def fixture(decision="approved"):
+def fixture(decision="approved", previous_sha256="a" * 64):
     previous = {
         "status": "published",
         "url": "https://www.americanexpress.com/old.pdf",
@@ -27,7 +27,7 @@ def fixture(decision="approved"):
         "checked_at": "2026-08-29T00:00:00Z",
         "first_seen_at": "2026-08-01T00:00:00Z",
         "last_seen_at": "2026-08-29T00:00:00Z",
-        "sha256": "a" * 64,
+        "sha256": previous_sha256,
         "bytes": 100,
         "aem_created": "before",
         "changed_at": None,
@@ -117,6 +117,16 @@ def test_approval_replaces_active_and_builds_truthful_event():
     entity_key = event.pop("entity_key")
     source_change_alert.assign_event_identity(event, entity_key)
     OwnerAlertEvent.model_validate(event)
+    tft_menu_reviews.verify_decision_receipts(updated)
+
+
+def test_renamed_file_with_identical_bytes_publishes_no_event():
+    payload, manifest, item, _previous = fixture(previous_sha256=hashlib.sha256(PDF).hexdigest())
+
+    updated, event = tft_menu_reviews.apply_review(payload, manifest, PDF, now=NOW)
+
+    assert updated["venues"][0]["menu_pdfs"]["platinum"]["filename"] == item["filename"]
+    assert event is None
     tft_menu_reviews.verify_decision_receipts(updated)
 
 

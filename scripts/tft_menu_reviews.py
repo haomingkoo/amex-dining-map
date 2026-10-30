@@ -253,9 +253,12 @@ def _published_menu(item: dict, manifest: dict, digest: str) -> dict:
     }
 
 
-def _owner_event(item: dict, manifest: dict, venue_name: str) -> dict:
+def _owner_event(item: dict, manifest: dict, venue_name: str) -> dict | None:
     digest = manifest_sha256(manifest)
     previous = item.get("previous") or {}
+    # A renamed file with the same bytes is not news for readers.
+    if previous.get("sha256") == item["sha256"]:
+        return None
     published = _published_menu(item, manifest, digest)
     before_filename = previous.get("filename") or "Not published"
     before_hash = previous.get("sha256")
@@ -474,7 +477,7 @@ def verify_decision_receipts(payload: dict) -> None:
             # The venue left the roster after this menu was approved. The receipt stays
             # as history; it no longer authorizes a published menu.
             continue
-        event = entry.get("owner_event") or {}
+        event = entry.get("owner_event")
         expected_event = _owner_event(
             candidate_item,
             manifest,
