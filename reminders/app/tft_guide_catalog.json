@@ -12,8 +12,8 @@
   "release_source": {
     "source": "data/table-for-two-release-history.json",
     "project": "AMEXPlatSG",
-    "updated_at": "2026-10-30T09:11:50+00:00",
-    "observation_count": 4335
+    "updated_at": "2026-10-30T10:10:43+00:00",
+    "observation_count": 4336
   },
   "eligibility_source": {
     "terms_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf",
@@ -4851,14 +4851,14 @@
         },
         {
           "meal": "Dinner",
-          "observation_count": 63,
+          "observation_count": 64,
           "median_lead_days": 61.0,
           "lead_days_min": 4,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.17,
+          "typical_time_observation_share": 0.19,
           "confidence": "high",
-          "latest_observation_at": "2026-10-29T10:10:31Z"
+          "latest_observation_at": "2026-10-30T10:10:43Z"
         },
         {
           "meal": "Lunch",
@@ -4930,7 +4930,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 109,
+            "dates_seen": 110,
             "days": [
               "Mon",
               "Tue",
@@ -5053,8 +5053,8 @@
         ]
       },
       "release": {
-        "new_dates": 125,
-        "precise_sightings": 30,
+        "new_dates": 126,
+        "precise_sightings": 31,
         "hour_counts": [
           0,
           0,
@@ -5074,7 +5074,7 @@
           0,
           0,
           2,
-          8,
+          9,
           1,
           1,
           2,
@@ -5111,7 +5111,7 @@
           4,
           4,
           6,
-          4,
+          5,
           3
         ],
         "meals": [
@@ -5142,22 +5142,27 @@
           },
           {
             "meal": "Dinner",
-            "new_dates": 63,
+            "new_dates": 64,
             "rolling_lead_days": 61,
             "lead_share": 0.83,
-            "precise_sightings": 17,
-            "time_of_day": null,
-            "last_new_date_at": "2026-10-29T10:10:31Z",
-            "quiet_days": 1
+            "precise_sightings": 18,
+            "time_of_day": {
+              "start_hour": 17,
+              "end_hour": 19,
+              "share": 0.61,
+              "label": "between 5 pm and 7 pm"
+            },
+            "last_new_date_at": "2026-10-30T10:10:43Z",
+            "quiet_days": 0
           }
         ],
         "batches": [],
         "lines": [
           "New lunch dates open one day at a time, 61 days ahead, usually first seen between 11 am and 1 pm.",
           "New afternoon tea dates open one day at a time, 61 days ahead.",
-          "New dinner dates open one day at a time, 61 days ahead."
+          "New dinner dates open one day at a time, 61 days ahead, usually first seen between 5 pm and 7 pm."
         ],
-        "best_time": "lunch between 11 am and 1 pm, 61 days ahead",
+        "best_time": "lunch between 11 am and 1 pm, 61 days ahead; dinner between 5 pm and 7 pm, 61 days ahead",
         "furthest_open_dates": {
           "Lunch": "2026-12-30",
           "Dinner": "2026-12-29",
