@@ -54,10 +54,12 @@ IGNORED_RECORD_FIELDS = {
 # Nested keys (under any dict, at any depth) that flip every scrape but do not
 # represent a real change to the venue. Stripped before hashing.
 IGNORED_NESTED_KEYS = {
+    "aem_created",
     "captured_at",
     "checked_at",
     "fetched_at",
     "last_checked_at",
+    "last_seen_at",
     "last_synced_at",
     "last_verified_at",
 }
