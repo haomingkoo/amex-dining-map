@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime, timezone
+import logging
 from collections.abc import Awaitable, Callable
 from contextlib import asynccontextmanager, suppress
 import os
@@ -32,7 +34,7 @@ from app import alert_dispatch
 from app.config import load_settings
 from app.owner_alert_routes import router as owner_alert_router
 from app.owner_alerts import OWNER_ALERT_BATCH_MAX_BYTES
-from app.observability import configure_logging
+from app.observability import configure_logging, log_event
 from app.telegram_bot_routes import router as telegram_bot_router
 from app.tft_live_refresh import TFTLiveRefresher
 from app.routes import router
@@ -75,6 +77,11 @@ CATALOG_REFRESH_INTERVAL_SECONDS = 900
 PURGE_INTERVAL_SECONDS = 86_400
 
 
+lifecycle_logger = logging.getLogger("amex_reminders.lifecycle")
+# Latest failure per periodic loop, cleared by its next success.
+loop_failures: dict[str, dict[str, str]] = {}
+
+
 async def run_live_refresh_loop(
     refresher: TFTLiveRefresher,
     interval_seconds: int,
@@ -104,8 +111,25 @@ async def run_periodically(
 ) -> None:
     """Run a blocking call on a fixed cadence, off the event loop."""
 
+    name = f"{call.__module__}.{call.__qualname__}"
     while True:
-        await to_thread(call, *args)
+        try:
+            await to_thread(call, *args)
+        except Exception as exc:
+            # Exception types only; messages can carry URLs or tokens.
+            loop_failures[name] = {
+                "at": datetime.now(timezone.utc).isoformat(),
+                "error": type(exc).__name__,
+            }
+            log_event(
+                lifecycle_logger,
+                "background_loop_failed",
+                level=logging.ERROR,
+                loop=name,
+                error=type(exc).__name__,
+            )
+        else:
+            loop_failures.pop(name, None)
         await sleep(interval_seconds)
 
 
@@ -302,6 +326,9 @@ def healthz() -> dict[str, Any]:
         settings.tft_live_snapshot_path
     )
     response["tft_slot_history"] = dict(tft_patterns.last_record)
+    response["background_loop_failures"] = dict(loop_failures)
     if settings.tft_live_refresh_enabled:
         response["ok"] = response["tft_live"]["status"] == "success"
+    if loop_failures:
+        response["ok"] = False
     return response
