@@ -280,3 +280,36 @@ def test_rejected_file_is_not_requeued_under_another_kind():
     menus.enqueue_review(queue, requeued, [rejected])
 
     assert queue == []
+
+
+def test_same_bytes_move_through_review_when_the_reviewed_spelling_is_gone():
+    import hashlib
+
+    pdf = b"%PDF reviewed forage menu"
+    previous = {
+        "status": "published",
+        "filename": "Forage-Menu_Platinium.pdf",
+        "url": "https://www.americanexpress.com/content/dam/Forage-Menu_Platinium.pdf",
+        "card": "platinum",
+        "sha256": hashlib.sha256(pdf).hexdigest(),
+    }
+    entry = {
+        "filename": "Forage-Menu_Platinum.pdf",
+        "url": "https://www.americanexpress.com/content/dam/Forage-Menu_Platinum.pdf",
+        "card_key": "platinum",
+    }
+
+    info = menus.venue_menu_info(
+        {"name": "Forage"}, entry, pdf, "2026-10-30T00:00:00Z", previous, previous_listed=False
+    )
+
+    assert info["status"] == "review_required"
+    assert info["filename"] == "Forage-Menu_Platinum.pdf"
+
+
+def test_branch_menus_match_by_location_words_or_initials():
+    files = ["Brewerkz-Menu-ECP.pdf", "Brewerkz-Menu-RiversidePoint.pdf"]
+    assert all(menus.MENU_FILENAME_RE.fullmatch(name) for name in files)
+
+    assert menus.match_venue_candidates("Brewerkz East Coast Park", files) == ["Brewerkz-Menu-ECP.pdf"]
+    assert menus.match_venue_candidates("Brewerkz Riverside Point", files) == ["Brewerkz-Menu-RiversidePoint.pdf"]
