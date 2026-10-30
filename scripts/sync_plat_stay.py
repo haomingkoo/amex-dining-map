@@ -46,7 +46,6 @@ GOOGLE_RATINGS_PATH = DATA_DIR / "google-maps-ratings.json"
 
 CANONICAL_SOURCE_URL = "https://go.amex/platstay"
 USER_AGENT = "AmexBenefitsExplorer/0.1 (+https://kooexperience.com/amex-dining-map/)"
-DEFAULT_BLACKOUT_YEAR = 2026
 GEOAPIFY_API_KEY = os.environ.get("GEOAPIFY_API_KEY")
 TOMTOM_API_KEY = os.environ.get("TOMTOM_API_KEY")
 PDF_FETCH_TIMEOUTS = (30, 60, 90)
@@ -603,6 +602,12 @@ def iso_date(year: int, month_name: str, day: int) -> str:
     return date(year, month, day).isoformat()
 
 
+def month_day(month_name: str, day: int) -> str:
+    month = MONTHS[month_name.lower()]
+    date(2000, month, day)  # Leap year, so 29 February validates.
+    return f"{month:02d}-{day:02d}"
+
+
 def parse_blackout_item(item: str) -> tuple[dict | None, str | None]:
     normalized, tentative = normalize_blackout_item(item)
     if not normalized:
@@ -621,17 +626,34 @@ def parse_blackout_item(item: str) -> tuple[dict | None, str | None]:
             None,
         )
 
-    match = re.fullmatch(
-        r"(\d{1,2})\s+([A-Za-z]+)\s*-\s*(\d{1,2})\s+([A-Za-z]+)(?:\s+(\d{4}))?",
-        normalized,
-    )
+    match = re.fullmatch(r"(\d{1,2})\s+([A-Za-z]+)\s*-\s*(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})", normalized)
     if match:
         start_day, start_month, end_day, end_month, year = match.groups()
-        year = int(year) if year else DEFAULT_BLACKOUT_YEAR
         return (
             {
-                "start": iso_date(year, start_month, int(start_day)),
-                "end": iso_date(year, end_month, int(end_day)),
+                "start": iso_date(int(year), start_month, int(start_day)),
+                "end": iso_date(int(year), end_month, int(end_day)),
+                "label": normalized,
+                "tentative": tentative,
+            },
+            None,
+        )
+
+    # No year in the source: the hotel lists the window as repeating every year.
+    match = re.fullmatch(r"(\d{1,2})\s+([A-Za-z]+)\s*-\s*(\d{1,2})\s+([A-Za-z]+)", normalized) or re.fullmatch(
+        r"(\d{1,2})\s*-\s*(\d{1,2})\s+([A-Za-z]+)", normalized
+    )
+    if match:
+        if len(match.groups()) == 4:
+            start_day, start_month, end_day, end_month = match.groups()
+        else:
+            start_day, end_day, start_month = match.groups()
+            end_month = start_month
+        return (
+            {
+                "recurring": "annual",
+                "start_month_day": month_day(start_month, int(start_day)),
+                "end_month_day": month_day(end_month, int(end_day)),
                 "label": normalized,
                 "tentative": tentative,
             },
