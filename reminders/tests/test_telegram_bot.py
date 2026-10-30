@@ -10,14 +10,21 @@ import logging
 import pytest
 from fastapi.testclient import TestClient
 
-from app import db, telegram_bot_store, telegram_reminders, tft_guide, tft_slot_source
+from app import (
+    db,
+    telegram_bot_store,
+    telegram_reminders,
+    tft_guide,
+    tft_slot_source,
+    tft_slots,
+)
 from app.config import Settings
 from app.main import app
 from app.telegram_bot_routes import BOT_SCOPE, get_settings
 
 
 WEBHOOK_SECRET = "w" * 43
-SLOT_DATE = (datetime.now(timezone(timedelta(hours=8))) + timedelta(days=7)).date()
+SLOT_DATE = (datetime.now(tft_slots.SGT) + timedelta(days=7)).date()
 SLOT_DAY = f"{SLOT_DATE:%a} {SLOT_DATE.day} {SLOT_DATE:%b}"
 
 
