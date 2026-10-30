@@ -3215,6 +3215,11 @@ tr {
   display: none;
 }
 
+/* Love Dining has no table view; this list is the only way to reach venues without a map pin. */
+#love-dining-explorer .mobile-results-panel {
+  display: block;
+}
+
 .mobile-results-list {
   display: flex;
   flex-direction: column;

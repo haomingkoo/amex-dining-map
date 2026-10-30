@@ -119,3 +119,9 @@ assert.strictEqual(
   context.stayNameProfile({ name: "W Hotel (From 1 June 2026)" }).eligibilityNote,
   "Eligible since 2026-06-01",
 );
+
+// Venues without a map pin are only reachable from this list.
+assert.match(
+  fs.readFileSync("web/styles.css", "utf8"),
+  /#love-dining-explorer \.mobile-results-panel \{\s*display: block;/,
+);
