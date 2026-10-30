@@ -761,6 +761,14 @@ def append_updates(path: Path, events: list[dict[str, Any]], updated_at: str) ->
             max_occurrence[(stream_id, transition_id)] = occurrence
         if not additions:
             return
+        # A newer state makes an older unreviewed one moot; announcing it later is noise.
+        newest_by_stream = {event["stream_id"]: event for event in additions}
+        for event in existing:
+            newer = newest_by_stream.get(event.get("stream_id"))
+            if newer is not None and event.get("status") == "review_required":
+                event["status"] = "rejected"
+                event["reviewed_at"] = updated_at
+                event["review_note"] = f"Superseded by {newer['id']} before review."
         payload["schema_version"] = 1
         payload["updated_at"] = updated_at
         payload["identity_state"] = _render_identity_state(

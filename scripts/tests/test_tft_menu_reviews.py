@@ -602,3 +602,45 @@ def test_only_missing_menus_do_not_require_review():
 
     assert tft_menu_reviews.queue_needs_review(missing) is False
     assert tft_menu_reviews.queue_needs_review(missing + [{"kind": "ambiguous_exact_match"}]) is True
+
+
+def test_queue_fingerprint_ignores_listing_wide_digests():
+    # Amex's listing alternates asset ids for unrelated files, so listing-wide digests churn daily.
+    item = {
+        "kind": "missing_venue_menu",
+        "venue_id": "tft-park90",
+        "venue_name": "Park90",
+        "status": "review_required",
+        "listing_sha256": "1" * 64,
+        "roster_sha256": "2" * 64,
+        "candidate_id": "3" * 64,
+        "first_detected_at": "2026-10-28T00:55:40Z",
+    }
+    churned = {
+        **item,
+        "listing_sha256": "4" * 64,
+        "candidate_id": "5" * 64,
+    }
+    assert tft_menu_reviews.review_queue_sha256([item]) == tft_menu_reviews.review_queue_sha256([churned])
+
+    another = {**item, "venue_id": "tft-oso", "venue_name": "OSO Ristorante"}
+    assert tft_menu_reviews.review_queue_sha256([item]) != tft_menu_reviews.review_queue_sha256([item, another])
+    failed = {**item, "kind": "observation_failed"}
+    assert tft_menu_reviews.review_queue_sha256([item]) != tft_menu_reviews.review_queue_sha256([failed])
+
+
+def test_same_issue_keeps_first_detection_when_listing_churns():
+    item = {
+        "kind": "missing_venue_menu",
+        "venue_id": "tft-park90",
+        "venue_name": "Park90",
+        "listing_sha256": "1" * 64,
+        "roster_sha256": "2" * 64,
+        "detected_at": "2026-10-29T01:30:30Z",
+    }
+    prior = fetch_tft_menus.enqueue_review([], {**item, "detected_at": "2026-10-28T00:55:40Z"})
+    queue: list[dict] = []
+    fetch_tft_menus.enqueue_review(queue, {**item, "listing_sha256": "4" * 64}, prior_queue=[prior])
+    fetch_tft_menus.preserve_detection_times(queue, [prior])
+    assert queue[0]["first_detected_at"] == "2026-10-28T00:55:40Z"
+    assert tft_menu_reviews.review_queue_sha256(queue) == tft_menu_reviews.review_queue_sha256([prior])
