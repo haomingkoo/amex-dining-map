@@ -1,7 +1,54 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-30T02:20:00Z",
+  "updated_at": "2026-10-30T02:33:31Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_review_cleared",
+      "subject": "Love Dining",
+      "detected_at": "2026-10-30T02:33:31Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 2
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "review_required",
+          "after": "current"
+        },
+        {
+          "field": "Review",
+          "before": "required",
+          "after": "clear"
+        },
+        {
+          "field": "Review items",
+          "before": 2,
+          "after": 0
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "494c890d5cec9722be8e",
+      "stream_id": "325506f85300a0ec65a3",
+      "occurrence": 3,
+      "id": "ba4c11e37abb600e9859"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -16717,41 +16764,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Plat Stay",
-      "program_id": "plat-stay",
-      "route": "#/stays",
-      "kind": "source_updated",
-      "subject": "Plat Stay source",
-      "detected_at": "2026-10-06T01:49:26Z",
-      "status": "published",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Source SHA-256": "e25e109c8fad"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Source SHA-256": "a801d8ec4394"
-        }
-      },
-      "changes": [
-        {
-          "field": "Source SHA-256",
-          "before": "e25e109c8fad",
-          "after": "a801d8ec4394"
-        }
-      ],
-      "source_url": "https://go.amex/platstay",
-      "transition_id": "9e0cd8c20110725e6215",
-      "stream_id": "09e5d455ee8189b8134e",
-      "occurrence": 1,
-      "id": "70a042701c7c3471e491",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Table for Two",
       "program_id": "table-for-two",
       "route": "#/table-for-two",
@@ -23610,12 +23622,12 @@
         }
       },
       "325506f85300a0ec65a3": {
-        "latest_transition_id": "8f89d57217161da1ee19",
+        "latest_transition_id": "494c890d5cec9722be8e",
         "occurrences": {
           "1721cde76de73061427b": 1,
           "36eb17b495facd558088": 1,
           "3d93a8994faef3d34eef": 1,
-          "494c890d5cec9722be8e": 2,
+          "494c890d5cec9722be8e": 3,
           "6d25cfe12d49db98b041": 1,
           "8f89d57217161da1ee19": 1,
           "cea2d37ee2da89ff16c6": 2,
