@@ -142,11 +142,6 @@ const GOOGLE_RATING_ID_ALIASES = {
   "tft-vineyard": "love-vineyard-at-hortpark",
   "tft-vue": "amex-global-singapore-vue",
 };
-const LOVE_DINING_FIXED_20_IDS = new Set([
-  "love-pan-pacific-orchard-singapore-florette",
-  "love-swissotel-the-stamford-skai-bar",
-  "love-paradox-singapore-crossroads-bar",
-]);
 
 function normalizeTheme(theme) {
   return theme === "light" ? "light" : "dark";
@@ -7739,10 +7734,11 @@ function loveDiningBenefitProfile(record) {
   );
   const isFutureChange = eligibility.key === "future_change";
   const sourceReviewRequired = Boolean(state.loveDiningSourceMeta?.manual_review_required);
-  const isFixed20 = LOVE_DINING_FIXED_20_IDS.has(record.id);
-  const maxSavingsPct = isUnavailable ? 0 : isFixed20 ? 20 : 50;
+  const fixedPct = Number.isInteger(record.fixed_discount_percent) ? record.fixed_discount_percent : null;
+  const isFixed = fixedPct !== null;
+  const maxSavingsPct = isUnavailable ? 0 : isFixed ? fixedPct : 50;
   const isHotel = record.type === "hotel";
-  const savingsKey = isUnavailable ? "unavailable" : isFixed20 ? "twenty" : "fifty";
+  const savingsKey = isUnavailable ? "unavailable" : isFixed ? "fixed" : "fifty";
   const futureLastEligible = eligibility.effectiveFrom
     ? new Date(`${eligibility.effectiveFrom}T00:00:00Z`)
     : null;
@@ -7751,15 +7747,15 @@ function loveDiningBenefitProfile(record) {
     ? `${isPermanentlyClosed ? "Permanently closed · " : ""}Not eligible${eligibility.effectiveFrom ? ` since ${formatSourceDate(eligibility.effectiveFrom)}` : ""}`
     : isFutureChange
       ? `Eligible until ${formatSourceDate(futureLastEligible?.toISOString())}`
-    : isFixed20
-      ? `${sourceReviewRequired ? "Last reviewed: " : ""}20% special outlet`
+    : isFixed
+      ? `${sourceReviewRequired ? "Last reviewed: " : ""}${fixedPct}% fixed rate`
       : `${sourceReviewRequired ? "Last reviewed: " : ""}up to 50%`;
   const savingsDetail = isUnavailable
     ? "The structured effective date has passed; verify the official listing before planning."
     : isFutureChange
       ? `The official listing says eligibility changes from ${formatSourceDate(eligibility.effectiveFrom)}.`
-    : isFixed20
-      ? "This outlet is listed with a fixed or special 20% benefit in the official hotel terms."
+    : isFixed
+      ? `The official listing gives this outlet a fixed ${fixedPct}% off the total bill, whatever the party size.`
       : isHotel
         ? "Hotel benefit scale: 50% for 2 adults, 35%/33% for 3, 25% for 4, and 20% for larger eligible parties."
         : "Restaurant benefit scale: 50% for 2 diners, 35% for 3, 25% for 4, and 20% for 5–20 diners.";
@@ -7767,8 +7763,8 @@ function loveDiningBenefitProfile(record) {
     ? "Eligibility is restricted for this venue; verify the official listing before planning."
     : isFutureChange
       ? `The last reviewed benefit applies only before ${formatSourceDate(eligibility.effectiveFrom)}; verify before booking.`
-    : isFixed20
-      ? "Specified hotel item or total-food-bill offer in the hotel T&Cs."
+    : isFixed
+      ? "Total bill at the fixed rate in the outlet's official terms."
       : isHotel
         ? "Total food bill at most hotel outlets, or qualifying food items for named exception outlets; lunch and dinner unless otherwise stated."
         : "Dine-in à la carte food items during lunch and dinner, unless the outlet states otherwise.";
@@ -7777,7 +7773,7 @@ function loveDiningBenefitProfile(record) {
     : isHotel
     ? "1 adult 15%; 2 adults 50%; 3 adults 35% or 33% depending on hotel group; 4 adults 25%; 5–10 adults 20%."
     : "1 diner 15%; 2 diners 50%; 3 diners 35%; 4 diners 25%; 5–20 diners 20%.";
-  const appliesKey = isUnavailable || isFutureChange || isFixed20
+  const appliesKey = isUnavailable || isFutureChange || isFixed
     ? "special"
     : order.key === "buffet"
       ? "buffet"

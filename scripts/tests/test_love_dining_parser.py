@@ -13,14 +13,18 @@ assert SPEC.loader is not None
 SPEC.loader.exec_module(MODULE)
 
 
-def _outlet(name: str, cuisine: str, address: str) -> str:
+STANDARD_TERMS = "Qualifying Food Items: À la carte menu only. Love Dining privileges apply to total food bill."
+
+
+def _outlet(name: str, cuisine: str, address: str, terms: str = STANDARD_TERMS) -> str:
     return f"""{name}
 Details
 Cuisine: {cuisine}
 Address:
 {address}
 Find on map
-Terms and Conditions"""
+Terms and Conditions
+{terms}"""
 
 
 def test_new_hotel_heading_does_not_inherit_previous_hotel():
@@ -137,3 +141,35 @@ def test_record_review_does_not_approve_changed_terms(tmp_path, monkeypatch):
     ]
     assert reviewed["terms_hashes"] != reviewed["reviewed_terms_hashes"]
     assert reviewed["manual_review_required"] is True
+
+
+def test_fixed_rate_comes_from_the_outlet_terms():
+    page = f"""Love Dining @ Hotels Partners
+Paradox Singapore
+20 Merchant Road, Singapore 058281
+Riverside dining concepts.
+{_outlet("Crossroads Bar", "Bar", "20 Merchant Road, Singapore 058281", "Enjoy 20% off your total bill for a maximum of 10 person party, per visit, per bill.")}
+{_outlet("Blue Potato", "Western", "20 Merchant Road, Singapore 058281")}
+Orchard Hotel Singapore
+442 Orchard Road, Singapore 238879
+Orchard dining concepts.
+{_outlet("Hua Ting Restaurant", "Cantonese", "442 Orchard Road, Singapore 238879", "Enjoy 35% off your total food bill only from the à la carte menu.")}
+GET AN AMERICAN EXPRESS CARD"""
+
+    by_name = {record["name"]: record for record in MODULE.parse_hotels(page)}
+
+    assert by_name["Crossroads Bar"]["fixed_discount_percent"] == 20
+    assert by_name["Hua Ting Restaurant"]["fixed_discount_percent"] == 35
+    assert "fixed_discount_percent" not in by_name["Blue Potato"]
+    assert "Enjoy" not in by_name["Crossroads Bar"]["notes"]
+
+
+def test_outlet_without_terms_text_fails_closed():
+    page = f"""Love Dining @ Hotels Partners
+Paradox Singapore
+20 Merchant Road, Singapore 058281
+{_outlet("Crossroads Bar", "Bar", "20 Merchant Road, Singapore 058281", "")}
+GET AN AMERICAN EXPRESS CARD"""
+
+    with pytest.raises(ValueError, match="terms text missing for Crossroads Bar"):
+        MODULE.parse_hotels(page)

@@ -317,7 +317,10 @@ def load_and_expand(page: Page, url: str) -> str:
     page.goto(url, wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS)
     page.wait_for_timeout(PAGE_SETTLE_MS)
 
-    details_buttons = page.query_selector_all("text=Details")
+    # Each outlet has a collapsed Details panel and a collapsed Terms panel.
+    details_buttons = page.query_selector_all("text=Details") + page.query_selector_all(
+        "button[id^='collapsible_panel_']:has-text('Terms and Conditions')"
+    )
     print(f"  Expanding {len(details_buttons)} sections...")
     failed_clicks = 0
     for btn in details_buttons:
@@ -508,10 +511,21 @@ def parse_hotels(text: str) -> list[dict]:
             hours: list[str] = []
             notes: list[str] = []
 
+            terms: list[str] = []
+
             while i < len(non_empty):
                 l = non_empty[i]
                 if l == "Terms and Conditions":
                     i += 1
+                    # The outlet's own terms run until the next outlet or hotel heading.
+                    while i < len(non_empty):
+                        following = non_empty[i + 1] if i + 1 < len(non_empty) else ""
+                        if following == "Details" or re.search(
+                            r"\bSingapore\s+\d{6}\b", normalize_inline_text(following)
+                        ):
+                            break
+                        terms.append(non_empty[i])
+                        i += 1
                     break
                 if l in ("Find on map", "Visit Website"):
                     i += 1
@@ -569,6 +583,12 @@ def parse_hotels(text: str) -> list[dict]:
                 "source_url": HOTELS_URL,
                 "terms_url": HOTELS_TNC_URL,
             }
+            terms_text = normalize_inline_text(" ".join(terms))
+            if not terms_text:
+                raise ValueError(f"terms text missing for {outlet_name}")
+            fixed_rate = re.match(r"Enjoy (\d{1,2})% off your total (?:food )?bill", terms_text)
+            if fixed_rate:
+                record["fixed_discount_percent"] = int(fixed_rate.group(1))
             records.append(record)
             continue
 
