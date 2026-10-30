@@ -151,6 +151,8 @@ PUBLIC_META_FIELDS = {
         "menu_source.review_required",
         "menu_source.review_queue_count",
         "menu_source.review_queue_sha256",
+        # Derived from records, which get their own events.
+        "records_sha256",
     }
 }
 
@@ -519,6 +521,24 @@ def build_record_update_events(
     return events
 
 
+def needs_review(meta: dict[str, Any]) -> bool:
+    return bool(
+        meta.get("manual_review_required")
+        or (meta.get("menu_source") or {}).get("review_required")
+        or (meta.get("roster_source") or {}).get("review_required")
+        or (meta.get("booking_project_source") or {}).get("review_required")
+        or any(
+            isinstance(review, dict) and review.get("review_required")
+            for review in (meta.get("document_reviews") or {}).values()
+        )
+    )
+
+
+def alert_required(meta: dict[str, Any], reasons: list[str], record_diffs: list) -> bool:
+    # Issues are for decisions; auto-published changes already reach the feed and owner channel.
+    return needs_review(meta) and bool(reasons or record_diffs)
+
+
 def build_meta_update_event(
     program: str,
     old_meta: dict[str, Any],
@@ -551,18 +571,7 @@ def build_meta_update_event(
         "kind": "source_updated",
         "subject": f"{program} source",
         "detected_at": detected_at,
-        "status": (
-            "review_required"
-            if new_meta.get("manual_review_required")
-            or (new_meta.get("menu_source") or {}).get("review_required")
-            or (new_meta.get("roster_source") or {}).get("review_required")
-            or (new_meta.get("booking_project_source") or {}).get("review_required")
-            or any(
-                isinstance(review, dict) and review.get("review_required")
-                for review in (new_meta.get("document_reviews") or {}).values()
-            )
-            else "published"
-        ),
+        "status": "review_required" if needs_review(new_meta) else "published",
         "before": {"state": "available", "fields": {item["field"]: item["before"] for item in changes}},
         "after": {"state": "available", "fields": {item["field"]: item["after"] for item in changes}},
         "changes": changes,
@@ -761,6 +770,14 @@ def append_updates(path: Path, events: list[dict[str, Any]], updated_at: str) ->
             max_occurrence[(stream_id, transition_id)] = occurrence
         if not additions:
             return
+        # A newer state makes an older unreviewed one moot; announcing it later is noise.
+        newest_by_stream = {event["stream_id"]: event for event in additions}
+        for event in existing:
+            newer = newest_by_stream.get(event.get("stream_id"))
+            if newer is not None and event.get("status") == "review_required":
+                event["status"] = "rejected"
+                event["reviewed_at"] = updated_at
+                event["review_note"] = f"Superseded by {newer['id']} before review."
         payload["schema_version"] = 1
         payload["updated_at"] = updated_at
         payload["identity_state"] = _render_identity_state(
@@ -972,14 +989,15 @@ def main() -> int:
     if args.updates:
         append_updates(Path(args.updates), update_events, detected_at)
 
-    alert_required = bool(reasons or record_diffs)
-    append_output("alert_required", "true" if alert_required else "false")
+    changed = bool(reasons or record_diffs)
+    alert_needed = alert_required(current_meta, reasons, record_diffs)
+    append_output("alert_required", "true" if alert_needed else "false")
 
     if args.changelog:
         append_changelog(Path(args.changelog), args.program, record_diffs)
 
     lines = [
-        f"# {args.program} source changed" if alert_required else f"# {args.program} source unchanged",
+        f"# {args.program} source changed" if changed else f"# {args.program} source unchanged",
         "",
         f"- Checked at: `{detected_at}`",
         f"- Metadata file: `{args.meta}`",
@@ -1031,7 +1049,7 @@ def main() -> int:
                 lines.extend(f"- {item}" for item in format_limited(diff[key]))
                 lines.append("")
 
-    if alert_required:
+    if changed:
         if booking_project_source.get("review_required"):
             published_additions = booking_project_source.get(
                 "published_booking_project_additions"

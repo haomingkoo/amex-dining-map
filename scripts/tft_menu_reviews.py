@@ -29,6 +29,9 @@ VOLATILE_REVIEW_KEYS = {
     "last_seen_at",
 }
 
+# Listing-wide digests bind decisions, but they churn when Amex reshuffles unrelated files.
+CONTEXT_DIGEST_KEYS = frozenset({"listing_sha256", "roster_sha256"})
+
 
 def _canonical_sha256(value: Any) -> str:
     encoded = json.dumps(
@@ -45,13 +48,20 @@ def review_item_sha256(item: dict) -> str:
 def review_observation_sha256(item: dict) -> str:
     stable = _stable_review_value(
         item,
-        {"candidate_id", "review_status", "status", "first_detected_at"},
+        {"candidate_id", "review_status", "status", "first_detected_at", *CONTEXT_DIGEST_KEYS},
     )
     return _canonical_sha256(stable)
 
 
 def review_queue_sha256(queue: list[dict]) -> str:
-    stable_items = [_stable_review_value(item, set()) for item in queue]
+    # Alerts fire on this, so it covers only what a reviewer acts on.
+    stable_items = [
+        _stable_review_value(
+            item,
+            {"candidate_id", *CONTEXT_DIGEST_KEYS},
+        )
+        for item in queue
+    ]
     return _canonical_sha256(
         sorted(stable_items, key=lambda item: json.dumps(item, sort_keys=True))
     )

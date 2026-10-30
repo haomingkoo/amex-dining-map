@@ -478,6 +478,55 @@ class SourceChangeUpdatesTest(unittest.TestCase):
             )
         )
 
+    def test_newer_event_supersedes_older_pending_event_in_same_stream(self):
+        old = [_sollner_record("Gasthaus Sollner Hof", "amex-global-germany-gasthaus-sollner-hof")]
+        changed = copy.deepcopy(old)
+        changed[0]["cuisine"] = ["Bavarian"]
+        flagged = MODULE.build_record_update_events(
+            "Love Dining", old, changed, {"manual_review_required": True}, "2026-09-01T00:00:00Z"
+        )[0]
+        newer = MODULE.build_record_update_events(
+            "Love Dining", changed, old, {"manual_review_required": False}, "2026-09-02T00:00:00Z"
+        )[0]
+        unrelated = MODULE.build_record_update_events(
+            "Love Dining",
+            [_sollner_record("Other Place", "amex-global-germany-other-place")],
+            [],
+            {"manual_review_required": True},
+            "2026-09-01T00:00:00Z",
+        )[0]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "updates.json"
+            MODULE.append_updates(path, [flagged, unrelated], flagged["detected_at"])
+            MODULE.append_updates(path, [newer], newer["detected_at"])
+            by_id = {item["subject"] + item["detected_at"]: item for item in json.loads(path.read_text())["updates"]}
+
+        superseded = by_id[flagged["subject"] + flagged["detected_at"]]
+        self.assertEqual(superseded["status"], "rejected")
+        self.assertEqual(superseded["reviewed_at"], newer["detected_at"])
+        self.assertIn("Superseded by", superseded["review_note"])
+        self.assertEqual(by_id[unrelated["subject"] + unrelated["detected_at"]]["status"], "review_required")
+
+    def test_issue_alert_only_when_a_person_must_review(self):
+        diff = [("data/x.json", {"added": [], "removed": ["Place / City"], "changed": []})]
+        # Auto-published changes already reach the feed and the owner channel.
+        self.assertFalse(MODULE.alert_required({}, ["Record count: `2` → `1`"], diff))
+        self.assertFalse(MODULE.alert_required({"manual_review_required": False}, [], diff))
+        self.assertTrue(MODULE.alert_required({"manual_review_required": True}, [], diff))
+        self.assertTrue(MODULE.alert_required({"menu_source": {"review_required": True}}, ["Menu review queue count: `8` → `9`"], []))
+        self.assertTrue(
+            MODULE.alert_required({"document_reviews": {"tft-terms": {"review_required": True}}}, ["x"], [])
+        )
+        self.assertFalse(MODULE.alert_required({"manual_review_required": True}, [], []))
+
+    def test_records_digest_alone_creates_no_source_event(self):
+        # Record events already report what changed; the digest says nothing to a person.
+        self.assertIsNone(
+            MODULE.build_meta_update_event(
+                "Japan Dining", {"records_sha256": "a" * 64}, {"records_sha256": "b" * 64}, "2026-10-30T00:00:00Z"
+            )
+        )
+
     def test_append_updates_deduplicates_stable_events(self):
         event = {
             "id": "same-event",
