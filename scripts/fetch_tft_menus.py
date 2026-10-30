@@ -2,7 +2,7 @@
 """Map Amex Table for Two venues to their published set-menu PDFs.
 
 The Amex CDN exposes a JSON directory listing of all published menus at
-``dining.1.json``. Each asset is named like ``{slug}-Menu_Platinum.pdf``,
+``dining.tidy.1.json``. Each asset is named like ``{slug}-Menu_Platinum.pdf``,
 ``{slug}-Menu_Centurion.pdf``, or ``{slug}_Menu.pdf``. This script fetches those listings,
 fuzzy-matches every PDF to a venue in ``data/table-for-two.json``, downloads
 each PDF to compute a content hash, and writes back per-venue menu metadata
@@ -48,15 +48,16 @@ except ModuleNotFoundError:
     )
 
 
+# The CDN kept serving a weeks-old ``.1.json``; ``.tidy.1.json`` is the same listing under a fresh cache key.
 AEM_MENU_SOURCES = {
     "platinum": {
         "label": "Platinum",
-        "listing_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining.1.json",
+        "listing_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining.tidy.1.json",
         "base_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining",
     },
     "centurion": {
         "label": "Centurion",
-        "listing_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle.1.json",
+        "listing_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle.tidy.1.json",
         "base_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle",
     },
 }
@@ -66,7 +67,7 @@ MAX_LISTING_BYTES = 2 * 1024 * 1024
 MAX_PDF_BYTES = 20 * 1024 * 1024
 REVIEW_PDF_ROOT = Path("data/reviews/tft-menu-pdfs")
 MENU_FILENAME_RE = re.compile(
-    r"^[A-Za-z0-9][A-Za-z0-9._ -]{0,180}[-_]?Menu(?:[-_](?:Platinum|Platinium|Centurion))?\.pdf$",
+    r"^[A-Za-z0-9][A-Za-z0-9._ -]{0,180}[-_]?Menu(?:[-_][A-Za-z0-9]+)?\.pdf$",
     re.IGNORECASE,
 )
 
@@ -256,7 +257,9 @@ def normalize_for_match(value: str) -> str:
 
 
 def filename_stem(filename: str) -> str:
-    return re.sub(r"[-_]?Menu(?:[-_](?:Platinum|Platinium|Centurion))?\.pdf$", "", filename, flags=re.IGNORECASE)
+    stem = re.sub(r"[-_]?Menu(?:[-_](?:Platinum|Platinium|Centurion))?\.pdf$", "", filename, flags=re.IGNORECASE)
+    # Branch menus name the location after the word Menu, as in Brewerkz-Menu-ECP.pdf.
+    return re.sub(r"[-_]?Menu[-_]([A-Za-z0-9]+)\.pdf$", r"-\1", stem, flags=re.IGNORECASE)
 
 
 def direct_menu_candidate_filenames(stem: str, source_key: str) -> list[str]:
@@ -309,10 +312,14 @@ def match_venue_candidates(venue_name: str, candidates: list[str]) -> list[str]:
     words = venue_name.split()
     norm_first = normalize_for_match(words[0]) if words else ""
     norm_first2 = normalize_for_match(" ".join(words[:2])) if len(words) > 1 else ""
+    # Brand plus location initials, as in Brewerkz-Menu-ECP.pdf for Brewerkz East Coast Park.
+    norm_initials = norm_first + normalize_for_match("".join(w[0] for w in words[1:])) if len(words) > 2 else ""
 
     by_stem: list[tuple[str, str]] = [(normalize_for_match(filename_stem(f)), f) for f in candidates]
 
-    for target in (norm_name, norm_no_the):
+    for target in (norm_name, norm_no_the, norm_initials):
+        if not target:
+            continue
         matches = sorted(fname for stem, fname in by_stem if stem == target)
         if matches:
             return matches
@@ -368,6 +375,7 @@ def venue_menu_info(
     checked_at: str,
     previous: dict | None = None,
     card: str | None = None,
+    previous_listed: bool = True,
 ) -> dict:
     """Return menu PDF metadata for one venue/source pair."""
     previous = previous or {}
@@ -411,13 +419,13 @@ def venue_menu_info(
         and previous.get("url") == listing_entry.get("url")
         and previous.get("card") == listing_entry.get("card_key")
     )
-    # Amex hosts some menus under two spellings; identical bytes are the reviewed menu,
-    # unless its reviewed URL is the one that now 404s, so the link moves through review.
+    # Amex hosts some menus under two spellings; identical bytes are the reviewed menu
+    # while its spelling is still listed. Once it is gone, the new link goes through review.
     if (
         previous.get("status") == "published"
         and prev_sha == sha256
         and not same_identity
-        and previous.get("url") != listing_entry.get("dead_listed_url")
+        and previous_listed
     ):
         return {**previous, "checked_at": checked_at, "last_seen_at": checked_at}
     if not same_identity or prev_sha != sha256:
@@ -630,21 +638,7 @@ def main() -> int:
                 entry, pdf_bytes = fetch_direct_menu_entry(source_key, known_filenames)
             if entry and pdf_bytes is None and not args.no_download:
                 try:
-                    try:
-                        pdf_bytes = http_get(entry["url"], MAX_PDF_BYTES)
-                    except urllib.error.HTTPError as exc:
-                        if exc.code != 404:
-                            raise
-                        # Amex has listed misspelled filenames; probe the usual spellings.
-                        replacement, pdf_bytes = fetch_direct_menu_entry(source_key, [entry["filename"]])
-                        if replacement is None:
-                            raise
-                        print(
-                            f"  ! {entry['filename']} is listed but returns 404; using {replacement['filename']}",
-                            file=sys.stderr,
-                        )
-                        observed_assets.add((source_key, entry["filename"]))
-                        entry = {**replacement, "dead_listed_url": entry["url"]}
+                    pdf_bytes = http_get(entry["url"], MAX_PDF_BYTES)
                     if not pdf_bytes.startswith(b"%PDF"):
                         raise ValueError("menu asset is not a PDF")
                     if cache_dir is not None and not args.dry_run:
@@ -659,7 +653,10 @@ def main() -> int:
             previous = previous_menus.get(source_key) or {}
             if not previous and source_key == "platinum":
                 previous = venue.get("menu_pdf") or {}
-            info = venue_menu_info(venue, entry, pdf_bytes, checked_at, previous, source_key)
+            info = venue_menu_info(
+                venue, entry, pdf_bytes, checked_at, previous, source_key,
+                previous_listed=previous.get("filename") in listing,
+            )
             if entry:
                 observed_assets.add((source_key, entry["filename"]))
                 listed_sources.add(source_key)
