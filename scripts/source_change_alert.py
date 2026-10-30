@@ -133,6 +133,7 @@ PUBLIC_RECORD_FIELDS = {
     "booking_channel": "Booking channel",
     "notes": "Notes",
     "opening_hours": "Opening hours",
+    "fixed_discount_percent": "Fixed discount",
     "menu_pdf.filename": "Menu file",
     "menu_pdf.sha256": "Menu version",
     "menu_pdfs.platinum.filename": "Platinum menu file",

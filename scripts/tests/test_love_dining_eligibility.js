@@ -14,9 +14,6 @@ const context = {
     records_reviewed_at: "2026-08-30T05:35:00Z",
     terms_reviewed_at: "2026-05-07T12:37:20Z",
   } },
-  LOVE_DINING_FIXED_20_IDS: new Set([
-    "love-paradox-singapore-crossroads-bar",
-  ]),
   normalizeInlineText(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   },
@@ -76,8 +73,23 @@ const crossroadsBenefit = context.loveDiningBenefitProfile({
   id: "love-paradox-singapore-crossroads-bar",
   name: "Crossroads Bar",
   type: "hotel",
+  fixed_discount_percent: 20,
 });
 assert.strictEqual(crossroadsBenefit.maxSavingsPct, 20);
+assert.strictEqual(crossroadsBenefit.savingsKey, "fixed");
+assert.strictEqual(crossroadsBenefit.savingsLabel, "Last reviewed: 20% fixed rate");
+const huaTingBenefit = context.loveDiningBenefitProfile({
+  id: "love-orchard-hotel-singapore-hua-ting-restaurant",
+  name: "Hua Ting Restaurant",
+  type: "hotel",
+  fixed_discount_percent: 35,
+});
+assert.strictEqual(huaTingBenefit.maxSavingsPct, 35);
+assert.match(huaTingBenefit.savingsDetail, /fixed 35% /);
+const ladderBenefit = context.loveDiningBenefitProfile({ id: "love-x-prego", name: "Prego", type: "hotel" });
+assert.strictEqual(ladderBenefit.maxSavingsPct, 50);
+assert.strictEqual(ladderBenefit.savingsKey, "fifty");
+assert.doesNotMatch(source, /LOVE_DINING_FIXED_20_IDS/);
 assert.strictEqual(
   context.loveDiningEligibilityState(
     { eligibility_status: "ineligible", eligibility_effective_from: "2026-09-01" },

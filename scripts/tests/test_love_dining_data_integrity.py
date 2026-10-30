@@ -61,9 +61,13 @@ def test_corrected_rating_keys_do_not_reuse_wrong_hotel_results():
             assert record_id in RATINGS
 
 
-def test_crossroads_fixed_twenty_rule_uses_current_id():
-    assert '"love-paradox-singapore-crossroads-bar"' in APP_SOURCE
-    assert '"love-paradox-singapore-merchant-court-crossroads-bar"' not in APP_SOURCE
+def test_fixed_rates_come_from_scraped_terms_not_app_ids():
+    assert "love-paradox-singapore-crossroads-bar" not in APP_SOURCE
+    assert "record.fixed_discount_percent" in APP_SOURCE
+    for record in RECORDS:
+        if "fixed_discount_percent" in record:
+            assert isinstance(record["fixed_discount_percent"], int)
+            assert 1 <= record["fixed_discount_percent"] < 50
 
 
 def test_chifa_is_never_listed_as_eligible():
