@@ -411,8 +411,14 @@ def venue_menu_info(
         and previous.get("url") == listing_entry.get("url")
         and previous.get("card") == listing_entry.get("card_key")
     )
-    # Amex hosts some menus under two spellings; identical bytes are the reviewed menu.
-    if previous.get("status") == "published" and prev_sha == sha256 and not same_identity:
+    # Amex hosts some menus under two spellings; identical bytes are the reviewed menu,
+    # unless its reviewed URL is the one that now 404s, so the link moves through review.
+    if (
+        previous.get("status") == "published"
+        and prev_sha == sha256
+        and not same_identity
+        and previous.get("url") != listing_entry.get("dead_listed_url")
+    ):
         return {**previous, "checked_at": checked_at, "last_seen_at": checked_at}
     if not same_identity or prev_sha != sha256:
         return {
@@ -624,7 +630,21 @@ def main() -> int:
                 entry, pdf_bytes = fetch_direct_menu_entry(source_key, known_filenames)
             if entry and pdf_bytes is None and not args.no_download:
                 try:
-                    pdf_bytes = http_get(entry["url"], MAX_PDF_BYTES)
+                    try:
+                        pdf_bytes = http_get(entry["url"], MAX_PDF_BYTES)
+                    except urllib.error.HTTPError as exc:
+                        if exc.code != 404:
+                            raise
+                        # Amex has listed misspelled filenames; probe the usual spellings.
+                        replacement, pdf_bytes = fetch_direct_menu_entry(source_key, [entry["filename"]])
+                        if replacement is None:
+                            raise
+                        print(
+                            f"  ! {entry['filename']} is listed but returns 404; using {replacement['filename']}",
+                            file=sys.stderr,
+                        )
+                        observed_assets.add((source_key, entry["filename"]))
+                        entry = {**replacement, "dead_listed_url": entry["url"]}
                     if not pdf_bytes.startswith(b"%PDF"):
                         raise ValueError("menu asset is not a PDF")
                     if cache_dir is not None and not args.dry_run:
