@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-30T12:10:04Z",
+  "updated_at": "2026-10-30T16:46:51Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-10-30T16:46:51Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 15
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 3
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 15,
+          "after": 3
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "6b634201cbf49e85cba5",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "07638e55aa9a8cd266c9"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -23114,47 +23147,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "added",
-      "subject": "Chuugokuhanten Kohakukyu / Tokyo",
-      "detected_at": "2026-09-02T23:07:04Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Chuugokuhanten Kohakukyu",
-          "Country": "Japan",
-          "Region": "Tokyo",
-          "City": "Tokyo",
-          "District": "Marunochi",
-          "Address": "5F, 1-1-1, Marunochi, Chiyoda-ku, Tokyo",
-          "Cuisine": [
-            "Chinese"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/245641/",
-      "transition_id": "1030de14de27a21dceaf",
-      "stream_id": "5a5c0fbc65aa656e71df",
-      "occurrence": 1,
-      "id": "b822a8cca5b7813bc2da",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -24155,7 +24147,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "6be63510fd7f5d617346",
+        "latest_transition_id": "6b634201cbf49e85cba5",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24167,6 +24159,7 @@
           "5852ab5ce4e4d11561b4": 1,
           "5f2bd18453dc87008d58": 1,
           "5ff54655f7197bc32812": 1,
+          "6b634201cbf49e85cba5": 1,
           "6be63510fd7f5d617346": 1,
           "8b5fcc11fdbb842d2a18": 1,
           "956481a26f1aba906cb6": 1,
