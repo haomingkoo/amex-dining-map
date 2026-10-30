@@ -1821,7 +1821,7 @@ function googleRating(record) {
 function googleRatingForRanking(record) {
   const rating = googleRating(record);
   const checked = new Date(rating?.scraped_at || "");
-  if (!rating || Number.isNaN(checked.getTime())) return null;
+  if (!rating || rating.rating == null || Number.isNaN(checked.getTime())) return null;
   const ageMs = Date.now() - checked.getTime();
   if (ageMs < -24 * 60 * 60 * 1000) return null;
   return ageMs <= GOOGLE_RATING_STALE_DAYS * 24 * 60 * 60 * 1000 ? rating : null;
