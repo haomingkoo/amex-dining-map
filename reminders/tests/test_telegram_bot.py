@@ -17,6 +17,8 @@ from app.telegram_bot_routes import BOT_SCOPE, get_settings
 
 
 WEBHOOK_SECRET = "w" * 43
+SLOT_DATE = (datetime.now(timezone(timedelta(hours=8))) + timedelta(days=7)).date()
+SLOT_DAY = f"{SLOT_DATE:%a} {SLOT_DATE.day} {SLOT_DATE:%b}"
 
 
 def _settings(path: Path) -> Settings:
@@ -253,7 +255,7 @@ def test_private_slot_query_fetches_once_after_guards_and_replay_deduplicates(
                             "status": "available",
                             "slots": [
                                 {
-                                    "date": "2026-10-29",
+                                    "date": SLOT_DATE.isoformat(),
                                     "time": "19:00",
                                     "max_seats": 2,
                                 }
@@ -271,7 +273,7 @@ def test_private_slot_query_fetches_once_after_guards_and_replay_deduplicates(
     )
     update = _update(
         update_id=6001,
-        text="/slots VUE | 2 | dinner | 2026-10-29 | 19:00",
+        text=f"/slots VUE | 2 | dinner | {SLOT_DATE} | 19:00",
     )
 
     assert _post(client, update).json() == {"ok": True}
@@ -279,8 +281,8 @@ def test_private_slot_query_fetches_once_after_guards_and_replay_deduplicates(
 
     assert len(fetches) == 1
     assert len(sends) == 1
-    assert sends[0][2].startswith("Open tables, dinner for 2 at VUE on Thu 29 Oct")
-    assert "Thu 29 Oct 7:00pm" in sends[0][2]
+    assert sends[0][2].startswith(f"Open tables, dinner for 2 at VUE on {SLOT_DAY}")
+    assert f"{SLOT_DAY} 7:00pm" in sends[0][2]
 
 
 def test_slot_source_failure_is_a_completed_bounded_reply(guide_client, monkeypatch):
@@ -297,7 +299,7 @@ def test_slot_source_failure_is_a_completed_bounded_reply(guide_client, monkeypa
     )
     update = _update(
         update_id=6002,
-        text="/slots VUE | 2 | dinner | 2026-10-29",
+        text=f"/slots VUE | 2 | dinner | {SLOT_DATE}",
     )
 
     assert _post(client, update).json() == {"ok": True}
@@ -377,7 +379,7 @@ def test_rate_limit_runs_before_slot_source_fetch(guide_client, monkeypatch):
         client,
         _update(
             6102,
-            text="/slots VUE | 2 | dinner | 2026-10-29",
+            text=f"/slots VUE | 2 | dinner | {SLOT_DATE}",
         ),
     ).json() == {"ok": True}
 
