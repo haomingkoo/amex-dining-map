@@ -277,3 +277,42 @@ def test_telegram_reminders_cannot_run_without_guide(monkeypatch):
 
     with pytest.raises(RuntimeError, match="TELEGRAM_GUIDE_ENABLED"):
         load_settings()
+
+
+def test_periodic_loop_survives_a_failed_call_and_reports_it(monkeypatch):
+    monkeypatch.setattr(main, "loop_failures", {})
+    outcomes = [OSError("connection dropped"), None]
+    seen_failures = []
+
+    def flaky():
+        outcome = outcomes.pop(0)
+        if outcome:
+            raise outcome
+
+    async def fake_to_thread(call):
+        call()
+
+    async def fake_sleep(_seconds):
+        seen_failures.append(dict(main.loop_failures))
+        if not outcomes:
+            raise asyncio.CancelledError
+
+    async def scenario():
+        with pytest.raises(asyncio.CancelledError):
+            await main.run_periodically(60, flaky, to_thread=fake_to_thread, sleep=fake_sleep)
+
+    asyncio.run(scenario())
+
+    name = f"{__name__}.{flaky.__qualname__}"
+    assert seen_failures[0][name]["error"] == "OSError"
+    assert seen_failures[1] == {}
+
+
+def test_healthz_fails_closed_while_a_background_loop_is_failing(monkeypatch, baked_catalog_state):
+    failure = {"at": "2026-10-30T03:00:00+00:00", "error": "RemoteDisconnected"}
+    monkeypatch.setattr(main, "loop_failures", {"app.alert_dispatch.dispatch_and_record": failure})
+
+    payload = TestClient(app).get("/healthz").json()
+
+    assert payload["ok"] is False
+    assert payload["background_loop_failures"] == {"app.alert_dispatch.dispatch_and_record": failure}
