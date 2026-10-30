@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-30T09:00:00Z",
+  "updated_at": "2026-10-30T09:26:01Z",
   "updates": [
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_updated",
+      "subject": "Global Dining source",
+      "detected_at": "2026-10-30T09:26:01Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Mapped count": 1906
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Mapped count": 1933
+        }
+      },
+      "changes": [
+        {
+          "field": "Mapped count",
+          "before": 1906,
+          "after": 1933
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "a659df9da81648299e30",
+      "stream_id": "128d0d698ba4426680b0",
+      "occurrence": 1,
+      "id": "e1ac22e55a3851315f47"
+    },
     {
       "program": "Love Dining",
       "program_id": "love-dining",
@@ -23173,55 +23206,6 @@
       "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
     },
     {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_updated",
-      "subject": "Table for Two source",
-      "detected_at": "2026-08-30T06:56:10Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Menu review flag": null,
-          "Menu review queue count": null,
-          "Menu review queue fingerprint": null
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Menu review flag": true,
-          "Menu review queue count": 2,
-          "Menu review queue fingerprint": "4c2b859b2d41"
-        }
-      },
-      "changes": [
-        {
-          "field": "Menu review flag",
-          "before": null,
-          "after": true
-        },
-        {
-          "field": "Menu review queue count",
-          "before": null,
-          "after": 2
-        },
-        {
-          "field": "Menu review queue fingerprint",
-          "before": null,
-          "after": "4c2b859b2d41"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
-      "transition_id": "1fd9e02b2a3042318396",
-      "stream_id": "5a285967ca2795c90124",
-      "occurrence": 1,
-      "id": "3f5b95b8b51e16a3d0cf",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by e856ec9af531a7adee5e before review."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23507,7 +23491,7 @@
         }
       },
       "128d0d698ba4426680b0": {
-        "latest_transition_id": "4cadef5f63f5acf8dfcf",
+        "latest_transition_id": "a659df9da81648299e30",
         "occurrences": {
           "0e729905cd142da50a20": 1,
           "169e0a4cd65f0463852d": 1,
@@ -23516,6 +23500,7 @@
           "7fdc71a5a4f3bb71f791": 1,
           "872e22a3410e4ca5cbb8": 1,
           "a4db0856a25b145eb59d": 1,
+          "a659df9da81648299e30": 1,
           "b690b59d043ca5d8cadc": 1,
           "bd27f3f0c5b774d75975": 1,
           "d9b28eaccaf9f5a2a3a0": 1,
