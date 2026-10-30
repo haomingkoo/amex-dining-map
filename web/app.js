@@ -629,13 +629,13 @@ function clusterHasBookableVenue(cluster) {
   return children.some((marker) => marker?.options?.pinColor === TFT_PIN_AVAILABLE);
 }
 
-function createMarkerClusterIcon(cluster) {
+function createMarkerClusterIcon(cluster, markBookable = false) {
   const count = cluster.getChildCount();
   const size = count >= 100 ? "large" : count >= 10 ? "medium" : "small";
   const sizePx = size === "large" ? 48 : size === "medium" ? 42 : 36;
   // Gold is the legend's "not bookable" colour, so a gold cluster over bookable
   // venues tells the reader the opposite of the truth.
-  const tone = clusterHasBookableVenue(cluster) ? " benefit-cluster-available" : "";
+  const tone = markBookable && clusterHasBookableVenue(cluster) ? " benefit-cluster-available" : "";
   return L.divIcon({
     html: `<div class="benefit-cluster-inner benefit-cluster-${size}${tone}"><span>${count}</span></div>`,
     className: `marker-cluster benefit-marker-cluster benefit-marker-cluster-${size}`,
@@ -643,7 +643,7 @@ function createMarkerClusterIcon(cluster) {
   });
 }
 
-function createMarkerClusterGroup() {
+function createMarkerClusterGroup(markBookable = false) {
   if (!hasMarkerCluster) return null;
   return L.markerClusterGroup({
     animate: false,
@@ -656,13 +656,13 @@ function createMarkerClusterGroup() {
     chunkDelay: 16,
     disableClusteringAtZoom: 14,
     maxClusterRadius: (zoom) => (zoom < 5 ? 52 : zoom < 10 ? 44 : 34),
-    iconCreateFunction: createMarkerClusterIcon,
+    iconCreateFunction: (cluster) => createMarkerClusterIcon(cluster, markBookable),
   });
 }
 
-function ensureMarkerClusterGroup(mapInstance, clusterGroup) {
+function ensureMarkerClusterGroup(mapInstance, clusterGroup, markBookable = false) {
   if (!hasMarkerCluster || !mapInstance) return null;
-  const group = clusterGroup || createMarkerClusterGroup();
+  const group = clusterGroup || createMarkerClusterGroup(markBookable);
   if (group && !mapInstance.hasLayer(group)) {
     group.addTo(mapInstance);
   }
@@ -2132,7 +2132,7 @@ function createMarker(record, rankNumber = 0) {
   marker.benefitRecord = record;
   marker.benefitRankNumber = rankNumber;
 
-  marker.bindPopup(diningMarkerPopupHtml(record, rankNumber), {
+  marker.bindPopup(() => diningMarkerPopupHtml(record, rankNumber), {
     closeButton: false,
     className: "dining-marker-popup",
     maxWidth: 260,
@@ -2550,25 +2550,22 @@ function currentJourneyId(route = currentRoute()) {
   return null;
 }
 
+// Building a formatter per call costs about 0.1 ms; marker renders format thousands of dates.
+const timestampFormat = new Intl.DateTimeFormat("en-SG", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Singapore" });
+const sourceDateFormat = new Intl.DateTimeFormat("en-SG", { dateStyle: "medium", timeZone: "UTC" });
+
 function formatTimestamp(value) {
   if (!value) return "Pending sync";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString("en-SG", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Asia/Singapore",
-  });
+  return timestampFormat.format(date);
 }
 
 function formatSourceDate(value) {
   if (!value) return "date unknown";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "date unknown";
-  return date.toLocaleDateString("en-SG", {
-    dateStyle: "medium",
-    timeZone: "UTC",
-  });
+  return sourceDateFormat.format(date);
 }
 
 function tabelogCheckedRange(records) {
@@ -6080,7 +6077,7 @@ function clearTableForTwoMarkers() {
     state.tableForTwoMarkers.clear();
     return;
   }
-  tableForTwoMarkerClusterGroup = ensureMarkerClusterGroup(tableForTwoMap, tableForTwoMarkerClusterGroup);
+  tableForTwoMarkerClusterGroup = ensureMarkerClusterGroup(tableForTwoMap, tableForTwoMarkerClusterGroup, true);
   clearMarkerLayerGroup(tableForTwoMap, tableForTwoMarkerClusterGroup, state.tableForTwoMarkers);
 }
 
@@ -6137,7 +6134,7 @@ function updateTableForTwoMarkerStyles() {
 
 function renderTableForTwoMarkers() {
   if (!hasLeaflet || !tableForTwoMap) return;
-  tableForTwoMarkerClusterGroup = ensureMarkerClusterGroup(tableForTwoMap, tableForTwoMarkerClusterGroup);
+  tableForTwoMarkerClusterGroup = ensureMarkerClusterGroup(tableForTwoMap, tableForTwoMarkerClusterGroup, true);
   clearTableForTwoMarkers();
   tableForTwoVenues().forEach((record) => {
     const marker = createTableForTwoMarker(record);

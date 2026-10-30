@@ -28,14 +28,14 @@ const cluster = (colors) => ({
 
 // A cluster over bookable venues must not wear the "not bookable" colour.
 assert.match(
-  context.createMarkerClusterIcon(cluster([AVAILABLE, "#d6a44c", "#d6a44c"])).html,
+  context.createMarkerClusterIcon(cluster([AVAILABLE, "#d6a44c", "#d6a44c"]), true).html,
   /benefit-cluster-available/,
   "a cluster containing a bookable venue must read as bookable",
 );
 
 // Nothing bookable inside, so the gold default is honest.
 assert.doesNotMatch(
-  context.createMarkerClusterIcon(cluster(["#d6a44c", "#c9a55a"])).html,
+  context.createMarkerClusterIcon(cluster(["#d6a44c", "#c9a55a"]), true).html,
   /benefit-cluster-available/,
   "a cluster with no bookable venue keeps the default colour",
 );
@@ -45,14 +45,25 @@ assert.doesNotMatch(
   context.createMarkerClusterIcon({
     getChildCount: () => 4,
     getAllChildMarkers: () => [{ options: {} }, { options: {} }],
-  }).html,
+  }, true).html,
   /benefit-cluster-available/,
   "markers without a pin colour must not change the cluster",
 );
 
 // Marker-cluster versions without getAllChildMarkers must not throw.
 assert.doesNotMatch(
-  context.createMarkerClusterIcon({ getChildCount: () => 2 }).html,
+  context.createMarkerClusterIcon({ getChildCount: () => 2 }, true).html,
+  /benefit-cluster-available/,
+);
+
+// Maps without Table for Two pins skip the child scan, which costs a full walk per cluster.
+assert.doesNotMatch(
+  context.createMarkerClusterIcon({
+    getChildCount: () => 3,
+    getAllChildMarkers: () => {
+      throw new Error("dining clusters must not scan their children");
+    },
+  }).html,
   /benefit-cluster-available/,
 );
 
