@@ -1,7 +1,54 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-30T00:37:15Z",
+  "updated_at": "2026-10-30T01:32:26Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_review_required",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-10-30T01:32:26Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 8
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 9
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "review_required"
+        },
+        {
+          "field": "Review",
+          "before": "clear",
+          "after": "required"
+        },
+        {
+          "field": "Review items",
+          "before": 8,
+          "after": 9
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "0d4cb8e15db51802a35e",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 4,
+      "id": "678572323880064d03f8"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -16685,60 +16732,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Plat Stay",
-      "program_id": "plat-stay",
-      "route": "#/stays",
-      "kind": "details_updated",
-      "subject": "Pan Pacific Orchard Singapore / Singapore",
-      "detected_at": "2026-10-06T01:49:26Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Pan Pacific Orchard Singapore",
-          "Country": "Singapore",
-          "City": "Singapore",
-          "Address": "10 Claymore Road, Singapore 229540",
-          "Eligible room": "Deluxe Room with a complimentary bottle of wine, inclusive of breakfast for two. Eligible Card Members may upgrade to the Club Room with a complimentary champagne with a S$100++ top-up",
-          "Breakfast included": false,
-          "Blackout dates": "• 10, 11, 16 March 2026 | • 21 – 23 April 2026 | • 1 – 3 August 2026 | • 1 – 13 October 2026 | • 18 – 19 November 2026 | • 17 – 31 December 2026",
-          "Reservations": "reserve.ppsor@panpacific.com"
-        }
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Pan Pacific Orchard Singapore",
-          "Country": "Singapore",
-          "City": "Singapore",
-          "Address": "10 Claymore Road, Singapore 229540",
-          "Eligible room": "Deluxe Room with a complimentary bottle of wine, inclusive of breakfast for two. Eligible Card Members may upgrade to the Club Room with a complimentary champagne with a S$100++ top-up.",
-          "Breakfast included": false,
-          "Blackout dates": "• 2 – 13 October 2026 | • 18 – 19 November 2026 | • 17 – 31 December 2026 | • 5 – 13 February 2026",
-          "Reservations": "reserve.ppsor@panpacific.com"
-        }
-      },
-      "changes": [
-        {
-          "field": "Eligible room",
-          "before": "Deluxe Room with a complimentary bottle of wine, inclusive of breakfast for two. Eligible Card Members may upgrade to the Club Room with a complimentary champagne with a S$100++ top-up",
-          "after": "Deluxe Room with a complimentary bottle of wine, inclusive of breakfast for two. Eligible Card Members may upgrade to the Club Room with a complimentary champagne with a S$100++ top-up."
-        },
-        {
-          "field": "Blackout dates",
-          "before": "• 10, 11, 16 March 2026 | • 21 – 23 April 2026 | • 1 – 3 August 2026 | • 1 – 13 October 2026 | • 18 – 19 November 2026 | • 17 – 31 December 2026",
-          "after": "• 2 – 13 October 2026 | • 18 – 19 November 2026 | • 17 – 31 December 2026 | • 5 – 13 February 2026"
-        }
-      ],
-      "source_url": "https://go.amex/platstay",
-      "transition_id": "e28b7ecfa18baa917e8b",
-      "stream_id": "cd510955457dc7a4cdf9",
-      "occurrence": 1,
-      "id": "51625d1e120248d47903",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Table for Two",
       "program_id": "table-for-two",
       "route": "#/table-for-two",
@@ -23352,11 +23345,11 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "6549f47be934c2a0f1a0",
+        "latest_transition_id": "0d4cb8e15db51802a35e",
         "occurrences": {
           "02261b7ecfcb8fa754fa": 1,
           "04d54fb5e6257f646c0f": 1,
-          "0d4cb8e15db51802a35e": 3,
+          "0d4cb8e15db51802a35e": 4,
           "11d1c483b0fa14eaab39": 1,
           "3b5940a9580f44e06104": 1,
           "3ca8bc01ebe918e43e16": 1,
