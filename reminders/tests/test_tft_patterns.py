@@ -94,3 +94,13 @@ def test_patterns_endpoint_lists_every_catalog_venue():
     assert set(body["venues"]) == ids
     assert all(entry["best_time"].startswith("Best time to look:") for entry in body["venues"].values())
     assert response.headers["cache-control"] == "no-store"
+
+
+def test_website_best_time_omits_the_telegram_command():
+    venue = _venue()
+    assert "/remind" in tft_patterns.best_time_line(venue, None)
+    web = tft_patterns.best_time_line(venue, None, remind_hint=False)
+    assert web == "Best time to look: no new dates are opening right now, so cancellations are the main chance."
+    with TestClient(main.app) as client:
+        body = client.get("/api/tft/patterns").json()
+    assert not any("/remind" in entry["best_time"] for entry in body["venues"].values())

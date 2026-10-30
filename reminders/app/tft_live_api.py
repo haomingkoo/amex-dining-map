@@ -75,7 +75,7 @@ def tft_patterns_summary(settings: Settings = Depends(get_settings)) -> JSONResp
         venue_id = str(venue.get("id"))
         entry = (live.get("venues") or {}).get(venue_id) or {}
         venues[venue_id] = {
-            "best_time": tft_patterns.best_time_line(venue, entry),
+            "best_time": tft_patterns.best_time_line(venue, entry, remind_hint=False),
             "lines": entry.get("lines") or [],
             "new_tables": entry.get("new_tables", 0),
             "returned_tables": entry.get("returned_tables", 0),

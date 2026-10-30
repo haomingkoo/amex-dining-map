@@ -86,7 +86,8 @@ def _quiet(release: dict) -> bool:
     return bool(meals) and all(meal.get("quiet_days", 0) >= 7 for meal in meals)
 
 
-def best_time_line(venue: dict, live_venue: dict | None) -> str:
+def best_time_line(venue: dict, live_venue: dict | None, *, remind_hint: bool = True) -> str:
+    """remind_hint names the Telegram /remind command, which means nothing on the website."""
     release = venue.get("release") or {}
     new_dates = _safe(release.get("best_time"))
     bucket = (live_venue or {}).get("best_return_bucket")
@@ -98,10 +99,8 @@ def best_time_line(venue: dict, live_venue: dict | None) -> str:
     if returns:
         return f"Best time to look: {returns}, when cancellations have come back most often."
     if _quiet(release):
-        return (
-            "Best time to look: no new dates are opening right now, so cancellations are the "
-            "main chance. /remind messages you when one opens."
-        )
+        line = "Best time to look: no new dates are opening right now, so cancellations are the main chance."
+        return f"{line} /remind messages you when one opens." if remind_hint else line
     return "Best time to look: not enough history yet to say."
 
 
