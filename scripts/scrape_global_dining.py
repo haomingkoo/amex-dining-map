@@ -281,6 +281,18 @@ def addresses_match(left: str | None, right: str | None) -> bool:
     return overlap >= 3 or text_similarity(left, right) >= 0.65
 
 
+STREET_NUMBER_RE = re.compile(r"\d+(?:[.,]\d+)?[a-z]?(?:-\d+)?", re.IGNORECASE)
+
+
+def same_street_number(source_address: str | None, google_address: str | None) -> bool:
+    # Only the street part before the first comma holds the house number; postcodes come later.
+    first = STREET_NUMBER_RE.search((source_address or "").split(",")[0])
+    if not first:
+        return False
+    google_numbers = {match.lower() for match in STREET_NUMBER_RE.findall(google_address or "")}
+    return first.group(0).lower() in google_numbers
+
+
 def google_rating_candidate(
     record: dict[str, Any],
     google_ratings: dict[str, Any],
@@ -518,6 +530,35 @@ def assign_unique_record_ids(records: list[dict[str, Any]]) -> int:
     return reassigned
 
 
+def assign_ids_and_validate_coordinates(
+    records: list[dict[str, Any]],
+    cache: dict[str, Any],
+    google_ratings: dict[str, Any],
+) -> dict[str, int]:
+    # Google places are keyed by final ids, so same-named venues need theirs before matching.
+    raw_duplicate_ids = count_duplicate_values([r["id"] for r in records])
+    reassigned_ids = assign_unique_record_ids(records)
+    remaining_duplicate_ids = count_duplicate_values([r["id"] for r in records])
+    corrected = 0
+    hidden = 0
+    for record in records:
+        before = (record.get("lat"), record.get("lng"), record.get("coordinate_confidence"))
+        validate_record_coordinates(record, cache, google_ratings)
+        after = (record.get("lat"), record.get("lng"), record.get("coordinate_confidence"))
+        if before != after:
+            if after[0] is None or after[1] is None:
+                hidden += 1
+            else:
+                corrected += 1
+    return {
+        "raw_duplicate_ids": raw_duplicate_ids,
+        "reassigned_ids": reassigned_ids,
+        "remaining_duplicate_ids": remaining_duplicate_ids,
+        "corrected": corrected,
+        "hidden": hidden,
+    }
+
+
 def validate_record_coordinates(
     record: dict[str, Any],
     cache: dict[str, Any],
@@ -581,6 +622,21 @@ def validate_record_coordinates(
                     record["map_pin_note"] = (
                         "Source map and Google place agree on this location, so the pin uses the verified place."
                     )
+                return
+
+            if (
+                google_candidate["name_ok"]
+                and google_candidate["address_ok"]
+                and same_street_number(record.get("source_localized_address"), google_candidate["google_address"])
+            ):
+                record["lat"] = google_candidate["lat"]
+                record["lng"] = google_candidate["lng"]
+                record["coordinate_source"] = "google_maps_ratings"
+                record["coordinate_confidence"] = "google_place_verified"
+                record["map_pin_note"] = (
+                    "The official source map link points elsewhere, so the pin follows the Google place with the "
+                    "same name and street address."
+                )
                 return
 
             if google_candidate["name_ok"] or google_candidate["address_ok"]:
@@ -1099,24 +1155,15 @@ def main() -> None:
     if GOOGLE_RATINGS_PATH.exists():
         google_ratings = json.loads(GOOGLE_RATINGS_PATH.read_text())
 
-    corrected = 0
-    hidden = 0
-    for record in records:
-        before = (record.get("lat"), record.get("lng"), record.get("coordinate_confidence"))
-        validate_record_coordinates(record, geocode_cache, google_ratings)
-        after = (record.get("lat"), record.get("lng"), record.get("coordinate_confidence"))
-        if before != after:
-            if after[0] is None or after[1] is None:
-                hidden += 1
-            else:
-                corrected += 1
+    stats = assign_ids_and_validate_coordinates(records, geocode_cache, google_ratings)
+    corrected = stats["corrected"]
+    hidden = stats["hidden"]
+    raw_duplicate_ids = stats["raw_duplicate_ids"]
+    reassigned_ids = stats["reassigned_ids"]
+    remaining_duplicate_ids = stats["remaining_duplicate_ids"]
 
     # ── 3. Apply manual overrides and compute stats ───────────────────
-    # ── Disambiguate IDs first (before applying overrides) ──
     from collections import Counter
-    raw_duplicate_ids = count_duplicate_values([r["id"] for r in records])
-    reassigned_ids = assign_unique_record_ids(records)
-    remaining_duplicate_ids = count_duplicate_values([r["id"] for r in records])
 
     # ── Apply coordinate overrides (manually verified fixes that survive re-scrapes) ──
     if OVERRIDES_PATH.exists():
