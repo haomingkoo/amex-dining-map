@@ -527,6 +527,25 @@ class SourceChangeUpdatesTest(unittest.TestCase):
             )
         )
 
+    def test_menu_observation_times_are_not_record_changes(self):
+        old = [{
+            "id": "tft-forage",
+            "name": "Forage",
+            "menu_pdfs": {"platinum": {
+                "sha256": "a" * 64,
+                "last_seen_at": "2026-10-29T01:30:30Z",
+                "aem_created": "Wed Jul 08 2026 01:32:30 GMT-0700",
+            }},
+        }]
+        seen_again = copy.deepcopy(old)
+        seen_again[0]["menu_pdfs"]["platinum"].update(
+            last_seen_at="2026-10-30T01:31:46Z", aem_created="Sun Jul 12 2026 21:00:56 GMT-0700"
+        )
+        self.assertEqual(MODULE.compare_records(old, seen_again)["changed"], [])
+        new_version = copy.deepcopy(old)
+        new_version[0]["menu_pdfs"]["platinum"]["sha256"] = "b" * 64
+        self.assertEqual(MODULE.compare_records(old, new_version)["changed"], ["Forage"])
+
     def test_append_updates_deduplicates_stable_events(self):
         event = {
             "id": "same-event",
