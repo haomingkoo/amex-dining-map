@@ -23,7 +23,15 @@ assert.strictEqual(
   context.safeRenderedUrl("/data/table-for-two.json", base),
   "https://amex-explorer.kooexperience.com/data/table-for-two.json",
 );
-assert.strictEqual(context.safeRenderedUrl("http://evil.example", base), "");
+// Images load inside the page, so plain http would be mixed content.
+assert.strictEqual(context.safeRenderedUrl("http://evil.example/a.jpg", base), "");
+// Links open the restaurant's own site; many Japan and Global venues only serve http.
+assert.strictEqual(
+  context.safeRenderedUrl("http://french-kitamura.jp/", base, { allowHttp: true }),
+  "http://french-kitamura.jp/",
+);
+assert.strictEqual(context.safeRenderedUrl("javascript:alert(1)", base, { allowHttp: true }), "");
+assert.match(source, /safeRenderedUrl\(value, window\.location\.href, \{\s*allowHttp: element instanceof HTMLAnchorElement/);
 assert.strictEqual(
   context.safeRenderedUrl("http://localhost:8000/healthz", base),
   "http://localhost:8000/healthz",
