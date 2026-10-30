@@ -3836,12 +3836,6 @@ a.google-badge:hover {
   color: var(--text-secondary);
 }
 
-.signal-note {
-  margin-top: 5px;
-  font-size: 11px;
-  color: var(--text-dim);
-}
-
 
 /* ═══════════════════════════════════════════════════════════
    BADGES & TAGS
@@ -4287,8 +4281,9 @@ h1, h2, h3 {
     margin: 12px auto 16px;
   }
 
+  /* The full table is hidden on phones; this list reaches venues without a map pin. */
   .mobile-results-panel {
-    display: none;
+    display: block;
   }
 
   body.route-japan-top .focus-panel .panel-head {

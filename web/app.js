@@ -1182,7 +1182,7 @@ function sourceConfidenceLabel(value) {
     medium: "Medium confidence",
     low: "Low confidence",
   };
-  return labels[value] || value || null;
+  return labels[value] || null;
 }
 
 function formatReviewCount(value) {
@@ -1214,12 +1214,9 @@ function externalSignalCard(source, signal) {
   const sourceName = source === "tabelog" ? "Tabelog" : "Google";
   const ratingText =
     source === "tabelog"
-      ? [
-          signal.honest_stars != null ? `${signal.honest_stars} honest stars` : "",
-          signal.score_raw != null ? `raw ${signal.score_raw}` : "",
-        ]
-          .filter(Boolean)
-          .join(" · ")
+      ? (signal.score_raw ?? signal.honest_stars) != null
+        ? `${signal.score_raw ?? signal.honest_stars} on Tabelog`
+        : ""
       : [signal.rating != null ? `${signal.rating} rating` : "", signal.price_level || ""]
           .filter(Boolean)
           .join(" · ");
@@ -1241,14 +1238,11 @@ function externalSignalCard(source, signal) {
     .map((item) => `<span>${escapeHtml(item)}</span>`)
     .join("");
 
-  const note = signal.notes ? `<div class="signal-note">${escapeHtml(signal.notes)}</div>` : "";
-
   return `
     <article class="signal-card">
       <div class="signal-source">${escapeHtml(sourceName)}</div>
       ${ratingMarkup}
       ${meta ? `<div class="signal-meta">${meta}</div>` : ""}
-      ${note}
     </article>
   `;
 }
