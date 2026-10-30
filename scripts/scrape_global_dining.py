@@ -56,7 +56,9 @@ GOOGLE_RATINGS_PATH = DATA_DIR / "google-maps-ratings.json"
 
 OFFICIAL_PAGE_URL = "https://www.americanexpress.com/en-sg/benefits/diningbenefit/"
 OFFICIAL_BENEFITS_PAGE_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/"
-GLOBAL_DINING_TERMS_PDF_URL = "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/2026_Platinum_TermsandConditions.pdf"
+TERMS_PDF_LINK = re.compile(r'href="([^"]*TermsandConditions\.pdf)"', re.IGNORECASE)
+EXPIRY_DATE = re.compile(r"will expire on (\d{1,2} [A-Z][a-z]+ \d{4})")
+SINGAPORE = datetime.timezone(datetime.timedelta(hours=8))
 API_BASE_URL = "https://dining-offers-prod.amex.r53.tuimedia.com"
 COUNTRIES_API_URL = f"{API_BASE_URL}/api/countries"
 ORIGIN_MARKET = "SG"
@@ -946,19 +948,42 @@ def extract_global_dining_credit_terms(text: str) -> list[dict[str, Any]]:
     return parsed
 
 
+def terms_pdf_url(benefits_page_html: str) -> str:
+    """The one Platinum T&C PDF linked from the official benefits page."""
+    links = {
+        urllib.parse.urljoin(OFFICIAL_BENEFITS_PAGE_URL, href)
+        for href in TERMS_PDF_LINK.findall(benefits_page_html)
+    }
+    if len(links) != 1:
+        raise RuntimeError(f"Expected one terms PDF link on {OFFICIAL_BENEFITS_PAGE_URL}, found {sorted(links)}")
+    return links.pop()
+
+
+def terms_valid_until(items: list[dict[str, Any]]) -> str:
+    """ISO expiry date stated in the Global Dining Credit terms."""
+    for item in items:
+        if match := EXPIRY_DATE.search(item["body"]):
+            return datetime.datetime.strptime(match.group(1), "%d %B %Y").date().isoformat()
+    raise RuntimeError("Global Dining Credit terms state no expiry date")
+
+
 def global_dining_terms_meta(checked_at: str) -> dict[str, Any]:
-    pdf_bytes_payload = http_bytes(GLOBAL_DINING_TERMS_PDF_URL, retries=4, timeout=45)
+    pdf_url = terms_pdf_url(http_bytes(OFFICIAL_BENEFITS_PAGE_URL, retries=4, timeout=45).decode("utf-8", "replace"))
+    pdf_bytes_payload = http_bytes(pdf_url, retries=4, timeout=45)
     if not pdf_bytes_payload.startswith(b"%PDF"):
-        raise RuntimeError(f"Unexpected non-PDF response from {GLOBAL_DINING_TERMS_PDF_URL}")
+        raise RuntimeError(f"Unexpected non-PDF response from {pdf_url}")
 
     items = extract_global_dining_credit_terms(pdf_text(pdf_bytes_payload))
+    valid_until = terms_valid_until(items)
+    if valid_until < datetime.datetime.now(SINGAPORE).date().isoformat():
+        raise RuntimeError(f"Global Dining Credit terms at {pdf_url} expired on {valid_until}")
     text_projection = json.dumps(items, ensure_ascii=False, sort_keys=True)
     return {
-        "source_url": GLOBAL_DINING_TERMS_PDF_URL,
+        "source_url": pdf_url,
         "source_page_url": OFFICIAL_BENEFITS_PAGE_URL,
         "source_page_hint": 12,
         "captured_at": checked_at,
-        "valid_until": "2026-12-31",
+        "valid_until": valid_until,
         "pdf_sha256": hashlib.sha256(pdf_bytes_payload).hexdigest(),
         "text_sha256": hashlib.sha256(text_projection.encode("utf-8")).hexdigest(),
         "items": items,
