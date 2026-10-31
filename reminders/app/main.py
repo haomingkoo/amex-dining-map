@@ -9,7 +9,7 @@ from collections.abc import Awaitable, Callable
 from contextlib import asynccontextmanager, suppress
 import os
 import hashlib
-from functools import lru_cache
+from functools import lru_cache, partial
 from pathlib import Path
 from typing import Any
 
@@ -57,14 +57,22 @@ live_refresher = TFTLiveRefresher(
 class RecordingRefresher:
     """Refresh, then record how long each slot stayed open."""
 
-    def __init__(self, refresher: TFTLiveRefresher, db_path: Path) -> None:
+    def __init__(
+        self,
+        refresher: TFTLiveRefresher,
+        db_path: Path,
+        after_snapshot: Callable[[], None] | None = None,
+    ) -> None:
         self.refresher = refresher
         self.db_path = db_path
+        self.after_snapshot = after_snapshot
 
     def refresh(self) -> dict | None:
         snapshot = self.refresher.refresh()
         if snapshot is not None:
             tft_patterns.record_snapshot(self.db_path, snapshot)
+            if self.after_snapshot is not None:
+                self.after_snapshot()
         return snapshot
 
 
@@ -136,11 +144,23 @@ async def run_periodically(
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     tasks: list[asyncio.Task[None]] = []
+    # Reminders go out as soon as a refresh lands, not on a timer that drifts from it.
+    send_after_refresh = (
+        settings.tft_live_refresh_enabled and settings.telegram_reminders_enabled
+    )
     if settings.tft_live_refresh_enabled:
         tasks.append(
             asyncio.create_task(
                 run_live_refresh_loop(
-                    RecordingRefresher(live_refresher, settings.db_path),
+                    RecordingRefresher(
+                        live_refresher,
+                        settings.db_path,
+                        partial(
+                            telegram_reminder_dispatch.dispatch_and_record, settings
+                        )
+                        if send_after_refresh
+                        else None,
+                    ),
                     settings.tft_live_refresh_interval_seconds,
                 )
             )
@@ -175,7 +195,7 @@ async def lifespan(_: FastAPI):
             run_periodically(PURGE_INTERVAL_SECONDS, db.purge, settings.db_path)
         )
     )
-    if settings.telegram_reminders_enabled:
+    if settings.telegram_reminders_enabled and not send_after_refresh:
         tasks.append(
             asyncio.create_task(
                 run_periodically(
