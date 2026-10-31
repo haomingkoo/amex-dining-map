@@ -244,3 +244,27 @@ def test_app_lifespan_starts_one_immediate_refresh_without_network(monkeypatch):
 
     with TestClient(main.app):
         assert refreshed.wait(timeout=1)
+
+
+def test_recording_refresher_sends_reminders_after_each_new_snapshot(
+    monkeypatch, tmp_path
+):
+    events = []
+    snapshots = [{"generated_at": GENERATED_AT}, None]
+
+    class Refresher:
+        def refresh(self):
+            events.append("refresh")
+            return snapshots.pop(0)
+
+    monkeypatch.setattr(
+        main.tft_patterns, "record_snapshot", lambda *args: events.append("record")
+    )
+    recording = main.RecordingRefresher(
+        Refresher(), tmp_path / "test.db", after_snapshot=lambda: events.append("send")
+    )
+
+    recording.refresh()
+    recording.refresh()
+
+    assert events == ["refresh", "record", "send", "refresh"]

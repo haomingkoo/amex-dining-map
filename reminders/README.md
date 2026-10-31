@@ -247,7 +247,8 @@ one exact venue, party size, lunch or dinner, and an absolute SGT date, range,
 or up to ten specific dates. A confirmed reminder sends at most one notification
 after the first fresh cached AMEXPlatSG match, then closes. It is separate from
 email subscribers. When `TELEGRAM_REMINDERS_ENABLED=true`, the service runs
-reminder dispatch in-process every 300 seconds. Guide slot answers and reminder
+reminder dispatch in-process right after each live slot refresh. With live
+refresh off, it runs every 300 seconds instead. Guide slot answers and reminder
 dispatch both read the service's live snapshot first. They fall back to the
 committed Pages projection only when the live file is missing, invalid or older
 than 30 minutes. `/healthz` reports the last in-process or route run under
