@@ -32,7 +32,7 @@ from app import tft_documents, tft_guide, tft_patterns, tft_slots
 
 
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
-GEMINI_MODEL = "gemini-3.1-flash-lite"
+GEMINI_MODEL = "gemini-3.5-flash-lite"
 LLM_MAX_TOKENS = 600
 BRAVE_API_URL = "https://api.search.brave.com/res/v1/web/search"
 COMMUNITY_SITES = ("reddit.com", "hardwarezone.com.sg", "burpple.com")
@@ -141,7 +141,7 @@ def openai_chat(url: str, api_key: str, model: str, extra: dict[str, Any]) -> Ch
 def gemini_chat(api_key: str, model: str = GEMINI_MODEL) -> Chat:
     """The only provider: Gemini through its OpenAI-compatible endpoint."""
     return openai_chat(
-        GEMINI_API_URL, api_key, model, {"reasoning_effort": "none", "temperature": 0.2}
+        GEMINI_API_URL, api_key, model, {"reasoning_effort": "low"}
     )
 
 

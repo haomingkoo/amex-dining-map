@@ -676,7 +676,10 @@ def test_gemini_client_posts_to_gemini_with_the_flash_lite_model(monkeypatch):
     tft_agent.gemini_chat("k" * 30)([], [], "auto", 1)
 
     assert sent["url"].startswith("https://generativelanguage.googleapis.com/")
-    assert sent["body"]["model"] == "gemini-3.1-flash-lite"
+    assert sent["body"]["model"] == "gemini-3.5-flash-lite"
+    # 3.5 Flash-Lite rejects reasoning_effort "none" with HTTP 400, and temperature is deprecated.
+    assert sent["body"]["reasoning_effort"] == "low"
+    assert "temperature" not in sent["body"]
 
 
 def test_unattributed_opinion_sentence_is_dropped_and_attributed_one_kept():
