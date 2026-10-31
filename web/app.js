@@ -7437,8 +7437,8 @@ function renderTableForTwoCard() {
       ${tableForTwoHasMapPin(record) ? `<button type="button" class="ghost-btn secondary" data-tft-focus-map="true">Center on map</button>` : ""}
       <a class="inline-link subtle" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Official list</a>
       <a class="inline-link subtle" href="${escapeHtml(payload.terms_url || TABLE_FOR_TWO_TNC_URL)}" target="_blank" rel="noopener">T&Cs PDF</a>
-      ${telegramAskUrl ? `<a class="inline-link subtle" href="${escapeHtml(telegramAskUrl)}" target="_blank" rel="noopener">Ask on Telegram</a>` : ""}
-      ${telegramReminderUrl ? `<a class="inline-link subtle" href="${escapeHtml(telegramReminderUrl)}" target="_blank" rel="noopener">Set Telegram reminder</a>` : ""}
+      ${telegramAskUrl ? `<a class="inline-link" href="${escapeHtml(telegramAskUrl)}" target="_blank" rel="noopener">Ask on Telegram</a>` : ""}
+      ${telegramReminderUrl ? `<a class="inline-link" href="${escapeHtml(telegramReminderUrl)}" target="_blank" rel="noopener">Set Telegram reminder</a>` : ""}
     </div>
   `;
 
