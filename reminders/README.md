@@ -260,7 +260,7 @@ is sent at most once.
 ### Optional LLM agent
 
 Set `TELEGRAM_GUIDE_LLM_ENABLED=true` and `GEMINI_API_KEY` to let free text that
-the deterministic matchers cannot place reach a Gemini `gemini-3.1-flash-lite`
+the deterministic matchers cannot place reach a Gemini `gemini-3.5-flash-lite`
 tool-calling agent (OpenAI-compatible endpoint; there is no other provider).
 Startup fails if the flag is on without a key or without `TELEGRAM_GUIDE_ENABLED`.
 Slash commands and every message the deterministic matchers already answer
