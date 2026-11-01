@@ -339,6 +339,15 @@ def match_venue_candidates(venue_name: str, candidates: list[str]) -> list[str]:
     return matches
 
 
+def match_venue(venue: dict, candidates: list[str]) -> list[str]:
+    """Match by venue name, then by DiningCity slug, which keeps a renamed venue's old brand."""
+    matches = match_venue_candidates(venue["name"], candidates)
+    slug = str(venue.get("dining_city_public_url") or "").rstrip("/").rsplit("/", 1)[-1]
+    if matches or not slug:
+        return matches
+    return match_venue_candidates(slug.replace("_", " "), candidates)
+
+
 def claim_menu_asset(
     claims: dict[tuple[str, str], str], source_key: str, filename: str, venue_id: str
 ) -> bool:
@@ -356,7 +365,7 @@ def strongest_asset_claimants(
     claimants: dict[tuple[str, str], set[str]] = {}
     for venue in venues:
         for source_key, listing in listings.items():
-            for filename in match_venue_candidates(venue["name"], list(listing)):
+            for filename in match_venue(venue, list(listing)):
                 claimants.setdefault((source_key, filename), set()).add(venue["id"])
     return claimants
 
@@ -589,7 +598,7 @@ def main() -> int:
         listed_sources: set[str] = set()
         listing_matches = {}
         for source_key, listing in listings.items():
-            candidates = match_venue_candidates(venue["name"], list(listing.keys()))
+            candidates = match_venue(venue, list(listing.keys()))
             contested = [
                 filename
                 for filename in candidates
