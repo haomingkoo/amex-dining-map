@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-01T00:28:31Z",
+  "updated_at": "2026-11-01T08:58:13Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-01T08:58:13Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2998/3012 (99.5%), 14 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3009/3012 (99.9%), 3 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "2998/3012 (99.5%), 14 unavailable",
+          "after": "3009/3012 (99.9%), 3 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "a599d30da04bf2ead671",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "acc547220e55302b2c25"
+    },
     {
       "program": "Love Dining",
       "program_id": "love-dining",
@@ -23131,47 +23164,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "added",
-      "subject": "Chuugokuhanten Roppongi / Tokyo",
-      "detected_at": "2026-09-04T22:53:25Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Chuugokuhanten Roppongi",
-          "Country": "Japan",
-          "Region": "Tokyo",
-          "City": "Tokyo",
-          "District": "Nishiazabu",
-          "Address": "1F, 1-1-5, Nishiazabu, Minato-ku, Tokyo",
-          "Cuisine": [
-            "Chinese"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/245655/",
-      "transition_id": "7791a94d9ba0b0a4b14a",
-      "stream_id": "2b17bfd5ef9f811b2c9f",
-      "occurrence": 1,
-      "id": "4cc5b92c63115589bc36",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -24174,7 +24166,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "b5dbad0d11172040bbc4",
+        "latest_transition_id": "a599d30da04bf2ead671",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24191,6 +24183,7 @@
           "8b5fcc11fdbb842d2a18": 1,
           "956481a26f1aba906cb6": 1,
           "973b166da288b05c66af": 1,
+          "a599d30da04bf2ead671": 1,
           "b5dbad0d11172040bbc4": 1,
           "c014707b0b686ef76154": 1,
           "c1b5149f1109a0125456": 1,
