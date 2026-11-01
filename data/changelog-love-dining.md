@@ -102,3 +102,11 @@ Source: `data/love-dining.json`
   - earthember / Singapore
 - **Removed (1)**
   - Café 2000 / Singapore
+
+<!-- source-change:b55b0a515a3719b2658652bfc7738e2daa4d2f21c73d143beb4cbd86ceea4243 -->
+## 2026-11-01 00:28 UTC — Love Dining
+
+Source: `data/love-dining.json`
+
+- **Removed (1)**
+  - Bacha Coffee / Singapore

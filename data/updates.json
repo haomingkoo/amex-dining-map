@@ -1,7 +1,178 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-31T00:56:20Z",
+  "updated_at": "2026-11-01T00:28:28Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "removed",
+      "subject": "Bacha Coffee / Singapore",
+      "detected_at": "2026-11-01T00:28:28Z",
+      "status": "review_required",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Bacha Coffee",
+          "Type": "restaurant",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "2 Bayfront Ave, #B2-13/14, Singapore 018972 2 Orchard Turn #01-15/16 ION Orchard Mall, 238801",
+          "Cuisine category": "Western",
+          "Notes": "Bacha Coffee at Marina Bay Sands Bacha Coffee at ION Orchard Please note that advanced reservations are accepted on weekdays only from 9.30am to 12pm, 6pm to 9pm for ION Orchard and on weekdays only from 10am to 12pm, 6pm to 10pm for Marina Bay Sands and can be made up to 48 hours in advance. Contact 6954 1910 for Bacha Coffee at Marina Bay Sands or 6363 1910 for Bacha Coffee at ION Orchard and quote “AMEX LD” to make your reservation. Alternatively, walk-ins for both weekdays and weekends will be accepted on a first-come, first-served basis, subject to table availability."
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "33a7fcac0a1285666419",
+      "stream_id": "b4800e7590604f8b21cc",
+      "occurrence": 1,
+      "id": "e0a050f416d25b07bfe0"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_review_required",
+      "subject": "Love Dining",
+      "detected_at": "2026-11-01T00:28:28Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Review": "clear",
+          "Review items": 0,
+          "Coverage": "78/78 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Review": "required",
+          "Review items": 2,
+          "Coverage": "77/77 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "review_required"
+        },
+        {
+          "field": "Review",
+          "before": "clear",
+          "after": "required"
+        },
+        {
+          "field": "Review items",
+          "before": 0,
+          "after": 2
+        },
+        {
+          "field": "Coverage",
+          "before": "78/78 (100%), 0 unavailable",
+          "after": "77/77 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "1c8df4fd52645201aa50",
+      "stream_id": "325506f85300a0ec65a3",
+      "occurrence": 1,
+      "id": "9d58f2af8bde926c4c3c"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_updated",
+      "subject": "Love Dining source",
+      "detected_at": "2026-11-01T00:28:28Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 78,
+          "Restaurant count": 30,
+          "Restaurant T&C PDF hash": "49f4de7d1980"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 77,
+          "Restaurant count": 29,
+          "Restaurant T&C PDF hash": "3aa6aa3d06d8"
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 78,
+          "after": 77
+        },
+        {
+          "field": "Restaurant count",
+          "before": 30,
+          "after": 29
+        },
+        {
+          "field": "Restaurant T&C PDF hash",
+          "before": "49f4de7d1980",
+          "after": "3aa6aa3d06d8"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "9f7b98008859486cd882",
+      "stream_id": "915d672147e8dd8f713f",
+      "occurrence": 1,
+      "id": "739922bc06f54cd6666d"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-01T00:28:28Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2999/3013 (99.5%), 14 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2998/3012 (99.5%), 14 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "2999/3013 (99.5%), 14 unavailable",
+          "after": "2998/3012 (99.5%), 14 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "b5dbad0d11172040bbc4",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "46de9480e3b0bb90de23"
+    },
     {
       "program": "Global Dining",
       "program_id": "global-dining",
@@ -22997,152 +23168,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "added",
-      "subject": "Sanmikouan Kyoto Bettei / Kyoto",
-      "detected_at": "2026-09-04T22:53:25Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Sanmikouan Kyoto Bettei",
-          "Country": "Japan",
-          "Region": "Kyoto/Osaka/Nara",
-          "City": "Kyoto",
-          "District": "Sekisenincho",
-          "Address": "393, Sekisenincho, Higashiyama-ku, Kyoto-shi, Kyoto",
-          "Cuisine": [
-            "Soba"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/245629/",
-      "transition_id": "536fbe40645b7c4ce011",
-      "stream_id": "77b32ba6abfc32c072fa",
-      "occurrence": 1,
-      "id": "0df506a78ac4e4f5e4f5",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-09-03T23:07:02Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "d194fecd3335"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "4b237d979879"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "d194fecd3335",
-          "after": "4b237d979879"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "6e90385f86895882df7f",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "39ff159cf9110da0e161",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-09-03T14:27:10Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "5d5958a502da"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "d194fecd3335"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "5d5958a502da",
-          "after": "d194fecd3335"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "cad0b78553f798df3101",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "25f948947f7de869702a",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_updated",
-      "subject": "Table for Two source",
-      "detected_at": "2026-09-03T05:05:56Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Booking-project identity conflicts": null
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Booking-project identity conflicts": 1
-        }
-      },
-      "changes": [
-        {
-          "field": "Booking-project identity conflicts",
-          "before": null,
-          "after": 1
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
-      "transition_id": "b96af3cb39f05bdecfac",
-      "stream_id": "5a285967ca2795c90124",
-      "occurrence": 1,
-      "id": "0d29110a30fd479510c6",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by e856ec9af531a7adee5e before review."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23743,9 +23768,10 @@
         }
       },
       "325506f85300a0ec65a3": {
-        "latest_transition_id": "16c453cb7d699ae3f099",
+        "latest_transition_id": "1c8df4fd52645201aa50",
         "occurrences": {
           "16c453cb7d699ae3f099": 1,
+          "1c8df4fd52645201aa50": 1,
           "494c890d5cec9722be8e": 3,
           "88bbbac82ec0b9b3631c": 1,
           "8f89d57217161da1ee19": 1
@@ -24144,7 +24170,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "6b634201cbf49e85cba5",
+        "latest_transition_id": "b5dbad0d11172040bbc4",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24161,6 +24187,7 @@
           "8b5fcc11fdbb842d2a18": 1,
           "956481a26f1aba906cb6": 1,
           "973b166da288b05c66af": 1,
+          "b5dbad0d11172040bbc4": 1,
           "c014707b0b686ef76154": 1,
           "c1b5149f1109a0125456": 1,
           "cf7528ce578d3065a967": 1,
@@ -24331,10 +24358,11 @@
         }
       },
       "915d672147e8dd8f713f": {
-        "latest_transition_id": "3ff929d2fb97e0ab544e",
+        "latest_transition_id": "9f7b98008859486cd882",
         "occurrences": {
           "3ff929d2fb97e0ab544e": 1,
           "529bca112c6849717caa": 1,
+          "9f7b98008859486cd882": 1,
           "a6174dfe21f75adf647b": 1,
           "fb3ff7e67d787864ffe9": 1
         }
@@ -24601,6 +24629,12 @@
         "latest_transition_id": "109a03c352e29644f3b8",
         "occurrences": {
           "109a03c352e29644f3b8": 1
+        }
+      },
+      "b4800e7590604f8b21cc": {
+        "latest_transition_id": "33a7fcac0a1285666419",
+        "occurrences": {
+          "33a7fcac0a1285666419": 1
         }
       },
       "b5534be6e103750dcfb6": {
