@@ -1,7 +1,166 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-01T13:52:42Z",
+  "updated_at": "2026-11-01T16:40:08Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-11-01T16:40:08Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Review": "clear",
+          "Stale records": 1,
+          "Review items": 2
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Source state": "review_required",
+          "Freshness": "current",
+          "Review": "required",
+          "Stale records": 0,
+          "Review items": 11
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "review_required"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Review",
+          "before": "clear",
+          "after": "required"
+        },
+        {
+          "field": "Stale records",
+          "before": 1,
+          "after": 0
+        },
+        {
+          "field": "Review items",
+          "before": 2,
+          "after": 11
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "d5c3b8cada9661b4a12a",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "f6d3c00b784a3c0e8f8c"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two roster",
+      "detected_at": "2026-11-01T16:40:08Z",
+      "status": "published",
+      "before": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 1
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "stale",
+          "after": "current"
+        },
+        {
+          "field": "Stale records",
+          "before": 1,
+          "after": 0
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "b758e525cd76d5913557",
+      "stream_id": "66129efc1226a46f5069",
+      "occurrence": 1,
+      "id": "7a24a77045bb06c49259"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_updated",
+      "subject": "Table for Two source",
+      "detected_at": "2026-11-01T16:40:07Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Booking-project venue count": 30,
+          "Booking-project membership fingerprint": "d2244687c5f7",
+          "Booking-project candidates added": []
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Booking-project venue count": 31,
+          "Booking-project membership fingerprint": "1aed91eec05b",
+          "Booking-project candidates added": [
+            "Madame Fan"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Booking-project venue count",
+          "before": 30,
+          "after": 31
+        },
+        {
+          "field": "Booking-project membership fingerprint",
+          "before": "d2244687c5f7",
+          "after": "1aed91eec05b"
+        },
+        {
+          "field": "Booking-project candidates added",
+          "before": [],
+          "after": [
+            "Madame Fan"
+          ]
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "b0e77ed5ae4bc3744268",
+      "stream_id": "5a285967ca2795c90124",
+      "occurrence": 1,
+      "id": "02ece35a80cbb8fe336c"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -23038,151 +23197,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "details_updated",
-      "subject": "Kyoto Gosho Minami Kushikatsu Bon / Kyoto",
-      "detected_at": "2026-09-04T22:53:25Z",
-      "status": "rejected",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Kyoto Gosho Minami Kushikatsu Bon",
-          "Country": "Japan",
-          "Region": "Kyoto/Osaka/Nara",
-          "City": "Kyoto",
-          "District": "Seimeicho",
-          "Address": "654-2, Seimeicho, Nakagyo-ku, Kyoto-shi, Kyoto",
-          "Cuisine": [
-            "Japanese, Kaiseki, Washoku"
-          ]
-        }
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Kyoto Gosho Minami Kushikatsu Bon",
-          "Country": "Japan",
-          "Region": "Kyoto/Osaka/Nara",
-          "City": "Kyoto",
-          "District": "Seimeicho",
-          "Address": "654-2, Seimeicho, Nakagyo-ku, Kyoto-shi, Kyoto",
-          "Cuisine": [
-            "Tempura"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Cuisine",
-          "before": [
-            "Japanese, Kaiseki, Washoku"
-          ],
-          "after": [
-            "Tempura"
-          ]
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/245552/",
-      "transition_id": "bf7a18ba448a2827731c",
-      "stream_id": "40ac560c349ee6f31a06",
-      "occurrence": 1,
-      "id": "bd2754e8812f178667f0",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Current data no longer matches this change; later checks replaced it."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "added",
-      "subject": "Chuugokuhanten Shigyokuran / Tokyo",
-      "detected_at": "2026-09-04T22:53:25Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Chuugokuhanten Shigyokuran",
-          "Country": "Japan",
-          "Region": "Tokyo",
-          "City": "Tokyo",
-          "District": "Higashiazabu",
-          "Address": "3-4-16, Higashiazabu, Minato-ku, Tokyo",
-          "Cuisine": [
-            "Chinese"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/245647/",
-      "transition_id": "de9a86326efcd6d4af00",
-      "stream_id": "999b34b5bcbbcf138089",
-      "occurrence": 1,
-      "id": "89940915d73712481835",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-09-04T22:53:25Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Record count": 843,
-          "Mapped count": 843,
-          "Official records SHA-256": "4b237d979879"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Record count": 850,
-          "Mapped count": 850,
-          "Official records SHA-256": "c962a40bfa5a"
-        }
-      },
-      "changes": [
-        {
-          "field": "Record count",
-          "before": 843,
-          "after": 850
-        },
-        {
-          "field": "Mapped count",
-          "before": 843,
-          "after": 850
-        },
-        {
-          "field": "Official records SHA-256",
-          "before": "4b237d979879",
-          "after": "c962a40bfa5a"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "cdd40254aaa0087e8392",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "83d4ef23078692a0c988",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23613,7 +23627,7 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "fd4a1d5aae728a2cb8d4",
+        "latest_transition_id": "d5c3b8cada9661b4a12a",
         "occurrences": {
           "0d4cb8e15db51802a35e": 4,
           "3db82b65a82f9d1e9fde": 1,
@@ -23624,6 +23638,7 @@
           "c33e28c5205017fb3dfa": 2,
           "c5c7f91644c25ddef5b1": 4,
           "cd3443b63e258552d868": 3,
+          "d5c3b8cada9661b4a12a": 1,
           "fd4a1d5aae728a2cb8d4": 1
         }
       },
@@ -23983,12 +23998,13 @@
         }
       },
       "5a285967ca2795c90124": {
-        "latest_transition_id": "3ff80c44f12b2c1a3d01",
+        "latest_transition_id": "b0e77ed5ae4bc3744268",
         "occurrences": {
           "295d64447a5b74ace553": 1,
           "3ff80c44f12b2c1a3d01": 1,
           "725f4d41dd42c33eadb5": 1,
           "81ed566b466b25c9b9bd": 1,
+          "b0e77ed5ae4bc3744268": 1,
           "b52d191286d1bfb2d8cf": 1,
           "b96af3cb39f05bdecfac": 1,
           "bd10dcf28211254538e8": 1,
@@ -24094,11 +24110,12 @@
         }
       },
       "66129efc1226a46f5069": {
-        "latest_transition_id": "b536fab9fee0fe574109",
+        "latest_transition_id": "b758e525cd76d5913557",
         "occurrences": {
           "31a6503c8396700d6e51": 1,
           "93012796121a4e0d9419": 1,
           "b536fab9fee0fe574109": 1,
+          "b758e525cd76d5913557": 1,
           "c78e0d1715c927df1196": 2
         }
       },
