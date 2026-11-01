@@ -12,8 +12,8 @@
   "release_source": {
     "source": "data/table-for-two-release-history.json",
     "project": "AMEXPlatSG",
-    "updated_at": "2026-11-01T16:18:36+00:00",
-    "observation_count": 4341
+    "updated_at": "2026-11-01T17:03:58+00:00",
+    "observation_count": 4391
   },
   "eligibility_source": {
     "terms_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf",
@@ -5202,7 +5202,30 @@
           "checked_at": "2026-11-01T16:43:08Z"
         }
       },
-      "release_patterns": [],
+      "release_patterns": [
+        {
+          "meal": "Dinner",
+          "observation_count": 29,
+          "median_lead_days": 20.0,
+          "lead_days_min": 3,
+          "lead_days_max": 35,
+          "typical_first_seen_sgt": "01:00",
+          "typical_time_observation_share": 1.0,
+          "confidence": "high",
+          "latest_observation_at": "2026-11-01T17:03:58Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 21,
+          "median_lead_days": 18.0,
+          "lead_days_min": 3,
+          "lead_days_max": 35,
+          "typical_first_seen_sgt": "01:00",
+          "typical_time_observation_share": 1.0,
+          "confidence": "high",
+          "latest_observation_at": "2026-11-01T17:03:58Z"
+        }
+      ],
       "explorer_route": "#/table-for-two?venue=tft-madame-fan",
       "info": {
         "description": "Madame Fan is a lifestyle-dining concept and culinary anchor of the The NCO Club. Immerse in an experiential culinary journey that is mystical, sensual and charming. The dining room is inspired by art deco which draws on timeworn traditions while simultaneously celebrating the modern world in an extraordinary blend of tradition and progress. Discover a new era of Chinese fine-dining at Madame Fan, where Executive Chinese Chef Pak Chee Yit presents fresh Cantonese flair executed with a modern finesse. An open invitation to partake in the ritual of pre- and post-dinner cocktails, celebrate the a",
@@ -5216,7 +5239,45 @@
       "eligibility": {
         "published_days": null,
         "terms_current": true,
-        "observed_meals": [],
+        "observed_meals": [
+          {
+            "meal": "Lunch",
+            "dates_seen": 21,
+            "days": [
+              "Mon",
+              "Tue",
+              "Wed",
+              "Thu",
+              "Fri"
+            ],
+            "days_label": "Mon–Fri",
+            "rare_days": [],
+            "never_days": [
+              "Sat",
+              "Sun"
+            ],
+            "first_time": "11:30",
+            "last_time": "13:30"
+          },
+          {
+            "meal": "Dinner",
+            "dates_seen": 29,
+            "days": [
+              "Mon",
+              "Tue",
+              "Wed",
+              "Thu",
+              "Fri",
+              "Sat",
+              "Sun"
+            ],
+            "days_label": "Every day",
+            "rare_days": [],
+            "never_days": [],
+            "first_time": "18:00",
+            "last_time": "20:00"
+          }
+        ],
         "merchant_blackouts": [],
         "blackout_dates": [
           {
@@ -5322,10 +5383,10 @@
         ]
       },
       "release": {
-        "new_dates": 0,
-        "precise_sightings": 0,
+        "new_dates": 50,
+        "precise_sightings": 50,
         "hour_counts": [
-          0,
+          50,
           0,
           0,
           0,
@@ -5352,7 +5413,7 @@
         ],
         "day_of_month_counts": [
           0,
-          0,
+          50,
           0,
           0,
           0,
@@ -5383,9 +5444,47 @@
           0,
           0
         ],
-        "meals": [],
-        "batches": [],
-        "lines": [],
+        "meals": [
+          {
+            "meal": "Lunch",
+            "new_dates": 21,
+            "rolling_lead_days": null,
+            "lead_share": 0.05,
+            "precise_sightings": 21,
+            "time_of_day": {
+              "start_hour": 0,
+              "end_hour": 2,
+              "share": 1.0,
+              "label": "between midnight and 2 am"
+            },
+            "last_new_date_at": "2026-11-01T17:03:58Z",
+            "quiet_days": 0
+          },
+          {
+            "meal": "Dinner",
+            "new_dates": 29,
+            "rolling_lead_days": null,
+            "lead_share": 0.03,
+            "precise_sightings": 29,
+            "time_of_day": {
+              "start_hour": 0,
+              "end_hour": 2,
+              "share": 1.0,
+              "label": "between midnight and 2 am"
+            },
+            "last_new_date_at": "2026-11-01T17:03:58Z",
+            "quiet_days": 0
+          }
+        ],
+        "batches": [
+          {
+            "at": "2026-11-01T17:03:58Z",
+            "dates": 50
+          }
+        ],
+        "lines": [
+          "50 new dates appeared at once on 2 Nov."
+        ],
         "best_time": null,
         "furthest_open_dates": {
           "Lunch": "2026-12-07",
