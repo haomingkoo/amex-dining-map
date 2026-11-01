@@ -1,7 +1,54 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-01T08:58:17Z",
+  "updated_at": "2026-11-01T13:22:47Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_stale",
+      "subject": "Table for Two roster",
+      "detected_at": "2026-11-01T13:22:47Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0
+        }
+      },
+      "after": {
+        "state": "stale",
+        "fields": {
+          "Source state": "stale",
+          "Freshness": "stale",
+          "Stale records": 1
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "stale"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 1
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "b536fab9fee0fe574109",
+      "stream_id": "66129efc1226a46f5069",
+      "occurrence": 1,
+      "id": "efdd5aad85b50177336b"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -23126,46 +23173,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "added",
-      "subject": "Chuugokuhanten Reisho / Karuizawa",
-      "detected_at": "2026-09-04T22:53:25Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Chuugokuhanten Reisho",
-          "Country": "Japan",
-          "Region": "Chubu/Tokai/Karuizawa",
-          "City": "Karuizawa",
-          "Address": "1265-31, Karuizawa, Karuizawa-machi, Kitasaku-gun, Nagano",
-          "Cuisine": [
-            "Chinese"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/245654/",
-      "transition_id": "cfe3590dfa5cf83b5406",
-      "stream_id": "0cf8628816cfb74215fd",
-      "occurrence": 1,
-      "id": "7e732dcfbd660c9b339d",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -24076,10 +24083,11 @@
         }
       },
       "66129efc1226a46f5069": {
-        "latest_transition_id": "93012796121a4e0d9419",
+        "latest_transition_id": "b536fab9fee0fe574109",
         "occurrences": {
           "31a6503c8396700d6e51": 1,
           "93012796121a4e0d9419": 1,
+          "b536fab9fee0fe574109": 1,
           "c78e0d1715c927df1196": 2
         }
       },
