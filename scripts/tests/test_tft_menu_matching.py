@@ -313,3 +313,25 @@ def test_branch_menus_match_by_location_words_or_initials():
 
     assert menus.match_venue_candidates("Brewerkz East Coast Park", files) == ["Brewerkz-Menu-ECP.pdf"]
     assert menus.match_venue_candidates("Brewerkz Riverside Point", files) == ["Brewerkz-Menu-RiversidePoint.pdf"]
+
+
+def test_renamed_venue_matches_menu_by_diningcity_slug():
+    files = ["Vivino-Menu_Platinum.pdf", "Vineyard-Menu_Platinum.pdf", "VUE-Menu_Platinum.pdf"]
+    grand_cru = {
+        "name": "Grand Cru Wine Bar",
+        "dining_city_public_url": "https://www.diningcity.sg/singapore/VivinoWineShop",
+    }
+
+    assert menus.match_venue_candidates(grand_cru["name"], files) == []
+    assert menus.match_venue(grand_cru, files) == ["Vivino-Menu_Platinum.pdf"]
+
+
+def test_name_match_wins_over_diningcity_slug():
+    files = ["Vineyard-Menu_Platinum.pdf", "Hort-Park-Menu_Platinum.pdf"]
+    vineyard = {
+        "name": "Vineyard",
+        "dining_city_public_url": "https://www.diningcity.sg/singapore/vineyard_hort_park",
+    }
+
+    assert menus.match_venue(vineyard, files) == ["Vineyard-Menu_Platinum.pdf"]
+    assert menus.match_venue({"name": "Kuriya Dining"}, files) == []
