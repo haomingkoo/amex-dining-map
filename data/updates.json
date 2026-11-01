@@ -1,7 +1,147 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-01T16:40:11Z",
+  "updated_at": "2026-11-01T16:43:56Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-11-01T16:43:56Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 11,
+          "Coverage": "25/32 (78.1%), 7 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 12,
+          "Coverage": "25/33 (75.8%), 8 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Review items",
+          "before": 11,
+          "after": 12
+        },
+        {
+          "field": "Coverage",
+          "before": "25/32 (78.1%), 7 unavailable",
+          "after": "25/33 (75.8%), 8 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "b225ffa1e05d695dc10a",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "de0fa5f3c75c0178cc85"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-01T16:43:56Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3009/3012 (99.9%), 3 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3009/3013 (99.9%), 4 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3009/3012 (99.9%), 3 unavailable",
+          "after": "3009/3013 (99.9%), 4 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "5b1256866a47d8460340",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "a125f57ab55b8eb9e1f2"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two roster",
+      "detected_at": "2026-11-01T16:43:56Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "32/32 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "33/33 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "32/32 (100%), 0 unavailable",
+          "after": "33/33 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "7a2d04d982c16a5fc850",
+      "stream_id": "66129efc1226a46f5069",
+      "occurrence": 1,
+      "id": "4527e1a1233dbd5f6551"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "added",
+      "subject": "Madame Fan",
+      "detected_at": "2026-11-01T16:43:56Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Madame Fan",
+          "Category": "restaurant",
+          "Address": "32 Beach Road, Singapore 189764",
+          "Booking channel": "Amex Experiences App"
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/madame_fan",
+      "transition_id": "f25eefd660793f8cc294",
+      "stream_id": "86b0465c9cc47855a84e",
+      "occurrence": 1,
+      "id": "31006663976dce889d22"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -23049,158 +23189,6 @@
       "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
     },
     {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-09-05T22:36:50Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "3794a45859f3"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "90033676a3b0"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "3794a45859f3",
-          "after": "90033676a3b0"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "1bdc1625c55bcf38ea77",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "32ca5705536352dcd8d9",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-09-04T23:19:05Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "c962a40bfa5a"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "3794a45859f3"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "c962a40bfa5a",
-          "after": "3794a45859f3"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "26b7a44003d30867579d",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "08b1c16e28b7310e461b",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "added",
-      "subject": "Chuugokuhanten Shunju / Nagoya",
-      "detected_at": "2026-09-04T22:53:25Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Chuugokuhanten Shunju",
-          "Country": "Japan",
-          "Region": "Chubu/Tokai/Karuizawa",
-          "City": "Nagoya",
-          "District": "Sakae",
-          "Address": "24F, 4-1-1, Sakae, Naka-ku, Nagoya-shi, Aichi",
-          "Cuisine": [
-            "Chinese"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/245649/",
-      "transition_id": "8a9c0cb42141eaee29b3",
-      "stream_id": "9be2586c097333cc217e",
-      "occurrence": 1,
-      "id": "e90ddd17bca45949d944",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "added",
-      "subject": "Fujin Tree Taiwanese Cuisine & Champagne Harajuku Quest / Tokyo",
-      "detected_at": "2026-09-04T22:53:25Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Fujin Tree Taiwanese Cuisine & Champagne Harajuku Quest",
-          "Country": "Japan",
-          "Region": "Tokyo",
-          "City": "Tokyo",
-          "District": "Jingumae",
-          "Address": "5F, 1-13-14, Jingumae, Shibuya-ku, Tokyo",
-          "Cuisine": [
-            "Chinese"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/245637/",
-      "transition_id": "3c76fc864e0d57b31c7f",
-      "stream_id": "206c9813b0f079b63000",
-      "occurrence": 1,
-      "id": "d90bce9cb39ca8492bfe",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23631,13 +23619,14 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "d5c3b8cada9661b4a12a",
+        "latest_transition_id": "b225ffa1e05d695dc10a",
         "occurrences": {
           "0d4cb8e15db51802a35e": 4,
           "3db82b65a82f9d1e9fde": 1,
           "6549f47be934c2a0f1a0": 1,
           "9b1f7da1123fbd777ee5": 2,
           "ae2b42ce35ce292dc420": 1,
+          "b225ffa1e05d695dc10a": 1,
           "b7194678b771b7d798a7": 4,
           "c33e28c5205017fb3dfa": 2,
           "c5c7f91644c25ddef5b1": 4,
@@ -24114,9 +24103,10 @@
         }
       },
       "66129efc1226a46f5069": {
-        "latest_transition_id": "b758e525cd76d5913557",
+        "latest_transition_id": "7a2d04d982c16a5fc850",
         "occurrences": {
           "31a6503c8396700d6e51": 1,
+          "7a2d04d982c16a5fc850": 1,
           "93012796121a4e0d9419": 1,
           "b536fab9fee0fe574109": 1,
           "b758e525cd76d5913557": 1,
@@ -24208,7 +24198,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "a599d30da04bf2ead671",
+        "latest_transition_id": "5b1256866a47d8460340",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24218,6 +24208,7 @@
           "37ba731247907465333f": 1,
           "45fbeae50e4fbb48dc4e": 1,
           "5852ab5ce4e4d11561b4": 1,
+          "5b1256866a47d8460340": 1,
           "5f2bd18453dc87008d58": 1,
           "5ff54655f7197bc32812": 1,
           "6b634201cbf49e85cba5": 1,
@@ -24328,6 +24319,12 @@
         "latest_transition_id": "d91edf58f9a4e00f7ff6",
         "occurrences": {
           "d91edf58f9a4e00f7ff6": 1
+        }
+      },
+      "86b0465c9cc47855a84e": {
+        "latest_transition_id": "f25eefd660793f8cc294",
+        "occurrences": {
+          "f25eefd660793f8cc294": 1
         }
       },
       "86c0e8e33461e98e92f0": {

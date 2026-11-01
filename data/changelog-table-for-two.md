@@ -52,3 +52,11 @@ Source: `data/table-for-two.json`
 
 - **Added (1)**
   - Park90
+
+<!-- source-change:022cbe277ae327ac47066f9a83e81a292dcb11975d4e38ad6958c09a608b96a8 -->
+## 2026-11-01 16:43 UTC — Table for Two
+
+Source: `data/table-for-two.json`
+
+- **Added (1)**
+  - Madame Fan
