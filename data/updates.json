@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-01T16:44:00Z",
+  "updated_at": "2026-11-01T17:23:28Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-11-01T17:23:28Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "30/30 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "31/31 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "30/30 (100%), 0 unavailable",
+          "after": "31/31 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "41dbef8fd2f8abb8925c",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "c7ee77df28e733c4aebd"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -23162,41 +23195,6 @@
       "review_note": "Superseded by e8e8e0e89f0837f3a6e4 before review."
     },
     {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-09-06T22:41:18Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "90033676a3b0"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "c32bf8c8b6e5"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "90033676a3b0",
-          "after": "c32bf8c8b6e5"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "521fd5f7344a85cb5626",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "57e4f9a44eae93a7de7b",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -25125,7 +25123,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "04d5cfacf701422a287e",
+        "latest_transition_id": "41dbef8fd2f8abb8925c",
         "occurrences": {
           "04d5cfacf701422a287e": 10,
           "093e9a40b7d75a526207": 5,
@@ -25135,6 +25133,7 @@
           "26e57ec40c3a4d347fd1": 5,
           "2a4df22568bb28e34e01": 2,
           "406de8f53c2bcdade09a": 1,
+          "41dbef8fd2f8abb8925c": 1,
           "454aaa1448de69137bdf": 2,
           "69ee8827e7535e6e03ce": 8,
           "6ba961eb0afc692e2138": 12,
