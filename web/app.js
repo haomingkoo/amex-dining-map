@@ -2481,7 +2481,6 @@ async function ensureTableForTwoDataLoaded() {
         record.search_text = tableForTwoSearchText(record);
       });
       refreshTableForTwoCategoryOptions();
-    refreshTableForTwoTierFilter();
       refreshTableForTwoTierFilter();
       state.dataLoaded.tableForTwo = true;
     })();
@@ -6902,9 +6901,22 @@ function tableForTwoPublishedMenus(record, tier = "") {
 
 function tableForTwoMenuMetaLabel(record) {
   const menus = tableForTwoPublishedMenus(record);
-  if (menus.length > 1) return `${menus.length} menus · Amex app`;
-  if (menus.length === 1) return `${menus[0].label || "Set"} menu · Amex app`;
-  return "Amex app";
+  // A Centurion-only venue can be missing from the app while its booking page is open (JAAN, Nov 2026).
+  const where = tableForTwoDisplayTier(record) === "centurion" ? "Centurion booking page" : "Amex app";
+  if (menus.length > 1) return `${menus.length} menus · ${where}`;
+  if (menus.length === 1) return `${menus[0].label || "Set"} menu · ${where}`;
+  return where;
+}
+
+function tableForTwoTierCountsLabel() {
+  const venues = tableForTwoVenues();
+  const count = (tier) => venues.filter((record) => tableForTwoVenueTiers(record).includes(tier)).length;
+  return `${count("platinum")} Platinum · ${count("centurion")} Centurion venues`;
+}
+
+function tableForTwoLinkedOnlyNote(record) {
+  if (tableForTwoDisplayTier(record) !== "centurion" || record.tier_membership?.centurion !== "linked_only") return "";
+  return "This venue is not on the Centurion venue list, but its Centurion booking link is open. Check the booking page before you plan around it.";
 }
 
 function tableForTwoCalendarMonthHtml(monthKey, slotsByDate, selectedDate = "", availableDates = new Set(), blackouts = new Map()) {
@@ -7481,8 +7493,8 @@ function renderTableForTwoCard() {
       <div class="price-grid tft-status-grid">
         <div class="price-card">
           <span class="price-label">Official list</span>
-          <div class="price-tier">${escapeHtml(payload.venues?.length ? `${payload.venues.length} venues` : "No venues loaded")}</div>
-          <div class="price-raw">${escapeHtml(tableForTwoNotListedVenues().length ? `${tableForTwoVenues().length} listed in the Amex app. ` : "")}Amex page checked ${escapeHtml(payload.last_verified_at ? formatTimestamp(payload.last_verified_at) : "pending")}.</div>
+          <div class="price-tier">${escapeHtml(!payload.venues?.length ? "No venues loaded" : tableForTwoHasTierData() ? tableForTwoTierCountsLabel() : `${payload.venues.length} venues`)}</div>
+          <div class="price-raw">Amex page checked ${escapeHtml(payload.last_verified_at ? formatTimestamp(payload.last_verified_at) : "pending")}.</div>
         </div>
         <div class="price-card">
           <span class="price-label">Open tables</span>
@@ -7573,6 +7585,7 @@ function renderTableForTwoCard() {
     ${profileDescription ? `<p class="focus-summary tft-profile-desc is-clamped" id="tft-profile-desc">${escapeHtml(profileDescription)}</p><button type="button" class="tft-desc-toggle" aria-controls="tft-profile-desc" aria-expanded="false" hidden>More</button>` : ""}
     ${tableForTwoVerdictHtml(record)}
     ${sourceReviewWarning}
+    ${tableForTwoLinkedOnlyNote(record) ? `<div class="focus-note">${escapeHtml(tableForTwoLinkedOnlyNote(record))}</div>` : ""}
     ${tableForTwoSlotMatchesHtml(record, filters)}
     ${centurionView ? "" : tableForTwoWhenToBookHtml(record)}
     ${menuPdfNote}

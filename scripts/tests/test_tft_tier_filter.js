@@ -197,3 +197,30 @@ console.log("TFT untracked tier display verification passed");
   );
 }
 console.log("TFT Centurion live slots verification passed");
+
+// Clean-up: per-card counts, the Centurion booking label, and the linked-only note.
+{
+  const fns = [
+    "tableForTwoPayload", "tableForTwoVenueTiers", "tableForTwoVenues", "tableForTwoBotServesVenue",
+    "tableForTwoDisplayTier", "tableForTwoPublishedMenus", "tableForTwoMenuMetaLabel",
+    "tableForTwoTierCountsLabel", "tableForTwoLinkedOnlyNote",
+  ];
+  const venues = [
+    ...tiered,
+    { id: "zyx", name: "Zui Yu Xuan", booking_project_status: "active", tiers: ["platinum", "centurion"], tier_membership: { centurion: "linked_only" } },
+  ];
+  const context = { state: { tableForTwo: { venues } }, tableForTwoTierFilter: { value: "" } };
+  vm.runInNewContext(
+    `${fns.map((name) => extractFrom(source, name)).join("\n")}\nObject.assign(globalThis, { ${fns.join(", ")} });`,
+    context,
+  );
+  assert.equal(context.tableForTwoTierCountsLabel(), "3 Platinum · 3 Centurion venues");
+  assert.match(context.tableForTwoMenuMetaLabel(venues[0]), /Amex app$/);
+  assert.match(context.tableForTwoMenuMetaLabel(venues[2]), /Centurion booking page$/);
+  assert.equal(context.tableForTwoLinkedOnlyNote(venues[4]), "");
+  context.tableForTwoTierFilter.value = "centurion";
+  assert.match(context.tableForTwoMenuMetaLabel(venues[0]), /Centurion booking page$/);
+  assert.match(context.tableForTwoLinkedOnlyNote(venues[4]), /not on the Centurion venue list/);
+  assert.equal(context.tableForTwoLinkedOnlyNote(venues[0]), "");
+}
+console.log("TFT tier clean-up verification passed");
