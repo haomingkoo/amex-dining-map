@@ -56,6 +56,10 @@ def test_later_observation_does_not_replace_prior_exact_pdf(monkeypatch, tmp_pat
         "fetch_diningcity_profiles",
         lambda *_args: ({}, {}),
     )
+    def offline(*_args, **_kwargs):
+        raise OSError("DiningCity is not called in this test")
+
+    monkeypatch.setattr(scrape_table_for_two, "fetch_json", offline)
     monkeypatch.setattr(
         scrape_table_for_two,
         "centurion_membership",
