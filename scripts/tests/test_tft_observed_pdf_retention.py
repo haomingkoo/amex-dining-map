@@ -56,6 +56,11 @@ def test_later_observation_does_not_replace_prior_exact_pdf(monkeypatch, tmp_pat
         "fetch_diningcity_profiles",
         lambda *_args: ({}, {}),
     )
+    monkeypatch.setattr(
+        scrape_table_for_two,
+        "centurion_membership",
+        lambda roster, *_args: (roster, {"observation_status": "error"}, {"known": [], "unknown_amex": []}),
+    )
 
     first = scrape_table_for_two.build_payload(existing, tmp_path)
     hash_b = first["source_documents"]["terms_sha256"]

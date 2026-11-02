@@ -374,12 +374,18 @@ class TableForTwoReliabilityTests(unittest.TestCase):
         first_source = self.source_with_streak(candidate, present=1)
         second_source = self.source_with_streak(candidate, present=2)
 
+        platinum_sources = iter([first_source, second_source])
+
+        def membership(*_args, tier="platinum", **_kwargs):
+            if tier == "platinum":
+                return next(platinum_sources)
+            return {"observation_status": "error", "observed_venues": []}
+
         with (
             mock.patch.object(
-                scrape_table_for_two,
-                "fetch_booking_project_membership",
-                side_effect=[first_source, second_source],
+                scrape_table_for_two, "fetch_booking_project_membership", side_effect=membership
             ),
+            mock.patch.object(scrape_table_for_two, "fetch_project_codes", return_value={}),
             mock.patch.object(scrape_table_for_two, "fetch_live_availability", return_value=({}, {})),
         ):
             first = scrape_table_for_two.refresh_availability_payload(initial)

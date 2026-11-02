@@ -36,10 +36,11 @@ except ImportError:  # running as `python3 scripts/<file>.py`
     from timeutil import iso_now
 
 try:
-    from scripts import tft_document_reviews, tft_roster_reviews
+    from scripts import tft_document_reviews, tft_roster_reviews, tft_tiers
 except ModuleNotFoundError:
     import tft_document_reviews
     import tft_roster_reviews
+    import tft_tiers
 
 
 OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/"
@@ -203,6 +204,9 @@ def _membership_record_sha256(record: dict) -> str:
             "lng",
         )
     }
+    # Listed records keep their pre-tier signature so existing streaks and evidence still match.
+    if record.get("membership") == "linked_only":
+        stable["membership"] = "linked_only"
     return hashlib.sha256(
         json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
             "utf-8"
@@ -372,7 +376,10 @@ def _empty_menu_state() -> dict:
     }
 
 
-def _auto_venue_from_membership(record: dict, streak: dict, checked_at: str) -> dict:
+def _auto_venue_from_membership(
+    record: dict, streak: dict, checked_at: str, tier: str = "platinum"
+) -> dict:
+    project = tft_tiers.project_for(tier)
     return {
         "id": _venue_id_for_membership_record(record),
         "name": record["name"],
@@ -385,13 +392,13 @@ def _auto_venue_from_membership(record: dict, streak: dict, checked_at: str) -> 
         "lat": float(record["lat"]),
         "lng": float(record["lng"]),
         "coordinate_confidence": "diningcity_place_matched",
-        "map_pin_source": "DiningCity AMEXPlatSG booking-project membership",
-        "map_pin_note": "Pin is from the current DiningCity AMEXPlatSG booking-project record.",
+        "map_pin_source": f"DiningCity {project} booking-project membership",
+        "map_pin_note": f"Pin is from the current DiningCity {project} booking-project record.",
         "menu_pdfs": {},
         "menu_pdf": _empty_menu_state(),
-        "roster_basis": "diningcity_booking_project_confirmed",
+        "roster_basis": tft_tiers.roster_basis_for(tier),
         "roster_evidence": {
-            "source": "DiningCity AMEXPlatSG booking-project membership",
+            "source": f"DiningCity {project} booking-project membership",
             "source_url": record["source_url"],
             "first_seen_at": streak.get("first_seen_at") or checked_at,
             "confirmed_at": checked_at,
@@ -417,21 +424,106 @@ def _validate_published_roster(records: list[dict]) -> None:
         raise ValueError("published Table for Two roster has missing or duplicate normalized names")
 
 
+def previous_tier_source(existing_payload: dict | None, tier: str) -> dict:
+    existing_payload = existing_payload or {}
+    if tier == "platinum":
+        return dict(existing_payload.get("booking_project_source") or {})
+    return dict((existing_payload.get("booking_project_sources") or {}).get(tier) or {})
+
+
+def linked_only_membership_records(
+    candidates: list[dict],
+    project: str,
+    listed_ids: set[str],
+    previous_source: dict,
+    fetch=None,
+) -> tuple[list[dict], dict[str, list[str]]]:
+    """Venues a project's list omits but whose own record links them to it.
+
+    Zui Yu Xuan was missing from the AMEXCentSG list on 2026-11-02 while its
+    program_and_event listed AMEXCentSG and Centurion dates were bookable.
+    Dates are needed to admit a venue; once admitted, the link alone keeps it.
+    """
+    fetch = fetch or fetch_json
+    previous_linked = {
+        str(record.get("id")): record
+        for record in previous_source.get("observed_venues") or []
+        if isinstance(record, dict) and record.get("membership") == "linked_only"
+    }
+    records: list[dict] = []
+    codes_by_id: dict[str, list[str]] = {}
+    for candidate in sorted(candidates, key=lambda record: str(record.get("id"))):
+        diningcity_id = str(candidate.get("id") or "")
+        if not diningcity_id or diningcity_id in listed_ids:
+            continue
+        try:
+            links = fetch(f"/restaurants/{diningcity_id}/projects/program_and_event")
+            if not isinstance(links, list):
+                raise ValueError("program_and_event is not a list")
+            codes = sorted(
+                {str(link.get("project")) for link in links if isinstance(link, dict) and link.get("project")}
+            )
+            linked = project in codes
+            admitted = linked and (
+                diningcity_id in previous_linked
+                or bool(
+                    [
+                        row
+                        for row in fetch(
+                            f"/restaurants/{diningcity_id}/dining_dates",
+                            {"project": project},
+                            accept_version=False,
+                        )
+                        or []
+                        if isinstance(row, dict) and row.get("available") is True
+                    ]
+                )
+            )
+        except Exception as exc:  # noqa: BLE001 - one venue's error keeps its last known link.
+            print(
+                f"linked-only check failed for {diningcity_id} in {project}: {type(exc).__name__}",
+                file=sys.stderr,
+            )
+            if diningcity_id in previous_linked:
+                records.append(dict(previous_linked[diningcity_id]))
+            continue
+        codes_by_id[diningcity_id] = codes
+        if admitted:
+            records.append(
+                {**candidate, "availability_project": project, "membership": "linked_only"}
+            )
+    return records, codes_by_id
+
+
 def fetch_booking_project_membership(
     reviewed_roster: list[dict],
     checked_at: str,
     existing_payload: dict | None = None,
+    *,
+    tier: str = "platinum",
+    linked_candidates: list[dict] | None = None,
 ) -> dict:
-    previous = dict((existing_payload or {}).get("booking_project_source") or {})
-    source_url = f"{DININGCITY_API_BASE}/projects/{DININGCITY_PROJECT}/restaurants"
+    project = tft_tiers.project_for(tier)
+    previous = previous_tier_source(existing_payload, tier)
+    source_url = f"{DININGCITY_API_BASE}/projects/{project}/restaurants"
+    project_codes_by_id: dict[str, list[str]] | None = None
     try:
         payload = fetch_json(
-            f"/projects/{DININGCITY_PROJECT}/restaurants",
+            f"/projects/{project}/restaurants",
             {"per_page": DININGCITY_PROJECT_PAGE_SIZE},
         )
         if not isinstance(payload, list):
             raise ValueError("booking project membership is not a list")
         records = [_booking_project_record(row) for row in payload]
+        if tier != "platinum":
+            records = [{**record, "membership": "listed"} for record in records]
+            linked, project_codes_by_id = linked_only_membership_records(
+                linked_candidates or [],
+                project,
+                {record["id"] for record in records},
+                previous,
+            )
+            records.extend(linked)
         records.sort(key=lambda record: (record["name"].casefold(), record["id"]))
         observed_ids = [record["id"] for record in records]
         if not records or len(observed_ids) != len(set(observed_ids)):
@@ -441,7 +533,8 @@ def fetch_booking_project_membership(
             **previous,
             "type": "diningcity_booking_project_membership",
             "source_url": source_url,
-            "project": DININGCITY_PROJECT,
+            "project": project,
+            "tier": tier,
             "last_attempt_at": checked_at,
             "observation_status": "error",
             "observation_error": type(exc).__name__,
@@ -477,7 +570,9 @@ def fetch_booking_project_membership(
     return {
         "type": "diningcity_booking_project_membership",
         "source_url": source_url,
-        "project": DININGCITY_PROJECT,
+        "project": project,
+        "tier": tier,
+        **({"project_codes_by_id": project_codes_by_id} if project_codes_by_id is not None else {}),
         "checked_at": checked_at,
         "last_attempt_at": checked_at,
         "observation_status": "success",
@@ -499,12 +594,16 @@ def current_published_roster(
     reviewed_roster: list[dict],
     booking_project_source: dict,
     existing_payload: dict | None = None,
+    *,
+    tier: str = "platinum",
 ) -> tuple[list[dict], dict]:
     """Conservatively merge source-backed booking-project additions.
 
     Official-image records are never removed here. Booking-project-only records
     require repeated complete observations both to appear and to disappear.
     """
+    project = tft_tiers.project_for(tier)
+    roster_basis = tft_tiers.roster_basis_for(tier)
     raw_observed = [
         record
         for record in booking_project_source.get("observed_venues") or []
@@ -517,7 +616,7 @@ def current_published_roster(
         record
         for record in (existing_payload or {}).get("venues") or []
         if isinstance(record, dict)
-        and record.get("roster_basis") == "diningcity_booking_project_confirmed"
+        and record.get("roster_basis") == roster_basis
     ]
     supplement_ids = [str(record.get("id") or "") for record in existing_supplement_records]
     supplement_diningcity_ids = [
@@ -570,9 +669,18 @@ def current_published_roster(
     configured_supplements = {
         str(venue.get("dining_city_id")): dict(venue)
         for venue in VENUES
-        if venue.get("roster_basis") == "diningcity_booking_project_confirmed"
+        if tier == "platinum"
+        and venue.get("roster_basis") == "diningcity_booking_project_confirmed"
     }
     supplement_pool = {**configured_supplements, **existing_supplements}
+    # Another tier's supplements are published too; a same-name venue under a new id must not collide.
+    other_tier_supplements = [
+        tft_roster_reviews.stable_venue(record)
+        for record in (existing_payload or {}).get("venues") or []
+        if isinstance(record, dict)
+        and record.get("roster_basis") in tft_roster_reviews.SUPPLEMENT_ROSTER_BASES
+        and record.get("roster_basis") != roster_basis
+    ]
     previous_observed = {
         str(record.get("id")): record
         for record in (
@@ -604,15 +712,22 @@ def current_published_roster(
         if configured:
             for field in ("address", "lat", "lng"):
                 validation_record[field] = configured.get(field)
+        other_tier = [
+            venue
+            for venue in other_tier_supplements
+            if str(venue.get("dining_city_id") or "") != diningcity_id
+        ]
         reasons = _auto_candidate_reasons(
-            validation_record, [*reviewed_roster, *additions]
+            validation_record, [*reviewed_roster, *additions, *other_tier]
         )
         if configured and _normalized_name(configured.get("name")) != _normalized_name(
             record.get("name")
         ):
             reasons.append("configured_name_changed")
         candidate_id = _venue_id_for_membership_record(record)
-        if any(venue.get("id") == candidate_id for venue in [*reviewed_roster, *additions]):
+        if any(
+            venue.get("id") == candidate_id for venue in [*reviewed_roster, *additions, *other_tier]
+        ):
             reasons.append("duplicate_venue_id")
         if reasons:
             review_items.append({"id": diningcity_id, "name": record["name"], "reasons": sorted(set(reasons))})
@@ -620,7 +735,7 @@ def current_published_roster(
             if configured:
                 configured = dict(configured)
                 configured["roster_evidence"] = {
-                    "source": "DiningCity AMEXPlatSG booking-project membership",
+                    "source": f"DiningCity {project} booking-project membership",
                     "source_url": record["source_url"],
                     "first_seen_at": streak.get("first_seen_at"),
                     "confirmed_at": booking_project_source["checked_at"],
@@ -631,7 +746,7 @@ def current_published_roster(
             else:
                 additions.append(
                     _auto_venue_from_membership(
-                        record, streak, booking_project_source["checked_at"]
+                        record, streak, booking_project_source["checked_at"], tier
                     )
                 )
         else:
@@ -660,7 +775,7 @@ def current_published_roster(
                     venue = dict(venue)
                     venue["roster_evidence"] = {
                         **(venue.get("roster_evidence") or {}),
-                        "source": "DiningCity AMEXPlatSG booking-project membership",
+                        "source": f"DiningCity {project} booking-project membership",
                         "source_url": record["source_url"],
                         "record_sha256": prior_hash,
                     }
@@ -714,7 +829,7 @@ def current_published_roster(
         ),
         "evidence_note": (
             "Current venues combine the retained reviewed Amex image roster with "
-            "DiningCity AMEXPlatSG booking-project additions confirmed across "
+            f"DiningCity {project} booking-project additions confirmed across "
             f"{AUTO_MEMBERSHIP_CONFIRMATIONS} successful observations."
         ),
         "maintenance_summary": {
@@ -747,13 +862,25 @@ def booking_project_membership_statuses(source: dict | None) -> tuple[str, set[s
 
 
 def booking_project_status_for_venue(
-    venue: dict, source: dict | None, existing_record: dict | None = None
+    venue: dict,
+    source: dict | None,
+    existing_record: dict | None = None,
+    *,
+    tier: str = "platinum",
 ) -> str:
     # A reviewed venue with no DiningCity listing cannot be in the booking project.
     if venue.get("dining_city_listing") == "not_on_diningcity":
         return "not_listed"
+    # A Centurion supplement joins Platinum only by being re-added as a Platinum supplement.
+    if tier == "platinum" and _other_tier_supplement(venue):
+        return "not_listed"
     membership_status, active_ids = booking_project_membership_statuses(source)
-    previous_status = (existing_record or {}).get("booking_project_status")
+    existing_record = existing_record or {}
+    previous_status = (
+        existing_record.get("booking_project_status")
+        if tier == "platinum"
+        else (existing_record.get("booking_project_statuses") or {}).get(tier)
+    )
     if membership_status != "success":
         return previous_status or "unknown"
     diningcity_id = str(venue.get("dining_city_id") or "")
@@ -776,6 +903,144 @@ def booking_project_status_for_venue(
     if previous_status == "active" and int(streak.get("consecutive_absent") or 0) < AUTO_MEMBERSHIP_CONFIRMATIONS:
         return "active"
     return "not_listed" if diningcity_id else "unknown"
+
+
+def fetch_project_codes(venues: list[dict], skip_ids: set[str]) -> dict[str, list[str]]:
+    codes_by_id: dict[str, list[str]] = {}
+    for venue in venues:
+        diningcity_id = str(venue.get("dining_city_id") or "")
+        if not diningcity_id or diningcity_id in skip_ids:
+            continue
+        try:
+            links = fetch_json(f"/restaurants/{diningcity_id}/projects/program_and_event")
+        except Exception as exc:  # noqa: BLE001 - one venue's error must not hide the rest.
+            print(f"project codes failed for {diningcity_id}: {type(exc).__name__}", file=sys.stderr)
+            continue
+        if isinstance(links, list):
+            codes_by_id[diningcity_id] = sorted(
+                {str(link.get("project")) for link in links if isinstance(link, dict) and link.get("project")}
+            )
+    return codes_by_id
+
+
+def _other_tier_supplement(venue: dict) -> bool:
+    basis = venue.get("roster_basis")
+    return basis in tft_roster_reviews.SUPPLEMENT_ROSTER_BASES and basis != tft_tiers.roster_basis_for(
+        "platinum"
+    )
+
+
+def summarize_project_codes(codes_by_id: dict[str, list[str]], previous: dict | None) -> dict:
+    """Known tier projects seen, and AMEX* projects no tier maps to (a new tier or event).
+
+    Unknown codes accumulate: one venue's failed fetch must not clear and re-raise the alert.
+    """
+    previous = previous or {"known": [], "unknown_amex": []}
+    if not codes_by_id:
+        return dict(previous)
+    seen = {code for codes in codes_by_id.values() for code in codes}
+    unknown = {
+        code for code in seen if code.startswith("AMEX") and not tft_tiers.tier_for_project(code)
+    }
+    return {
+        "known": sorted(code for code in seen if tft_tiers.tier_for_project(code)),
+        "unknown_amex": sorted(unknown | set(previous.get("unknown_amex") or [])),
+    }
+
+
+def centurion_membership(
+    platinum_roster: list[dict],
+    platinum_source: dict,
+    existing_payload: dict | None,
+    checked_at: str,
+) -> tuple[list[dict], dict, dict]:
+    """Run the Centurion pass over the Platinum result; return roster, source and project codes.
+
+    Any failure falls back to the retained Centurion state so Centurion can never stop Platinum.
+    """
+    try:
+        return _centurion_membership(platinum_roster, platinum_source, existing_payload, checked_at)
+    except Exception as exc:  # noqa: BLE001 - logged and surfaced as observation_status "error".
+        print(f"centurion membership pass failed: {type(exc).__name__}: {exc}", file=sys.stderr)
+        existing_payload = existing_payload or {}
+        platinum_ids = {str(venue.get("dining_city_id") or "") for venue in platinum_roster}
+        retained = [
+            tft_roster_reviews.stable_venue(record)
+            for record in existing_payload.get("venues") or []
+            if isinstance(record, dict)
+            and record.get("roster_basis") == tft_tiers.roster_basis_for("centurion")
+            and str(record.get("dining_city_id") or "") not in platinum_ids
+        ]
+        source = {
+            **previous_tier_source(existing_payload, "centurion"),
+            "project": tft_tiers.project_for("centurion"),
+            "tier": "centurion",
+            "last_attempt_at": checked_at,
+            "observation_status": "error",
+            "observation_error": type(exc).__name__,
+        }
+        codes = dict(existing_payload.get("booking_project_codes") or {"known": [], "unknown_amex": []})
+        return [*platinum_roster, *retained], source, codes
+
+
+def _centurion_membership(
+    platinum_roster: list[dict],
+    platinum_source: dict,
+    existing_payload: dict | None,
+    checked_at: str,
+) -> tuple[list[dict], dict, dict]:
+    candidates = [
+        record
+        for record in platinum_source.get("observed_venues") or []
+        if isinstance(record, dict) and record.get("id") and _eligible_membership_record(record)
+    ]
+    source = fetch_booking_project_membership(
+        platinum_roster, checked_at, existing_payload, tier="centurion", linked_candidates=candidates
+    )
+    roster, source = current_published_roster(
+        platinum_roster, source, existing_payload, tier="centurion"
+    )
+    codes_by_id = dict(source.get("project_codes_by_id") or {})
+    codes_by_id.update(fetch_project_codes(roster, set(codes_by_id)))
+    codes = summarize_project_codes(codes_by_id, (existing_payload or {}).get("booking_project_codes"))
+    return roster, source, codes
+
+
+def tier_fields(
+    venue: dict, platinum_status: str, centurion_source: dict | None, existing_record: dict | None
+) -> dict:
+    statuses = {
+        "platinum": platinum_status,
+        "centurion": booking_project_status_for_venue(
+            venue, centurion_source, existing_record, tier="centurion"
+        ),
+    }
+    fields: dict = {"booking_project_statuses": statuses}
+    previous_tiers = (existing_record or {}).get("tiers")
+    if "unknown" not in statuses.values():
+        fields["tiers"] = [tier for tier in tft_tiers.TIER_ORDER if statuses[tier] == "active"]
+    elif isinstance(previous_tiers, list):
+        # An unknown tier keeps what we last knew rather than reading as "not bookable".
+        fields["tiers"] = [
+            tier
+            for tier in tft_tiers.TIER_ORDER
+            if statuses[tier] == "active" or (statuses[tier] == "unknown" and tier in previous_tiers)
+        ]
+    if statuses["centurion"] == "active":
+        diningcity_id = str(venue.get("dining_city_id") or "")
+        observed = next(
+            (
+                record
+                for record in (centurion_source or {}).get("observed_venues") or []
+                if isinstance(record, dict) and str(record.get("id")) == diningcity_id
+            ),
+            None,
+        )
+        previous = ((existing_record or {}).get("tier_membership") or {}).get("centurion")
+        fields["tier_membership"] = {
+            "centurion": (observed or {}).get("membership") or previous or "listed"
+        }
+    return fields
 
 
 def booking_project_not_listed_availability(venue: dict, source: dict) -> dict:
@@ -1157,6 +1422,7 @@ def normalized_venues(
     live_profiles_by_id: dict[str, dict] | None = None,
     roster: list[dict] | None = None,
     booking_project_source: dict | None = None,
+    centurion_source: dict | None = None,
 ) -> list[dict]:
     existing_by_id = existing_by_id or {}
     live_availability_by_id = live_availability_by_id or {}
@@ -1195,6 +1461,7 @@ def normalized_venues(
             "availability": availability,
         }
         record["availability"] = availability
+        record.update(tier_fields(venue, booking_project_status, centurion_source, existing_record))
         _carry_venue_state(record, existing_record, _CURATED_BY_ID.get(venue.get("id")), live_profile)
         records.append(record)
     return records
@@ -1246,6 +1513,9 @@ def build_payload(
     roster, booking_project_source = current_published_roster(
         roster, booking_project_source, existing_payload
     )
+    roster, centurion_source, booking_project_codes = centurion_membership(
+        roster, booking_project_source, existing_payload, checked_at
+    )
     membership_status, active_diningcity_ids = booking_project_membership_statuses(
         booking_project_source
     )
@@ -1256,7 +1526,7 @@ def build_payload(
             if str(venue.get("dining_city_id") or "") in active_diningcity_ids
         ]
         if membership_status == "success"
-        else roster
+        else [venue for venue in roster if not _other_tier_supplement(venue)]
     )
     live_availability_by_id, availability_errors = fetch_live_availability(
         availability_roster, checked_at
@@ -1288,6 +1558,11 @@ def build_payload(
         "manual_review_required": manual_review_required,
         "roster_source": roster_source,
         "booking_project_source": booking_project_source,
+        "booking_project_sources": {
+            **((existing_payload or {}).get("booking_project_sources") or {}),
+            "centurion": centurion_source,
+        },
+        "booking_project_codes": booking_project_codes,
         "voucher_cycles_2026": [
             "Jan - Feb",
             "Mar - Apr",
@@ -1341,6 +1616,7 @@ def build_payload(
             live_profiles_by_id,
             roster,
             booking_project_source,
+            centurion_source,
         ),
     }
     # The roster refresh does not own menu review state. Dropping it would strand the
@@ -1363,13 +1639,16 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
     reviewed_roster = [
         record
         for record in venues
-        if record.get("roster_basis") != "diningcity_booking_project_confirmed"
+        if record.get("roster_basis") not in tft_roster_reviews.SUPPLEMENT_ROSTER_BASES
     ]
     booking_project_source = fetch_booking_project_membership(
         reviewed_roster, checked_at, existing_payload
     )
     venues, booking_project_source = current_published_roster(
         reviewed_roster, booking_project_source, existing_payload
+    )
+    venues, centurion_source, booking_project_codes = centurion_membership(
+        venues, booking_project_source, existing_payload, checked_at
     )
     membership_status, active_diningcity_ids = booking_project_membership_statuses(
         booking_project_source
@@ -1381,7 +1660,7 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
             if str(venue.get("dining_city_id") or "") in active_diningcity_ids
         ]
         if membership_status == "success"
-        else venues
+        else [venue for venue in venues if not _other_tier_supplement(venue)]
     )
     live_availability_by_id, availability_errors = fetch_live_availability(
         availability_venues, checked_at
@@ -1418,6 +1697,7 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
             ),
             "availability": availability,
         }
+        record.update(tier_fields(venue, booking_project_status, centurion_source, existing_record))
         _carry_venue_state(
             record, existing_record, _CURATED_BY_ID.get(venue_id),
             live_profiles_by_id.get(venue_id),
@@ -1437,6 +1717,11 @@ def refresh_availability_payload(existing_payload: dict, *, include_profiles: bo
             "errors": availability_errors,
         },
         "booking_project_source": booking_project_source,
+        "booking_project_sources": {
+            **(existing_payload.get("booking_project_sources") or {}),
+            "centurion": centurion_source,
+        },
+        "booking_project_codes": booking_project_codes,
         "venues": records,
     }
     if include_profiles:

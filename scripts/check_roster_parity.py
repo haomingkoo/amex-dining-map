@@ -12,6 +12,7 @@ Every disagreement the roster ledger already accounts for is expected; only an
 unexplained one is the bug.
 
     python3 scripts/check_roster_parity.py
+    python3 scripts/check_roster_parity.py --tier centurion
     python3 scripts/check_roster_parity.py --membership local.json   # no network
 """
 
@@ -26,19 +27,19 @@ from pathlib import Path
 try:
     from scripts.scrape_table_for_two import (
         AUTO_MEMBERSHIP_CONFIRMATIONS,
-        DININGCITY_PROJECT,
         _booking_project_record,
         _eligible_membership_record,
         fetch_json,
     )
+    from scripts import tft_tiers
 except ImportError:  # running as `python3 scripts/check_roster_parity.py`
     from scrape_table_for_two import (
         AUTO_MEMBERSHIP_CONFIRMATIONS,
-        DININGCITY_PROJECT,
         _booking_project_record,
         _eligible_membership_record,
         fetch_json,
     )
+    import tft_tiers
 
 DEFAULT_ROSTER = Path("data/table-for-two.json")
 PROJECT_PAGE_SIZE = 100
@@ -89,9 +90,22 @@ def _accounted_for(source: dict) -> set[str]:
     return accounted
 
 
-def find_faults(payload: dict, members: set[str]) -> list[Fault]:
+def _tier_source(payload: dict, tier: str) -> dict:
+    if tier == "platinum":
+        return payload.get("booking_project_source") or {}
+    return (payload.get("booking_project_sources") or {}).get(tier) or {}
+
+
+def _tier_hidden(venue: dict, tier: str) -> bool:
+    if tier == "platinum":
+        return venue.get("booking_project_status") == "not_listed"
+    return (venue.get("booking_project_statuses") or {}).get(tier) != "active"
+
+
+def find_faults(payload: dict, members: set[str], tier: str = "platinum") -> list[Fault]:
     """Unexplained disagreements between what we publish and what the project lists."""
-    source = payload.get("booking_project_source") or {}
+    project = tft_tiers.project_for(tier)
+    source = _tier_source(payload, tier)
     excused = _accounted_for(source)
     faults = []
 
@@ -103,24 +117,27 @@ def find_faults(payload: dict, members: set[str]) -> list[Fault]:
         published_ids.add(diningcity_id)
         if diningcity_id in excused:
             continue
-        hidden = venue.get("booking_project_status") == "not_listed"
+        hidden = _tier_hidden(venue, tier)
         listed = diningcity_id in members
+        # The project list omits linked-only venues by definition (see linked_only_membership_records).
+        if not listed and (venue.get("tier_membership") or {}).get(tier) == "linked_only":
+            continue
         if listed and hidden:
             faults.append(Fault(str(venue.get("id")), str(venue.get("name")),
-                                f"listed in {DININGCITY_PROJECT} but published as not_listed"))
+                                f"listed in {project} but published as not_listed"))
         elif not listed and not hidden:
             faults.append(Fault(str(venue.get("id")), str(venue.get("name")),
-                                f"published as active but {DININGCITY_PROJECT} no longer lists it"))
+                                f"published as active but {project} no longer lists it"))
 
     for diningcity_id in sorted(members - published_ids - excused):
         faults.append(Fault(diningcity_id, diningcity_id,
-                            f"listed in {DININGCITY_PROJECT} but absent from the roster"))
+                            f"listed in {project} but absent from the roster"))
     return faults
 
 
-def fetch_membership() -> list:
+def fetch_membership(tier: str = "platinum") -> list:
     rows = fetch_json(
-        f"/projects/{DININGCITY_PROJECT}/restaurants", {"per_page": PROJECT_PAGE_SIZE}
+        f"/projects/{tft_tiers.project_for(tier)}/restaurants", {"per_page": PROJECT_PAGE_SIZE}
     )
     if not isinstance(rows, list) or not rows:
         raise RuntimeError("booking project membership is empty or not a list")
@@ -131,18 +148,19 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--roster", type=Path, default=DEFAULT_ROSTER)
     parser.add_argument("--membership", type=Path, help="read the live rows from a file instead")
+    parser.add_argument("--tier", choices=tft_tiers.TIER_ORDER, default="platinum")
     args = parser.parse_args(argv)
 
     payload = json.loads(args.roster.read_text(encoding="utf-8"))
     rows = (
         json.loads(args.membership.read_text(encoding="utf-8"))
         if args.membership
-        else fetch_membership()
+        else fetch_membership(args.tier)
     )
     members = live_member_ids(rows)
-    faults = find_faults(payload, members)
+    faults = find_faults(payload, members, args.tier)
 
-    print(f"roster parity: {len(payload.get('venues') or [])} published, {len(members)} listed live")
+    print(f"roster parity ({args.tier}): {len(payload.get('venues') or [])} published, {len(members)} listed live")
     if not faults:
         print("roster parity: OK")
         return 0

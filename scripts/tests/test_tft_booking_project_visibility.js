@@ -21,7 +21,7 @@ const context = {
 };
 
 vm.runInNewContext(
-  `${extractFunction("tableForTwoPayload")}\n${extractFunction("tableForTwoVenues")}\n${extractFunction("tableForTwoNotListedVenues")}\n${extractFunction("tableForTwoAlertVenueNames")}\nObject.assign(globalThis, { tableForTwoPayload, tableForTwoVenues, tableForTwoNotListedVenues, tableForTwoAlertVenueNames });`,
+  `${extractFunction("tableForTwoPayload")}\n${extractFunction("tableForTwoVenueTiers")}\n${extractFunction("tableForTwoVenues")}\n${extractFunction("tableForTwoNotListedVenues")}\n${extractFunction("tableForTwoAlertVenueNames")}\nObject.assign(globalThis, { tableForTwoPayload, tableForTwoVenues, tableForTwoNotListedVenues, tableForTwoAlertVenueNames });`,
   context,
 );
 

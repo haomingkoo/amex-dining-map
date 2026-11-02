@@ -38,6 +38,7 @@ function harness({ catalog, slots = { venues: [] }, releaseHistory = { observati
     tableForTwoVenues: () => context.state.tableForTwo.venues || [],
     tableForTwoSearchText: (record) => record.name,
     refreshTableForTwoCategoryOptions: () => {},
+    refreshTableForTwoTierFilter: () => {},
     isTableForTwoRoute: () => true,
     refreshTableForTwoDateOptions: () => {},
     filterTableForTwo: () => {
