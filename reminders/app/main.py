@@ -36,7 +36,7 @@ from app.owner_alert_routes import router as owner_alert_router
 from app.owner_alerts import OWNER_ALERT_BATCH_MAX_BYTES
 from app.observability import configure_logging, log_event
 from app.telegram_bot_routes import router as telegram_bot_router
-from app.tft_live_refresh import TFTLiveRefresher
+from app.tft_live_refresh import CENTURION_PROJECT, TFTLiveRefresher
 from app.routes import router
 from app.security import (
     RequestBodyLimitMiddleware,
@@ -52,6 +52,13 @@ configure_logging()
 live_refresher = TFTLiveRefresher(
     tft_guide.load_catalog,
     settings.tft_live_snapshot_path,
+)
+# Centurion seats are separate inventory. Site-only for now: no history, no reminders.
+centurion_refresher = TFTLiveRefresher(
+    tft_guide.load_catalog,
+    tft_live_api.centurion_snapshot_path(settings.tft_live_snapshot_path),
+    project=CENTURION_PROJECT,
+    venues_key="centurion_venues",
 )
 
 class RecordingRefresher:
@@ -162,6 +169,13 @@ async def lifespan(_: FastAPI):
                         else None,
                     ),
                     settings.tft_live_refresh_interval_seconds,
+                )
+            )
+        )
+        tasks.append(
+            asyncio.create_task(
+                run_live_refresh_loop(
+                    centurion_refresher, settings.tft_live_refresh_interval_seconds
                 )
             )
         )
@@ -344,6 +358,11 @@ def healthz() -> dict[str, Any]:
     response.update(catalog_health())
     response["tft_live"] = tft_live_api.snapshot_health(
         settings.tft_live_snapshot_path
+    )
+    # Reported, not gated: the Platinum alert path must not fail on Centurion.
+    response["tft_live_centurion"] = tft_live_api.snapshot_health(
+        tft_live_api.centurion_snapshot_path(settings.tft_live_snapshot_path),
+        project=CENTURION_PROJECT,
     )
     response["tft_slot_history"] = dict(tft_patterns.last_record)
     response["background_loop_failures"] = dict(loop_failures)

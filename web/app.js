@@ -113,6 +113,7 @@ const TABLE_FOR_TWO_AVAILABILITY_STALE_MINUTES = 30;
 const GOOGLE_RATING_STALE_DAYS = 90;
 const REMINDERS_API_BASE = "https://amex-reminders-production.up.railway.app";
 const TABLE_FOR_TWO_LIVE_SNAPSHOT_URL = `${REMINDERS_API_BASE}/api/tft/slots`;
+const TABLE_FOR_TWO_CENTURION_SNAPSHOT_URL = `${REMINDERS_API_BASE}/api/tft/slots/centurion`;
 const TABLE_FOR_TWO_PATTERNS_URL = `${REMINDERS_API_BASE}/api/tft/patterns`;
 const TABLE_FOR_TWO_LIVE_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 const TABLE_FOR_TWO_DATA_REVALIDATE_INTERVAL_MS = 5 * 60 * 1000;
@@ -5389,10 +5390,37 @@ function tableForTwoBotServesVenue(record) {
   return tableForTwoVenueTiers(record).includes("platinum");
 }
 
-// Tracked slots are Platinum's, so a Centurion view must not present them as Centurion seats.
-function tableForTwoTierNote(record) {
+// Whose seats a card shows: the filter's card, else the only card that can book it.
+function tableForTwoDisplayTier(record) {
   const filter = typeof tableForTwoTierFilter === "undefined" ? "" : tableForTwoTierFilter?.value || "";
-  return tableForTwoBotServesVenue(record) && filter !== "centurion" ? "" : "Centurion slots are not tracked yet.";
+  if (filter === "centurion") return "centurion";
+  return tableForTwoBotServesVenue(record) ? "platinum" : "centurion";
+}
+
+// Centurion seats are separate inventory, so a Centurion view never shows Platinum seats.
+function tableForTwoSelectTierAvailability() {
+  const centurion = state.tableForTwoCenturionById;
+  (state.tableForTwo?.venues || []).forEach((record) => {
+    if (!Object.prototype.hasOwnProperty.call(record, "availability_platinum")) {
+      record.availability_platinum = record.availability;
+    }
+    const live = tableForTwoDisplayTier(record) === "centurion" ? centurion?.get(record.id) : null;
+    record.availability = live
+      ? tableForTwoAvailabilityFromSlotVenue(live, true, "centurion")
+      : record.availability_platinum;
+  });
+}
+
+function tableForTwoTierNote(record) {
+  if (tableForTwoDisplayTier(record) === "platinum") return "";
+  return state.tableForTwoCenturionById?.has(record.id) ? "" : "Centurion slots are not tracked yet.";
+}
+
+function tableForTwoCenturionBookingUrl(record) {
+  const id = String(record.dining_city_id || "");
+  return /^\d+$/.test(id)
+    ? `https://partner.diningcity.asia/profile?program=AMEXCentSG&region_id=120&restaurant_id=${id}&lang=en`
+    : "";
 }
 
 const TABLE_FOR_TWO_TIER_LABELS = { platinum: "Platinum", centurion: "Centurion" };
@@ -5411,11 +5439,11 @@ function refreshTableForTwoTierFilter() {
   if (wrap.hidden) tableForTwoTierFilter.value = "";
 }
 
-function tableForTwoSlotSnapshotIsValid(payload, live = false) {
+function tableForTwoSlotSnapshotIsValid(payload, live = false, project = "AMEXPlatSG") {
   if (
     !payload
     || payload.schema_version !== 1
-    || payload.source_project !== "AMEXPlatSG"
+    || payload.source_project !== project
     || (live && !["success", "partial", "error"].includes(payload.refresh_status))
     || !Array.isArray(payload.venues)
     || payload.venues.length > 50
@@ -5425,7 +5453,7 @@ function tableForTwoSlotSnapshotIsValid(payload, live = false) {
   return payload.venues.every((venue) => {
     const valid = venue
       && /^tft-[a-z0-9-]{1,76}$/.test(venue.id || "")
-      && venue.project === "AMEXPlatSG"
+      && venue.project === project
       && ["live_available", "live_no_seats", "unknown"].includes(venue.status)
       && Array.isArray(venue.meals)
       && venue.meals.length <= 4
@@ -5436,27 +5464,31 @@ function tableForTwoSlotSnapshotIsValid(payload, live = false) {
   });
 }
 
-function tableForTwoAvailabilityFromSlotVenue(venue, live = false) {
+function tableForTwoAvailabilityFromSlotVenue(venue, live = false, tier = "platinum") {
+  const centurion = tier === "centurion";
+  const project = centurion ? "AMEXCentSG" : "AMEXPlatSG";
   return {
     status: venue.status,
     source: live
-      ? "Railway cached DiningCity AMEXPlatSG"
-      : "Published DiningCity AMEXPlatSG fallback",
-    project: "AMEXPlatSG",
-    project_title: "AMEX Platinum SG",
+      ? `Railway cached DiningCity ${project}`
+      : `Published DiningCity ${project} fallback`,
+    project,
+    project_title: centurion ? "AMEX Centurion SG" : "AMEX Platinum SG",
     captured_at: venue.checked_at,
     checked_at: venue.checked_at,
     attempted_at: live ? venue.attempted_at : undefined,
     live_result: live ? venue.result : undefined,
     error_code: live ? venue.error_code : undefined,
-    confidence: "diningcity_amex_platinum_project",
+    confidence: centurion ? "diningcity_amex_centurion_project" : "diningcity_amex_platinum_project",
     summary: venue.status === "live_available"
       ? "Bookable in the latest check."
       : venue.status === "live_no_seats"
         ? "Not bookable in the latest check."
         : "The latest check did not complete.",
     meals: venue.meals,
-    notes: ["From the Amex booking system. Book and redeem in the Amex Experiences App."],
+    notes: [centurion
+      ? "From the Centurion booking system. Book on the Centurion booking page or in the Amex Experiences App."
+      : "From the Amex booking system. Book and redeem in the Amex Experiences App."],
   };
 }
 
@@ -5467,6 +5499,7 @@ function applyTableForTwoSlotSnapshot(payload, live = false) {
     const liveVenue = venuesById.get(record.id);
     if (!liveVenue) return;
     record.availability = tableForTwoAvailabilityFromSlotVenue(liveVenue, live);
+    record.availability_platinum = record.availability;
     if (live && liveVenue.error_code === "not_in_project") {
       record.booking_project_status = "not_listed";
       record.slot_source_status = "not_currently_in_project";
@@ -5495,12 +5528,35 @@ function applyTableForTwoLiveSnapshot(payload) {
   return applyTableForTwoSlotSnapshot(payload, true);
 }
 
+// Kept by id, not on records, so a roster reload does not drop Centurion seats.
+function applyTableForTwoCenturionSnapshot(payload) {
+  if (!tableForTwoSlotSnapshotIsValid(payload, true, "AMEXCentSG")) return false;
+  state.tableForTwoCenturionById = new Map(payload.venues.map((venue) => [venue.id, venue]));
+  return true;
+}
+
+async function refreshTableForTwoCenturionAvailability() {
+  try {
+    const response = await fetch(TABLE_FOR_TWO_CENTURION_SNAPSHOT_URL, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(TABLE_FOR_TWO_FETCH_TIMEOUT_MS),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!applyTableForTwoCenturionSnapshot(await response.json())) throw new Error("invalid Centurion snapshot");
+  } catch (error) {
+    // Cards keep "Centurion slots are not tracked yet." rather than showing Platinum seats.
+    console.warn("Table for Two Centurion availability check failed:", error);
+  }
+}
+
 async function refreshTableForTwoLiveAvailability({ force = false } = {}) {
   if (!state.tableForTwo || state.tableForTwoLiveRefreshInFlight) return;
   const now = Date.now();
   if (!force && state.tableForTwoLiveRefreshAt && now - state.tableForTwoLiveRefreshAt < 60 * 1000) return;
 
   state.tableForTwoLiveRefreshInFlight = true;
+  const centurion = refreshTableForTwoCenturionAvailability();
   try {
     const response = await fetch(TABLE_FOR_TWO_LIVE_SNAPSHOT_URL, {
       cache: "no-store",
@@ -5516,6 +5572,7 @@ async function refreshTableForTwoLiveAvailability({ force = false } = {}) {
     console.warn("Table for Two live availability check failed:", error);
     state.tableForTwoLiveRefreshFailed = true;
   } finally {
+    await centurion;
     state.tableForTwoLiveRefreshInFlight = false;
   }
   if (isTableForTwoRoute()) {
@@ -5720,6 +5777,7 @@ function tableForTwoAllAvailableDates(filters = {}) {
 }
 
 function refreshTableForTwoDateOptions() {
+  tableForTwoSelectTierAvailability();
   if (!tableForTwoDateFilter) return;
   const current = tableForTwoDateFilter.value;
   const dates = tableForTwoAllAvailableDates({
@@ -6314,6 +6372,7 @@ function renderTableForTwoFreshnessDetails(payload, venues, selectedRecord = nul
 }
 
 function filterTableForTwo() {
+  tableForTwoSelectTierAvailability();
   const search = (tableForTwoSearchInput.value || "").trim().toLowerCase();
   const inferredFilters = tableForTwoInferredFilters(search);
   const residualSearch = tableForTwoResidualSearch(search);
@@ -7483,6 +7542,9 @@ function renderTableForTwoCard() {
       ? `<div class="focus-note focus-note-warn">${escapeHtml(venueMenuReviewWarning)}</div>`
       : "";
 
+  // Release patterns are Platinum observations, so the Centurion view leaves them out.
+  const centurionView = tableForTwoDisplayTier(record) === "centurion";
+  const centurionBookingUrl = centurionView ? tableForTwoCenturionBookingUrl(record) : "";
   tableForTwoFocusCard.innerHTML = `
     ${profileImageUrl ? `<img class="tft-venue-photo" src="${escapeHtml(profileImageUrl)}" alt="${escapeHtml(displayName)}" width="${TABLE_FOR_TWO_PHOTO_WIDTH_PX}" height="${TABLE_FOR_TWO_PHOTO_HEIGHT_PX}" loading="lazy" decoding="async">` : ""}
     <div class="focus-kicker">${escapeHtml(tableForTwoCategoryLabel(record.category))} / Singapore</div>
@@ -7500,10 +7562,13 @@ function renderTableForTwoCard() {
     ${tableForTwoVerdictHtml(record)}
     ${sourceReviewWarning}
     ${tableForTwoSlotMatchesHtml(record, filters)}
-    ${tableForTwoWhenToBookHtml(record)}
+    ${centurionView ? "" : tableForTwoWhenToBookHtml(record)}
     ${menuPdfNote}
-    <p class="tft-book-note">Book and redeem in the ${escapeHtml(record.booking_channel || payload.booking_channel || "Amex Experiences App")}.</p>
+    <p class="tft-book-note">${centurionView
+      ? "Book on the Centurion booking page or in the Amex Experiences App."
+      : `Book and redeem in the ${escapeHtml(record.booking_channel || payload.booking_channel || "Amex Experiences App")}.`}</p>
     <div class="focus-actions">
+      ${centurionBookingUrl ? `<a class="inline-link primary-action" href="${escapeHtml(centurionBookingUrl)}" target="_blank" rel="noopener">Centurion booking page</a>` : ""}
       ${menuPdfLinks}
       <a class="inline-link${menuPdfLinks ? "" : " primary-action"}" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
       ${record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.dining_city_public_url)}" target="_blank" rel="noopener">Public DiningCity page</a>` : ""}
@@ -8553,7 +8618,10 @@ loveToolbarToggle.addEventListener("click", (event) => {
 // Table for Two events
 tableForTwoSearchInput.addEventListener("input", filterTableForTwo);
 tableForTwoCategoryFilter.addEventListener("change", filterTableForTwo);
-tableForTwoTierFilter?.addEventListener("change", filterTableForTwo);
+tableForTwoTierFilter?.addEventListener("change", () => {
+  refreshTableForTwoDateOptions();
+  filterTableForTwo();
+});
 tableForTwoAvailabilityFilter.addEventListener("change", filterTableForTwo);
 tableForTwoPartySizeFilter.addEventListener("change", () => {
   refreshTableForTwoDateOptions();

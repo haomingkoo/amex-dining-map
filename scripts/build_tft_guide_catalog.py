@@ -379,7 +379,25 @@ def build_catalog(
         "manual_review_required": bool(source.get("manual_review_required")),
         "documents": _document_projection(source, review_root),
         "venues": sorted(venues, key=lambda item: item["name"].casefold()),
+        "centurion_venues": _centurion_venues(source),
     }
+
+
+def _centurion_venues(source: dict) -> list[dict]:
+    """Targets for the Railway Centurion slot check; Centurion seats are separate inventory."""
+    rows = []
+    for venue in source.get("venues") or []:
+        if "centurion" not in (venue.get("tiers") or []):
+            continue
+        row = {
+            "id": venue["id"],
+            "name": venue["name"],
+            "dining_city_id": venue.get("dining_city_id"),
+        }
+        if (venue.get("tier_membership") or {}).get("centurion") == "linked_only":
+            row["linked_only"] = True
+        rows.append(row)
+    return sorted(rows, key=lambda item: item["id"])
 
 
 def main() -> int:

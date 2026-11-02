@@ -62,6 +62,19 @@ def test_generated_catalog_matches_current_tft_source():
         for venue in source["venues"]
     )
     assert len(live["venues"]) == active_count
+    centurion = [
+        venue for venue in source["venues"] if "centurion" in (venue.get("tiers") or [])
+    ]
+    assert [item["id"] for item in live["centurion_venues"]] == sorted(
+        venue["id"] for venue in centurion
+    )
+    linked = {
+        venue["id"]
+        for venue in centurion
+        if (venue.get("tier_membership") or {}).get("centurion") == "linked_only"
+    }
+    assert {item["id"] for item in live["centurion_venues"] if item.get("linked_only")} == linked
+    assert set(live["centurion_venues"][0]) <= {"id", "name", "dining_city_id", "linked_only"}
 
 
 def test_vue_platinum_natural_query_is_exact_and_cited():
