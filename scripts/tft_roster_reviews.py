@@ -28,6 +28,7 @@ REVIEW_ROOT = Path(__file__).resolve().parents[1] / "data/reviews/table-for-two-
 RUNTIME_FIELDS = {
     "availability",
     "booking_project_status",
+    "booking_project_statuses",
     "dining_city_profile",
     "menu_pdf",
     "menu_pdfs",
@@ -37,6 +38,8 @@ RUNTIME_FIELDS = {
     "operational_status_source",
     "operational_status_source_url",
     "slot_source_status",
+    "tier_membership",
+    "tiers",
 }
 # Official roster images in page order; the fingerprint binds all of them.
 ROSTER_IMAGE_KEYS = ("participating_merchants_sha256", "cafe_buffet_merchants_sha256")

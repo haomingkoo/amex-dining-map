@@ -41,6 +41,11 @@ def test_roster_refresh_keeps_menu_review_state(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(
         scrape_table_for_two, "fetch_diningcity_profiles", lambda *_args: ({}, {})
     )
+    monkeypatch.setattr(
+        scrape_table_for_two,
+        "centurion_membership",
+        lambda roster, *_args: (roster, {"observation_status": "error"}, {"known": [], "unknown_amex": []}),
+    )
 
     refreshed = scrape_table_for_two.build_payload(existing, tmp_path)
 
