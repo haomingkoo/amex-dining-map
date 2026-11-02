@@ -258,3 +258,13 @@ def test_venue_link_answers_for_a_centurion_only_venue():
     )
     assert "JAAN By Kirk Westaway" in reply
     assert "not in the reviewed TFT roster" not in reply
+
+
+def test_venues_and_about_cover_both_cards():
+    from app import telegram_digest
+
+    venues = tft_guide.handle_message("/venues", tft_guide.load_catalog(), NOW)
+    assert "Centurion only" in venues and "JAAN By Kirk Westaway" in venues
+    about = tft_guide.handle_message("/about", tft_guide.load_catalog(), NOW)
+    assert "Centurion" in about and "AMEXPlatSG" not in about
+    assert "Platinum" in telegram_digest.INTRO
