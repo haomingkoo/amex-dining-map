@@ -64,7 +64,7 @@ AEM_MENU_SOURCES = {
 USER_AGENT = "Mozilla/5.0 (compatible; AmexDiningMap/1.0)"
 HTTP_TIMEOUT = 15
 MAX_LISTING_BYTES = 2 * 1024 * 1024
-MAX_PDF_BYTES = 20 * 1024 * 1024
+MAX_PDF_BYTES = 32 * 1024 * 1024
 REVIEW_PDF_ROOT = Path("data/reviews/tft-menu-pdfs")
 MENU_FILENAME_RE = re.compile(
     r"^[A-Za-z0-9][A-Za-z0-9._ -]{0,180}[-_]?Menu(?:[-_][A-Za-z0-9]+)?\.pdf$",
@@ -283,11 +283,22 @@ def direct_menu_candidate_filenames(stem: str, source_key: str) -> list[str]:
     ]
 
 
-def fetch_direct_menu_entry(source_key: str, known_filenames: list[str]) -> tuple[dict | None, bytes | None]:
-    """Probe direct PDF URLs when the AEM listing omits a counterpart menu."""
+def venue_name_stems(venue: dict) -> list[str]:
+    """File stems Amex has used for a venue name: GingerLily, Gingerlily, Ginger-Lily."""
+    words = re.findall(r"[A-Za-z0-9]+", str(venue.get("name") or ""))
+    if not words:
+        return []
+    joined = "".join(word[:1].upper() + word[1:] for word in words)
+    return list(dict.fromkeys([joined, joined[:1] + joined[1:].lower(), "-".join(words)]))
+
+
+def fetch_direct_menu_entry(
+    source_key: str, known_filenames: list[str], name_stems: list[str] | tuple[str, ...] = ()
+) -> tuple[dict | None, bytes | None]:
+    """Probe direct PDF URLs when the AEM listing omits a menu (Gingerlily, Nov 2026)."""
     source = AEM_MENU_SOURCES[source_key]
     seen: set[str] = set()
-    stems = [filename_stem(filename) for filename in known_filenames]
+    stems = [filename_stem(filename) for filename in known_filenames] + list(name_stems)
     for stem in stems:
         for filename in direct_menu_candidate_filenames(stem, source_key):
             if filename in seen:
@@ -300,6 +311,10 @@ def fetch_direct_menu_entry(source_key: str, known_filenames: list[str]) -> tupl
                 if exc.code == 404:
                     continue
                 raise
+            except ValueError as exc:
+                # A guessed URL can resolve to an oversized non-menu page; it is not a candidate.
+                print(f"  ! direct probe skipped {filename}: {exc}", file=sys.stderr)
+                continue
             if not pdf_bytes.startswith(b"%PDF"):
                 continue
             return {
@@ -666,8 +681,14 @@ def main() -> int:
             entry = listing.get(match) if match else None
             pdf_bytes: bytes | None = None
             observation_failed = False
-            if entry is None and known_filenames and not args.no_download:
-                entry, pdf_bytes = fetch_direct_menu_entry(source_key, known_filenames)
+            # Name-based probes only for a card the venue can book and only when nothing else matched.
+            name_stems = (
+                venue_name_stems(venue)
+                if not known_filenames and source_key in (venue.get("tiers") or [])
+                else []
+            )
+            if entry is None and (known_filenames or name_stems) and not args.no_download:
+                entry, pdf_bytes = fetch_direct_menu_entry(source_key, known_filenames, name_stems)
             if entry and pdf_bytes is None and not args.no_download:
                 try:
                     pdf_bytes = http_get(entry["url"], MAX_PDF_BYTES)
