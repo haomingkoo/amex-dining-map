@@ -5,7 +5,14 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import Literal
 
-from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    EmailStr,
+    Field,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 
 from app import tft_guide
 from app.db import SubscriberInput
@@ -19,6 +26,8 @@ class SubscribeRequest(BaseModel):
     name: str | None = Field(default=None, max_length=80)
     party_size: int
     sessions: list[Literal[MEALS]] = Field(min_length=1, max_length=len(MEALS))
+    # Declared before venues: each card has its own venue list and its own seats.
+    tier: Literal["platinum", "centurion"] = "platinum"
     venues: list[str] = Field(min_length=1, max_length=30)
     date_start: date
     date_end: date
@@ -48,13 +57,15 @@ class SubscribeRequest(BaseModel):
 
     @field_validator("venues")
     @classmethod
-    def _venues(cls, value: list[str]) -> list[str]:
+    def _venues(cls, value: list[str], info: ValidationInfo) -> list[str]:
         cleaned = [item.strip() for item in value if item and item.strip()]
         if not cleaned:
             raise ValueError("pick at least one venue")
         if any(item.lower() == "any" for item in cleaned):
             return ["any"]
-        known = {name.lower() for name in tft_guide.venue_names()}
+        known = {
+            name.lower() for name in tft_guide.venue_names(info.data.get("tier", "platinum"))
+        }
         unknown = [item for item in cleaned if item.lower() not in known]
         if unknown:
             raise ValueError(f"unknown venue(s): {', '.join(unknown)}")
@@ -93,4 +104,5 @@ class SubscribeRequest(BaseModel):
             date_start=self.date_start.isoformat(),
             date_end=self.date_end.isoformat(),
             dates=[value.isoformat() for value in self.dates],
+            tier=self.tier,
         )

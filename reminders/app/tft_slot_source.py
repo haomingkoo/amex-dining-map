@@ -20,6 +20,7 @@ logger = logging.getLogger("amex_reminders.slots")
 
 SOURCE_URL = "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json"
 PROJECT = "AMEXPlatSG"
+CENTURION_PROJECT = tft_live_refresh.CENTURION_PROJECT
 MAX_RESPONSE_BYTES = 1_000_000
 MAX_VENUES = 50
 MAX_MEALS_PER_VENUE = 4
@@ -160,6 +161,18 @@ def live_snapshot(now: datetime | None = None) -> dict[str, Any] | None:
         return None
     age = ((now or datetime.now(timezone.utc)) - generated).total_seconds()
     return snapshot if age <= tft_live_api.TFT_LIVE_STALE_AFTER_SECONDS else None
+
+
+def load_centurion_snapshot(now: datetime | None = None) -> dict[str, Any]:
+    """Centurion seats exist only in this service's live file; there is no Pages copy."""
+    path = tft_live_api.centurion_snapshot_path(load_settings().tft_live_snapshot_path)
+    snapshot = tft_live_refresh.load_snapshot(path, CENTURION_PROJECT)
+    if snapshot is None:
+        raise SlotSourceUnavailable("Centurion slot snapshot is unavailable")
+    generated = _aware_timestamp(snapshot["generated_at"])
+    if ((now or datetime.now(timezone.utc)) - generated).total_seconds() > tft_live_api.TFT_LIVE_STALE_AFTER_SECONDS:
+        raise SlotSourceUnavailable("Centurion slot snapshot is stale")
+    return snapshot
 
 
 def load_snapshot(

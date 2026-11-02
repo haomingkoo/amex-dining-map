@@ -24,6 +24,7 @@ def create_reminder(conn, principal=PRINCIPAL_A, chat_id=111, date_value="2026-1
     catalog = tft_guide.load_catalog()
     replies = [
         telegram_reminders.handle_message(conn, principal, chat_id, "/remind", catalog, NOW),
+        telegram_reminders.handle_message(conn, principal, chat_id, "platinum", catalog, NOW),
         telegram_reminders.handle_message(conn, principal, chat_id, "VUE", catalog, NOW),
         telegram_reminders.handle_message(conn, principal, chat_id, "dinner", catalog, NOW),
         telegram_reminders.handle_message(conn, principal, chat_id, date_value, catalog, NOW),
@@ -133,7 +134,7 @@ def test_resumed_confirmation_repeats_chat_storage_and_deletion_consent(
     conn = connection(tmp_path / "reminders.db")
     catalog = tft_guide.load_catalog()
     try:
-        for text in ("/remind", "VUE", "dinner", "2026-10-29"):
+        for text in ("/remind", "platinum", "VUE", "dinner", "2026-10-29"):
             telegram_reminders.handle_message(
                 conn, PRINCIPAL_A, 111, text, catalog, NOW
             )
@@ -156,6 +157,10 @@ def test_invalid_steps_do_not_save_and_idle_state_expires(tmp_path: Path):
     catalog = tft_guide.load_catalog()
     try:
         telegram_reminders.handle_message(conn, PRINCIPAL_A, 111, "/remind", catalog, NOW)
+        assert telegram_reminders.handle_message(
+            conn, PRINCIPAL_A, 111, "VUE", catalog, NOW
+        ) == telegram_reminders.CARD_REPROMPT
+        telegram_reminders.handle_message(conn, PRINCIPAL_A, 111, "platinum", catalog, NOW)
         assert "one exact" in telegram_reminders.handle_message(
             conn, PRINCIPAL_A, 111, "not a venue", catalog, NOW
         )
@@ -183,8 +188,8 @@ def test_delete_confirmation_gets_fresh_fifteen_minute_window(tmp_path: Path):
     conn = connection(tmp_path / "reminders.db")
     catalog = tft_guide.load_catalog()
     try:
-        moments = [0, 14, 28, 42]
-        messages = ["/remind", "VUE", "dinner", "2026-10-29"]
+        moments = [0, 7, 14, 28, 42]
+        messages = ["/remind", "platinum", "VUE", "dinner", "2026-10-29"]
         for minutes, message in zip(moments, messages, strict=True):
             telegram_reminders.handle_message(
                 conn,
@@ -375,7 +380,7 @@ def test_concurrent_confirmation_and_dispatch_each_have_one_winner(tmp_path: Pat
     conn = connection(path)
     catalog = tft_guide.load_catalog()
     try:
-        for text in ("/remind", "VUE", "dinner", "2026-10-29"):
+        for text in ("/remind", "platinum", "VUE", "dinner", "2026-10-29"):
             telegram_reminders.handle_message(
                 conn, PRINCIPAL_A, 111, text, catalog, NOW
             )
@@ -608,7 +613,7 @@ def test_global_live_cap_prevents_unscannable_newer_matching_reminder(
             ),
         )
         conn.commit()
-        for text in ("/remind", "VUE", "dinner", "2026-10-29"):
+        for text in ("/remind", "platinum", "VUE", "dinner", "2026-10-29"):
             telegram_reminders.handle_message(
                 conn, PRINCIPAL_A, 111, text, catalog, NOW
             )
@@ -636,7 +641,7 @@ def test_reminder_accepts_62_day_range_and_rejects_63(tmp_path: Path):
             conn, principal=PRINCIPAL_B, chat_id=222, date_value="2026-08-30..2026-10-31"
         )
 
-        assert "Up to 62 days" in replies[2]
+        assert "Up to 62 days" in replies[3]
         assert "is on:" in confirmation
         assert rejected.startswith("I couldn't read those dates.")
         assert "up to 62 days" in rejected

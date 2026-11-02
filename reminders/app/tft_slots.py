@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 
 
 PROJECT = "AMEXPlatSG"
+CENTURION_PROJECT = "AMEXCentSG"
 STALE_AFTER = timedelta(minutes=30)
 # Releases land about 53-61 days ahead, so lookups must reach that far.
 MAX_RANGE_DAYS = 62
@@ -33,6 +34,7 @@ class SlotRequest:
     end_date: date
     weekend_only: bool
     preferred_time: time | None
+    tier: str = "platinum"
 
 
 def usage() -> str:
@@ -286,12 +288,13 @@ def answer(
     now: datetime,
     explorer_line: Callable[[SlotRequest], str],
     flag: Flag | None = None,
+    project: str = PROJECT,
 ) -> str:
     """explorer_line(request) gives the link line for the request the reply describes.
 
     flag(item) may return a short warning for a slot, e.g. a blackout day.
     """
-    if snapshot.get("source_project") != PROJECT:
+    if snapshot.get("source_project") != project:
         return UNAVAILABLE
     names = {str(venue.get("id")): str(venue.get("name")) for venue in catalog_venues}
     wanted_ids = set(names)
@@ -310,7 +313,7 @@ def answer(
         seen_ids.add(venue_id)
         checked = _timestamp(venue.get("checked_at"))
         if (
-            venue.get("project") != PROJECT
+            venue.get("project") != project
             or checked is None
             or checked > now + timedelta(minutes=5)
         ):

@@ -98,7 +98,7 @@ def _seed_active_reminder(settings: Settings, now: datetime, requested_date: str
         principal = telegram_bot_store.identity_key(
             "user", 4444, settings.telegram_identity_hash_salt
         )
-        for text in ("/remind", "VUE", "dinner", requested_date, "YES"):
+        for text in ("/remind", "platinum", "VUE", "dinner", requested_date, "YES"):
             telegram_reminders.handle_message(
                 conn, principal, 4444, text, tft_guide.load_catalog(), now
             )
@@ -685,6 +685,7 @@ def test_private_guided_reminder_flow_is_replay_safe_and_keeps_guide_commands(
     steps = [
         "/remind",
         "/venues",
+        "platinum",
         "VUE",
         "dinner",
         requested_date,
@@ -692,12 +693,12 @@ def test_private_guided_reminder_flow_is_replay_safe_and_keeps_guide_commands(
     ]
     for index, text in enumerate(steps, start=30_000):
         assert _post(client, _update(update_id=index, text=text)).json() == {"ok": True}
-    replay = _post(client, _update(update_id=30_005, text="YES"))
+    replay = _post(client, _update(update_id=30_006, text="YES"))
 
     assert replay.json() == {"ok": True}
     assert len(sends) == len(steps)
     assert "Table for Two — cached roster" in sends[1][2]
-    assert "Lunch or dinner?" in sends[2][2]
+    assert "Lunch or dinner?" in sends[3][2]
     assert "store this private chat ID" in sends[0][2]
     assert "is on:" in sends[-1][2]
     conn = db.connect(settings.db_path)
@@ -999,7 +1000,7 @@ def test_reminder_dispatch_sends_once_then_terminally_closes_destination(
         principal = telegram_bot_store.identity_key(
             "user", 4444, settings.telegram_identity_hash_salt
         )
-        for text in ("/remind", "VUE", "dinner", requested_date, "YES"):
+        for text in ("/remind", "platinum", "VUE", "dinner", requested_date, "YES"):
             telegram_reminders.handle_message(
                 conn, principal, 4444, text, tft_guide.load_catalog(), now
             )
@@ -1117,7 +1118,7 @@ def test_delete_me_removes_every_telegram_row_for_that_user(guide_client, monkey
     day = (datetime.now(timezone.utc) + timedelta(days=10)).date().isoformat()
     update_id = 60_000
     for user in (leaver, stayer):
-        for text in ("/remind", "VUE", "dinner", day, "YES", "/remind", "Colony"):
+        for text in ("/remind", "platinum", "VUE", "dinner", day, "YES", "/remind", "platinum", "Colony"):
             update_id += 1
             _post(client, _update(update_id=update_id, text=text, user_id=user))
     conn = db.connect(settings.db_path)
