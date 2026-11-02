@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-02T00:56:53Z",
+  "updated_at": "2026-11-02T01:13:40Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-11-02T01:13:40Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 12
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 13
+        }
+      },
+      "changes": [
+        {
+          "field": "Review items",
+          "before": 12,
+          "after": 13
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "007e51f231870c7881c2",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "4e4f54b7f9e51bc46f5e"
+    },
     {
       "program": "Global Dining",
       "program_id": "global-dining",
@@ -23162,41 +23195,6 @@
       "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
     },
     {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-09-07T23:17:23Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "c32bf8c8b6e5"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "7d3f27f53687"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "c32bf8c8b6e5",
-          "after": "7d3f27f53687"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "af667c9a723df3e47a14",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "44470aee720a40c4d0e2",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23628,8 +23626,9 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "b225ffa1e05d695dc10a",
+        "latest_transition_id": "007e51f231870c7881c2",
         "occurrences": {
+          "007e51f231870c7881c2": 1,
           "0d4cb8e15db51802a35e": 4,
           "3db82b65a82f9d1e9fde": 1,
           "6549f47be934c2a0f1a0": 1,
