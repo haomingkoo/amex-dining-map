@@ -113,3 +113,26 @@ console.log("TFT tier availability box verification passed");
   assert.equal(context.tableForTwoTierNote(tiered[0]), "");
 }
 console.log("TFT Centurion filter availability verification passed");
+
+// Untracked Centurion slots get a neutral pill and no Platinum date line.
+{
+  const vue = { ...tiered[0], availability: { visible_dates: ["2026-11-06", "2026-12-07"] } };
+  const context = {
+    state: {},
+    tableForTwoTierFilter: { value: "centurion" },
+    tableForTwoAvailabilityKey: () => "available",
+    tableForTwoMatchingSlots: () => [{ date: "2026-11-06" }],
+    uniqueValues: (values) => [...new Set(values)],
+    tableForTwoDateRangeSummary: (dates) => `${dates.length} dates`,
+  };
+  vm.runInNewContext(
+    `${["tableForTwoVenueTiers", "tableForTwoTierNote", "tableForTwoBotServesVenue", "tableForTwoAvailabilityBadgeClass", "tableForTwoDateSummary"].map((name) => extractFrom(source, name)).join("\n")}\nObject.assign(globalThis, { tableForTwoAvailabilityBadgeClass, tableForTwoDateSummary });`,
+    context,
+  );
+  assert.equal(context.tableForTwoAvailabilityBadgeClass(vue, {}), "");
+  assert.equal(context.tableForTwoDateSummary(vue, {}), "");
+  context.tableForTwoTierFilter.value = "platinum";
+  assert.equal(context.tableForTwoAvailabilityBadgeClass(vue, {}), "green");
+  assert.equal(context.tableForTwoDateSummary(vue, {}), "1 dates");
+}
+console.log("TFT untracked tier display verification passed");
