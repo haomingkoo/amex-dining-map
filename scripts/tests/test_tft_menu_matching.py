@@ -361,3 +361,42 @@ def test_upstream_pavillion_typo_matches_summer_pavilion():
     assert menus.match_venue(venue, ["Summer-Pavillion-Menu_Centurion.pdf"]) == [
         "Summer-Pavillion-Menu_Centurion.pdf"
     ]
+
+
+def test_name_stems_cover_amex_spellings():
+    assert "Gingerlily" in menus.venue_name_stems({"name": "Ginger.Lily"})
+    assert "MadameFan" in menus.venue_name_stems({"name": "Madame Fan"})
+
+
+def test_direct_probe_tries_name_stems_when_nothing_else_is_known(monkeypatch):
+    tried = []
+
+    def fake_get(url, _limit):
+        tried.append(url.rsplit("/", 1)[-1])
+        if url.endswith("/Gingerlily-Menu_Centurion.pdf"):
+            return b"%PDF-1.4 menu"
+        raise menus.urllib.error.HTTPError(url, 404, "nf", {}, None)
+
+    monkeypatch.setattr(menus, "http_get", fake_get)
+    entry, pdf = menus.fetch_direct_menu_entry("centurion", [], menus.venue_name_stems({"name": "Ginger.Lily"}))
+    assert entry["filename"] == "Gingerlily-Menu_Centurion.pdf" and pdf.startswith(b"%PDF")
+
+
+def test_direct_probe_skips_a_guess_that_is_not_a_menu(monkeypatch):
+    def fake_get(url, _limit):
+        if url.endswith("/GingerLily-Menu_Centurion.pdf"):
+            raise ValueError("menu source response exceeds the byte limit")
+        if url.endswith("/Gingerlily-Menu_Centurion.pdf"):
+            return b"%PDF-1.4 menu"
+        raise menus.urllib.error.HTTPError(url, 404, "nf", {}, None)
+
+    monkeypatch.setattr(menus, "http_get", fake_get)
+    entry, _ = menus.fetch_direct_menu_entry("centurion", [], ["GingerLily", "Gingerlily"])
+    assert entry["filename"] == "Gingerlily-Menu_Centurion.pdf"
+
+
+def test_pdf_limit_fits_the_largest_amex_menu():
+    from scripts import tft_menu_reviews
+
+    # Gingerlily-Menu_Centurion.pdf was 22,463,641 bytes on 2026-11-03.
+    assert menus.MAX_PDF_BYTES == tft_menu_reviews.MAX_PDF_BYTES >= 22_463_641

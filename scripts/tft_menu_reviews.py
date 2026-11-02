@@ -19,7 +19,7 @@ def queue_needs_review(queue: list[dict]) -> bool:
     return any(item.get("kind") not in UNREVIEWABLE_QUEUE_KINDS for item in queue)
 
 
-MAX_PDF_BYTES = 20 * 1024 * 1024
+MAX_PDF_BYTES = 32 * 1024 * 1024
 DECIDABLE_KINDS = {"changed_or_new_venue_menu", "ambiguous_exact_match"}
 DECISIONS = {"approved", "rejected"}
 VOLATILE_REVIEW_KEYS = {
