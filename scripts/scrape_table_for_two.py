@@ -36,10 +36,11 @@ except ImportError:  # running as `python3 scripts/<file>.py`
     from timeutil import iso_now
 
 try:
-    from scripts import tft_document_reviews, tft_roster_reviews
+    from scripts import tft_document_reviews, tft_roster_reviews, tft_tiers
 except ModuleNotFoundError:
     import tft_document_reviews
     import tft_roster_reviews
+    import tft_tiers
 
 
 OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/"
@@ -203,6 +204,9 @@ def _membership_record_sha256(record: dict) -> str:
             "lng",
         )
     }
+    # Listed records keep their pre-tier signature so existing streaks and evidence still match.
+    if record.get("membership") == "linked_only":
+        stable["membership"] = "linked_only"
     return hashlib.sha256(
         json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
             "utf-8"
@@ -417,21 +421,106 @@ def _validate_published_roster(records: list[dict]) -> None:
         raise ValueError("published Table for Two roster has missing or duplicate normalized names")
 
 
+def previous_tier_source(existing_payload: dict | None, tier: str) -> dict:
+    existing_payload = existing_payload or {}
+    if tier == "platinum":
+        return dict(existing_payload.get("booking_project_source") or {})
+    return dict((existing_payload.get("booking_project_sources") or {}).get(tier) or {})
+
+
+def linked_only_membership_records(
+    candidates: list[dict],
+    project: str,
+    listed_ids: set[str],
+    previous_source: dict,
+    fetch=None,
+) -> tuple[list[dict], dict[str, list[str]]]:
+    """Venues a project's list omits but whose own record links them to it.
+
+    Zui Yu Xuan was missing from the AMEXCentSG list on 2026-11-02 while its
+    program_and_event listed AMEXCentSG and Centurion dates were bookable.
+    Dates are needed to admit a venue; once admitted, the link alone keeps it.
+    """
+    fetch = fetch or fetch_json
+    previous_linked = {
+        str(record.get("id")): record
+        for record in previous_source.get("observed_venues") or []
+        if isinstance(record, dict) and record.get("membership") == "linked_only"
+    }
+    records: list[dict] = []
+    codes_by_id: dict[str, list[str]] = {}
+    for candidate in sorted(candidates, key=lambda record: str(record.get("id"))):
+        diningcity_id = str(candidate.get("id") or "")
+        if not diningcity_id or diningcity_id in listed_ids:
+            continue
+        try:
+            links = fetch(f"/restaurants/{diningcity_id}/projects/program_and_event")
+            if not isinstance(links, list):
+                raise ValueError("program_and_event is not a list")
+            codes = sorted(
+                {str(link.get("project")) for link in links if isinstance(link, dict) and link.get("project")}
+            )
+            linked = project in codes
+            admitted = linked and (
+                diningcity_id in previous_linked
+                or bool(
+                    [
+                        row
+                        for row in fetch(
+                            f"/restaurants/{diningcity_id}/dining_dates",
+                            {"project": project},
+                            accept_version=False,
+                        )
+                        or []
+                        if isinstance(row, dict) and row.get("available") is True
+                    ]
+                )
+            )
+        except Exception as exc:  # noqa: BLE001 - one venue's error keeps its last known link.
+            print(
+                f"linked-only check failed for {diningcity_id} in {project}: {type(exc).__name__}",
+                file=sys.stderr,
+            )
+            if diningcity_id in previous_linked:
+                records.append(dict(previous_linked[diningcity_id]))
+            continue
+        codes_by_id[diningcity_id] = codes
+        if admitted:
+            records.append(
+                {**candidate, "availability_project": project, "membership": "linked_only"}
+            )
+    return records, codes_by_id
+
+
 def fetch_booking_project_membership(
     reviewed_roster: list[dict],
     checked_at: str,
     existing_payload: dict | None = None,
+    *,
+    tier: str = "platinum",
+    linked_candidates: list[dict] | None = None,
 ) -> dict:
-    previous = dict((existing_payload or {}).get("booking_project_source") or {})
-    source_url = f"{DININGCITY_API_BASE}/projects/{DININGCITY_PROJECT}/restaurants"
+    project = tft_tiers.project_for(tier)
+    previous = previous_tier_source(existing_payload, tier)
+    source_url = f"{DININGCITY_API_BASE}/projects/{project}/restaurants"
+    project_codes_by_id: dict[str, list[str]] | None = None
     try:
         payload = fetch_json(
-            f"/projects/{DININGCITY_PROJECT}/restaurants",
+            f"/projects/{project}/restaurants",
             {"per_page": DININGCITY_PROJECT_PAGE_SIZE},
         )
         if not isinstance(payload, list):
             raise ValueError("booking project membership is not a list")
         records = [_booking_project_record(row) for row in payload]
+        if tier != "platinum":
+            records = [{**record, "membership": "listed"} for record in records]
+            linked, project_codes_by_id = linked_only_membership_records(
+                linked_candidates or [],
+                project,
+                {record["id"] for record in records},
+                previous,
+            )
+            records.extend(linked)
         records.sort(key=lambda record: (record["name"].casefold(), record["id"]))
         observed_ids = [record["id"] for record in records]
         if not records or len(observed_ids) != len(set(observed_ids)):
@@ -441,7 +530,8 @@ def fetch_booking_project_membership(
             **previous,
             "type": "diningcity_booking_project_membership",
             "source_url": source_url,
-            "project": DININGCITY_PROJECT,
+            "project": project,
+            "tier": tier,
             "last_attempt_at": checked_at,
             "observation_status": "error",
             "observation_error": type(exc).__name__,
@@ -477,7 +567,9 @@ def fetch_booking_project_membership(
     return {
         "type": "diningcity_booking_project_membership",
         "source_url": source_url,
-        "project": DININGCITY_PROJECT,
+        "project": project,
+        "tier": tier,
+        **({"project_codes_by_id": project_codes_by_id} if project_codes_by_id is not None else {}),
         "checked_at": checked_at,
         "last_attempt_at": checked_at,
         "observation_status": "success",
