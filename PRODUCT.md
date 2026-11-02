@@ -6,7 +6,7 @@ product
 
 ## Users
 
-Singapore-issued American Express Platinum cardholders planning dining and hotel benefits, primarily on mobile phones. They use the explorer to understand current participating venues, compare options, check cached availability, and verify what changed before making a booking decision, often while travelling or making near-term plans.
+Singapore-issued American Express Platinum and Centurion cardholders planning dining and hotel benefits, primarily on mobile phones. They use the explorer to understand current participating venues, compare options, check cached availability, and verify what changed before making a booking decision, often while travelling or making near-term plans.
 
 ## Product Purpose
 
