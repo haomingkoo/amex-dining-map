@@ -61,7 +61,12 @@ def test_unknown_image_retains_approved_roster_and_creates_source_review_item():
         existing,
     )
 
-    assert roster == [tft_roster_reviews.stable_venue(v) for v in DATA["venues"]]
+    # Confirm-twice additions are re-added by their own passes, so they stay out of this roster.
+    assert roster == [
+        tft_roster_reviews.stable_venue(v)
+        for v in DATA["venues"]
+        if v.get("roster_basis") not in tft_roster_reviews.SUPPLEMENT_ROSTER_BASES
+    ]
     assert state["status"] == "review_required"
     assert state["approved_participating_sha256"] == IMAGE_SHA
     assert state["observed_participating_sha256"] == "f" * 64
