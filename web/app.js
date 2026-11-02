@@ -5996,9 +5996,9 @@ function updateTableForTwoAlertSessions() {
   hint.textContent = offered ? `Your venues currently offer ${Array.from(offered).join(" and ")}.` : "";
 }
 
-function tableForTwoAlertVenueNames() {
+function tableForTwoAlertVenueNames(tier = "platinum") {
   return tableForTwoVenues()
-    .filter((venue) => tableForTwoVenueTiers(venue).includes("platinum"))
+    .filter((venue) => tableForTwoVenueTiers(venue).includes(tier))
     .map((venue) => venue && venue.name)
     .filter(Boolean)
     .sort((a, b) => a.localeCompare(b));
@@ -6017,8 +6017,11 @@ function renderTableForTwoAlertSignup() {
 
   const venueList = document.getElementById("tft-alert-venue-list");
   const anyToggle = document.getElementById("tft-alert-any");
-  if (venueList && venueList.children.length === 0) {
-    for (const name of tableForTwoAlertVenueNames()) {
+  const tierSelect = document.getElementById("tft-alert-tier");
+  // Each card has its own venues and seats, so the list follows the chosen card.
+  const fillVenues = () => {
+    venueList.replaceChildren();
+    for (const name of tableForTwoAlertVenueNames(tierSelect?.value || "platinum")) {
       const label = document.createElement("label");
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
@@ -6028,6 +6031,14 @@ function renderTableForTwoAlertSignup() {
       label.appendChild(document.createTextNode(" " + name));
       venueList.appendChild(label);
     }
+    if (anyToggle) anyToggle.checked = true;
+    updateTableForTwoAlertSessions();
+  };
+  if (venueList && !venueList.dataset.ready) {
+    venueList.dataset.ready = "true";
+    if (tierSelect && tableForTwoTierFilter?.value === "centurion") tierSelect.value = "centurion";
+    fillVenues();
+    tierSelect?.addEventListener("change", fillVenues);
     venueList.addEventListener("change", () => {
       const anyChecked =
         venueList.querySelectorAll(".tft-venue-cb:checked").length > 0;
@@ -6110,6 +6121,7 @@ async function submitTableForTwoAlert(event) {
     party_size: Number(form.querySelector("#tft-alert-party").value || 2),
     sessions,
     venues: checkedVenues.length ? checkedVenues : ["any"],
+    tier: form.querySelector("#tft-alert-tier")?.value || "platinum",
     dates: specificDates,
     date_start: form.querySelector("#tft-alert-from").value,
     date_end: form.querySelector("#tft-alert-to").value,
@@ -7381,7 +7393,7 @@ function tableForTwoVenueMenuReviewWarning(items) {
   return "";
 }
 
-function tableForTwoTelegramDeepLink(action, record) {
+function tableForTwoTelegramDeepLink(action, record, tier = "platinum") {
   const config = state.telegramGuideConfig || {};
   const username = String(config.bot_username || "");
   if (
@@ -7392,7 +7404,8 @@ function tableForTwoTelegramDeepLink(action, record) {
     || !/^[a-z0-9-]{1,80}$/.test(record.id)
     || !/^[A-Za-z][A-Za-z0-9_]{1,28}[Bb][Oo][Tt]$/.test(username)
   ) return "";
-  return `https://t.me/${username}?start=${action}_${record.id}`;
+  const card = action === "remind" && tier === "centurion" ? "centurion-" : "";
+  return `https://t.me/${username}?start=${action}_${card}${record.id}`;
 }
 
 function renderTableForTwoList() {
@@ -7533,9 +7546,8 @@ function renderTableForTwoCard() {
     : "";
   const venueMenuReviewItems = tableForTwoVenueMenuReviewItems(payload, record);
   const venueMenuReviewWarning = tableForTwoVenueMenuReviewWarning(venueMenuReviewItems);
-  const botServesVenue = tableForTwoBotServesVenue(record);
-  const telegramAskUrl = botServesVenue ? tableForTwoTelegramDeepLink("venue", record) : "";
-  const telegramReminderUrl = botServesVenue ? tableForTwoTelegramDeepLink("remind", record) : "";
+  const telegramAskUrl = tableForTwoTelegramDeepLink("venue", record);
+  const telegramReminderUrl = tableForTwoTelegramDeepLink("remind", record, tableForTwoDisplayTier(record));
   const sourceReviewWarning = payload.manual_review_required
     ? '<div class="focus-note focus-note-warn">Some venue details may have changed and are being verified. Confirm with the official source before booking.</div>'
     : venueMenuReviewWarning

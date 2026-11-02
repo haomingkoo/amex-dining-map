@@ -74,7 +74,7 @@ def test_generated_catalog_matches_current_tft_source():
         if (venue.get("tier_membership") or {}).get("centurion") == "linked_only"
     }
     assert {item["id"] for item in live["centurion_venues"] if item.get("linked_only")} == linked
-    assert set(live["centurion_venues"][0]) <= {"id", "name", "dining_city_id", "linked_only"}
+    assert set(live["centurion_venues"][0]) <= {"id", "name", "dining_city_id", "aliases", "linked_only"}
 
 
 def test_vue_platinum_natural_query_is_exact_and_cited():

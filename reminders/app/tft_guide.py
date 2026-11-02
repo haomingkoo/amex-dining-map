@@ -9,7 +9,7 @@ import re
 import threading
 import unicodedata
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
@@ -90,9 +90,9 @@ def load_catalog() -> dict:
     return catalog_in_use().payload
 
 
-def venue_names() -> list[str]:
-    """Names the site offers in the alert form; follows the adopted catalogue."""
-    return sorted(venue["name"] for venue in load_catalog()["venues"])
+def venue_names(tier: str = "platinum") -> list[str]:
+    """Names the site offers in the alert form for one card; follows the adopted catalogue."""
+    return sorted(venue["name"] for venue in tier_catalog(load_catalog(), tier)["venues"])
 
 
 def use_baked_catalog() -> None:
@@ -238,6 +238,39 @@ def _explorer_line(venue: dict) -> str:
     if re.fullmatch(r"[a-z0-9-]{1,80}", venue_id) is None:
         return "Explorer venue link could not be verified safely."
     return f"Open venue: {explorer_url(venue_id=venue_id)}"
+
+
+TIER_LABELS = {"platinum": "Platinum", "centurion": "Centurion"}
+
+
+def tier_catalog(catalog: dict, tier: str) -> dict:
+    """The catalog as one card sees it; Centurion rows reuse the Platinum record when shared."""
+    if tier != "centurion":
+        return catalog
+    full = {str(venue.get("id")): venue for venue in catalog.get("venues") or []}
+    venues = [
+        {**row, **full.get(str(row.get("id")), {})}
+        for row in catalog.get("centurion_venues") or []
+    ]
+    return {**catalog, "venues": venues}
+
+
+def venue_tiers(venue_id: str, catalog: dict) -> list[str]:
+    return [
+        tier
+        for tier in TIER_LABELS
+        if any(str(v.get("id")) == venue_id for v in tier_catalog(catalog, tier).get("venues") or [])
+    ]
+
+
+def centurion_booking_url(venue: dict) -> str:
+    dining_city_id = str(venue.get("dining_city_id") or "")
+    if not dining_city_id.isdigit():
+        return ""
+    return (
+        "https://partner.diningcity.asia/profile?program=AMEXCentSG&region_id=120"
+        f"&restaurant_id={dining_city_id}&lang=en"
+    )
 
 
 def resolve_venue(query: str, catalog: dict) -> list[dict]:
@@ -730,6 +763,7 @@ def _natural_dates_request(message: str, now: datetime) -> tft_slots.SlotRequest
 
 
 PIPE_LOOKALIKES = str.maketrans({"｜": "|", "¦": "|", "│": "|", "ǀ": "|"})
+CENTURION_WORD_RE = re.compile(r"\b(?:on |with |for )?(?:my )?(?:centurion|cent)(?: card)?\b", re.IGNORECASE)
 THIS_WEEK_RE = re.compile(r"\b(?:this week|next (?:7|seven) days)\b", re.IGNORECASE)
 WEEKEND_WORD_RE = re.compile(r"\b(?:this |next |on |the )?(?:weekends?|wkends?)\b", re.IGNORECASE)
 
@@ -785,6 +819,17 @@ def _slot_answer(
         or source.get("stale_after_minutes") != 30
     ):
         return tft_slots.UNAVAILABLE
+    tier = parsed.tier
+    # A venue only Centurion can book has no Platinum seats to show.
+    if (
+        tier == "platinum"
+        and parsed.venue_text.casefold() != "any"
+        and not resolve_venue(parsed.venue_text, catalog)
+        and resolve_venue(parsed.venue_text, tier_catalog(catalog, "centurion"))
+    ):
+        tier = "centurion"
+    centurion = tier == "centurion"
+    catalog = tier_catalog(catalog, tier)
     if parsed.venue_text.casefold() == "any":
         venues = list(catalog.get("venues") or [])
         venue_id = None
@@ -813,7 +858,11 @@ def _slot_answer(
         )
 
     try:
-        snapshot = (slot_loader or tft_slot_source.load_snapshot)()
+        snapshot = (
+            tft_slot_source.load_centurion_snapshot()
+            if centurion
+            else (slot_loader or tft_slot_source.load_snapshot)()
+        )
     except tft_slot_source.SlotSourceUnavailable:
         return f"{tft_slots.UNAVAILABLE}\n{explorer_for(parsed)}"
     by_id = {str(venue.get("id")): venue for venue in venues}
@@ -827,7 +876,16 @@ def _slot_answer(
             return "Not a day this venue usually offers Table for Two. Check before booking"
         return None
 
-    return tft_slots.answer(parsed, venues, snapshot, current, explorer_for, flag)[:MAX_REPLY_LENGTH]
+    if not centurion:
+        return tft_slots.answer(parsed, venues, snapshot, current, explorer_for, flag)[:MAX_REPLY_LENGTH]
+    reply = tft_slots.answer(
+        parsed, venues, snapshot, current, explorer_for, flag, tft_slots.CENTURION_PROJECT
+    )
+    booking = centurion_booking_url(venues[0]) if len(venues) == 1 else ""
+    lines = ["Centurion card seats (separate from Platinum).", reply]
+    if booking:
+        lines.append(f"Centurion booking page: {booking}")
+    return "\n".join(lines)[:MAX_REPLY_LENGTH]
 
 
 NO_MATCH_PREFIXES = (
@@ -871,7 +929,9 @@ def _deterministic_answer(
     current = now or datetime.now(timezone.utc)
     start_venue = re.fullmatch(r"/start venue_([a-z0-9-]{1,80})", lowered)
     if start_venue:
-        matches = resolve_venue(start_venue.group(1), catalog)
+        matches = resolve_venue(start_venue.group(1), catalog) or resolve_venue(
+            start_venue.group(1), tier_catalog(catalog, "centurion")
+        )
         if len(matches) == 1:
             return _menu_answer(matches[0], None, catalog, current)
         return "That venue link is not in the reviewed TFT roster. Use /venues."
@@ -931,15 +991,21 @@ def _deterministic_answer(
                 preferred_time=None,
             )
         else:
-            parsed = _slots_command(message, current)
+            parsed = _slots_command(" ".join(CENTURION_WORD_RE.sub(" ", message).split()), current)
         if isinstance(parsed, str):
             return parsed
+        if CENTURION_WORD_RE.search(message):
+            parsed = replace(parsed, tier="centurion")
         return _slot_answer(parsed, catalog, current, slot_loader)
 
-    natural_dates = _natural_dates_request(message, current)
+    natural_dates = _natural_dates_request(
+        " ".join(CENTURION_WORD_RE.sub(" ", message).split()), current
+    )
     if natural_dates is not None:
         if isinstance(natural_dates, str):
             return natural_dates
+        if CENTURION_WORD_RE.search(message):
+            natural_dates = replace(natural_dates, tier="centurion")
         return _slot_answer(natural_dates, catalog, current, slot_loader)
 
     if lowered == "/release" or lowered.startswith("/release "):

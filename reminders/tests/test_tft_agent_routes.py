@@ -108,7 +108,8 @@ def test_drafting_counts_toward_the_llm_budget(llm_settings, monkeypatch):
     conn.close()
     second = telegram_bot_routes._guide_answer(settings, PRINCIPAL, "remind me about VUE")
 
-    assert first.startswith("Reminder for VUE. Lunch or dinner?")
+    # VUE takes either card, so the draft asks which one before the meal.
+    assert first.startswith("Reminder for VUE. Reply Platinum or Centurion")
     assert second.startswith(telegram_bot_routes.BASIC_MODE)
 
 

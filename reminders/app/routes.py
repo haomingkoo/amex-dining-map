@@ -307,8 +307,8 @@ def unsubscribe(
     )
 
 
-def _venue_names() -> list[str]:
-    return tft_guide.venue_names()
+def _venue_names(tier: str = "platinum") -> list[str]:
+    return tft_guide.venue_names(tier)
 
 
 MANAGE_CSS = """
@@ -359,7 +359,7 @@ _MANAGE_TEMPLATE = (
     + "<style>" + PAGE_CSS + MANAGE_CSS + "</style></head><body>"
     + """<main class="card"><p class="eyebrow">Table for Two reminders</p>
 <h1>Your reminders</h1>
-<p class="sub">__EMAIL__</p>
+<p class="sub">__EMAIL__ · __CARD__ card</p>
 __STATUS_NOTE__
 <form id="mform">
  <label>Name<input id="m_name" type="text" value="__NAME__" placeholder="Your name"></label>
@@ -447,6 +447,7 @@ def _manage_page(record: dict, token: str, base: str, venue_names: list[str]) ->
         )
     replacements = {
         "__EMAIL__": html_escape(record["email"]),
+        "__CARD__": tft_guide.TIER_LABELS.get(record.get("tier") or "platinum", "Platinum"),
         "__NAME__": html_escape(record["name"] or ""),
         "__PARTY__": str(record["party_size"]),
         "__VENUE_CHECKBOXES__": "".join(checkboxes),
@@ -490,7 +491,9 @@ def manage(token: str = "", settings: Settings = Depends(get_settings)) -> HTMLR
             )
         )
     return HTMLResponse(
-        _manage_page(record, token, settings.public_base_url, _venue_names())
+        _manage_page(
+            record, token, settings.public_base_url, _venue_names(record.get("tier") or "platinum")
+        )
     )
 
 
@@ -506,6 +509,8 @@ async def manage_update(
         body = await request.json()
         body["email"] = record["email"]
         body["website"] = ""
+        # The card is set at sign-up; changing it goes through a fresh confirmation.
+        body["tier"] = record.get("tier") or "platinum"
         try:
             validated = SubscribeRequest(**body)
         except ValidationError as exc:

@@ -185,6 +185,7 @@ def test_healthz_reports_centurion_slots_without_gating_on_them(monkeypatch):
     payload = TestClient(app).get("/healthz").json()
 
     assert payload["tft_live_centurion"] == {"status": "unavailable"}
+    assert set(payload["telegram_reminder_dispatch_centurion"]) == {"at", "sent", "unknown", "dead", "error"}
     assert payload["ok"] is True
     assert (
         main.settings.tft_live_snapshot_path.stem + "-centurion.json",

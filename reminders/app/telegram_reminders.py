@@ -99,8 +99,20 @@ def _iso(moment: datetime) -> str:
     return moment.astimezone(timezone.utc).replace(microsecond=0).isoformat()
 
 
+def _columns(conn: sqlite3.Connection, table: str) -> set[str]:
+    return {row[1] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()}
+
+
 def init_db(conn: sqlite3.Connection, identity_salt: str = "") -> None:
     conn.executescript(SCHEMA)
+    # Card tier is part of a reminder's identity; every reminder before it was Platinum.
+    if "tier" not in _columns(conn, "telegram_reminders"):
+        conn.execute(
+            "ALTER TABLE telegram_reminders ADD COLUMN tier TEXT NOT NULL DEFAULT 'platinum' "
+            "CHECK(tier IN ('platinum', 'centurion'))"
+        )
+    if "tier" not in _columns(conn, "telegram_reminder_conversations"):
+        conn.execute("ALTER TABLE telegram_reminder_conversations ADD COLUMN tier TEXT")
     telegram_digest.init_db(conn)
     if identity_salt:
         fingerprint = hashlib.sha256(identity_salt.encode()).hexdigest()
@@ -194,10 +206,10 @@ def _save_conversation(
         """
         INSERT INTO telegram_reminder_conversations (
           principal_key, state, venue_id, venue_name, party_size, meal,
-          date_start, date_end, dates, created_ts, expires_ts, updated_ts
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          date_start, date_end, dates, created_ts, expires_ts, updated_ts, tier
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(principal_key) DO UPDATE SET
-          state=excluded.state, venue_id=excluded.venue_id,
+          state=excluded.state, venue_id=excluded.venue_id, tier=excluded.tier,
           venue_name=excluded.venue_name, party_size=excluded.party_size,
           meal=excluded.meal, date_start=excluded.date_start,
           date_end=excluded.date_end, dates=excluded.dates,
@@ -217,6 +229,7 @@ def _save_conversation(
             created,
             _iso(expiry),
             _iso(now),
+            values.get("tier"),
         ),
     )
     conn.commit()
@@ -381,7 +394,8 @@ def _summary(row: sqlite3.Row | dict[str, Any]) -> str:
     )
     # Table for Two covers two diners; only mention party size when someone asked for more.
     party = f" · {row['party_size']} pax" if int(row["party_size"] or 2) != 2 else ""
-    return f"{row['venue_name']} · {str(row['meal']).lower()}{party} · {date_label}"
+    tier = tft_guide.TIER_LABELS.get(str(row["tier"] or "platinum"), "Platinum")
+    return f"{row['venue_name']} · {tier} · {str(row['meal']).lower()}{party} · {date_label}"
 
 
 PARTY_RE = re.compile(r"\s*\b(?:for\s+(\d{1,2})(?:\s*(?:pax|people|persons|diners))?|(\d{1,2})\s*(?:pax|people|persons|diners))\b", re.I)
@@ -412,6 +426,30 @@ VENUE_PROMPT = (
     "/venues lists them all, /cancel stops."
 )
 VENUE_REPROMPT = "I need one exact Table for Two venue. Use /venues, then reply with its name, or /cancel."
+CARD_PROMPT = (
+    "New reminder. Which card will you book with: Platinum or Centurion? "
+    "Each card has its own tables, so I only alert on yours. /cancel stops."
+)
+CARD_REPROMPT = "Reply Platinum or Centurion, or /cancel."
+TIER_WORDS = {"platinum": "platinum", "plat": "platinum", "centurion": "centurion", "cent": "centurion"}
+
+
+def _venue_prompt(tier: str, catalog: dict) -> str:
+    names = sorted(
+        (str(v.get("name")) for v in tft_guide.tier_catalog(catalog, tier).get("venues") or []),
+        key=str.casefold,
+    )
+    return (
+        f"{tft_guide.TIER_LABELS[tier]}. Which venue? Send its name "
+        "(add 'for 4' if you're bringing paying guests).\n"
+        + ", ".join(names)
+    )
+
+
+def _infer_tier(venue_id: str, catalog: dict) -> str | None:
+    """A venue only one card can book needs no question; a shared venue does."""
+    tiers = tft_guide.venue_tiers(venue_id, catalog)
+    return tiers[0] if len(tiers) == 1 else None
 PARTY_REPROMPT = "Party size must be 1 to 10. Send the venue again, e.g. Colony for 4, or /cancel."
 
 
@@ -449,9 +487,19 @@ def start_from_fields(
     today = now.astimezone(tft_slots.SGT).date()
     venue, party, meal, dates = (fields.get(key) for key in ("venue", "party", "meal", "dates"))
     known: dict[str, Any] = {}
-    matches = tft_guide.resolve_venue(str(venue), catalog) if venue else []
+    tier = TIER_WORDS.get(str(fields.get("tier") or "").casefold())
+    matches = (
+        tft_guide.resolve_venue(str(venue), tft_guide.tier_catalog(catalog, tier or "centurion"))
+        or tft_guide.resolve_venue(str(venue), catalog)
+        if venue
+        else []
+    )
     if len(matches) == 1:
         known.update(venue_id=matches[0]["id"], venue_name=matches[0]["name"])
+        if tier is None or tier not in tft_guide.venue_tiers(matches[0]["id"], catalog):
+            tier = _infer_tier(matches[0]["id"], catalog)
+    if tier:
+        known["tier"] = tier
     party_ok = party is None or (isinstance(party, int) and 1 <= party <= 10)
     if "venue_id" in known and party_ok:
         known["party_size"] = party or 2
@@ -467,6 +515,9 @@ def start_from_fields(
         "confirm",
     )
     _save_conversation(conn, principal_key, state, now, created_ts=_iso(now), **known)
+    if "venue_id" in known and "tier" not in known:
+        _save_conversation(conn, principal_key, "venue", now)
+        return f"Reminder for {known['venue_name']}. {CARD_REPROMPT}\n{PRIVACY_LINE}"
     if state == "confirm":
         draft = conn.execute(
             "SELECT * FROM telegram_reminder_conversations WHERE principal_key = ?",
@@ -511,7 +562,7 @@ def handle_message(
         "/start", "/help", "/venues", "/menu", "/release", "/slots"
     }:
         return None
-    start_reminder = re.fullmatch(r"/start remind_([a-z0-9-]{1,80})", lowered)
+    start_reminder = re.fullmatch(r"/start remind_(centurion-)?([a-z0-9-]{1,80})", lowered)
     is_command = lowered in {
         "/remind", "/reminders", "/cancel", "/delete_me", "/confirm"
     } or lowered.startswith("/cancel ") or start_reminder is not None
@@ -521,13 +572,17 @@ def handle_message(
         return None
 
     if start_reminder is not None:
-        matches = tft_guide.resolve_venue(start_reminder.group(1), catalog)
+        # Links without a card predate Centurion and came from Platinum venue pages.
+        tier = "centurion" if start_reminder.group(1) else "platinum"
+        matches = tft_guide.resolve_venue(
+            start_reminder.group(2), tft_guide.tier_catalog(catalog, tier)
+        )
         if len(matches) != 1:
             return "That venue isn't on the Table for Two list. Use /venues to see the list."
         venue = matches[0]
         _save_conversation(
             conn, principal_key, "meal", now,
-            venue_id=venue["id"], venue_name=venue["name"], party_size=2,
+            venue_id=venue["id"], venue_name=venue["name"], party_size=2, tier=tier,
         )
         return (
             f"Reminder for {venue['name']}. Lunch or dinner?\n"
@@ -539,7 +594,9 @@ def handle_message(
             _save_conversation(conn, principal_key, "venue", now)
         else:
             prompts = {
-                "venue": "Continue setup: send one exact venue name, or /cancel.",
+                "venue": "Continue setup: send one exact venue name, or /cancel."
+                if conversation["tier"]
+                else f"Continue setup: {CARD_REPROMPT}",
                 "party": "Continue setup: send a whole-number party size from 1 to 10, or /cancel.",
                 "meal": "Continue setup: reply lunch or dinner, or /cancel.",
                 "dates": "Continue setup: send future Singapore date(s), or /cancel.",
@@ -547,7 +604,7 @@ def handle_message(
                 "delete_confirm": "Deletion is waiting: reply DELETE exactly, or /cancel.",
             }
             return prompts[conversation["state"]]
-        return f"{VENUE_PROMPT}\n{PRIVACY_LINE}"
+        return f"{CARD_PROMPT}\n{PRIVACY_LINE}"
 
     if lowered == "/reminders":
         rows = conn.execute(
@@ -648,11 +705,35 @@ def handle_message(
         return "No reminder setup is active. Send /remind to begin."
 
     state = conversation["state"]
+    if state == "venue" and not conversation["tier"]:
+        tier = TIER_WORDS.get(lowered)
+        if tier is None:
+            return CARD_REPROMPT
+        if conversation["venue_id"]:
+            if tier not in tft_guide.venue_tiers(conversation["venue_id"], catalog):
+                return f"{conversation['venue_name']} can't be booked with {tft_guide.TIER_LABELS[tier]}. {CARD_REPROMPT}"
+            next_state = "dates" if conversation["meal"] else "meal"
+            if conversation["meal"] and conversation["date_start"]:
+                next_state = "confirm"
+            _save_conversation(conn, principal_key, next_state, now, tier=tier)
+            if next_state == "confirm":
+                draft = conn.execute(
+                    "SELECT * FROM telegram_reminder_conversations WHERE principal_key = ?",
+                    (principal_key,),
+                ).fetchone()
+                return _confirmation_prompt(draft)
+            if next_state == "dates":
+                return _dates_prompt(now.astimezone(tft_slots.SGT).date())
+            return f"{conversation['venue_name']}, {tft_guide.TIER_LABELS[tier]}. Lunch or dinner?"
+        _save_conversation(conn, principal_key, "venue", now, tier=tier)
+        return _venue_prompt(tier, catalog)
     if state == "venue":
         venue_text, party = _venue_and_party(message)
         if party is None:
             return PARTY_REPROMPT
-        matches = tft_guide.resolve_venue(venue_text, catalog)
+        matches = tft_guide.resolve_venue(
+            venue_text, tft_guide.tier_catalog(catalog, conversation["tier"])
+        )
         if len(matches) != 1:
             return VENUE_REPROMPT
         venue = matches[0]
@@ -722,13 +803,14 @@ def handle_message(
             conn.execute(
                 """INSERT INTO telegram_reminders (
                   id, principal_key, chat_id, venue_id, venue_name, party_size,
-                  meal, date_start, date_end, dates, state, created_ts, updated_ts
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)""",
+                  meal, date_start, date_end, dates, state, created_ts, updated_ts, tier
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)""",
                 (
                     reminder_id, principal_key, chat_id, draft["venue_id"],
                     draft["venue_name"], draft["party_size"],
                     draft["meal"], draft["date_start"],
                     draft["date_end"], draft["dates"], now_iso, now_iso,
+                    draft["tier"] or "platinum",
                 ),
             )
             conn.execute(
@@ -762,12 +844,12 @@ def is_management_message(
 
 
 def _matching_slots(
-    row: sqlite3.Row, venue: dict, now: datetime
+    row: sqlite3.Row, venue: dict, now: datetime, project: str = tft_slots.PROJECT
 ) -> tuple[list[dict], bool]:
     checked = tft_slots._timestamp(venue.get("checked_at"))
     stale = checked is not None and now - checked > tft_slots.STALE_AFTER
     if (
-        venue.get("project") != tft_slots.PROJECT
+        venue.get("project") != project
         or venue.get("status") != "live_available"
         or checked is None
         or checked > now + timedelta(minutes=5)
@@ -802,19 +884,27 @@ def _matching_slots(
     return sorted(matches, key=lambda item: (item["date"], item["time"])), False
 
 
+TIER_BY_PROJECT = {tft_slots.PROJECT: "platinum", tft_slots.CENTURION_PROJECT: "centurion"}
+
+
 def claim_notifications(
-    conn: sqlite3.Connection, snapshot: dict, now: datetime
+    conn: sqlite3.Connection, snapshot: dict, now: datetime, catalog: dict | None = None
 ) -> ClaimResult:
-    """Atomically claim at most one terminal delivery attempt per matching reminder."""
-    if snapshot.get("source_project") != tft_slots.PROJECT:
+    """Atomically claim at most one terminal delivery attempt per matching reminder.
+
+    A snapshot covers one card's seats, so only that card's reminders are scanned.
+    """
+    project = snapshot.get("source_project")
+    tier = TIER_BY_PROJECT.get(project)
+    if tier is None:
         raise ValueError("unverified slot source")
     expired, reconciled_claimed, reconciled_unknown = _purge(conn, now)
     conn.commit()
     venues = {str(item.get("id")): item for item in snapshot.get("venues") or []}
     rows = conn.execute(
-        "SELECT * FROM telegram_reminders WHERE state = 'active' "
+        "SELECT * FROM telegram_reminders WHERE state = 'active' AND tier = ? "
         "ORDER BY created_ts LIMIT ?",
-        (MAX_SCAN_BATCH + 1,),
+        (tier, MAX_SCAN_BATCH + 1),
     ).fetchall()
     batch_limited = len(rows) > MAX_SCAN_BATCH
     rows = rows[:MAX_SCAN_BATCH]
@@ -824,7 +914,7 @@ def claim_notifications(
     more_matches = False
     for row in rows:
         matches, stale = _matching_slots(
-            row, venues.get(row["venue_id"], {}), now
+            row, venues.get(row["venue_id"], {}), now, project
         )
         stale_venue_count += int(stale)
         if not matches:
@@ -872,11 +962,26 @@ def claim_notifications(
         if len(by_day) > MAX_NOTIFICATION_SLOTS:
             lines.append(f"• {len(by_day) - MAX_NOTIFICATION_SLOTS} more dates")
         first = next(iter(by_day))
+        label = row["venue_name"]
+        booking = ""
+        if tier == "centurion":
+            label += " (Centurion)"
+            venue_record = next(
+                (
+                    v
+                    for v in tft_guide.tier_catalog(catalog or tft_guide.load_catalog(), tier)["venues"]
+                    if v.get("id") == row["venue_id"]
+                ),
+                {},
+            )
+            url = tft_guide.centurion_booking_url(venue_record)
+            booking = f"Centurion booking page: {url}\n" if url else ""
         text = (
-            f"🔔 {row['venue_name']} has {str(row['meal']).lower()} open\n"
+            f"🔔 {label} has {str(row['meal']).lower()} open\n"
             + "\n".join(lines)
             + f"\n\nTables go fast. Last checked {checked}. {tft_slots.SOURCE_NOTE}\n"
-            f"{tft_guide.EXPLORER_PREFIX}{tft_guide.explorer_url(venue_id=row['venue_id'], party_size=row['party_size'], meal=row['meal'], date_value=first)}\n"
+            + booking
+            + f"{tft_guide.EXPLORER_PREFIX}{tft_guide.explorer_url(venue_id=row['venue_id'], party_size=row['party_size'], meal=row['meal'], date_value=first)}\n"
             f"Reminder {row['id']} is now closed. Send /remind to set another."
         )
         notifications.append(

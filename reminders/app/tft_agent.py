@@ -220,6 +220,7 @@ class SlotArgs(_Args):
     end_date: date | None = None
     weekend_only: bool = False
     preferred_time: str | None = Field(default=None, pattern=r"^(?:[01]\d|2[0-3]):[0-5]\d$")
+    card: Literal["platinum", "centurion"] | None = None
 
 
 class MenuArgs(VenueArgs):
@@ -244,6 +245,7 @@ class DraftArgs(_Args):
     venue: str | None = Field(default=None, max_length=80)
     party: int | None = Field(default=None, ge=-1_000, le=1_000)
     meal: str | None = Field(default=None, max_length=10)
+    card: str | None = Field(default=None, max_length=10)
     dates: (
         Annotated[list[Annotated[str, Field(max_length=10)]], Field(max_length=31)]
         | Annotated[str, Field(max_length=120)]
@@ -278,7 +280,8 @@ def tool_specs(web_search: bool, reminders: bool) -> list[dict]:
         _fn("list_venues", "List the current Table for Two venue roster.", {}, []),
         _fn(
             "find_slots",
-            f"Observed AMEXPlatSG slots. Range at most {tft_slots.MAX_RANGE_DAYS} days, no past dates.",
+            f"Observed slots, Platinum unless card is centurion; each card has its own seats. "
+            f"Range at most {tft_slots.MAX_RANGE_DAYS} days, no past dates.",
             {
                 "venue": {"type": ["string", "null"], "description": "Exact venue name, or null for all venues."},
                 "party": {"type": "integer", "minimum": 1, "maximum": 10, "description": "Default 2."},
@@ -287,6 +290,7 @@ def tool_specs(web_search: bool, reminders: bool) -> list[dict]:
                 "end_date": {"type": ["string", "null"], "description": "YYYY-MM-DD; same as start for one day."},
                 "weekend_only": {"type": "boolean"},
                 "preferred_time": {"type": ["string", "null"], "description": "HH:MM Singapore time."},
+                "card": {"type": ["string", "null"], "enum": ["platinum", "centurion", None]},
             },
             [],
         ),
@@ -340,6 +344,10 @@ def tool_specs(web_search: bool, reminders: bool) -> list[dict]:
                     "venue": {"type": ["string", "null"]},
                     "party": {"type": ["integer", "null"], "description": "Only if the user said; default 2."},
                     "meal": _MEAL,
+                    "card": {
+                        "type": ["string", "null"],
+                        "description": "platinum or centurion, only if the user named their card; otherwise the bot asks.",
+                    },
                     "dates": {
                         "type": ["array", "string", "null"],
                         "items": {"type": "string"},
@@ -406,7 +414,9 @@ def _candidates(query: str, catalog: dict) -> list[str]:
 
 
 def _venue(query: str, catalog: dict) -> dict:
-    matches = tft_guide.resolve_venue(query, catalog)
+    matches = tft_guide.resolve_venue(query, catalog) or tft_guide.resolve_venue(
+        query, tft_guide.tier_catalog(catalog, "centurion")
+    )
     if len(matches) == 1:
         return matches[0]
     candidates = _candidates(query, catalog)
@@ -442,6 +452,7 @@ def _slot_request(args: SlotArgs, today: date) -> tft_slots.SlotRequest:
         end_date=end,
         weekend_only=args.weekend_only,
         preferred_time=clock_time.fromisoformat(args.preferred_time) if args.preferred_time else None,
+        tier=args.card or "platinum",
     )
 
 
@@ -615,7 +626,13 @@ def _draft_reminder(args: DraftArgs, turn: _Turn) -> str:
     if isinstance(args.dates, list) and not _dates_match_words(args.dates, turn.user_text):
         dates = "invalid"
     turn.final = turn.drafter(
-        {"venue": args.venue, "party": args.party, "meal": args.meal, "dates": dates or None}
+        {
+            "venue": args.venue,
+            "party": args.party,
+            "meal": args.meal,
+            "tier": args.card,
+            "dates": dates or None,
+        }
     )
     turn.outcome = "draft"
     return turn.final

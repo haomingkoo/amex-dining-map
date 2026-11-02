@@ -351,6 +351,9 @@ def healthz() -> dict[str, Any]:
         },
         "alert_dispatch": dict(alert_dispatch.last_dispatch),
         "telegram_reminder_dispatch": dict(telegram_reminder_dispatch.last_dispatch),
+        "telegram_reminder_dispatch_centurion": dict(
+            telegram_reminder_dispatch.last_dispatch_centurion
+        ),
         "telegram_digest_dispatch": dict(telegram_digest.last_dispatch),
     }
     if settings.telegram_guide_llm_enabled:

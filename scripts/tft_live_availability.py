@@ -21,6 +21,7 @@ except ImportError:  # running as `python3 scripts/<file>.py`
 
 
 SOURCE_PROJECT = "AMEXPlatSG"
+CENTURION_PROJECT = "AMEXCentSG"
 # Matches the service's own TFT_LIVE_STALE_AFTER_SECONDS; it refreshes every 10 minutes.
 MAX_AGE_SECONDS = 30 * 60
 # Matches the service's MAX_SNAPSHOT_BYTES.
@@ -35,15 +36,18 @@ def _age_seconds(value: object, now: datetime) -> float | None:
     return None if parsed is None else (now - parsed).total_seconds()
 
 
-def _availability(venue: dict[str, Any] | None, now: datetime) -> dict[str, Any]:
-    if not venue or venue.get("status") not in LIVE_STATUSES:
-        return dict(UNKNOWN)
+def _availability(
+    venue: dict[str, Any] | None, now: datetime, project: str = SOURCE_PROJECT
+) -> dict[str, Any]:
+    unknown = {**UNKNOWN, "project": project}
+    if not venue or venue.get("status") not in LIVE_STATUSES or venue.get("project", project) != project:
+        return unknown
     age = _age_seconds(venue.get("checked_at"), now)
     # A retained venue keeps its last good checked_at; past the limit it is not live.
     if age is None or age > MAX_AGE_SECONDS:
-        return dict(UNKNOWN)
+        return unknown
     return {
-        "project": SOURCE_PROJECT,
+        "project": project,
         "status": venue["status"],
         "checked_at": venue["checked_at"],
         "meals": venue.get("meals") or [],
@@ -65,9 +69,23 @@ def overlay_live_availability(roster: dict[str, Any], snapshot: dict[str, Any], 
     return payload
 
 
-def fetch_snapshot(base_url: str) -> dict[str, Any]:
+def overlay_centurion(
+    payload: dict[str, Any], snapshot: dict[str, Any] | None, now: datetime
+) -> dict[str, Any]:
+    """Centurion seats sit beside Platinum's; a missing or stale snapshot means no Centurion alerts."""
+    live: dict[Any, Any] = {}
+    if snapshot is not None and snapshot.get("source_project") == CENTURION_PROJECT:
+        age = _age_seconds(snapshot.get("generated_at"), now)
+        if age is not None and age <= MAX_AGE_SECONDS:
+            live = {v.get("id"): v for v in snapshot.get("venues") or [] if isinstance(v, dict)}
+    for venue in payload.get("venues") or []:
+        venue["availability_centurion"] = _availability(live.get(venue.get("id")), now, CENTURION_PROJECT)
+    return payload
+
+
+def fetch_snapshot(base_url: str, path: str = "/api/tft/slots") -> dict[str, Any]:
     request = urllib.request.Request(
-        base_url.rstrip("/") + "/api/tft/slots",
+        base_url.rstrip("/") + path,
         headers={"Accept": "application/json", "User-Agent": "amex-tft-alerts/1"},
     )
     with urllib.request.urlopen(request, timeout=FETCH_TIMEOUT_SECONDS) as response:
@@ -85,10 +103,24 @@ def main() -> int:
     base_url = os.environ.get("REMINDERS_API_BASE", "").strip()
     if not base_url:
         raise RuntimeError("REMINDERS_API_BASE is required to read live availability")
-    payload = overlay_live_availability(load_json(args.roster), fetch_snapshot(base_url), datetime.now(timezone.utc))
+    now = datetime.now(timezone.utc)
+    payload = overlay_live_availability(load_json(args.roster), fetch_snapshot(base_url), now)
+    try:
+        centurion = fetch_snapshot(base_url, "/api/tft/slots/centurion")
+    except (OSError, ValueError) as exc:
+        # Platinum alerts must not wait on Centurion; say why Centurion ones are skipped.
+        print(f"TFT CENTURION UNAVAILABLE reason={type(exc).__name__}")
+        centurion = None
+    overlay_centurion(payload, centurion, now)
     save_json(Path(args.output), payload)
     live = sum(venue["availability"]["status"] in LIVE_STATUSES for venue in payload["venues"])
-    print(f"TFT LIVE OK generated_at={payload['availability_last_checked_at']} live_venues={live}/{len(payload['venues'])}")
+    live_centurion = sum(
+        venue["availability_centurion"]["status"] in LIVE_STATUSES for venue in payload["venues"]
+    )
+    print(
+        f"TFT LIVE OK generated_at={payload['availability_last_checked_at']} "
+        f"live_venues={live}/{len(payload['venues'])} centurion_live_venues={live_centurion}"
+    )
     return 0
 
 

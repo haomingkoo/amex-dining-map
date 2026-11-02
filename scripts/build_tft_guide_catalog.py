@@ -51,6 +51,9 @@ DOCUMENT_SPECS = {
 REVIEWED_ALIASES = {
     "tft-15-stamford-restaurant": ["15 Stamford"],
     "tft-colony": ["Colony at the Ritz Carlton", "Colony Ritz Carlton"],
+    "tft-jaan-by-kirk-westaway": ["JAAN"],
+    "tft-lerouy-3-0": ["Lerouy"],
+    "tft-prada-caff": ["Prada Caffe", "Prada Cafe"],
     "tft-cultivate": ["Cultivate Cafe"],
     "tft-ginger": ["Ginger at Park Royal"],
     "tft-kaya-at-the-standard": ["Kaya"],
@@ -393,6 +396,7 @@ def _centurion_venues(source: dict) -> list[dict]:
             "id": venue["id"],
             "name": venue["name"],
             "dining_city_id": venue.get("dining_city_id"),
+            "aliases": REVIEWED_ALIASES.get(venue["id"], []),
         }
         if (venue.get("tier_membership") or {}).get("centurion") == "linked_only":
             row["linked_only"] = True

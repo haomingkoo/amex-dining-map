@@ -50,8 +50,9 @@ assert.deepEqual(shown(""), ["shared", "plat", "jaan"]);
 assert.deepEqual(shown("platinum"), ["shared", "plat"]);
 assert.deepEqual(shown("centurion"), ["shared", "jaan"]);
 
-// Email alerts are Platinum-only until registration names a tier (Phase 3).
+// Email alert venues follow the card the member signs up with.
 assert.deepEqual(Array.from(tiers.tableForTwoAlertVenueNames()), ["Sarnies", "VUE"]);
+assert.deepEqual(Array.from(tiers.tableForTwoAlertVenueNames("centurion")), ["JAAN By Kirk Westaway", "VUE"]);
 
 const vue = tiered[0];
 assert.equal(tiers.tableForTwoPublishedMenus(vue, "centurion")[0].url, "https://example.test/centurion.pdf");

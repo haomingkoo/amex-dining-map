@@ -63,6 +63,7 @@ class Subscription:
     venues: tuple[str, ...]
     unsubscribe_url: str
     source_label: str
+    tier: str = "platinum"
 
 
 def today_singapore() -> date:
@@ -222,6 +223,9 @@ def subscription_from_row(row: dict[str, Any], venue_aliases: dict[str, str], so
             or ""
         ).strip(),
         source_label=source_label,
+        tier="centurion"
+        if str(value_from_row(row, ("tier", "card")) or "").strip().casefold() == "centurion"
+        else "platinum",
     )
 
 
@@ -291,7 +295,13 @@ def slot_max_seats(slot: dict[str, Any], fallback: int = 2) -> int:
     return max(listed, max_seats)
 
 
-def venue_slots(record: dict[str, Any]) -> list[dict[str, Any]]:
+def availability_key(subscription: Subscription) -> str:
+    # Each card books its own tables; never alert a member on the other card's seats.
+    return "availability_centurion" if subscription.tier == "centurion" else "availability"
+
+
+def venue_slots(record: dict[str, Any], key: str = "availability") -> list[dict[str, Any]]:
+    record = {**record, "availability": record.get(key) or {}}
     slots: list[dict[str, Any]] = []
     for meal in record.get("availability", {}).get("meals") or []:
         if meal.get("status") != "available":
@@ -359,10 +369,11 @@ def slot_matches(subscription: Subscription, slot: dict[str, Any]) -> bool:
 
 def matching_slots(subscription: Subscription, venues: list[dict[str, Any]]) -> list[dict[str, Any]]:
     matches = []
+    key = availability_key(subscription)
     for record in venues:
-        if record.get("availability", {}).get("status") != "live_available":
+        if (record.get(key) or {}).get("status") != "live_available":
             continue
-        for slot in venue_slots(record):
+        for slot in venue_slots(record, key):
             if slot_matches(subscription, slot):
                 matches.append(slot)
     return sorted(matches, key=lambda item: (item.get("date") or "", item.get("time") or "", item.get("venue_name") or ""))
@@ -427,6 +438,8 @@ def subscription_state_key(subscription: Subscription, kind: str, salt: str) -> 
             subscription.date_end,
             subscription.sessions,
             subscription.venues,
+            # Platinum keys stay as they were so past sends are still recognised.
+            *([subscription.tier] if subscription.tier != "platinum" else []),
         ],
         salt,
     )
@@ -511,8 +524,14 @@ def build_email(
     rows = slot_rows(slots)
     shown = rows[:EMAIL_DATES_SHOWN]
     hidden = len(rows) - len(shown)
-    lead = f"Tables for {subscription.party_size} just opened up at the venues you asked about."
-    note = "Book in the Amex Experiences App. Tables go quickly, so check the app before you plan around it."
+    centurion = subscription.tier == "centurion"
+    card = " for Centurion card members" if centurion else ""
+    lead = f"Tables for {subscription.party_size}{card} just opened up at the venues you asked about."
+    note = (
+        "Book on the Centurion booking page or in the Amex Experiences App. Tables go quickly, so check before you plan around it."
+        if centurion
+        else "Book in the Amex Experiences App. Tables go quickly, so check the app before you plan around it."
+    )
     text_rows = [f"- {venue}: {friendly_date(day)}, {meal}: {times_text(times)}" for venue, day, meal, times in shown]
     lines = [greeting, "", lead, "", *text_rows]
     if hidden:
@@ -678,6 +697,7 @@ def fetch_api_subscriptions(
             "dates": ",".join(record.get("dates") or []),
             "sessions": ",".join(record.get("sessions") or []),
             "venues": ",".join(record.get("venues") or []),
+            "tier": record.get("tier") or "platinum",
             "unsubscribe url": record.get("unsubscribe_url", ""),
         }
         if subscription := subscription_from_row(row, venue_aliases, f"api row {index}"):

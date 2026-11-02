@@ -72,6 +72,7 @@ class SubscriberInput:
     date_start: str
     date_end: str
     dates: list[str] = field(default_factory=list)
+    tier: str = "platinum"
 
 
 def _now() -> datetime:
@@ -119,6 +120,19 @@ def init_db(path: Path | str) -> None:
             )
         if "manage_token" not in columns:
             conn.execute("ALTER TABLE subscribers ADD COLUMN manage_token TEXT")
+        # Every email subscriber before card tiers was a Platinum subscriber.
+        if "tier" not in columns:
+            conn.execute(
+                "ALTER TABLE subscribers ADD COLUMN tier TEXT NOT NULL DEFAULT 'platinum'"
+            )
+        pending_columns = {
+            row["name"]
+            for row in conn.execute("PRAGMA table_info(pending_subscriber_changes)").fetchall()
+        }
+        if "tier" not in pending_columns:
+            conn.execute(
+                "ALTER TABLE pending_subscriber_changes ADD COLUMN tier TEXT NOT NULL DEFAULT 'platinum'"
+            )
         for row in conn.execute(
             "SELECT id, unsubscribe_token FROM subscribers "
             "WHERE manage_token IS NULL OR manage_token = ''"
@@ -163,10 +177,11 @@ def upsert_pending(
             """
             INSERT INTO pending_subscriber_changes (
                 email, name, party_size, sessions, venues, date_start, date_end,
-                dates, confirm_token, confirm_token_expires_ts, source_ip, created_ts
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                dates, confirm_token, confirm_token_expires_ts, source_ip, created_ts, tier
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(email) DO UPDATE SET
                 name = excluded.name,
+                tier = excluded.tier,
                 party_size = excluded.party_size,
                 sessions = excluded.sessions,
                 venues = excluded.venues,
@@ -181,7 +196,7 @@ def upsert_pending(
             (
                 sub.email, sub.name, sub.party_size, sessions, venues,
                 sub.date_start, sub.date_end, dates, confirm_token,
-                confirm_expires, ip, now_iso,
+                confirm_expires, ip, now_iso, sub.tier,
             ),
         )
         conn.commit()
@@ -193,13 +208,13 @@ def upsert_pending(
             SET name = ?, party_size = ?, sessions = ?, venues = ?,
                 date_start = ?, date_end = ?, dates = ?, status = 'pending',
                 confirm_token = ?, confirm_token_expires_ts = ?, source_ip = ?,
-                created_ts = ?, confirmed_ts = NULL, unsubscribed_ts = NULL
+                created_ts = ?, confirmed_ts = NULL, unsubscribed_ts = NULL, tier = ?
             WHERE id = ?
             """,
             (
                 sub.name, sub.party_size, sessions, venues, sub.date_start,
                 sub.date_end, dates, confirm_token, confirm_expires, ip, now_iso,
-                existing["id"],
+                sub.tier, existing["id"],
             ),
         )
     else:
@@ -208,13 +223,13 @@ def upsert_pending(
             INSERT INTO subscribers (
                 email, name, party_size, sessions, venues, date_start, date_end,
                 dates, status, confirm_token, confirm_token_expires_ts,
-                unsubscribe_token, manage_token, source_ip, created_ts
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?)
+                unsubscribe_token, manage_token, source_ip, created_ts, tier
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 sub.email, sub.name, sub.party_size, sessions, venues,
                 sub.date_start, sub.date_end, dates, confirm_token, confirm_expires,
-                new_token(), new_token(), ip, now_iso,
+                new_token(), new_token(), ip, now_iso, sub.tier,
             ),
         )
     conn.commit()
@@ -249,13 +264,13 @@ def confirm(conn: sqlite3.Connection, token: str) -> bool:
         """
         UPDATE subscribers
         SET name = ?, party_size = ?, sessions = ?, venues = ?, date_start = ?,
-            date_end = ?, dates = ?, status = 'active', confirmed_ts = ?
+            date_end = ?, dates = ?, status = 'active', confirmed_ts = ?, tier = ?
         WHERE email = ? AND status = 'active'
         """,
         (
             pending["name"], pending["party_size"], pending["sessions"],
             pending["venues"], pending["date_start"], pending["date_end"],
-            pending["dates"], _iso(_now()), pending["email"],
+            pending["dates"], _iso(_now()), pending["tier"], pending["email"],
         ),
     )
     conn.execute(
@@ -289,7 +304,7 @@ def active_subscribers(conn: sqlite3.Connection) -> list[dict]:
     rows = conn.execute(
         """
         SELECT email, name, party_size, sessions, venues, date_start, date_end,
-               dates, unsubscribe_token
+               dates, unsubscribe_token, tier
         FROM subscribers WHERE status = 'active' ORDER BY id
         """
     ).fetchall()
@@ -303,6 +318,7 @@ def active_subscribers(conn: sqlite3.Connection) -> list[dict]:
             "date_start": row["date_start"],
             "date_end": row["date_end"],
             "dates": json.loads(row["dates"]),
+            "tier": row["tier"],
             "unsubscribe_token": row["unsubscribe_token"],
         }
         for row in rows
@@ -316,7 +332,7 @@ def get_by_manage_token(conn: sqlite3.Connection, token: str) -> dict | None:
     row = conn.execute(
         """
         SELECT email, name, party_size, sessions, venues, date_start, date_end,
-               dates, status
+               dates, status, tier
         FROM subscribers WHERE manage_token = ?
         """,
         (token,),
@@ -333,6 +349,7 @@ def get_by_manage_token(conn: sqlite3.Connection, token: str) -> dict | None:
         "date_end": row["date_end"],
         "dates": json.loads(row["dates"]),
         "status": row["status"],
+        "tier": row["tier"],
     }
 
 

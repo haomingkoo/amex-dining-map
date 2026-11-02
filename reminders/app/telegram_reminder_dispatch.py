@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
-from app import db, telegram, telegram_reminders, tft_slot_source
+from app import db, telegram, telegram_reminders, tft_guide, tft_slot_source
 from app.config import Settings
 from app.observability import log_event
 
@@ -25,6 +25,8 @@ last_dispatch: dict[str, str | int | None] = {
     "dead": None,
     "error": None,
 }
+# Centurion runs separately so its outage never hides or blocks Platinum deliveries.
+last_dispatch_centurion: dict[str, str | int | None] = dict(last_dispatch)
 
 
 @dataclass
@@ -40,8 +42,8 @@ class DispatchResult:
     claim_failed: bool = False
 
 
-def _record(result: DispatchResult) -> None:
-    last_dispatch.update(
+def _record(result: DispatchResult, target: dict | None = None) -> None:
+    (last_dispatch if target is None else target).update(
         at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         sent=result.sent,
         unknown=result.unknown,
@@ -78,6 +80,11 @@ def log_dead_run(run_id: str, error_code: str, started: float) -> None:
 def run_dispatch(
     settings: Settings, snapshot: dict[str, Any], now: datetime | None = None
 ) -> DispatchResult:
+    target = (
+        last_dispatch_centurion
+        if snapshot.get("source_project") == tft_slot_source.CENTURION_PROJECT
+        else None
+    )
     """Claim matching reminders and send each at most once; blocking."""
     started = time.monotonic()
     result = DispatchResult(run_id=secrets.token_hex(8))
@@ -85,14 +92,14 @@ def run_dispatch(
         conn = db.connect(settings.db_path)
         try:
             claim_result = telegram_reminders.claim_notifications(
-                conn, snapshot, now or datetime.now(timezone.utc)
+                conn, snapshot, now or datetime.now(timezone.utc), tft_guide.load_catalog()
             )
         finally:
             conn.close()
     except Exception:
         log_dead_run(result.run_id, "store_unavailable", started)
         result.error_code, result.claim_failed = "store_unavailable", True
-        _record(result)
+        _record(result, target)
         return result
     store_failed = False
     receipt_conflicts = 0
@@ -202,22 +209,32 @@ def run_dispatch(
         skipped_count=result.skipped,
         duration_ms=round((time.monotonic() - started) * 1000),
     )
-    _record(result)
+    _record(result, target)
     return result
 
 
-def dispatch_and_record(settings: Settings) -> None:
-    """One in-process run for the periodic loop; logs and records, never raises."""
-    started = time.monotonic()
-    run_id = secrets.token_hex(8)
+def _dispatch_one(
+    settings: Settings, run_id: str, started: float, load, target: dict | None
+) -> None:
     try:
-        snapshot = tft_slot_source.load_snapshot()
+        snapshot = load()
     except tft_slot_source.SlotSourceUnavailable:
         log_dead_run(run_id, "slot_source_unavailable", started)
-        _record(DispatchResult(run_id=run_id, error_code="slot_source_unavailable"))
+        _record(DispatchResult(run_id=run_id, error_code="slot_source_unavailable"), target)
         return
     try:
         run_dispatch(settings, snapshot)
     except Exception:
         log_dead_run(run_id, "internal_error", started)
-        _record(DispatchResult(run_id=run_id, error_code="internal_error"))
+        _record(DispatchResult(run_id=run_id, error_code="internal_error"), target)
+
+
+def dispatch_and_record(settings: Settings) -> None:
+    """One in-process run per card for the periodic loop; logs and records, never raises."""
+    started = time.monotonic()
+    run_id = secrets.token_hex(8)
+    # Each card's seats come from its own snapshot; one being down never blocks the other.
+    _dispatch_one(settings, run_id, started, tft_slot_source.load_snapshot, None)
+    _dispatch_one(
+        settings, run_id, started, tft_slot_source.load_centurion_snapshot, last_dispatch_centurion
+    )

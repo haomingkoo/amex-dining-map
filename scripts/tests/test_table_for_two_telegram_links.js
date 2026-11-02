@@ -30,6 +30,11 @@ assert.equal(
   context.deepLink("remind", { id: "tft-vue" }),
   "https://t.me/KooTftGuideBot?start=remind_tft-vue",
 );
+// A Centurion view opens the Centurion reminder flow; the bot reads the card from the link.
+assert.equal(
+  context.deepLink("remind", { id: "tft-jaan-by-kirk-westaway" }, "centurion"),
+  "https://t.me/KooTftGuideBot?start=remind_centurion-tft-jaan-by-kirk-westaway",
+);
 assert.equal(context.deepLink("owner", { id: "tft-vue" }), "");
 assert.equal(context.deepLink("venue", { id: "../../etc/passwd" }), "");
 context.state.telegramGuideConfig.bot_username = "https://attacker.example";
