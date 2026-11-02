@@ -1,7 +1,94 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-02T01:13:44Z",
+  "updated_at": "2026-11-02T14:16:39Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-11-02T14:16:39Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 13
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 15
+        }
+      },
+      "changes": [
+        {
+          "field": "Review items",
+          "before": 13,
+          "after": 15
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "035b21790df21f0c0ba8",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "8b46969b38f15db05b19"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_updated",
+      "subject": "Table for Two source",
+      "detected_at": "2026-11-02T14:16:39Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Centurion booking-project observation": null,
+          "Centurion booking-project venue count": null,
+          "Centurion booking-project membership fingerprint": null,
+          "Unknown Amex booking projects": null
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Centurion booking-project observation": "success",
+          "Centurion booking-project venue count": 40,
+          "Centurion booking-project membership fingerprint": "83694c00dc1a",
+          "Unknown Amex booking projects": []
+        }
+      },
+      "changes": [
+        {
+          "field": "Centurion booking-project observation",
+          "before": null,
+          "after": "success"
+        },
+        {
+          "field": "Centurion booking-project venue count",
+          "before": null,
+          "after": 40
+        },
+        {
+          "field": "Centurion booking-project membership fingerprint",
+          "before": null,
+          "after": "83694c00dc1a"
+        },
+        {
+          "field": "Unknown Amex booking projects",
+          "before": null,
+          "after": []
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "41ca6e1d50b46b15bb7b",
+      "stream_id": "5a285967ca2795c90124",
+      "occurrence": 1,
+      "id": "68ea4577c508aa607643"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -374,7 +461,7 @@
       "kind": "source_updated",
       "subject": "Table for Two source",
       "detected_at": "2026-11-01T16:40:07Z",
-      "status": "review_required",
+      "status": "rejected",
       "before": {
         "state": "available",
         "fields": {
@@ -416,7 +503,9 @@
       "transition_id": "b0e77ed5ae4bc3744268",
       "stream_id": "5a285967ca2795c90124",
       "occurrence": 1,
-      "id": "02ece35a80cbb8fe336c"
+      "id": "02ece35a80cbb8fe336c",
+      "reviewed_at": "2026-11-02T14:16:39Z",
+      "review_note": "Superseded by 68ea4577c508aa607643 before review."
     },
     {
       "program": "Table for Two",
@@ -23107,96 +23196,6 @@
       "review_note": "Superseded by e856ec9af531a7adee5e before review."
     },
     {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "added",
-      "subject": "Miyo / Kamakura",
-      "detected_at": "2026-09-08T23:17:05Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Miyo",
-          "Country": "Japan",
-          "Region": "Kamakura/Hayama/Shonan",
-          "City": "Kamakura",
-          "District": "Yamanochi",
-          "Address": "157, Yamanochi, Kamakura-shi, Kanagawa",
-          "Cuisine": [
-            "Japanese, Kaiseki, Washoku"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/245676/",
-      "transition_id": "a1f6947e5456f1f739ff",
-      "stream_id": "608bb9dfc6f6fb3081f0",
-      "occurrence": 1,
-      "id": "c7002673d3af68f275a8",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-09-08T23:17:05Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Record count": 850,
-          "Mapped count": 850,
-          "Official records SHA-256": "7d3f27f53687"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Record count": 851,
-          "Mapped count": 851,
-          "Official records SHA-256": "afbacb1983e2"
-        }
-      },
-      "changes": [
-        {
-          "field": "Record count",
-          "before": 850,
-          "after": 851
-        },
-        {
-          "field": "Mapped count",
-          "before": 850,
-          "after": 851
-        },
-        {
-          "field": "Official records SHA-256",
-          "before": "7d3f27f53687",
-          "after": "afbacb1983e2"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "935e84b29e318238bec4",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "28104c68115e8d7c07e2",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23628,9 +23627,10 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "007e51f231870c7881c2",
+        "latest_transition_id": "035b21790df21f0c0ba8",
         "occurrences": {
           "007e51f231870c7881c2": 1,
+          "035b21790df21f0c0ba8": 1,
           "0d4cb8e15db51802a35e": 4,
           "3db82b65a82f9d1e9fde": 1,
           "6549f47be934c2a0f1a0": 1,
@@ -24001,10 +24001,11 @@
         }
       },
       "5a285967ca2795c90124": {
-        "latest_transition_id": "b0e77ed5ae4bc3744268",
+        "latest_transition_id": "41ca6e1d50b46b15bb7b",
         "occurrences": {
           "295d64447a5b74ace553": 1,
           "3ff80c44f12b2c1a3d01": 1,
+          "41ca6e1d50b46b15bb7b": 1,
           "725f4d41dd42c33eadb5": 1,
           "81ed566b466b25c9b9bd": 1,
           "b0e77ed5ae4bc3744268": 1,
