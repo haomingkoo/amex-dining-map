@@ -60,3 +60,19 @@ Source: `data/table-for-two.json`
 
 - **Added (1)**
   - Madame Fan
+
+<!-- source-change:07fbe64e7afc3999be7baa913eec6e7767c9857aeaffd7a03c445d7578dd21eb -->
+## 2026-11-02 14:21 UTC — Table for Two
+
+Source: `data/table-for-two.json`
+
+- **Added (9)**
+  - Ginger.Lily
+  - Isabel
+  - JAAN By Kirk Westaway
+  - Lerouy 3.0
+  - Prada Caffè
+  - Restaurant JAG
+  - Shisen Hanten
+  - Summer Pavilion
+  - The Courtyard

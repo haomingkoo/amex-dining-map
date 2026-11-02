@@ -1,7 +1,446 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-02T14:16:42Z",
+  "updated_at": "2026-11-02T14:21:12Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two roster",
+      "detected_at": "2026-11-02T14:21:12Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "33/33 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "42/42 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "33/33 (100%), 0 unavailable",
+          "after": "42/42 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "876d24637d73a66d53c1",
+      "stream_id": "66129efc1226a46f5069",
+      "occurrence": 1,
+      "id": "e5078099d46bccc60322"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "added",
+      "subject": "Restaurant JAG",
+      "detected_at": "2026-11-02T14:21:12Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Restaurant JAG",
+          "Category": "restaurant",
+          "Address": "41 Robertson Quay, #02-02 STPI Creative Workshop and Gallery, Singapore 238236",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/restaurant_jag",
+      "transition_id": "9519ac9cf038551f82dc",
+      "stream_id": "1b11653ef8f8ecfd2952",
+      "occurrence": 1,
+      "id": "c7eb2b2912db95a9fd14"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "added",
+      "subject": "Shisen Hanten",
+      "detected_at": "2026-11-02T14:21:12Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Shisen Hanten",
+          "Category": "restaurant",
+          "Address": "333 Orchard Rd, Level 35 Hilton Singapore Orchard, Singapore 238867",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/shisen_hanten",
+      "transition_id": "f991ced5fb18e078401d",
+      "stream_id": "916bf21e15d9e631f621",
+      "occurrence": 1,
+      "id": "b91875268df4a7958598"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "added",
+      "subject": "Ginger.Lily",
+      "detected_at": "2026-11-02T14:21:12Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Ginger.Lily",
+          "Category": "restaurant",
+          "Address": "333 Orchard Rd, Level 5, Singapore 238867",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/Ginger_Lily",
+      "transition_id": "5fa3acfcbfb1b42266fb",
+      "stream_id": "d8395d06893ee18378e6",
+      "occurrence": 1,
+      "id": "ac09ad119d7bf6197a7e"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "added",
+      "subject": "Lerouy 3.0",
+      "detected_at": "2026-11-02T14:21:12Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Lerouy 3.0",
+          "Category": "restaurant",
+          "Address": "7 Mohamed Sultan Rd, Singapore 238957",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/Lerouy",
+      "transition_id": "cfe5bbc45b4ff1d45245",
+      "stream_id": "31de0857adf72299f1bb",
+      "occurrence": 1,
+      "id": "a60a727c8d324976098f"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "added",
+      "subject": "Summer Pavilion",
+      "detected_at": "2026-11-02T14:21:12Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Summer Pavilion",
+          "Category": "restaurant",
+          "Address": "7 Raffles Ave., Level 3 The Ritz-Carlton, Millenia, Singapore 039799",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/Summer_Pavilion",
+      "transition_id": "4439e0deee144ebcbddd",
+      "stream_id": "0a94be72c5250fe3f4b7",
+      "occurrence": 1,
+      "id": "8fab8759fbb627fc230c"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "added",
+      "subject": "Prada Caffè",
+      "detected_at": "2026-11-02T14:21:12Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Prada Caffè",
+          "Category": "restaurant",
+          "Address": "2 Orchard Turn, #02-15 ION Orchard, Singapore 238801",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/Prada_Caffe",
+      "transition_id": "2d68f9667d6d4c1071bb",
+      "stream_id": "5b26fc987c224f287b19",
+      "occurrence": 1,
+      "id": "70d680139786463ce950"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-11-02T14:21:12Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 15,
+          "Coverage": "25/33 (75.8%), 8 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 24,
+          "Coverage": "25/42 (59.5%), 17 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Review items",
+          "before": 15,
+          "after": 24
+        },
+        {
+          "field": "Coverage",
+          "before": "25/33 (75.8%), 8 unavailable",
+          "after": "25/42 (59.5%), 17 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "99d63357823949eacb8c",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "57b06e0ba43d961604af"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-02T14:21:12Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3009/3013 (99.9%), 4 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3009/3022 (99.6%), 13 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3009/3013 (99.9%), 4 unavailable",
+          "after": "3009/3022 (99.6%), 13 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "e1dcf9fdd357385c42c3",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "50ecc11d57c238898849"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "added",
+      "subject": "Isabel",
+      "detected_at": "2026-11-02T14:21:12Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Isabel",
+          "Category": "restaurant",
+          "Address": "2 Cook St, Maxwell Reserve, Singapore 078857",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/Isabel_Brasserie",
+      "transition_id": "8c4a00f3926fc38a3dd6",
+      "stream_id": "5e0db2c6013214b4b81e",
+      "occurrence": 1,
+      "id": "32ff355408d2ea182e78"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "added",
+      "subject": "JAAN By Kirk Westaway",
+      "detected_at": "2026-11-02T14:21:12Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "JAAN By Kirk Westaway",
+          "Category": "restaurant",
+          "Address": "2 Stamford Rd, Level 70, Singapore 178882",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/JAAN",
+      "transition_id": "4acb2fd1823345924908",
+      "stream_id": "f54bfa8f75f9a74a670f",
+      "occurrence": 1,
+      "id": "307e7ecf05f34b94820c"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "added",
+      "subject": "The Courtyard",
+      "detected_at": "2026-11-02T14:21:12Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "The Courtyard",
+          "Category": "restaurant",
+          "Address": "1 Fullerton Square",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.diningcity.sg/singapore/the_courtyard",
+      "transition_id": "631805fb26094156c661",
+      "stream_id": "a31ea44b1ae008a3a283",
+      "occurrence": 1,
+      "id": "1c808bd2ced995067204"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -22636,568 +23075,6 @@
       "review_note": "Superseded by 2cb85c8a6d96ed207a97 before review."
     },
     {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "added",
-      "subject": "Asperge Blanche / Kyoto",
-      "detected_at": "2026-09-14T23:47:20Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Asperge Blanche",
-          "Country": "Japan",
-          "Region": "Kyoto/Osaka/Nara",
-          "City": "Kyoto",
-          "District": "Yokosuwan cho",
-          "Address": "313-2, Yokosuwan cho, Shimogyo-ku, Kyoto-shi, Kyoto",
-          "Cuisine": [
-            "French"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/245669/",
-      "transition_id": "de3144d45997baadecec",
-      "stream_id": "4581a64f9d684dc9bca0",
-      "occurrence": 1,
-      "id": "7e8e6d9067422afd3251",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_updated",
-      "subject": "Table for Two source",
-      "detected_at": "2026-09-14T10:21:51Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Booking-project venue count": 29,
-          "Booking-project membership fingerprint": "c64578a0667d",
-          "Booking-project candidates added": [
-            "Forage",
-            "Xing Yue Xuan",
-            "Sarnies",
-            "Grand Cru Wine Bar",
-            "Brewerkz East Coast Park",
-            "Brewerkz Riverside Point",
-            "Park90",
-            "OSO Ristorante"
-          ]
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Booking-project venue count": 28,
-          "Booking-project membership fingerprint": "cdb4f8157c52",
-          "Booking-project candidates added": [
-            "Forage",
-            "Xing Yue Xuan",
-            "Sarnies",
-            "Grand Cru Wine Bar",
-            "Brewerkz East Coast Park",
-            "Brewerkz Riverside Point",
-            "OSO Ristorante"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Booking-project venue count",
-          "before": 29,
-          "after": 28
-        },
-        {
-          "field": "Booking-project membership fingerprint",
-          "before": "c64578a0667d",
-          "after": "cdb4f8157c52"
-        },
-        {
-          "field": "Booking-project candidates added",
-          "before": [
-            "Forage",
-            "Xing Yue Xuan",
-            "Sarnies",
-            "Grand Cru Wine Bar",
-            "Brewerkz East Coast Park",
-            "Brewerkz Riverside Point",
-            "Park90",
-            "OSO Ristorante"
-          ],
-          "after": [
-            "Forage",
-            "Xing Yue Xuan",
-            "Sarnies",
-            "Grand Cru Wine Bar",
-            "Brewerkz East Coast Park",
-            "Brewerkz Riverside Point",
-            "OSO Ristorante"
-          ]
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
-      "transition_id": "295d64447a5b74ace553",
-      "stream_id": "5a285967ca2795c90124",
-      "occurrence": 1,
-      "id": "2379a47dca80f6bea8af",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by e856ec9af531a7adee5e before review."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "source_updated",
-      "subject": "Global Dining source",
-      "detected_at": "2026-09-13T23:18:10Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Mapped count": 1823
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Mapped count": 1826
-        }
-      },
-      "changes": [
-        {
-          "field": "Mapped count",
-          "before": 1823,
-          "after": 1826
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "b690b59d043ca5d8cadc",
-      "stream_id": "128d0d698ba4426680b0",
-      "occurrence": 1,
-      "id": "06eeb3b4165a480aa827",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by e8e8e0e89f0837f3a6e4 before review."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-09-13T22:58:11Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "61f927d10cd8"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "7bee8867ac33"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "61f927d10cd8",
-          "after": "7bee8867ac33"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "8edeee16126633a3ea28",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "32d04e401a2baeefc7b0",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-09-12T22:51:13Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "ec19a91b7052"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "61f927d10cd8"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "ec19a91b7052",
-          "after": "61f927d10cd8"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "74682b8a640073f04137",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "401d9e8c8c8b6a5d5f58",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-09-11T23:01:41Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "466f8c176f3b"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "ec19a91b7052"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "466f8c176f3b",
-          "after": "ec19a91b7052"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "7a077e08d6622c1d2181",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "a32da6866d22412e97b8",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-09-11T11:45:24Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Record count": 852,
-          "Mapped count": 852,
-          "Official records SHA-256": "1a39b3427b78"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Record count": 851,
-          "Mapped count": 851,
-          "Official records SHA-256": "466f8c176f3b"
-        }
-      },
-      "changes": [
-        {
-          "field": "Record count",
-          "before": 852,
-          "after": 851
-        },
-        {
-          "field": "Mapped count",
-          "before": 852,
-          "after": 851
-        },
-        {
-          "field": "Official records SHA-256",
-          "before": "1a39b3427b78",
-          "after": "466f8c176f3b"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "a4d8fc4959b0de7deb1e",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "acc91b64ec5306d1eea9",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "removed",
-      "subject": "Sushi Kawanaka / Matsuyama",
-      "detected_at": "2026-09-11T11:45:24Z",
-      "status": "rejected",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Sushi Kawanaka",
-          "Country": "Japan",
-          "Region": "Chugoku/Shikoku",
-          "City": "Matsuyama",
-          "District": "Ichibancho",
-          "Address": "1F, 1-11-9, Ichibancho, Matsuyama-shi, Ehime",
-          "Cuisine": [
-            "Sushi"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/245511/",
-      "transition_id": "89fa1b968fc3eccaa96d",
-      "stream_id": "dde0bd2b769f93d1aa50",
-      "occurrence": 1,
-      "id": "5e63ff22179f53b336a7",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already removed from the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_updated",
-      "subject": "Table for Two source",
-      "detected_at": "2026-09-11T05:39:33Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Booking-project venue count": 28,
-          "Booking-project membership fingerprint": "d7e6eec35a80",
-          "Booking-project candidates added": [
-            "Forage",
-            "Sarnies",
-            "Grand Cru Wine Bar",
-            "Brewerkz East Coast Park",
-            "Brewerkz Riverside Point",
-            "Park90",
-            "OSO Ristorante"
-          ]
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Booking-project venue count": 29,
-          "Booking-project membership fingerprint": "c64578a0667d",
-          "Booking-project candidates added": [
-            "Forage",
-            "Xing Yue Xuan",
-            "Sarnies",
-            "Grand Cru Wine Bar",
-            "Brewerkz East Coast Park",
-            "Brewerkz Riverside Point",
-            "Park90",
-            "OSO Ristorante"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Booking-project venue count",
-          "before": 28,
-          "after": 29
-        },
-        {
-          "field": "Booking-project membership fingerprint",
-          "before": "d7e6eec35a80",
-          "after": "c64578a0667d"
-        },
-        {
-          "field": "Booking-project candidates added",
-          "before": [
-            "Forage",
-            "Sarnies",
-            "Grand Cru Wine Bar",
-            "Brewerkz East Coast Park",
-            "Brewerkz Riverside Point",
-            "Park90",
-            "OSO Ristorante"
-          ],
-          "after": [
-            "Forage",
-            "Xing Yue Xuan",
-            "Sarnies",
-            "Grand Cru Wine Bar",
-            "Brewerkz East Coast Park",
-            "Brewerkz Riverside Point",
-            "Park90",
-            "OSO Ristorante"
-          ]
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
-      "transition_id": "de3459eea0f029902049",
-      "stream_id": "5a285967ca2795c90124",
-      "occurrence": 1,
-      "id": "be2d396c9d3d9bc6c461",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by e856ec9af531a7adee5e before review."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-09-09T22:59:43Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Record count": 851,
-          "Mapped count": 851,
-          "Official records SHA-256": "afbacb1983e2"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Record count": 852,
-          "Mapped count": 852,
-          "Official records SHA-256": "1a39b3427b78"
-        }
-      },
-      "changes": [
-        {
-          "field": "Record count",
-          "before": 851,
-          "after": 852
-        },
-        {
-          "field": "Mapped count",
-          "before": 851,
-          "after": 852
-        },
-        {
-          "field": "Official records SHA-256",
-          "before": "afbacb1983e2",
-          "after": "1a39b3427b78"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "969b1b0b77458669dc12",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "f0df914d29a45cbbafe4",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by 7acf3a5a258d519a05e6 before review."
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "added",
-      "subject": "C’EST CHOUETTE / Tokyo",
-      "detected_at": "2026-09-09T22:59:43Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "C’EST CHOUETTE",
-          "Country": "Japan",
-          "Region": "Tokyo",
-          "City": "Tokyo",
-          "District": "Hirakawacho",
-          "Address": "B1F, 1-5-13, Hirakawacho, Chiyoda-ku, Tokyo",
-          "Cuisine": [
-            "French"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/245638/",
-      "transition_id": "9f8fda9c5eb1438191ae",
-      "stream_id": "e0575f70c674407d0df8",
-      "occurrence": 1,
-      "id": "2fb699b9fd1f6f31b8ba",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_updated",
-      "subject": "Table for Two source",
-      "detected_at": "2026-09-09T06:01:04Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Booking-project membership fingerprint": "bfd23a5b1c6f"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Booking-project membership fingerprint": "d7e6eec35a80"
-        }
-      },
-      "changes": [
-        {
-          "field": "Booking-project membership fingerprint",
-          "before": "bfd23a5b1c6f",
-          "after": "d7e6eec35a80"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
-      "transition_id": "81ed566b466b25c9b9bd",
-      "stream_id": "5a285967ca2795c90124",
-      "occurrence": 1,
-      "id": "6dae32250b9da921fd0d",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by e856ec9af531a7adee5e before review."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23407,6 +23284,12 @@
           "fb3c5f0e7015503730cf": 1
         }
       },
+      "0a94be72c5250fe3f4b7": {
+        "latest_transition_id": "4439e0deee144ebcbddd",
+        "occurrences": {
+          "4439e0deee144ebcbddd": 1
+        }
+      },
       "0c15f481266972ae55a8": {
         "latest_transition_id": "649c7ae94218e7cf2032",
         "occurrences": {
@@ -23592,6 +23475,12 @@
           "b74050ee58e16d3f0407": 1
         }
       },
+      "1b11653ef8f8ecfd2952": {
+        "latest_transition_id": "9519ac9cf038551f82dc",
+        "occurrences": {
+          "9519ac9cf038551f82dc": 1
+        }
+      },
       "1b71fbbd7ae7dbb4e734": {
         "latest_transition_id": "7b9a7001a5b7154c56ca",
         "occurrences": {
@@ -23629,13 +23518,14 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "035b21790df21f0c0ba8",
+        "latest_transition_id": "99d63357823949eacb8c",
         "occurrences": {
           "007e51f231870c7881c2": 1,
           "035b21790df21f0c0ba8": 1,
           "0d4cb8e15db51802a35e": 4,
           "3db82b65a82f9d1e9fde": 1,
           "6549f47be934c2a0f1a0": 1,
+          "99d63357823949eacb8c": 1,
           "9b1f7da1123fbd777ee5": 2,
           "ae2b42ce35ce292dc420": 1,
           "b225ffa1e05d695dc10a": 1,
@@ -23801,6 +23691,12 @@
         "latest_transition_id": "a6cd55adf91a6375f46f",
         "occurrences": {
           "a6cd55adf91a6375f46f": 1
+        }
+      },
+      "31de0857adf72299f1bb": {
+        "latest_transition_id": "cfe5bbc45b4ff1d45245",
+        "occurrences": {
+          "cfe5bbc45b4ff1d45245": 1
         }
       },
       "325506f85300a0ec65a3": {
@@ -24043,6 +23939,12 @@
           "ec4a36ff16e0d625ff5b": 1
         }
       },
+      "5b26fc987c224f287b19": {
+        "latest_transition_id": "2d68f9667d6d4c1071bb",
+        "occurrences": {
+          "2d68f9667d6d4c1071bb": 1
+        }
+      },
       "5bff13dcbd5e8cd9478d": {
         "latest_transition_id": "3758f4eb1a6ba8606a18",
         "occurrences": {
@@ -24071,6 +23973,12 @@
         "latest_transition_id": "b4a0e09febaf8ed70f23",
         "occurrences": {
           "b4a0e09febaf8ed70f23": 1
+        }
+      },
+      "5e0db2c6013214b4b81e": {
+        "latest_transition_id": "8c4a00f3926fc38a3dd6",
+        "occurrences": {
+          "8c4a00f3926fc38a3dd6": 1
         }
       },
       "608bb9dfc6f6fb3081f0": {
@@ -24116,10 +24024,11 @@
         }
       },
       "66129efc1226a46f5069": {
-        "latest_transition_id": "7a2d04d982c16a5fc850",
+        "latest_transition_id": "876d24637d73a66d53c1",
         "occurrences": {
           "31a6503c8396700d6e51": 1,
           "7a2d04d982c16a5fc850": 1,
+          "876d24637d73a66d53c1": 1,
           "93012796121a4e0d9419": 1,
           "b536fab9fee0fe574109": 1,
           "b758e525cd76d5913557": 1,
@@ -24211,7 +24120,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "5b1256866a47d8460340",
+        "latest_transition_id": "e1dcf9fdd357385c42c3",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24234,7 +24143,8 @@
           "c014707b0b686ef76154": 1,
           "c1b5149f1109a0125456": 1,
           "cf7528ce578d3065a967": 1,
-          "d9636d4adea01248432e": 1
+          "d9636d4adea01248432e": 1,
+          "e1dcf9fdd357385c42c3": 1
         }
       },
       "773c5ce1c33409b7956e": {
@@ -24416,6 +24326,12 @@
           "fb3ff7e67d787864ffe9": 1
         }
       },
+      "916bf21e15d9e631f621": {
+        "latest_transition_id": "f991ced5fb18e078401d",
+        "occurrences": {
+          "f991ced5fb18e078401d": 1
+        }
+      },
       "92472e860fb874b35365": {
         "latest_transition_id": "b1b19a5ffde784a5c860",
         "occurrences": {
@@ -24534,6 +24450,12 @@
         "latest_transition_id": "a9ea17e283212571aa89",
         "occurrences": {
           "a9ea17e283212571aa89": 1
+        }
+      },
+      "a31ea44b1ae008a3a283": {
+        "latest_transition_id": "631805fb26094156c661",
+        "occurrences": {
+          "631805fb26094156c661": 1
         }
       },
       "a339185cd87b66bb4508": {
@@ -24888,6 +24810,12 @@
           "de34054c5e30b4e9d875": 1
         }
       },
+      "d8395d06893ee18378e6": {
+        "latest_transition_id": "5fa3acfcbfb1b42266fb",
+        "occurrences": {
+          "5fa3acfcbfb1b42266fb": 1
+        }
+      },
       "d8541741be7ece4ad381": {
         "latest_transition_id": "d0b9243e173c1cb108e6",
         "occurrences": {
@@ -25061,6 +24989,12 @@
         "latest_transition_id": "8ad91afa42c734873ac7",
         "occurrences": {
           "8ad91afa42c734873ac7": 1
+        }
+      },
+      "f54bfa8f75f9a74a670f": {
+        "latest_transition_id": "4acb2fd1823345924908",
+        "occurrences": {
+          "4acb2fd1823345924908": 1
         }
       },
       "f611aacd4187f6c4c51f": {
