@@ -970,6 +970,7 @@ const tableForTwoToolbarToggle = document.getElementById("tft-toolbar-toggle");
 const tableForTwoToolbarToggleMeta = document.getElementById("tft-toolbar-toggle-meta");
 const tableForTwoSearchInput = document.getElementById("tft-search-input");
 const tableForTwoCategoryFilter = document.getElementById("tft-category-filter");
+const tableForTwoTierFilter = document.getElementById("tft-tier-filter");
 const tableForTwoAvailabilityFilter = document.getElementById("tft-availability-filter");
 const tableForTwoPartySizeFilter = document.getElementById("tft-party-size-filter");
 const tableForTwoSessionFilter = document.getElementById("tft-session-filter");
@@ -2479,6 +2480,8 @@ async function ensureTableForTwoDataLoaded() {
         record.search_text = tableForTwoSearchText(record);
       });
       refreshTableForTwoCategoryOptions();
+    refreshTableForTwoTierFilter();
+      refreshTableForTwoTierFilter();
       state.dataLoaded.tableForTwo = true;
     })();
   }
@@ -5350,16 +5353,52 @@ function tableForTwoPayload() {
   return state.tableForTwo || { venues: [] };
 }
 
+// Cards that can book a venue. Catalogs from before card tiers only knew Platinum.
+function tableForTwoVenueTiers(record) {
+  if (Array.isArray(record.tiers)) return record.tiers;
+  return record.booking_project_status === "not_listed" ? [] : ["platinum"];
+}
+
 function tableForTwoVenues() {
   const payload = tableForTwoPayload();
   const venues = Array.isArray(payload.venues) ? payload.venues : [];
-  return venues.filter((record) => record.booking_project_status !== "not_listed");
+  return venues.filter((record) => tableForTwoVenueTiers(record).length > 0);
 }
 
 function tableForTwoNotListedVenues() {
   const payload = tableForTwoPayload();
   const venues = Array.isArray(payload.venues) ? payload.venues : [];
-  return venues.filter((record) => record.booking_project_status === "not_listed");
+  return venues.filter((record) => tableForTwoVenueTiers(record).length === 0);
+}
+
+function tableForTwoHasTierData() {
+  const venues = tableForTwoPayload().venues;
+  return Array.isArray(venues) && venues.some((record) => Array.isArray(record.tiers));
+}
+
+function tableForTwoTierMatches(record, tier) {
+  return !tier || !Array.isArray(record.tiers) || record.tiers.includes(tier);
+}
+
+// Slots, alerts and Telegram cover Platinum only until they learn card tiers.
+function tableForTwoTierNote(record) {
+  return tableForTwoVenueTiers(record).includes("platinum") ? "" : "Centurion slots are not tracked yet.";
+}
+
+const TABLE_FOR_TWO_TIER_LABELS = { platinum: "Platinum", centurion: "Centurion" };
+
+function tableForTwoTierBadgeHtml(record) {
+  if (!Array.isArray(record.tiers) || !record.tiers.length) return "";
+  const labels = record.tiers.map((tier) => TABLE_FOR_TWO_TIER_LABELS[tier] || tier);
+  const text = labels.length === 1 ? `${labels[0]} only` : labels.join(" + ");
+  return `<span class="badge">${escapeHtml(text)}</span>`;
+}
+
+function refreshTableForTwoTierFilter() {
+  const wrap = tableForTwoTierFilter?.closest(".filter-wrap");
+  if (!wrap) return;
+  wrap.hidden = !tableForTwoHasTierData();
+  if (wrap.hidden) tableForTwoTierFilter.value = "";
 }
 
 function tableForTwoSlotSnapshotIsValid(payload, live = false) {
@@ -5508,6 +5547,7 @@ async function revalidateTableForTwoData({ force = false } = {}) {
       record.search_text = tableForTwoSearchText(record);
     });
     refreshTableForTwoCategoryOptions();
+    refreshTableForTwoTierFilter();
     // The replaced payload dropped the live overlay, so re-apply it now.
     state.tableForTwoLiveRefreshAt = null;
     if (isTableForTwoRoute()) {
@@ -5890,6 +5930,7 @@ function updateTableForTwoAlertSessions() {
 
 function tableForTwoAlertVenueNames() {
   return tableForTwoVenues()
+    .filter((venue) => tableForTwoVenueTiers(venue).includes("platinum"))
     .map((venue) => venue && venue.name)
     .filter(Boolean)
     .sort((a, b) => a.localeCompare(b));
@@ -6052,6 +6093,7 @@ function tableForTwoHasVenueShortlistFilters() {
   return Boolean(
     tableForTwoResidualSearch(search)
     || tableForTwoCategoryFilter?.value
+    || tableForTwoTierFilter?.value
     || tableForTwoAvailabilityFilter?.value
   );
 }
@@ -6266,6 +6308,7 @@ function filterTableForTwo() {
   const inferredFilters = tableForTwoInferredFilters(search);
   const residualSearch = tableForTwoResidualSearch(search);
   const category = tableForTwoCategoryFilter.value;
+  const tier = tableForTwoTierFilter?.value || "";
   const availability = tableForTwoAvailabilityFilter.value || inferredFilters.availability;
   const partySize = tableForTwoSelectedPartySize();
   const session = tableForTwoSessionFilter.value || inferredFilters.session;
@@ -6279,6 +6322,7 @@ function filterTableForTwo() {
   state.tableForTwoAutoAvailabilityOnly = autoAvailabilityOnly;
   state.tableForTwoFiltered = venues.filter((record) => {
     if (category && record.category !== category) return false;
+    if (!tableForTwoTierMatches(record, tier)) return false;
     if (autoAvailabilityOnly) {
       if (tableForTwoAvailabilityKey(record, filters) !== "available") return false;
     } else if (!tableForTwoRecordMatchesFilters(record, filters)) return false;
@@ -6365,6 +6409,7 @@ function tableForTwoActiveFilterCount() {
   let count = 0;
   if ((tableForTwoSearchInput?.value || "").trim()) count += 1;
   if (tableForTwoCategoryFilter?.value) count += 1;
+  if (tableForTwoTierFilter?.value) count += 1;
   if (tableForTwoAvailabilityFilter?.value) count += 1;
   if (tableForTwoSelectedPartySize() !== TABLE_FOR_TWO_DEFAULT_PARTY_SIZE) count += 1;
   if (tableForTwoSessionFilter?.value) count += 1;
@@ -6552,6 +6597,7 @@ function tableForTwoRecordMatchesFilters(record, filters) {
 
 function tableForTwoAvailabilityLabel(record, filters = state.tableForTwoCurrentFilters || {}) {
   const partySize = Number(filters.partySize || tableForTwoSelectedPartySize());
+  if (tableForTwoTierNote(record)) return "Slots not tracked";
   const key = tableForTwoAvailabilityKey(record, filters);
   if (key === "available") return `${partySize} pax available`;
   if (key === "no_seats") return "Not bookable";
@@ -6704,6 +6750,8 @@ function tableForTwoNoMatchLine(record, filters = state.tableForTwoCurrentFilter
 }
 
 function tableForTwoCompactAvailabilityLine(record, filters = state.tableForTwoCurrentFilters || {}) {
+  const tierNote = tableForTwoTierNote(record);
+  if (tierNote) return tierNote;
   const key = tableForTwoAvailabilityKey(record, filters);
   const slots = tableForTwoMatchingSlots(record, filters);
   if (!slots.length) {
@@ -6758,9 +6806,12 @@ function tableForTwoDateSummary(record, filters = state.tableForTwoCurrentFilter
   return availability.date_label || "No availability calendar yet";
 }
 
-function tableForTwoPublishedMenus(record) {
+function tableForTwoPublishedMenus(record, tier = "") {
   const menuMap = record.menu_pdfs && typeof record.menu_pdfs === "object" ? record.menu_pdfs : {};
-  const menus = Object.values(menuMap).filter((menu) => menu?.status === "published" && menu.url);
+  const menus = Object.entries(menuMap)
+    .filter(([, menu]) => menu?.status === "published" && menu.url)
+    .sort(([a], [b]) => Number(b === tier) - Number(a === tier))
+    .map(([, menu]) => menu);
   if (menus.length) return menus;
   const legacy = record.menu_pdf || {};
   return legacy.status === "published" && legacy.url ? [legacy] : [];
@@ -7298,6 +7349,7 @@ function renderTableForTwoList() {
           <div class="mobile-card-title">${escapeHtml(displayName)}</div>
           <div class="mobile-card-sub">
             <span class="badge ${availabilityBadgeClass}">${escapeHtml(availabilityLabel)}</span>
+            ${tableForTwoTierBadgeHtml(record)}
             ${ratingStr}
           </div>
         </div>
@@ -7392,7 +7444,7 @@ function renderTableForTwoCard() {
   const gBadge = googleRatingBadge(record);
   const googleMapsUrl = bestGoogleMapsUrl(record) || googleMapsSearchUrl([displayName, "Singapore"]);
   const menuPdf = record.menu_pdf || {};
-  const publishedMenus = tableForTwoPublishedMenus(record);
+  const publishedMenus = tableForTwoPublishedMenus(record, tableForTwoTierFilter?.value || "");
   const menuPdfLinks = publishedMenus
     .map((menu, index) => `<a class="inline-link${index === 0 ? " primary-action" : ""}" href="${escapeHtml(menu.url)}" target="_blank" rel="noopener">${escapeHtml(`${menu.label || "Set"} menu (PDF)`)}</a>`)
     .join("");
@@ -7401,8 +7453,9 @@ function renderTableForTwoCard() {
     : "";
   const venueMenuReviewItems = tableForTwoVenueMenuReviewItems(payload, record);
   const venueMenuReviewWarning = tableForTwoVenueMenuReviewWarning(venueMenuReviewItems);
-  const telegramAskUrl = tableForTwoTelegramDeepLink("venue", record);
-  const telegramReminderUrl = tableForTwoTelegramDeepLink("remind", record);
+  const botServesVenue = !tableForTwoTierNote(record);
+  const telegramAskUrl = botServesVenue ? tableForTwoTelegramDeepLink("venue", record) : "";
+  const telegramReminderUrl = botServesVenue ? tableForTwoTelegramDeepLink("remind", record) : "";
   const sourceReviewWarning = payload.manual_review_required
     ? '<div class="focus-note focus-note-warn">Some venue details may have changed and are being verified. Confirm with the official source before booking.</div>'
     : venueMenuReviewWarning
@@ -7418,6 +7471,7 @@ function renderTableForTwoCard() {
     </div>
     <div class="focus-tags">
       <span class="badge ${tableForTwoAvailabilityBadgeClass(record, filters)}">${escapeHtml(tableForTwoAvailabilityLabel(record, filters))}</span>
+      ${tableForTwoTierBadgeHtml(record)}
       ${record.app_area ? `<span class="badge blue">${escapeHtml(record.app_area)}</span>` : ""}
     </div>
     ${record.address ? `<div class="focus-address">${escapeHtml(record.address)}</div>` : ""}
@@ -8250,6 +8304,7 @@ async function applyRoute(routeId) {
     await ensureRouteDataLoaded(route);
     if (applyToken !== routeApplyToken) return;
     refreshTableForTwoCategoryOptions();
+    refreshTableForTwoTierFilter();
     applyTableForTwoFiltersFromHash();
     refreshTableForTwoDateOptions();
     renderTableForTwoAlertSignup();
@@ -8477,6 +8532,7 @@ loveToolbarToggle.addEventListener("click", (event) => {
 // Table for Two events
 tableForTwoSearchInput.addEventListener("input", filterTableForTwo);
 tableForTwoCategoryFilter.addEventListener("change", filterTableForTwo);
+tableForTwoTierFilter?.addEventListener("change", filterTableForTwo);
 tableForTwoAvailabilityFilter.addEventListener("change", filterTableForTwo);
 tableForTwoPartySizeFilter.addEventListener("change", () => {
   refreshTableForTwoDateOptions();
@@ -8502,6 +8558,7 @@ tableForTwoToolbarToggle?.addEventListener("click", (event) => {
 tableForTwoResetFiltersBtn.addEventListener("click", () => {
   tableForTwoSearchInput.value = "";
   tableForTwoCategoryFilter.value = "";
+  if (tableForTwoTierFilter) tableForTwoTierFilter.value = "";
   tableForTwoAvailabilityFilter.value = "";
   tableForTwoPartySizeFilter.value = String(TABLE_FOR_TWO_DEFAULT_PARTY_SIZE);
   tableForTwoSessionFilter.value = "";
