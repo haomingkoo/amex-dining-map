@@ -13,6 +13,7 @@ const names = [
   "tableForTwoNotListedVenues",
   "tableForTwoAlertVenueNames",
   "tableForTwoTierMatches",
+  "tableForTwoBotServesVenue",
   "tableForTwoHasTierData",
   "tableForTwoPublishedMenus",
   "tableForTwoTierNote",
@@ -88,7 +89,7 @@ console.log("TFT tier filter verification passed");
     tableForTwoBestAvailabilityLine: () => "Source check pending.",
   };
   vm.runInNewContext(
-    `${["tableForTwoVenueTiers", "tableForTwoTierNote", "tableForTwoSlotMatchesHtml"].map((name) => extractFrom(source, name)).join("\n")}\nglobalThis.render = tableForTwoSlotMatchesHtml;`,
+    `${["tableForTwoVenueTiers", "tableForTwoBotServesVenue", "tableForTwoTierNote", "tableForTwoSlotMatchesHtml"].map((name) => extractFrom(source, name)).join("\n")}\nglobalThis.render = tableForTwoSlotMatchesHtml;`,
     context,
   );
   const jaanHtml = context.render(tiered[2], {});
@@ -97,3 +98,18 @@ console.log("TFT tier filter verification passed");
   assert.match(context.render(tiered[1], {}), /Availability not checked yet/);
 }
 console.log("TFT tier availability box verification passed");
+
+// Under the Centurion filter, shared venues must not present Platinum seats as Centurion's.
+{
+  const context = { state: {}, tableForTwoTierFilter: { value: "centurion" } };
+  vm.runInNewContext(
+    `${["tableForTwoVenueTiers", "tableForTwoTierNote", "tableForTwoBotServesVenue"].map((name) => extractFrom(source, name)).join("\n")}\nObject.assign(globalThis, { tableForTwoTierNote, tableForTwoBotServesVenue });`,
+    context,
+  );
+  assert.equal(context.tableForTwoTierNote(tiered[0]), "Centurion slots are not tracked yet.");
+  assert.equal(context.tableForTwoBotServesVenue(tiered[0]), true);
+  assert.equal(context.tableForTwoBotServesVenue(tiered[2]), false);
+  context.tableForTwoTierFilter.value = "platinum";
+  assert.equal(context.tableForTwoTierNote(tiered[0]), "");
+}
+console.log("TFT Centurion filter availability verification passed");

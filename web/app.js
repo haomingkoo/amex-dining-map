@@ -5385,8 +5385,14 @@ function tableForTwoTierMatches(record, tier) {
 }
 
 // Slots, alerts and Telegram cover Platinum only until they learn card tiers.
+function tableForTwoBotServesVenue(record) {
+  return tableForTwoVenueTiers(record).includes("platinum");
+}
+
+// Tracked slots are Platinum's, so a Centurion view must not present them as Centurion seats.
 function tableForTwoTierNote(record) {
-  return tableForTwoVenueTiers(record).includes("platinum") ? "" : "Centurion slots are not tracked yet.";
+  const filter = typeof tableForTwoTierFilter === "undefined" ? "" : tableForTwoTierFilter?.value || "";
+  return tableForTwoBotServesVenue(record) && filter !== "centurion" ? "" : "Centurion slots are not tracked yet.";
 }
 
 const TABLE_FOR_TWO_TIER_LABELS = { platinum: "Platinum", centurion: "Centurion" };
@@ -7466,7 +7472,7 @@ function renderTableForTwoCard() {
     : "";
   const venueMenuReviewItems = tableForTwoVenueMenuReviewItems(payload, record);
   const venueMenuReviewWarning = tableForTwoVenueMenuReviewWarning(venueMenuReviewItems);
-  const botServesVenue = !tableForTwoTierNote(record);
+  const botServesVenue = tableForTwoBotServesVenue(record);
   const telegramAskUrl = botServesVenue ? tableForTwoTelegramDeepLink("venue", record) : "";
   const telegramReminderUrl = botServesVenue ? tableForTwoTelegramDeepLink("remind", record) : "";
   const sourceReviewWarning = payload.manual_review_required

@@ -149,3 +149,101 @@ def test_tier_fields_are_runtime_not_manifest_owned() -> None:
     stable = tft_roster_reviews.stable_venue(record)
 
     assert not {"tiers", "booking_project_statuses", "tier_membership"} & set(stable)
+
+
+# --- final review fixes ------------------------------------------------------
+
+def test_same_name_under_new_platinum_id_becomes_review_item_not_crash(monkeypatch, no_slots) -> None:
+    payload = refresh_twice(monkeypatch)
+    r = routes()
+    r["/projects/AMEXPlatSG/restaurants"] = [*r["/projects/AMEXPlatSG/restaurants"],
+                                             row("JAAN By Kirk Westaway", "999", "AMEXPlatSG")]
+    r["/restaurants/999/projects/program_and_event"] = [{"project": "AMEXPlatSG"}]
+    monkeypatch.setattr(scraper, "fetch_json", fake_dc(r))
+
+    for _ in range(3):
+        payload = scraper.refresh_availability_payload(payload)
+
+    jaans = [v for v in payload["venues"] if v["name"] == "JAAN By Kirk Westaway"]
+    assert len(jaans) == 1 and jaans[0]["dining_city_id"] == JAAN
+    reasons = {reason for item in payload["booking_project_source"]["booking_project_review_items"]
+               for reason in item["reasons"]}
+    assert "duplicate_normalized_name" in reasons
+
+
+def test_centurion_pass_failure_never_stops_platinum(monkeypatch, no_slots) -> None:
+    payload = refresh_twice(monkeypatch)
+
+    def boom(*_args, **_kwargs):
+        raise ValueError("published Table for Two roster has missing or duplicate venue IDs")
+
+    monkeypatch.setattr(scraper, "current_published_roster",
+                        lambda roster, source, existing=None, *, tier="platinum":
+                        boom() if tier == "centurion" else ORIGINAL_ROSTER(roster, source, existing, tier=tier))
+    after = scraper.refresh_availability_payload(payload)
+
+    venues = by_name(after)
+    assert venues["PlatOnly"]["booking_project_statuses"]["platinum"] == "active"
+    assert venues["JAAN By Kirk Westaway"]["tiers"] == ["centurion"]
+    assert after["booking_project_sources"]["centurion"]["observation_status"] == "error"
+
+
+ORIGINAL_ROSTER = scraper.current_published_roster
+
+
+def test_platinum_error_keeps_centurion_only_venue_out_of_platinum_consumers(monkeypatch, no_slots) -> None:
+    monkeypatch.setattr(scraper, "fetch_json", fake_dc(routes()))
+    payload = {"venues": [venue("Shared", SHARED), venue("PlatOnly", PLAT_ONLY), venue("Zui Yu Xuan", ZYX)]}
+    payload = scraper.refresh_availability_payload(payload)
+    broken = routes()
+    broken["/projects/AMEXPlatSG/restaurants"] = OSError("DiningCity 503")
+    monkeypatch.setattr(scraper, "fetch_json", fake_dc(broken))
+    no_slots.clear()
+
+    after = by_name(scraper.refresh_availability_payload(payload))
+
+    jaan = after["JAAN By Kirk Westaway"]
+    assert jaan["booking_project_status"] == "not_listed"
+    assert jaan["tiers"] == ["centurion"]
+    assert "JAAN By Kirk Westaway" not in no_slots
+
+
+def test_unknown_centurion_status_on_first_run_does_not_write_platinum_only(monkeypatch, no_slots) -> None:
+    broken = routes()
+    broken["/projects/AMEXCentSG/restaurants"] = OSError("DiningCity 503")
+    monkeypatch.setattr(scraper, "fetch_json", fake_dc(broken))
+    payload = {"venues": [venue("Shared", SHARED), venue("PlatOnly", PLAT_ONLY)]}
+
+    first = by_name(scraper.refresh_availability_payload(payload))
+
+    assert first["Shared"]["booking_project_statuses"]["centurion"] == "unknown"
+    assert "tiers" not in first["Shared"]
+
+
+def test_unknown_tier_keeps_previous_tiers() -> None:
+    venue_record = venue("Shared", SHARED)
+    existing = {"tiers": ["platinum", "centurion"],
+                "booking_project_statuses": {"platinum": "active", "centurion": "active"}}
+
+    fields = scraper.tier_fields(venue_record, "active", {"observation_status": "error"}, existing)
+
+    assert fields["tiers"] == ["platinum", "centurion"]
+
+
+def test_unknown_amex_project_stays_reported_when_its_venue_fails_once() -> None:
+    previous = {"known": ["AMEXPlatSG"], "unknown_amex": ["AMEXNewSG"]}
+
+    codes = scraper.summarize_project_codes({SHARED: ["AMEXPlatSG"]}, previous)
+
+    assert codes["unknown_amex"] == ["AMEXNewSG"]
+
+
+def test_platinum_supplement_still_gets_its_centurion_tier() -> None:
+    madame = {**venue("Madame Fan", "2055296"), "roster_basis": "diningcity_booking_project_confirmed"}
+    centurion = {"observation_status": "success",
+                 "observed_venues": [{"id": "2055296", "name": "Madame Fan", "status": "online"}],
+                 "membership_streaks": [{"id": "2055296", "state": "present", "consecutive_present": 5}]}
+
+    status = scraper.booking_project_status_for_venue(madame, centurion, {}, tier="centurion")
+
+    assert status == "active"
