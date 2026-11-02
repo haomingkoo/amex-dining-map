@@ -335,3 +335,29 @@ def test_name_match_wins_over_diningcity_slug():
 
     assert menus.match_venue(vineyard, files) == ["Vineyard-Menu_Platinum.pdf"]
     assert menus.match_venue({"name": "Kuriya Dining"}, files) == []
+
+
+def test_exact_name_match_beats_a_loose_contains_match():
+    venues = [
+        {"id": "tft-ginger", "name": "Ginger"},
+        {"id": "tft-ginger-lily", "name": "Ginger.Lily"},
+    ]
+    listings = {"centurion": {"Gingerlily-Menu_Centurion.pdf": {}}}
+
+    assert menus.strongest_asset_claimants(venues, listings) == {
+        ("centurion", "Gingerlily-Menu_Centurion.pdf"): {"tft-ginger-lily"}
+    }
+
+
+def test_sample_menu_files_match_their_venue():
+    venue = {"name": "Restaurant JAG", "dining_city_public_url": "https://www.diningcity.sg/singapore/restaurant_jag"}
+    assert menus.match_venue(venue, ["JAG-Sample-Menu_Centurion.pdf", "Kaya-Menu_Centurion.pdf"]) == [
+        "JAG-Sample-Menu_Centurion.pdf"
+    ]
+
+
+def test_upstream_pavillion_typo_matches_summer_pavilion():
+    venue = {"name": "Summer Pavilion"}
+    assert menus.match_venue(venue, ["Summer-Pavillion-Menu_Centurion.pdf"]) == [
+        "Summer-Pavillion-Menu_Centurion.pdf"
+    ]
