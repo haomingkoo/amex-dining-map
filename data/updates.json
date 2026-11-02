@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-02T17:07:21Z",
+  "updated_at": "2026-11-02T17:08:06Z",
   "updates": [
     {
       "program": "Table for Two",
@@ -36,6 +36,48 @@
       "id": "90cae280407022ebc658",
       "owner_delivery_state": "withheld",
       "owner_delivery_recorded_at": "2026-11-02T17:07:21Z"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two?venue=tft-ginger-lily",
+      "kind": "menu_added",
+      "subject": "Ginger.Lily · Centurion menu",
+      "detected_at": "2026-11-02T17:05:05Z",
+      "status": "published",
+      "before": {
+        "state": "not_published",
+        "fields": {
+          "Menu file": "Not published",
+          "Menu version": "Not published"
+        }
+      },
+      "after": {
+        "state": "published",
+        "fields": {
+          "Menu file": "Gingerlily-Menu_Centurion.pdf",
+          "Menu version": "9a2363bd1b19"
+        }
+      },
+      "changes": [
+        {
+          "field": "Menu file",
+          "before": "Not published",
+          "after": "Gingerlily-Menu_Centurion.pdf"
+        },
+        {
+          "field": "Menu version",
+          "before": "Not published",
+          "after": "9a2363bd1b19"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Gingerlily-Menu_Centurion.pdf",
+      "reviewed_at": "2026-11-02T17:08:06Z",
+      "review_note": "Ginger.Lily Table for Two by Centurion festive afternoon tea set for two; extra diners $146++.",
+      "transition_id": "c3b0bf1bf1c9b9ad2230",
+      "stream_id": "38c8f1b70f1b950ee3ce",
+      "occurrence": 1,
+      "id": "f6b807719afdc951dd9e"
     },
     {
       "program": "Table for Two",
@@ -310,6 +352,90 @@
       "id": "23a92f715ee5e7b8065c",
       "owner_delivery_state": "sent",
       "owner_delivery_recorded_at": "2026-11-02T16:46:36Z"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two?venue=tft-summer-pavilion",
+      "kind": "menu_added",
+      "subject": "Summer Pavilion · Centurion menu",
+      "detected_at": "2026-11-02T16:45:04Z",
+      "status": "published",
+      "before": {
+        "state": "not_published",
+        "fields": {
+          "Menu file": "Not published",
+          "Menu version": "Not published"
+        }
+      },
+      "after": {
+        "state": "published",
+        "fields": {
+          "Menu file": "Summer-Pavillion-Menu_Centurion.pdf",
+          "Menu version": "45259198452b"
+        }
+      },
+      "changes": [
+        {
+          "field": "Menu file",
+          "before": "Not published",
+          "after": "Summer-Pavillion-Menu_Centurion.pdf"
+        },
+        {
+          "field": "Menu version",
+          "before": "Not published",
+          "after": "45259198452b"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Summer-Pavillion-Menu_Centurion.pdf",
+      "reviewed_at": "2026-11-02T17:08:06Z",
+      "review_note": "Summer Pavilion Table for Two by Centurion 5-course set menu; Amex file name misspells Pavillion.",
+      "transition_id": "6e2985ae7c510af544cf",
+      "stream_id": "a36e6ac258087f4ce6ce",
+      "occurrence": 1,
+      "id": "bfcae407765068d54ad9"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two?venue=tft-restaurant-jag",
+      "kind": "menu_added",
+      "subject": "Restaurant JAG · Centurion menu",
+      "detected_at": "2026-11-02T16:45:04Z",
+      "status": "published",
+      "before": {
+        "state": "not_published",
+        "fields": {
+          "Menu file": "Not published",
+          "Menu version": "Not published"
+        }
+      },
+      "after": {
+        "state": "published",
+        "fields": {
+          "Menu file": "JAG-Sample-Menu_Centurion.pdf",
+          "Menu version": "f410323236d2"
+        }
+      },
+      "changes": [
+        {
+          "field": "Menu file",
+          "before": "Not published",
+          "after": "JAG-Sample-Menu_Centurion.pdf"
+        },
+        {
+          "field": "Menu version",
+          "before": "Not published",
+          "after": "f410323236d2"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/JAG-Sample-Menu_Centurion.pdf",
+      "reviewed_at": "2026-11-02T17:08:06Z",
+      "review_note": "Restaurant JAG Table for Two by Centurion 4-course degustation for two (sample menu).",
+      "transition_id": "9a5ec73418c6e235ef0a",
+      "stream_id": "31e385d1d1dae4afeca2",
+      "occurrence": 1,
+      "id": "2abec9a695cccf7bab9a"
     },
     {
       "program": "Table for Two",
@@ -23070,126 +23196,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Kingsleys Woolloomooloo / New South Wales",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Kingsleys Woolloomooloo",
-          "Country": "Australia",
-          "Region": "New South Wales",
-          "City": "New South Wales",
-          "Address": "10/6 Cowper Wharf Road, Woolloomooloo, New South Wales, 2011, Australia",
-          "Cuisine": [
-            "Steak & Seafood"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "5ae7436cd1502456dac6",
-      "stream_id": "81bec3657db531d5ce5a",
-      "occurrence": 1,
-      "id": "20caabc5c67c317865d4",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Atelier Fischer / Stankt Gilgen",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Atelier Fischer",
-          "Country": "Austria",
-          "Region": "Stankt Gilgen",
-          "City": "Stankt Gilgen",
-          "Address": "Ischlerstraße 16, Stankt Gilgen, 5340, Austria",
-          "Cuisine": [
-            "Fine-Dining"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "418949e7cfd2c79f1f97",
-      "stream_id": "d22372bccbd73d4167e3",
-      "occurrence": 1,
-      "id": "20a8b951b499db509c14",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Campero Madrid / Madrid",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Campero Madrid",
-          "Country": "Spain",
-          "Region": "Madrid",
-          "City": "Madrid",
-          "Address": "Maria de Molina, 25, Madrid, 28030, Spain",
-          "Cuisine": [
-            "Andalusian cuisine, seafood"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "b1b19a5ffde784a5c860",
-      "stream_id": "92472e860fb874b35365",
-      "occurrence": 1,
-      "id": "1f76703ce78445dee58b",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23611,12 +23617,6 @@
           "1d1ef17fb386c7273b0d": 1
         }
       },
-      "1c814cc336643f590249": {
-        "latest_transition_id": "fe4a8fc85b356e4cff7e",
-        "occurrences": {
-          "fe4a8fc85b356e4cff7e": 1
-        }
-      },
       "1d6c201fff0933553df2": {
         "latest_transition_id": "3397f47e70e5f7c32cc8",
         "occurrences": {
@@ -23783,17 +23783,17 @@
           "c993e87c2dc1d9aff7e2": 1
         }
       },
-      "2f9f796ad767a92c7ab2": {
-        "latest_transition_id": "a6cd55adf91a6375f46f",
-        "occurrences": {
-          "a6cd55adf91a6375f46f": 1
-        }
-      },
       "31de0857adf72299f1bb": {
         "latest_transition_id": "88fdc45da1ed63f45ed7",
         "occurrences": {
           "88fdc45da1ed63f45ed7": 1,
           "cfe5bbc45b4ff1d45245": 1
+        }
+      },
+      "31e385d1d1dae4afeca2": {
+        "latest_transition_id": "9a5ec73418c6e235ef0a",
+        "occurrences": {
+          "9a5ec73418c6e235ef0a": 1
         }
       },
       "325506f85300a0ec65a3": {
@@ -23828,6 +23828,12 @@
         "latest_transition_id": "a7f1b367ee66260b2fbc",
         "occurrences": {
           "a7f1b367ee66260b2fbc": 1
+        }
+      },
+      "38c8f1b70f1b950ee3ce": {
+        "latest_transition_id": "c3b0bf1bf1c9b9ad2230",
+        "occurrences": {
+          "c3b0bf1bf1c9b9ad2230": 1
         }
       },
       "39ee8250e5fa9809dbd8": {
@@ -23921,12 +23927,6 @@
           "3cef40b7e01f34b2d4e7": 1
         }
       },
-      "4a59f3fc16b9b302af4f": {
-        "latest_transition_id": "e09e7aae1ff5eeb8dc58",
-        "occurrences": {
-          "e09e7aae1ff5eeb8dc58": 1
-        }
-      },
       "4bd829c5b0bc8e8304d3": {
         "latest_transition_id": "ab40537285fc2e25ea76",
         "occurrences": {
@@ -23949,12 +23949,6 @@
         "latest_transition_id": "d701fb03c7a5c6f84835",
         "occurrences": {
           "d701fb03c7a5c6f84835": 1
-        }
-      },
-      "54aaae4a02eae051664c": {
-        "latest_transition_id": "a9591017d3b72a8bdf94",
-        "occurrences": {
-          "a9591017d3b72a8bdf94": 1
         }
       },
       "55bb06e5a3dea56f2369": {
@@ -24029,12 +24023,6 @@
         "latest_transition_id": "1b0a2228f50c05f67998",
         "occurrences": {
           "1b0a2228f50c05f67998": 1
-        }
-      },
-      "5cdeff7ef1476157231a": {
-        "latest_transition_id": "d202d1ca32a57454a799",
-        "occurrences": {
-          "d202d1ca32a57454a799": 1
         }
       },
       "5d44ee76e230d24a4de2": {
@@ -24407,12 +24395,6 @@
           "f991ced5fb18e078401d": 1
         }
       },
-      "92472e860fb874b35365": {
-        "latest_transition_id": "b1b19a5ffde784a5c860",
-        "occurrences": {
-          "b1b19a5ffde784a5c860": 1
-        }
-      },
       "9436898464e75355b183": {
         "latest_transition_id": "edeadf9e1d8699e36fae",
         "occurrences": {
@@ -24526,6 +24508,12 @@
         "latest_transition_id": "4d0ec56f68a5ff76d557",
         "occurrences": {
           "4d0ec56f68a5ff76d557": 1
+        }
+      },
+      "a36e6ac258087f4ce6ce": {
+        "latest_transition_id": "6e2985ae7c510af544cf",
+        "occurrences": {
+          "6e2985ae7c510af544cf": 1
         }
       },
       "a3daa444502efb5869cf": {
@@ -24868,12 +24856,6 @@
           "7475dfaad0c8956814c6": 1
         }
       },
-      "d22372bccbd73d4167e3": {
-        "latest_transition_id": "418949e7cfd2c79f1f97",
-        "occurrences": {
-          "418949e7cfd2c79f1f97": 1
-        }
-      },
       "d2aa08d7e6e8b4ea100c": {
         "latest_transition_id": "4ee6131e7906b797db2c",
         "occurrences": {
@@ -24974,12 +24956,6 @@
         "latest_transition_id": "b4fe3fb432228011fd98",
         "occurrences": {
           "b4fe3fb432228011fd98": 1
-        }
-      },
-      "e878233dd2cfbe154228": {
-        "latest_transition_id": "9642fcad7d467ef4d1a1",
-        "occurrences": {
-          "9642fcad7d467ef4d1a1": 1
         }
       },
       "ea75bc70ac208ccdbca1": {
@@ -25089,12 +25065,6 @@
         "latest_transition_id": "813631a519ea5d3a13b7",
         "occurrences": {
           "813631a519ea5d3a13b7": 1
-        }
-      },
-      "fa6843427dbf07040a29": {
-        "latest_transition_id": "b2734c4bc470db194d23",
-        "occurrences": {
-          "b2734c4bc470db194d23": 1
         }
       },
       "fb804f5504f9e28edd00": {
