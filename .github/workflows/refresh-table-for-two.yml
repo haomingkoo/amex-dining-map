@@ -37,7 +37,11 @@ jobs:
         id: roster_parity
         if: always()
         continue-on-error: true
-        run: python3 scripts/check_roster_parity.py
+        run: |
+          status=0
+          python3 scripts/check_roster_parity.py --tier platinum || status=1
+          python3 scripts/check_roster_parity.py --tier centurion || status=1
+          exit "$status"
 
       - name: Verify reviewed official document pages
         id: document_verify

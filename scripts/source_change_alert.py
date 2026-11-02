@@ -89,6 +89,10 @@ META_FIELD_LABELS = {
     "booking_project_source.added_vs_reviewed_roster": "Booking-project candidates added",
     "booking_project_source.missing_vs_reviewed_roster": "Reviewed venues missing from booking project",
     "booking_project_source.identity_mismatch_count": "Booking-project identity conflicts",
+    "booking_project_sources.centurion.observation_status": "Centurion booking-project observation",
+    "booking_project_sources.centurion.observed_count": "Centurion booking-project venue count",
+    "booking_project_sources.centurion.observed_membership_sha256": "Centurion booking-project membership fingerprint",
+    "booking_project_codes.unknown_amex": "Unknown Amex booking projects",
     "source_documents.terms_sha256": "Table for Two T&C PDF hash",
     "source_documents.faq_sha256": "Table for Two FAQ PDF hash",
     "document_reviews.tft-terms.status": "T&C review status",
@@ -133,6 +137,7 @@ PUBLIC_RECORD_FIELDS = {
     "blackout_raw": "Blackout dates",
     "reservation_raw": "Reservations",
     "booking_channel": "Booking channel",
+    "tiers": "Cards",
     "notes": "Notes",
     "opening_hours": "Opening hours",
     "fixed_discount_percent": "Fixed discount",
@@ -184,6 +189,16 @@ def nested_get(payload: Any, dotted_path: str) -> Any:
             return None
         value = value.get(part)
     return value
+
+
+def meta_change_reasons(previous_meta: Any, current_meta: Any) -> list[str]:
+    reasons = []
+    for path, label in META_FIELD_LABELS.items():
+        old_value = nested_get(previous_meta, path)
+        new_value = nested_get(current_meta, path)
+        if old_value != new_value:
+            reasons.append(f"{label}: `{old_value}` → `{new_value}`")
+    return reasons
 
 
 def record_key(record: dict[str, Any]) -> str:
@@ -290,6 +305,9 @@ def public_field_changes(old_record: dict[str, Any], new_record: dict[str, Any])
         old_value = display_value(path, nested_get(old_record, path))
         new_value = display_value(path, nested_get(new_record, path))
         if old_value == new_value or label in seen_labels:
+            continue
+        # Tiers first appearing on a venue is the tier rollout itself, not a change.
+        if path == "tiers" and old_value is None:
             continue
         seen_labels.add(label)
         changes.append({"field": label, "before": old_value, "after": new_value})
@@ -945,11 +963,7 @@ def main() -> int:
     reasons: list[str] = []
 
     if previous_meta is not None:
-        for path, label in META_FIELD_LABELS.items():
-            old_value = nested_get(previous_meta, path)
-            new_value = nested_get(current_meta, path)
-            if old_value != new_value:
-                reasons.append(f"{label}: `{old_value}` → `{new_value}`")
+        reasons.extend(meta_change_reasons(previous_meta, current_meta))
     elif Path(args.meta).exists():
         append_output("alert_required", "false")
         Path(args.output).write_text(
