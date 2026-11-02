@@ -225,10 +225,14 @@ def test_refresh_loop_cancels_cleanly_after_immediate_attempt():
 
 def test_app_lifespan_starts_one_immediate_refresh_without_network(monkeypatch):
     refreshed = threading.Event()
+    centurion_refreshed = threading.Event()
 
     class Refresher:
+        def __init__(self, event=refreshed):
+            self.event = event
+
         def refresh(self):
-            refreshed.set()
+            self.event.set()
 
     monkeypatch.setattr(
         main,
@@ -241,9 +245,11 @@ def test_app_lifespan_starts_one_immediate_refresh_without_network(monkeypatch):
         ),
     )
     monkeypatch.setattr(main, "live_refresher", Refresher())
+    monkeypatch.setattr(main, "centurion_refresher", Refresher(centurion_refreshed))
 
     with TestClient(main.app):
         assert refreshed.wait(timeout=1)
+        assert centurion_refreshed.wait(timeout=1)
 
 
 def test_recording_refresher_sends_reminders_after_each_new_snapshot(

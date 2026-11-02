@@ -1,4 +1,4 @@
-"""Bounded, failure-tolerant AMEXPlatSG availability snapshot producer.
+"""Bounded, failure-tolerant availability snapshot producer, one per Amex project.
 
 The public snapshot deliberately contains only the fields needed by the TFT
 consumer.  Raw upstream responses and exception messages never cross this
@@ -24,6 +24,7 @@ from typing import Callable
 
 
 PROJECT = "AMEXPlatSG"
+CENTURION_PROJECT = "AMEXCentSG"
 API_BASE = "https://api.diningcity.asia/public"
 MAX_VENUES = 50
 MAX_WORKERS = 6
@@ -128,12 +129,12 @@ def _error_code(exc: BaseException, *, membership: bool = False) -> str:
     return "internal_error"
 
 
-def _active_catalog_venues(catalog: object) -> list[dict[str, str]]:
-    if not isinstance(catalog, dict) or not isinstance(catalog.get("venues"), list):
+def _active_catalog_venues(catalog: object, key: str = "venues") -> list[dict]:
+    if not isinstance(catalog, dict) or not isinstance(catalog.get(key), list):
         raise ValueError("catalog venues are invalid")
-    venues: list[dict[str, str]] = []
+    venues: list[dict] = []
     seen: set[str] = set()
-    for raw in catalog["venues"]:
+    for raw in catalog[key]:
         if not isinstance(raw, dict):
             continue
         if (
@@ -151,7 +152,11 @@ def _active_catalog_venues(catalog: object) -> list[dict[str, str]]:
         if venue_id in seen:
             raise ValueError("catalog contains duplicate venue ids")
         seen.add(venue_id)
-        venues.append({"id": venue_id, "dining_city_id": dining_city_id})
+        venue = {"id": venue_id, "dining_city_id": dining_city_id}
+        # Missing from the project's list but linked to it with dates (Zui Yu Xuan).
+        if raw.get("linked_only") is True:
+            venue["linked_only"] = True
+        venues.append(venue)
     if not venues or len(venues) > MAX_VENUES:
         raise ValueError("active catalog venue count is invalid")
     return sorted(venues, key=lambda item: item["id"])
@@ -231,14 +236,14 @@ def _meals(rows: list[dict]) -> list[dict]:
 
 
 def _fetch_venue(
-    venue: dict[str, str], fetcher: Fetcher, attempted_at: str
+    venue: dict[str, str], fetcher: Fetcher, attempted_at: str, project: str = PROJECT
 ) -> dict:
     restaurant_id = venue["dining_city_id"]
     path = f"/restaurants/{restaurant_id}/available_2018"
-    rows = _rows(fetcher(path, {"project": PROJECT}, True))
+    rows = _rows(fetcher(path, {"project": project}, True))
     if not rows:
         dates_payload = fetcher(
-            f"/restaurants/{restaurant_id}/dining_dates", {"project": PROJECT}, False
+            f"/restaurants/{restaurant_id}/dining_dates", {"project": project}, False
         )
         if not isinstance(dates_payload, list):
             raise ValueError("dining dates response is invalid")
@@ -256,7 +261,7 @@ def _fetch_venue(
                 _rows(
                     fetcher(
                         path,
-                        {"project": PROJECT, "selected_date": date},
+                        {"project": project, "selected_date": date},
                         False,
                     )
                 )
@@ -264,7 +269,7 @@ def _fetch_venue(
     meals = _meals(rows)
     return {
         "id": venue["id"],
-        "project": PROJECT,
+        "project": project,
         "status": "live_available" if meals else "live_no_seats",
         "checked_at": attempted_at,
         "attempted_at": attempted_at,
@@ -274,8 +279,8 @@ def _fetch_venue(
     }
 
 
-def _bounded_prior_venue(raw: object) -> dict | None:
-    if not isinstance(raw, dict) or raw.get("project") != PROJECT:
+def _bounded_prior_venue(raw: object, project: str = PROJECT) -> dict | None:
+    if not isinstance(raw, dict) or raw.get("project") != project:
         return None
     venue_id = str(raw.get("id") or "")
     status = raw.get("status")
@@ -318,7 +323,7 @@ def _bounded_prior_venue(raw: object) -> dict | None:
         )
     return {
         "id": venue_id,
-        "project": PROJECT,
+        "project": project,
         "status": status,
         "checked_at": checked_at,
         "meals": bounded_meals,
@@ -335,11 +340,11 @@ def _valid_timestamp(value: object) -> bool:
     return parsed.tzinfo is not None
 
 
-def validate_snapshot(payload: object) -> dict:
+def validate_snapshot(payload: object, project: str = PROJECT) -> dict:
     if (
         not isinstance(payload, dict)
         or payload.get("schema_version") != 1
-        or payload.get("source_project") != PROJECT
+        or payload.get("source_project") != project
         or payload.get("refresh_status") not in {"success", "partial", "error"}
         or not _valid_timestamp(payload.get("generated_at"))
         or not isinstance(payload.get("venues"), list)
@@ -354,7 +359,7 @@ def validate_snapshot(payload: object) -> dict:
         raise ValueError("snapshot counts are invalid")
     seen: set[str] = set()
     for raw in payload["venues"]:
-        venue = _bounded_prior_venue(raw)
+        venue = _bounded_prior_venue(raw, project)
         observation_is_valid = venue is not None and (
             _valid_timestamp(raw.get("checked_at"))
             and _valid_timestamp(raw.get("attempted_at"))
@@ -369,7 +374,7 @@ def validate_snapshot(payload: object) -> dict:
         error_is_valid = (
             isinstance(raw, dict)
             and _ID_RE.fullmatch(str(raw.get("id") or ""))
-            and raw.get("project") == PROJECT
+            and raw.get("project") == project
             and raw.get("status") == "unknown"
             and raw.get("result") == "error"
             and raw.get("error_code") in ERROR_CODES
@@ -407,7 +412,7 @@ def validate_snapshot(payload: object) -> dict:
     return payload
 
 
-def load_snapshot(path: Path) -> dict | None:
+def load_snapshot(path: Path, project: str = PROJECT) -> dict | None:
     try:
         if path.stat().st_size > MAX_SNAPSHOT_BYTES:
             return None
@@ -415,7 +420,7 @@ def load_snapshot(path: Path) -> dict | None:
             body = handle.read(MAX_SNAPSHOT_BYTES + 1)
         if len(body) > MAX_SNAPSHOT_BYTES:
             return None
-        return validate_snapshot(json.loads(body.decode("utf-8")))
+        return validate_snapshot(json.loads(body.decode("utf-8")), project)
     except (OSError, ValueError, TypeError, json.JSONDecodeError):
         return None
 
@@ -455,8 +460,12 @@ class TFTLiveRefresher:
         fetcher: Fetcher = _default_fetch,
         clock: Clock = _now,
         max_workers: int = MAX_WORKERS,
+        project: str = PROJECT,
+        venues_key: str = "venues",
     ) -> None:
         self.catalog = catalog
+        self.project = project
+        self.venues_key = venues_key
         self.snapshot_path = Path(snapshot_path)
         self.fetcher = fetcher
         self.clock = clock
@@ -478,22 +487,26 @@ class TFTLiveRefresher:
 
     def _refresh_locked(self) -> dict:
         attempted_at = _timestamp(self.clock)
-        catalog = _active_catalog_venues(self.catalog())
-        prior = load_snapshot(self.snapshot_path) or {}
+        project = self.project
+        catalog = _active_catalog_venues(self.catalog(), self.venues_key)
+        prior = load_snapshot(self.snapshot_path, project) or {}
         prior_by_id = {
             str(row.get("id")): row
             for row in prior.get("venues", [])
-            if _bounded_prior_venue(row) is not None
+            if _bounded_prior_venue(row, project) is not None
         }
         try:
             membership = self.fetcher(
-                f"/projects/{PROJECT}/restaurants", {"per_page": 100}, True
+                f"/projects/{project}/restaurants", {"per_page": 100}, True
             )
             member_ids = _membership_ids(membership)
-            listed = [row for row in catalog if row["dining_city_id"] in member_ids]
-            not_listed = {
-                row["id"] for row in catalog if row["dining_city_id"] not in member_ids
-            }
+            listed = [
+                row
+                for row in catalog
+                if row["dining_city_id"] in member_ids or row.get("linked_only")
+            ]
+            listed_ids = {row["id"] for row in listed}
+            not_listed = {row["id"] for row in catalog if row["id"] not in listed_ids}
             membership_error = None
         except Exception as exc:  # retain prior observations on total membership failure
             listed = []
@@ -507,7 +520,9 @@ class TFTLiveRefresher:
             workers = min(self.max_workers, len(listed)) or 1
             with ThreadPoolExecutor(max_workers=workers) as executor:
                 futures = {
-                    executor.submit(_fetch_venue, venue, self.fetcher, attempted_at): venue
+                    executor.submit(
+                        _fetch_venue, venue, self.fetcher, attempted_at, project
+                    ): venue
                     for venue in listed
                 }
                 for future in as_completed(futures):
@@ -529,7 +544,7 @@ class TFTLiveRefresher:
             prior_venue = (
                 None
                 if venue_id in not_listed
-                else _bounded_prior_venue(prior_by_id.get(venue_id))
+                else _bounded_prior_venue(prior_by_id.get(venue_id), project)
             )
             if prior_venue is not None:
                 rows.append(
@@ -545,7 +560,7 @@ class TFTLiveRefresher:
                 rows.append(
                     {
                         "id": venue_id,
-                        "project": PROJECT,
+                        "project": project,
                         "status": "unknown",
                         "checked_at": None,
                         "attempted_at": attempted_at,
@@ -560,7 +575,7 @@ class TFTLiveRefresher:
         refresh_status = "success" if failed == 0 else "partial" if succeeded else "error"
         snapshot = {
             "schema_version": 1,
-            "source_project": PROJECT,
+            "source_project": project,
             "generated_at": attempted_at,
             "refresh_status": refresh_status,
             "counts": {
@@ -571,10 +586,11 @@ class TFTLiveRefresher:
             },
             "venues": sorted(rows, key=lambda row: row["id"]),
         }
-        validate_snapshot(snapshot)
+        validate_snapshot(snapshot, project)
         _atomic_write(self.snapshot_path, snapshot)
         logger.info(
-            "tft_live_refresh completed status=%s eligible=%d succeeded=%d failed=%d retained=%d",
+            "tft_live_refresh completed project=%s status=%s eligible=%d succeeded=%d failed=%d retained=%d",
+            project,
             refresh_status,
             len(catalog),
             succeeded,

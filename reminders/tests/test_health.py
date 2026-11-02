@@ -154,7 +154,7 @@ def test_healthz_fails_closed_when_live_refresh_is_stale(monkeypatch):
     monkeypatch.setattr(
         main.tft_live_api,
         "snapshot_health",
-        lambda _path: {
+        lambda _path, **_kw: {
             "status": "stale",
             "generated_at": "2026-09-01T00:00:00Z",
             "age_seconds": 1_801,
@@ -166,6 +166,30 @@ def test_healthz_fails_closed_when_live_refresh_is_stale(monkeypatch):
 
     assert payload["ok"] is False
     assert payload["tft_live"]["status"] == "stale"
+
+
+def test_healthz_reports_centurion_slots_without_gating_on_them(monkeypatch):
+    monkeypatch.setattr(
+        main,
+        "settings",
+        replace(main.settings, tft_live_refresh_enabled=True),
+    )
+    seen = []
+
+    def health(path, *, project="AMEXPlatSG"):
+        seen.append((path.name, project))
+        return {"status": "success" if project == "AMEXPlatSG" else "unavailable"}
+
+    monkeypatch.setattr(main.tft_live_api, "snapshot_health", health)
+
+    payload = TestClient(app).get("/healthz").json()
+
+    assert payload["tft_live_centurion"] == {"status": "unavailable"}
+    assert payload["ok"] is True
+    assert (
+        main.settings.tft_live_snapshot_path.stem + "-centurion.json",
+        "AMEXCentSG",
+    ) in seen
 
 
 def test_owner_alert_config_can_be_disabled(monkeypatch):

@@ -17,6 +17,7 @@ const names = [
   "tableForTwoHasTierData",
   "tableForTwoPublishedMenus",
   "tableForTwoTierNote",
+  "tableForTwoDisplayTier",
   "tableForTwoIsEarlierListing",
 ];
 
@@ -89,7 +90,7 @@ console.log("TFT tier filter verification passed");
     tableForTwoBestAvailabilityLine: () => "Source check pending.",
   };
   vm.runInNewContext(
-    `${["tableForTwoVenueTiers", "tableForTwoBotServesVenue", "tableForTwoTierNote", "tableForTwoSlotMatchesHtml"].map((name) => extractFrom(source, name)).join("\n")}\nglobalThis.render = tableForTwoSlotMatchesHtml;`,
+    `${["tableForTwoVenueTiers", "tableForTwoBotServesVenue", "tableForTwoTierNote", "tableForTwoDisplayTier", "tableForTwoSlotMatchesHtml"].map((name) => extractFrom(source, name)).join("\n")}\nglobalThis.render = tableForTwoSlotMatchesHtml;`,
     context,
   );
   const jaanHtml = context.render(tiered[2], {});
@@ -103,7 +104,7 @@ console.log("TFT tier availability box verification passed");
 {
   const context = { state: {}, tableForTwoTierFilter: { value: "centurion" } };
   vm.runInNewContext(
-    `${["tableForTwoVenueTiers", "tableForTwoTierNote", "tableForTwoBotServesVenue"].map((name) => extractFrom(source, name)).join("\n")}\nObject.assign(globalThis, { tableForTwoTierNote, tableForTwoBotServesVenue });`,
+    `${["tableForTwoVenueTiers", "tableForTwoTierNote", "tableForTwoDisplayTier", "tableForTwoBotServesVenue"].map((name) => extractFrom(source, name)).join("\n")}\nObject.assign(globalThis, { tableForTwoTierNote, tableForTwoBotServesVenue });`,
     context,
   );
   assert.equal(context.tableForTwoTierNote(tiered[0]), "Centurion slots are not tracked yet.");
@@ -126,7 +127,7 @@ console.log("TFT Centurion filter availability verification passed");
     tableForTwoDateRangeSummary: (dates) => `${dates.length} dates`,
   };
   vm.runInNewContext(
-    `${["tableForTwoVenueTiers", "tableForTwoTierNote", "tableForTwoBotServesVenue", "tableForTwoAvailabilityBadgeClass", "tableForTwoDateSummary"].map((name) => extractFrom(source, name)).join("\n")}\nObject.assign(globalThis, { tableForTwoAvailabilityBadgeClass, tableForTwoDateSummary });`,
+    `${["tableForTwoVenueTiers", "tableForTwoTierNote", "tableForTwoDisplayTier", "tableForTwoBotServesVenue", "tableForTwoAvailabilityBadgeClass", "tableForTwoDateSummary"].map((name) => extractFrom(source, name)).join("\n")}\nObject.assign(globalThis, { tableForTwoAvailabilityBadgeClass, tableForTwoDateSummary });`,
     context,
   );
   assert.equal(context.tableForTwoAvailabilityBadgeClass(vue, {}), "");
@@ -136,3 +137,62 @@ console.log("TFT Centurion filter availability verification passed");
   assert.equal(context.tableForTwoDateSummary(vue, {}), "1 dates");
 }
 console.log("TFT untracked tier display verification passed");
+
+// Centurion slots from Railway replace the untracked note under the Centurion view.
+{
+  const fns = [
+    "tableForTwoVenueTiers", "tableForTwoBotServesVenue", "tableForTwoDisplayTier",
+    "tableForTwoSelectTierAvailability", "tableForTwoTierNote", "tableForTwoSlotSnapshotIsValid",
+    "tableForTwoAvailabilityFromSlotVenue", "applyTableForTwoCenturionSnapshot", "tableForTwoCenturionBookingUrl",
+  ];
+  const platAvailability = { status: "live_available", project: "AMEXPlatSG", meals: [] };
+  const venues = [
+    { id: "tft-vue", name: "VUE", dining_city_id: "205194014", tiers: ["platinum", "centurion"], availability: platAvailability },
+    { id: "tft-jaan", name: "JAAN", dining_city_id: "205189592", tiers: ["centurion"] },
+  ];
+  const context = {
+    state: { tableForTwo: { venues } },
+    tableForTwoTierFilter: { value: "" },
+    tableForTwoSearchText: () => "",
+  };
+  vm.runInNewContext(
+    `${fns.map((name) => extractFrom(source, name)).join("\n")}\nObject.assign(globalThis, { ${fns.join(", ")} });`,
+    context,
+  );
+  const [vue, jaan] = venues;
+  assert.equal(context.tableForTwoDisplayTier(vue), "platinum");
+  assert.equal(context.tableForTwoDisplayTier(jaan), "centurion");
+  context.tableForTwoTierFilter.value = "centurion";
+  assert.equal(context.tableForTwoDisplayTier(vue), "centurion");
+
+  const meals = [{ meal: "Lunch", status: "available", slots: [{ date: "2026-11-06", time: "11:45", max_seats: 4 }] }];
+  const snapshot = {
+    schema_version: 1, source_project: "AMEXCentSG", generated_at: "2026-11-02T14:00:00Z",
+    refresh_status: "success", counts: { eligible: 2, succeeded: 2, failed: 0, retained: 0 },
+    venues: [
+      { id: "tft-jaan", project: "AMEXCentSG", status: "live_available", checked_at: "2026-11-02T14:00:00Z", attempted_at: "2026-11-02T14:00:00Z", result: "fresh", error_code: null, meals },
+      { id: "tft-vue", project: "AMEXCentSG", status: "live_no_seats", checked_at: "2026-11-02T14:00:00Z", attempted_at: "2026-11-02T14:00:00Z", result: "fresh", error_code: null, meals: [] },
+    ],
+  };
+  assert.equal(context.tableForTwoTierNote(jaan), "Centurion slots are not tracked yet.");
+  assert.equal(context.applyTableForTwoCenturionSnapshot({ ...snapshot, source_project: "AMEXPlatSG" }), false);
+  assert.equal(context.applyTableForTwoCenturionSnapshot(snapshot), true);
+
+  context.tableForTwoSelectTierAvailability();
+  assert.equal(vue.availability.project, "AMEXCentSG");
+  assert.equal(vue.availability.status, "live_no_seats");
+  assert.equal(jaan.availability.meals[0].slots[0].time, "11:45");
+  assert.equal(context.tableForTwoTierNote(vue), "");
+  assert.equal(context.tableForTwoTierNote(jaan), "");
+
+  context.tableForTwoTierFilter.value = "platinum";
+  context.tableForTwoSelectTierAvailability();
+  assert.equal(vue.availability, platAvailability);
+  assert.equal(context.tableForTwoBotServesVenue(jaan), false);
+
+  assert.equal(
+    context.tableForTwoCenturionBookingUrl(jaan),
+    "https://partner.diningcity.asia/profile?program=AMEXCentSG&region_id=120&restaurant_id=205189592&lang=en",
+  );
+}
+console.log("TFT Centurion live slots verification passed");

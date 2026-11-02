@@ -19,6 +19,7 @@ function buildContext(fetchImpl) {
     Error,
     fetch: fetchImpl,
     applyTableForTwoLiveSnapshot: () => true,
+    refreshTableForTwoCenturionAvailability: async () => {},
     isTableForTwoRoute: () => true,
     refreshTableForTwoDateOptions: () => {},
     rerenders: 0,

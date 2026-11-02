@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 
 from app import tft_guide, tft_patterns
 from app.config import Settings, load_settings
-from app.tft_live_refresh import load_snapshot
+from app.tft_live_refresh import CENTURION_PROJECT, load_snapshot
 
 
 router = APIRouter()
@@ -22,8 +22,10 @@ def get_settings() -> Settings:
     return load_settings()
 
 
-def snapshot_health(path: Path, *, now: datetime | None = None) -> dict[str, Any]:
-    snapshot = load_snapshot(path)
+def snapshot_health(
+    path: Path, *, now: datetime | None = None, project: str | None = None
+) -> dict[str, Any]:
+    snapshot = load_snapshot(path, project) if project else load_snapshot(path)
     if snapshot is None:
         return {
             "status": "unavailable",
@@ -54,9 +56,11 @@ def snapshot_health(path: Path, *, now: datetime | None = None) -> dict[str, Any
     }
 
 
-@router.get("/api/tft/slots")
-def tft_live_slots(settings: Settings = Depends(get_settings)) -> JSONResponse:
-    snapshot = load_snapshot(settings.tft_live_snapshot_path)
+def centurion_snapshot_path(platinum_path: Path) -> Path:
+    return platinum_path.with_name(f"{platinum_path.stem}-centurion{platinum_path.suffix}")
+
+
+def _snapshot_response(snapshot: dict | None) -> JSONResponse:
     if snapshot is None:
         return JSONResponse(
             {"detail": "Live slot snapshot unavailable"},
@@ -64,6 +68,20 @@ def tft_live_slots(settings: Settings = Depends(get_settings)) -> JSONResponse:
             headers={"Cache-Control": "no-store"},
         )
     return JSONResponse(snapshot, headers={"Cache-Control": "no-store"})
+
+
+@router.get("/api/tft/slots")
+def tft_live_slots(settings: Settings = Depends(get_settings)) -> JSONResponse:
+    return _snapshot_response(load_snapshot(settings.tft_live_snapshot_path))
+
+
+@router.get("/api/tft/slots/centurion")
+def tft_live_slots_centurion(settings: Settings = Depends(get_settings)) -> JSONResponse:
+    return _snapshot_response(
+        load_snapshot(
+            centurion_snapshot_path(settings.tft_live_snapshot_path), CENTURION_PROJECT
+        )
+    )
 
 
 @router.get("/api/tft/patterns")
