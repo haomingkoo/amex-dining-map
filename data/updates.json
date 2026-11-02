@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-02T17:08:06Z",
+  "updated_at": "2026-11-02T17:14:10Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-11-02T17:14:10Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 7
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 4
+        }
+      },
+      "changes": [
+        {
+          "field": "Review items",
+          "before": 7,
+          "after": 4
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "ae928248067b17263773",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "8fd731677e15097a4714"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -23156,46 +23189,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Restaurant Zeik / Hamburg",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Restaurant Zeik",
-          "Country": "Germany",
-          "Region": "Hamburg",
-          "City": "Hamburg",
-          "Address": "Sierichstr. 112, Hamburg, 22999, Germany",
-          "Cuisine": [
-            "Fine-Dining"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "ada19a1cfbcd4cb575f9",
-      "stream_id": "11418aeacbe8cfe013ba",
-      "occurrence": 1,
-      "id": "2a54aad8a3f365b6f44f",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23618,7 +23611,7 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "3397f47e70e5f7c32cc8",
+        "latest_transition_id": "ae928248067b17263773",
         "occurrences": {
           "007e51f231870c7881c2": 1,
           "035b21790df21f0c0ba8": 1,
@@ -23629,6 +23622,7 @@
           "99d63357823949eacb8c": 1,
           "9b1f7da1123fbd777ee5": 2,
           "ae2b42ce35ce292dc420": 1,
+          "ae928248067b17263773": 1,
           "b225ffa1e05d695dc10a": 1,
           "b7194678b771b7d798a7": 4,
           "c33e28c5205017fb3dfa": 2,
