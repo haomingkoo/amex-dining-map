@@ -6618,6 +6618,7 @@ function tableForTwoAvailabilityLabel(record, filters = state.tableForTwoCurrent
 }
 
 function tableForTwoAvailabilityBadgeClass(record, filters = state.tableForTwoCurrentFilters || {}) {
+  if (tableForTwoTierNote(record)) return "";
   const key = tableForTwoAvailabilityKey(record, filters);
   if (key === "available") return "green";
   if (key === "no_seats") return "amber";
@@ -6805,6 +6806,7 @@ function tableForTwoAvailabilityIsStale(record) {
 }
 
 function tableForTwoDateSummary(record, filters = state.tableForTwoCurrentFilters || {}) {
+  if (tableForTwoTierNote(record)) return "";
   const availability = record.availability || {};
   if (tableForTwoAvailabilityKey(record, filters) === "stale") return "Availability may be outdated";
   const matchingDates = uniqueValues(tableForTwoMatchingSlots(record, filters).map((slot) => slot.date).filter(Boolean));
