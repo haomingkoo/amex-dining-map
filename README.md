@@ -22,11 +22,11 @@ each dataset was cached, where it came from, and when a human review is needed.
 - `Plat Stay`: official Plat Stay property set from the current Amex PDF.
 - `Love Dining`: Singapore restaurant and hotel outlets with official discount
   terms, exclusions, booking notes, and cache metadata.
-- `Table for Two`: Singapore Platinum set-menu roster from the official Amex
-  page plus the reviewed DiningCity `AMEXPlatSG` membership feed, with 30/30
-  mapped roster venues (28 current booking-project venues and 2 retained
-  historical records) and DiningCity `AMEXPlatSG` slot-level availability
-  checks for party-size/date/session filtering.
+- `Table for Two`: Singapore set-menu roster for both cards. Platinum comes from
+  the official Amex page plus the DiningCity `AMEXPlatSG` project. Centurion
+  comes from the DiningCity `AMEXCentSG` project, since Amex publishes no
+  Centurion roster page. Each card has its own tables, so slots are checked per
+  card and every venue records which cards can book it (`tiers`).
 
 ## Data Trust Model
 
@@ -35,7 +35,7 @@ each dataset was cached, where it came from, and when a human review is needed.
 - `cached`: source fetch times and hashes stored in `data/*-source.json` files
   and rendered in the UI.
 - `live-cache`: Table for Two availability from DiningCity's public
-  `AMEXPlatSG` project endpoint. The UI stores returned slot dates, times, and
+  `AMEXPlatSG` and `AMEXCentSG` project endpoints, kept separate per card. The UI stores returned slot dates, times, and
   max party size so filters are evaluated per slot. Final booking and voucher
   redemption still happen in the Amex Experiences App.
 - `availability-cache`: Pocket Concierge public availability calendar and
@@ -174,8 +174,9 @@ Current coordinate audit notes:
 - Do not commit cookies, tokens, private screenshots, or user-specific booking
   data.
 - Do not present generic public DiningCity restaurant time slots as Table for Two
-  inventory. Only the DiningCity `AMEXPlatSG` project endpoint is used for Table
-  for Two availability.
+  inventory. Only the DiningCity `AMEXPlatSG` and `AMEXCentSG` project endpoints
+  are used for Table for Two availability. A member is never shown or alerted
+  on the other card's seats.
 - Treat cached Table for Two availability as planning data. Users still need to
   complete booking and voucher redemption in the Amex Experiences App.
 - Table for Two alert subscriptions use the Railway reminder service and require

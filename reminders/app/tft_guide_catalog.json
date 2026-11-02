@@ -7,7 +7,7 @@
   "menu_source": {
     "checked_at": "2026-11-02T14:20:15Z",
     "review_required": true,
-    "review_queue_count": 24
+    "review_queue_count": 8
   },
   "release_source": {
     "source": "data/table-for-two-release-history.json",
@@ -25,8 +25,13 @@
   },
   "verdict_source": {
     "reviewed_at": "2026-10-26T13:40:00Z",
-    "priced_venues": 18,
-    "needs_review": []
+    "priced_venues": 14,
+    "needs_review": [
+      "tft-cultivate",
+      "tft-latido",
+      "tft-polo-bar-steakhouse",
+      "tft-vineyard"
+    ]
   },
   "slot_source": {
     "url": "https://amex-explorer.kooexperience.com/data/table-for-two-slots.json",
@@ -1009,8 +1014,8 @@
         }
       },
       "verdict": {
-        "line": "Lower value on paper: extra diners pay S$100 nett a head before a 10% discount, below the usual S$100++.",
-        "tier": "lower",
+        "line": "Typical value: extra diners pay S$100 nett a head, close to the usual S$100++.",
+        "tier": "typical",
         "facts": [
           "Each of you gets a full set.",
           "Extra diners pay S$180 nett for two at 10% off, so S$100 nett a head before the discount.",
@@ -1923,9 +1928,9 @@
           "filename": "Cultivate-Menu_Centurion.pdf",
           "card": "centurion",
           "label": "Centurion",
-          "checked_at": "2026-10-31T01:23:48Z",
-          "last_seen_at": "2026-10-31T01:23:48Z",
-          "sha256": "840ed156f6b32e11792cea1ae5db89ae2e8d40ffe0bda236e452f77cacd4d2a3"
+          "checked_at": "2026-11-02T14:15:29Z",
+          "last_seen_at": "2026-11-02T14:15:29Z",
+          "sha256": "d370d5901c5c8aadc68f51dfb53c3deac25d94becaf67a2cb13373853a7298da"
         },
         "platinum": {
           "status": "published",
@@ -1933,9 +1938,9 @@
           "filename": "Cultivate-Menu_Platinum.pdf",
           "card": "platinum",
           "label": "Platinum",
-          "checked_at": "2026-10-31T01:23:48Z",
-          "last_seen_at": "2026-10-31T01:23:48Z",
-          "sha256": "84b2392cd088b51b1cec840bc96f204ea468150fb712041efdffd271b293b8a6"
+          "checked_at": "2026-11-01T16:39:19Z",
+          "last_seen_at": "2026-11-01T16:39:19Z",
+          "sha256": "eca23865ba55767862fab9024e0d357cc3ce519079d178d20f61ca750bfa1236"
         }
       },
       "release_patterns": [
@@ -2225,11 +2230,9 @@
         }
       },
       "verdict": {
-        "line": "Typical value: extra diners pay S$100++ a head, the usual Table for Two price.",
-        "tier": "typical",
+        "line": "No published set price, so there is no value call.",
+        "tier": null,
         "facts": [
-          "Each of you gets a full set.",
-          "Extra diners pay S$100++ a head, about S$120 with service charge and GST.",
           "Google rating 4.4 from 901 reviews."
         ],
         "usual_price": "S$100++"
@@ -2872,8 +2875,8 @@
         }
       },
       "verdict": {
-        "line": "Typical value: extra diners pay S$108++ a head, close to the usual S$100++.",
-        "tier": "typical",
+        "line": "Good value: extra diners pay S$108++ a head for this set, more than the usual S$100++.",
+        "tier": "higher",
         "facts": [
           "Each of you gets a full set.",
           "Extra diners pay S$108++ a head, about S$129 with service charge and GST.",
@@ -3202,9 +3205,25 @@
       "address": "252 North Bridge Road, #01-44B Raffles City Shopping Centre, Singapore 179103",
       "aliases": [],
       "menus": {
-        "default": {
-          "status": "no_pdf_found",
-          "checked_at": "2026-11-02T14:20:15Z"
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Vivino-Menu_Centurion.pdf",
+          "filename": "Vivino-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-11-02T01:12:35Z",
+          "last_seen_at": "2026-11-02T01:12:35Z",
+          "sha256": "539768bef76625e9964831f78034490c72a95d7702361c5e904ad7828e52e258"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/Vivino-Menu_Platinum.pdf",
+          "filename": "Vivino-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-11-02T01:12:35Z",
+          "last_seen_at": "2026-11-02T01:12:35Z",
+          "sha256": "07d49e856ffd0072196bc2dd0ea942a4763fde5364559a6edbb010a0ed09efe3"
         }
       },
       "release_patterns": [
@@ -4068,8 +4087,8 @@
         }
       },
       "verdict": {
-        "line": "Typical value: extra diners pay S$100++ a head, the usual Table for Two price.",
-        "tier": "typical",
+        "line": "Good value: extra diners pay S$100++ a head for this set, more than the usual S$100++.",
+        "tier": "higher",
         "facts": [
           "Each of you gets a full set.",
           "Extra diners pay S$100++ a head, about S$120 with service charge and GST.",
@@ -4823,9 +4842,9 @@
           "filename": "Latido-Menu_Platinum.pdf",
           "card": "platinum",
           "label": "Platinum",
-          "checked_at": "2026-10-31T01:23:48Z",
-          "last_seen_at": "2026-10-31T01:23:48Z",
-          "sha256": "e71475b254c01b21f3d6371d55c9765f5c1b032d2f9ea351ea7a541ce63cf541"
+          "checked_at": "2026-11-01T16:39:19Z",
+          "last_seen_at": "2026-11-01T16:39:19Z",
+          "sha256": "70cc54fdf5cbced35f54c7ca5f4ea6e799e7f922608b6a0c260a1f0be5bcdf52"
         }
       },
       "release_patterns": [
@@ -5156,11 +5175,9 @@
         }
       },
       "verdict": {
-        "line": "Typical value: extra diners pay S$100++ a head, the usual Table for Two price.",
-        "tier": "typical",
+        "line": "No published set price, so there is no value call.",
+        "tier": null,
         "facts": [
-          "One set is shared between the two of you.",
-          "Extra diners pay S$100++ a head, about S$120 with service charge and GST.",
           "Google rating 4.6 from 310 reviews."
         ],
         "usual_price": "S$100++"
@@ -5175,9 +5192,25 @@
       "address": "32 Beach Road, Singapore 189764",
       "aliases": [],
       "menus": {
-        "default": {
-          "status": "no_pdf_found",
-          "checked_at": "2026-11-02T14:20:15Z"
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/MadameFan-Menu_Centurion.pdf",
+          "filename": "MadameFan-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-11-02T14:15:29Z",
+          "last_seen_at": "2026-11-02T14:15:29Z",
+          "sha256": "6fc9f33bf0a8ceca9b07278ee4341749f940be778e4119b157754c63b6f5debe"
+        },
+        "platinum": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/dining/MadameFan-Menu_Platinum.pdf",
+          "filename": "MadameFan-Menu_Platinum.pdf",
+          "card": "platinum",
+          "label": "Platinum",
+          "checked_at": "2026-11-02T14:15:29Z",
+          "last_seen_at": "2026-11-02T14:15:29Z",
+          "sha256": "88c91872f8d7735265efd2fac5b57c1c7291488d04f06a0d82038f8065d7def4"
         }
       },
       "release_patterns": [
@@ -6730,9 +6763,9 @@
           "filename": "Polo-Bar-Steakhouse-Menu_Centurion.pdf",
           "card": "centurion",
           "label": "Centurion",
-          "checked_at": "2026-10-31T01:23:48Z",
-          "last_seen_at": "2026-10-31T01:23:48Z",
-          "sha256": "e34b56543d3f596f6146b4cb72d63d935d909f6fcc86d68e4fb4946ae2b38849"
+          "checked_at": "2026-11-02T14:15:29Z",
+          "last_seen_at": "2026-11-02T14:15:29Z",
+          "sha256": "f39787a4d365293378ef99945a80d6f1ac4a2e86fdd246d0fb262aa1a0a80cd8"
         },
         "platinum": {
           "status": "published",
@@ -6740,9 +6773,9 @@
           "filename": "Polo-Bar-Steakhouse-Menu_Platinum.pdf",
           "card": "platinum",
           "label": "Platinum",
-          "checked_at": "2026-10-31T01:23:48Z",
-          "last_seen_at": "2026-10-31T01:23:48Z",
-          "sha256": "e1d25e056435f37135bc82e2e2ec1570d3f0b54399b0d86625ef548fbf5af4af"
+          "checked_at": "2026-11-01T16:39:19Z",
+          "last_seen_at": "2026-11-01T16:39:19Z",
+          "sha256": "a05b63573380827756217329f4b3240709dfbd39a74b5e274ccaa9420d18aa18"
         }
       },
       "release_patterns": [
@@ -6989,11 +7022,9 @@
         }
       },
       "verdict": {
-        "line": "Typical value: extra diners pay S$100++ a head, the usual Table for Two price.",
-        "tier": "typical",
+        "line": "No published set price, so there is no value call.",
+        "tier": null,
         "facts": [
-          "Each of you gets a full set.",
-          "Extra diners pay S$100++ a head, about S$120 with service charge and GST.",
           "Google rating 4.6 from 169 reviews."
         ],
         "usual_price": "S$100++"
@@ -7319,8 +7350,8 @@
         }
       },
       "verdict": {
-        "line": "Lower value on paper: extra diners pay S$100 nett a head before a 10% discount, below the usual S$100++.",
-        "tier": "lower",
+        "line": "Typical value: extra diners pay S$100 nett a head, close to the usual S$100++.",
+        "tier": "typical",
         "facts": [
           "Each of you gets a full set.",
           "Extra diners pay S$180 nett for two at 10% off, so S$100 nett a head before the discount.",
@@ -7649,8 +7680,8 @@
         }
       },
       "verdict": {
-        "line": "Lower value on paper: extra diners pay S$100 nett a head, below the usual S$100++.",
-        "tier": "lower",
+        "line": "Typical value: extra diners pay S$100 nett a head, close to the usual S$100++.",
+        "tier": "typical",
         "facts": [
           "Each of you gets a full set.",
           "Extra diners pay S$100 nett a head.",
@@ -7928,8 +7959,8 @@
         }
       },
       "verdict": {
-        "line": "Lower value on paper: extra diners pay S$75+ a head, below the usual S$100++.",
-        "tier": "lower",
+        "line": "No published set price, so there is no value call.",
+        "tier": null,
         "facts": [
           "Each of you gets a full set.",
           "Extra diners pay S$75+ a head.",
@@ -8264,8 +8295,8 @@
         }
       },
       "verdict": {
-        "line": "Lower value on paper: extra diners pay S$100 nett a head, below the usual S$100++.",
-        "tier": "lower",
+        "line": "Typical value: extra diners pay S$100 nett a head, close to the usual S$100++.",
+        "tier": "typical",
         "facts": [
           "Each of you gets a full set.",
           "Extra diners pay S$100 nett a head.",
@@ -8584,8 +8615,8 @@
         }
       },
       "verdict": {
-        "line": "Lower value on paper: extra diners pay S$100 nett a head before a 10% discount, below the usual S$100++.",
-        "tier": "lower",
+        "line": "Typical value: extra diners pay S$100 nett a head, close to the usual S$100++.",
+        "tier": "typical",
         "facts": [
           "One set is shared between the two of you.",
           "Extra diners pay S$180 nett for two at 10% off, so S$100 nett a head before the discount.",
@@ -8903,8 +8934,8 @@
         }
       },
       "verdict": {
-        "line": "Typical value: extra diners pay S$100++ a head, the usual Table for Two price.",
-        "tier": "typical",
+        "line": "Good value: extra diners pay S$100++ a head for this set, more than the usual S$100++.",
+        "tier": "higher",
         "facts": [
           "Each of you gets a full set.",
           "Extra diners pay S$100++ a head, about S$120 with service charge and GST.",
@@ -8930,9 +8961,9 @@
           "filename": "Vineyard-Menu_Centurion.pdf",
           "card": "centurion",
           "label": "Centurion",
-          "checked_at": "2026-10-31T01:23:48Z",
-          "last_seen_at": "2026-10-31T01:23:48Z",
-          "sha256": "9e9afb4caf3f9d9a7728d524c945404bd932e6b59d4d00061b04ef28e94f6afc"
+          "checked_at": "2026-11-02T14:15:29Z",
+          "last_seen_at": "2026-11-02T14:15:29Z",
+          "sha256": "a9f0ced8d4a00937ca86a1f742671ab1aa0ef019f75334608726cb236b1f64be"
         },
         "platinum": {
           "status": "published",
@@ -8940,9 +8971,9 @@
           "filename": "Vineyard-Menu_Platinum.pdf",
           "card": "platinum",
           "label": "Platinum",
-          "checked_at": "2026-10-31T01:23:48Z",
-          "last_seen_at": "2026-10-31T01:23:48Z",
-          "sha256": "195c43a9657a987f0416383887c9492b2eb72e407848d85fec1dd1a1348c3920"
+          "checked_at": "2026-11-01T16:39:19Z",
+          "last_seen_at": "2026-11-01T16:39:19Z",
+          "sha256": "725fb1d5c2a0a7e7b7ba9c4360d3875f45dd8f2c402325b3e3d347f55617121a"
         }
       },
       "release_patterns": [
@@ -9235,13 +9266,9 @@
         }
       },
       "verdict": {
-        "line": "Lower value on paper: extra diners pay S$100 nett a head, below the usual S$100++.",
-        "tier": "lower",
-        "facts": [
-          "Each of you gets a full set.",
-          "Extra diners pay S$100 nett a head.",
-          "Google rating 4.5 from 2,158 reviews."
-        ],
+        "line": "No published set price, so there is no value call. Well rated: Google 4.5 from 2,158 reviews.",
+        "tier": null,
+        "facts": [],
         "usual_price": "S$100++"
       }
     },
@@ -9260,9 +9287,9 @@
           "filename": "VUE-Menu_Centurion.pdf",
           "card": "centurion",
           "label": "Centurion",
-          "checked_at": "2026-10-31T01:23:48Z",
-          "last_seen_at": "2026-10-31T01:23:48Z",
-          "sha256": "0fffc06470d048cf87d212e5dfb9c69f0c7d951e0e696998734d262dd88164e6"
+          "checked_at": "2026-11-02T14:15:29Z",
+          "last_seen_at": "2026-11-02T14:15:29Z",
+          "sha256": "43ae2715fc00b1f179a270493a752ea4dee2ab41ef33d10c490d25235672f2d6"
         },
         "platinum": {
           "status": "published",
@@ -9571,8 +9598,8 @@
         "furthest_open_dates": {}
       },
       "verdict": {
-        "line": "Typical value: extra diners pay S$100++ a head, the usual Table for Two price.",
-        "tier": "typical",
+        "line": "Good value: extra diners pay S$100++ a head for this set, more than the usual S$100++.",
+        "tier": "higher",
         "facts": [
           "Each of you gets a full set.",
           "Extra diners pay S$100++ a head, about S$120 with service charge and GST.",

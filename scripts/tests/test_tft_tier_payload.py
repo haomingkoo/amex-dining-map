@@ -247,3 +247,20 @@ def test_platinum_supplement_still_gets_its_centurion_tier() -> None:
     status = scraper.booking_project_status_for_venue(madame, centurion, {}, tier="centurion")
 
     assert status == "active"
+
+
+def test_unreviewed_roster_image_keeps_supplements_out_of_the_reviewed_roster():
+    from scripts import tft_roster_reviews
+
+    existing = {
+        "venues": [
+            {"id": "tft-vue", "name": "VUE", "roster_basis": "official_image"},
+            {"id": "tft-jaan", "name": "JAAN", "roster_basis": "diningcity_centurion_project_confirmed"},
+            {"id": "tft-madame-fan", "name": "Madame Fan", "roster_basis": "diningcity_booking_project_confirmed"},
+        ],
+        "roster_source": {"approved_participating_sha256": "a" * 64},
+    }
+    roster, source = tft_roster_reviews.review_state("b" * 64, "https://example.test/x.png", "2026-11-03T00:00:00Z", existing)
+
+    assert source["review_required"] is True
+    assert [record["id"] for record in roster] == ["tft-vue"]

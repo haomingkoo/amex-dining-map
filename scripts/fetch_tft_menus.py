@@ -252,12 +252,21 @@ def fetch_aem_menu_listing(source_key: str) -> dict[str, dict]:
     return menus
 
 
+# Amex file-name misspellings, mapped to the venue's spelling.
+UPSTREAM_SPELLINGS = {"pavillion": "pavilion"}
+
+
 def normalize_for_match(value: str) -> str:
-    return re.sub(r"[^a-z0-9]", "", value.lower())
+    normalized = re.sub(r"[^a-z0-9]", "", value.lower())
+    for wrong, right in UPSTREAM_SPELLINGS.items():
+        normalized = normalized.replace(wrong, right)
+    return normalized
 
 
 def filename_stem(filename: str) -> str:
     stem = re.sub(r"[-_]?Menu(?:[-_](?:Platinum|Platinium|Centurion))?\.pdf$", "", filename, flags=re.IGNORECASE)
+    # Some menus are labelled samples, as in JAG-Sample-Menu_Centurion.pdf.
+    stem = re.sub(r"[-_]Sample$", "", stem, flags=re.IGNORECASE)
     # Branch menus name the location after the word Menu, as in Brewerkz-Menu-ECP.pdf.
     return re.sub(r"[-_]?Menu[-_]([A-Za-z0-9]+)\.pdf$", r"-\1", stem, flags=re.IGNORECASE)
 
@@ -307,6 +316,11 @@ def fetch_direct_menu_entry(source_key: str, known_filenames: list[str]) -> tupl
 
 def match_venue_candidates(venue_name: str, candidates: list[str]) -> list[str]:
     """Return every candidate at the strongest matching tier."""
+    return ranked_venue_candidates(venue_name, candidates)[1]
+
+
+def ranked_venue_candidates(venue_name: str, candidates: list[str]) -> tuple[int, list[str]]:
+    """(tier, matches): 0 exact name, 1 first words, 2 contains; lower is stronger."""
     norm_name = normalize_for_match(venue_name)
     norm_no_the = norm_name[3:] if norm_name.startswith("the") else norm_name
     words = venue_name.split()
@@ -322,30 +336,34 @@ def match_venue_candidates(venue_name: str, candidates: list[str]) -> list[str]:
             continue
         matches = sorted(fname for stem, fname in by_stem if stem == target)
         if matches:
-            return matches
+            return 0, matches
 
     for target in (norm_first2, norm_first):
         if not target:
             continue
         matches = sorted(fname for stem, fname in by_stem if stem == target)
         if matches:
-            return matches
+            return 1, matches
 
     matches = sorted(
         fname
         for stem, fname in by_stem
         if stem and (stem in norm_name or norm_no_the in stem)
     )
-    return matches
+    return 2, matches
 
 
 def match_venue(venue: dict, candidates: list[str]) -> list[str]:
     """Match by venue name, then by DiningCity slug, which keeps a renamed venue's old brand."""
-    matches = match_venue_candidates(venue["name"], candidates)
+    return ranked_match_venue(venue, candidates)[1]
+
+
+def ranked_match_venue(venue: dict, candidates: list[str]) -> tuple[int, list[str]]:
+    rank, matches = ranked_venue_candidates(venue["name"], candidates)
     slug = str(venue.get("dining_city_public_url") or "").rstrip("/").rsplit("/", 1)[-1]
     if matches or not slug:
-        return matches
-    return match_venue_candidates(slug.replace("_", " "), candidates)
+        return rank, matches
+    return ranked_venue_candidates(slug.replace("_", " "), candidates)
 
 
 def claim_menu_asset(
@@ -362,12 +380,17 @@ def claim_menu_asset(
 def strongest_asset_claimants(
     venues: list[dict], listings: dict[str, dict[str, dict]]
 ) -> dict[tuple[str, str], set[str]]:
-    claimants: dict[tuple[str, str], set[str]] = {}
+    ranked: dict[tuple[str, str], dict[str, int]] = {}
     for venue in venues:
         for source_key, listing in listings.items():
-            for filename in match_venue(venue, list(listing)):
-                claimants.setdefault((source_key, filename), set()).add(venue["id"])
-    return claimants
+            rank, filenames = ranked_match_venue(venue, list(listing))
+            for filename in filenames:
+                ranked.setdefault((source_key, filename), {})[venue["id"]] = rank
+    # An exact name match outranks a loose one: Gingerlily is Ginger.Lily's, not Ginger's.
+    return {
+        identity: {venue_id for venue_id, rank in ranks.items() if rank == min(ranks.values())}
+        for identity, ranks in ranked.items()
+    }
 
 
 def has_buffet_tag(venue: dict) -> bool:

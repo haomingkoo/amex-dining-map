@@ -249,7 +249,13 @@ def review_state(
     approved_manifest = prior.get("approved_manifest_sha256")
     if not approved_image:
         approved_image = observed_roster_fingerprint(existing_payload)
-    return [stable_venue(record) for record in existing], {
+    # Supplements are re-added by their own confirm-twice passes, as on the refresh path.
+    reviewed = [
+        stable_venue(record)
+        for record in existing
+        if record.get("roster_basis") not in SUPPLEMENT_ROSTER_BASES
+    ]
+    return reviewed, {
         "status": "review_required",
         "review_required": True,
         "observed_participating_sha256": image_sha256,

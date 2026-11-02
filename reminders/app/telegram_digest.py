@@ -44,7 +44,8 @@ CREATE TABLE IF NOT EXISTS telegram_digests (
 
 INTRO = (
     "The daily digest is one calm message a day, around 9am, listing new Table for Two "
-    "tables at the venues you follow. Nothing is sent on days with nothing new.\n\n"
+    "Platinum tables at the venues you follow. Nothing is sent on days with nothing new. "
+    "For Centurion tables, use /remind.\n\n"
     "Pick venues: /digest Colony, VUE\nOr every venue: /digest all"
 )
 STOP = "/digest stop turns this off."

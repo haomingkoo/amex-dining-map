@@ -120,7 +120,7 @@ def test_about_and_common_program_questions_are_bounded_and_cited():
     ):
         answer = tft_guide.handle_message(query, _catalog(), NOW)
 
-        assert answer.startswith("American Express Table for Two by Platinum")
+        assert answer.startswith("American Express Table for Two by Platinum and Centurion")
         assert "reviewed Table for Two venue roster" in answer
         assert "does not determine personal eligibility" in answer
         assert _catalog()["official_url"] in answer

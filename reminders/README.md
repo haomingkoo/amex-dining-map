@@ -220,7 +220,12 @@ back, usually a cancellation. Durations are upper bounds from the previous check
 committed first-seen history (`checked_after` bounds each sighting).
 `/healthz` `tft_slot_history` shows the last record and any storage error.
 
-Public slot lookup reads one bounded Railway snapshot from `/api/tft/slots`.
+Public slot lookup reads one bounded Railway snapshot per card: `/api/tft/slots`
+for Platinum and `/api/tft/slots/centurion` for Centurion. The Centurion checker
+reads `centurion_venues` from the catalogue and writes
+`tft-live-slots-centurion.json` beside the Platinum file. `/healthz` reports it
+as `tft_live_centurion` but gates `ok` on Platinum only. Slot history and the
+daily digest cover Platinum only.
 The single-replica reminders service checks the AMEXPlatSG project immediately
 after startup and then ten minutes after each completed check. It fetches project
 membership once, checks only approved active catalogue venues with bounded
@@ -242,10 +247,12 @@ longer the browser's primary freshness path. Enable Railway with
 keep the snapshot beside `DB_PATH` on the mounted `/data` volume.
 
 The guide also contains a disabled-by-default, one-shot reminder lifecycle:
-`/remind`, `/reminders`, `/cancel [reminder ID]`, and `/delete_me`. Setup collects
-one exact venue, party size, lunch or dinner, and an absolute SGT date, range,
-or up to ten specific dates. A confirmed reminder sends at most one notification
-after the first fresh cached AMEXPlatSG match, then closes. It is separate from
+`/remind`, `/reminders`, `/cancel [reminder ID]`, and `/delete_me`. Setup asks
+for the card first (Platinum or Centurion), then one exact venue from that card's
+list, party size, lunch or dinner, and an absolute SGT date, range, or up to ten
+specific dates. A confirmed reminder sends at most one notification after the
+first fresh cached match on its own card's snapshot, then closes. Reminders made
+before card tiers are Platinum (`tier` column default). It is separate from
 email subscribers. When `TELEGRAM_REMINDERS_ENABLED=true`, the service runs
 reminder dispatch in-process right after each live slot refresh. With live
 refresh off, it runs every 300 seconds instead. Guide slot answers and reminder

@@ -394,11 +394,12 @@ def _roster_context(catalog: dict, now: datetime) -> str:
 
 def _about(catalog: dict, now: datetime) -> str:
     return (
-        "American Express Table for Two by Platinum\n\n"
+        "American Express Table for Two by Platinum and Centurion\n\n"
         "This helper uses a reviewed Table for Two venue roster, indexed official Amex "
-        "menus, page-reviewed T&C and FAQ summaries, and bounded AMEXPlatSG slot and "
-        "release observations. It does not determine personal eligibility, interpret "
-        "terms, guarantee seats, or make a booking.\n\n"
+        "menus, page-reviewed T&C and FAQ summaries, and bounded slot and release "
+        "observations. Platinum and Centurion book separate tables, so reminders and "
+        "/slots ask which card you hold. It does not determine personal eligibility, "
+        "interpret terms, guarantee seats, or make a booking.\n\n"
         f"{_roster_context(catalog, now)}\n"
         f"{_official_source_line(catalog)}\n"
         f"Open Table for Two: {explorer_url()}\n\n"
@@ -595,6 +596,14 @@ def release_answer(venue: dict, catalog: dict, live_loader: Callable[[], dict] |
 
 def _venues(catalog: dict, now: datetime) -> str:
     names = "\n".join(f"• {venue['name']}" for venue in catalog.get("venues") or [])
+    platinum_ids = {str(venue.get("id")) for venue in catalog.get("venues") or []}
+    centurion_only = [
+        f"• {venue['name']}"
+        for venue in catalog.get("centurion_venues") or []
+        if str(venue.get("id")) not in platinum_ids
+    ]
+    if centurion_only:
+        names += "\n\nCenturion only:\n" + "\n".join(centurion_only)
     caveat = (
         "\nSource snapshot is awaiting manual review."
         if catalog.get("manual_review_required")
