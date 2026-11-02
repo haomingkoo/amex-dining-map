@@ -5371,6 +5371,10 @@ function tableForTwoNotListedVenues() {
   return venues.filter((record) => tableForTwoVenueTiers(record).length === 0);
 }
 
+function tableForTwoIsEarlierListing(record) {
+  return tableForTwoVenueTiers(record).length === 0;
+}
+
 function tableForTwoHasTierData() {
   const venues = tableForTwoPayload().venues;
   return Array.isArray(venues) && venues.some((record) => Array.isArray(record.tiers));
@@ -6940,6 +6944,15 @@ function tableForTwoCalendarMonthPickerHtml(record, monthKeys, activeMonthKey) {
 
 function tableForTwoSlotMatchesHtml(record, filters = state.tableForTwoCurrentFilters || {}) {
   const slots = tableForTwoMatchingSlots(record, filters);
+  if (!slots.length && tableForTwoTierNote(record)) {
+    return `
+      <div class="tft-calendar-empty">
+        <div class="focus-kicker">Availability</div>
+        <h4>Centurion slots not tracked yet</h4>
+        <p>Check dates in the Amex Experiences App.</p>
+      </div>
+    `;
+  }
   if (!slots.length) {
     const key = tableForTwoAvailabilityKey(record, filters);
     return `
@@ -7409,7 +7422,7 @@ function renderTableForTwoCard() {
   }
 
   const displayName = record.app_name || record.name;
-  if (record.booking_project_status === "not_listed") {
+  if (tableForTwoIsEarlierListing(record)) {
     const permanentlyClosed = record.operational_status === "permanently_closed";
     const statusTitle = permanentlyClosed ? "Permanently closed" : "Not in the Amex app right now";
     const statusCopy = permanentlyClosed

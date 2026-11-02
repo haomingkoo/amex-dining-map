@@ -16,6 +16,7 @@ const names = [
   "tableForTwoHasTierData",
   "tableForTwoPublishedMenus",
   "tableForTwoTierNote",
+  "tableForTwoIsEarlierListing",
 ];
 
 function load(venues) {
@@ -56,6 +57,10 @@ assert.equal(tiers.tableForTwoPublishedMenus(vue, "platinum")[0].url, "https://e
 assert.equal(tiers.tableForTwoPublishedMenus(vue).length, 2);
 
 assert.equal(tiers.tableForTwoTierNote(tiered[2]), "Centurion slots are not tracked yet.");
+// The focus card's "Earlier listing" layout is for venues no card can book.
+assert.equal(tiers.tableForTwoIsEarlierListing(tiered[2]), false);
+assert.equal(tiers.tableForTwoIsEarlierListing(tiered[3]), true);
+assert.doesNotMatch(source, /if \(record\.booking_project_status === "not_listed"\) \{/);
 assert.equal(tiers.tableForTwoTierNote(vue), "");
 
 // A catalog from before card tiers keeps today's behaviour and hides the filter.
@@ -72,3 +77,23 @@ assert.equal(legacy.tableForTwoTierMatches(legacy.tableForTwoVenues()[0], "centu
 assert.match(source, /id="tft-tier-filter"|getElementById\("tft-tier-filter"\)/);
 
 console.log("TFT tier filter verification passed");
+
+// The focus card's availability box explains untracked Centurion slots.
+{
+  const context = {
+    state: {},
+    escapeHtml: (value) => String(value),
+    tableForTwoMatchingSlots: () => [],
+    tableForTwoAvailabilityKey: () => "unknown",
+    tableForTwoBestAvailabilityLine: () => "Source check pending.",
+  };
+  vm.runInNewContext(
+    `${["tableForTwoVenueTiers", "tableForTwoTierNote", "tableForTwoSlotMatchesHtml"].map((name) => extractFrom(source, name)).join("\n")}\nglobalThis.render = tableForTwoSlotMatchesHtml;`,
+    context,
+  );
+  const jaanHtml = context.render(tiered[2], {});
+  assert.match(jaanHtml, /Centurion slots not tracked yet/);
+  assert.doesNotMatch(jaanHtml, /Source check pending/);
+  assert.match(context.render(tiered[1], {}), /Availability not checked yet/);
+}
+console.log("TFT tier availability box verification passed");
