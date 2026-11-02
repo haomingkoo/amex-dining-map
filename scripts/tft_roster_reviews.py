@@ -18,6 +18,11 @@ except ModuleNotFoundError:
 
 PROGRAM_ID = "table-for-two"
 BOOKING_PROJECT_ROSTER_BASIS = "diningcity_booking_project_confirmed"
+# Booking-project supplements per card tier; none of them are owned by the Amex image manifest.
+SUPPLEMENT_ROSTER_BASES = {
+    BOOKING_PROJECT_ROSTER_BASIS,
+    "diningcity_centurion_project_confirmed",
+}
 OFFICIAL_URL = "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/"
 REVIEW_ROOT = Path(__file__).resolve().parents[1] / "data/reviews/table-for-two-roster"
 RUNTIME_FIELDS = {
@@ -102,7 +107,7 @@ def manifest_owned_venues(records: list[dict[str, Any]]) -> list[dict[str, Any]]
     return [
         stable_venue(record)
         for record in records
-        if record.get("roster_basis") != BOOKING_PROJECT_ROSTER_BASIS
+        if record.get("roster_basis") not in SUPPLEMENT_ROSTER_BASES
     ]
 
 
@@ -323,7 +328,7 @@ def apply_manifest(
     new_venues.extend(
         copy.deepcopy(record)
         for record in old_venues
-        if record.get("roster_basis") == BOOKING_PROJECT_ROSTER_BASIS
+        if record.get("roster_basis") in SUPPLEMENT_ROSTER_BASES
         and record.get("id") not in official_ids
         and str(record.get("dining_city_id") or "") not in official_diningcity_ids
     )

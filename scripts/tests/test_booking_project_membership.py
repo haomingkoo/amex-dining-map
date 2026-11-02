@@ -227,3 +227,134 @@ def test_centurion_fetch_appends_linked_only_records(monkeypatch) -> None:
     assert by_id[ZYX]["membership"] == "linked_only"
     assert result["project_codes_by_id"] == {ZYX: ["AMEXCentSG", "AMEXPlatSG"]}
     assert any(s["id"] == ZYX and s["state"] == "present" for s in result["membership_streaks"])
+
+
+# --- published roster per tier ------------------------------------------------
+
+from scripts import tft_roster_reviews
+
+JAAN = "205189592"
+
+
+def dc_row(name: str, restaurant_id: str, project: str) -> dict:
+    return {
+        "restaurant_id": restaurant_id,
+        "status": "online",
+        "availability_project": project,
+        "restaurant": {
+            "id": restaurant_id, "name": name, "address": "2 Stamford Rd, Singapore 178882",
+            "lat": 1.2933597, "lng": 103.8531036, "dirname": name.split()[0],
+        },
+    }
+
+
+def platinum_venue(name: str, diningcity_id: str) -> dict:
+    return {"id": f"tft-{name.lower()}", "name": name, "dining_city_id": diningcity_id,
+            "address": f"{diningcity_id} Road", "lat": 1.3, "lng": 103.85}
+
+
+def centurion_source(rows: list[dict], previous: dict | None = None, monkeypatch=None) -> dict:
+    monkeypatch.setattr(scraper, "fetch_json", fake_dc({"/projects/AMEXCentSG/restaurants": rows}))
+    existing = {"booking_project_sources": {"centurion": previous}} if previous else {}
+    return scraper.fetch_booking_project_membership(
+        [], CHECKED_AT, existing, tier="centurion", linked_candidates=[]
+    )
+
+
+def test_centurion_only_venue_added_after_two_observations(monkeypatch) -> None:
+    platinum_roster = [platinum_venue("Shared", "1")]
+    rows = [dc_row("Shared", "1", "AMEXCentSG"), dc_row("JAAN By Kirk Westaway", JAAN, "AMEXCentSG")]
+
+    first = centurion_source(rows, monkeypatch=monkeypatch)
+    roster1, annotated1 = scraper.current_published_roster(platinum_roster, first, {}, tier="centurion")
+    assert [v["name"] for v in roster1] == ["Shared"]
+    assert {"id": JAAN, "name": "JAAN By Kirk Westaway"} in annotated1["pending_booking_project_additions"]
+
+    second = centurion_source(rows, previous=first, monkeypatch=monkeypatch)
+    roster2, _ = scraper.current_published_roster(platinum_roster, second, {}, tier="centurion")
+    jaan = next(v for v in roster2 if v["dining_city_id"] == JAAN)
+    assert jaan["roster_basis"] == "diningcity_centurion_project_confirmed"
+    assert jaan["roster_evidence"]["source"] == "DiningCity AMEXCentSG booking-project membership"
+
+
+def centurion_jaan_record() -> dict:
+    return {**platinum_venue("JAAN", JAAN), "id": "tft-jaan-by-kirk-westaway",
+            "name": "JAAN By Kirk Westaway",
+            "roster_basis": "diningcity_centurion_project_confirmed"}
+
+
+def test_platinum_pass_ignores_centurion_supplements() -> None:
+    existing = {"venues": [centurion_jaan_record()]}
+    source = {"observation_status": "success", "checked_at": CHECKED_AT,
+              "observed_venues": [], "membership_streaks": []}
+
+    roster, annotated = scraper.current_published_roster([], source, existing)
+
+    assert roster == []
+    assert annotated["pending_booking_project_removals"] == []
+    assert annotated["confirmed_booking_project_removals"] == []
+
+
+def test_centurion_error_retains_centurion_supplements() -> None:
+    existing = {"venues": [centurion_jaan_record()]}
+    source = {"observation_status": "error", "observed_venues": []}
+
+    roster, annotated = scraper.current_published_roster([], source, existing, tier="centurion")
+
+    assert [v["dining_city_id"] for v in roster] == [JAAN]
+    assert annotated["maintenance_summary"]["outcome"] == "retained_after_source_error"
+
+
+def test_centurion_tier_dropped_only_after_two_absences() -> None:
+    venue = platinum_venue("Shared", "1")
+    absent_once = {"observation_status": "success", "observed_venues": [],
+                   "membership_streaks": [{"id": "1", "state": "absent", "consecutive_absent": 1}]}
+    absent_twice = {**absent_once,
+                    "membership_streaks": [{"id": "1", "state": "absent", "consecutive_absent": 2}]}
+    previous = {"booking_project_status": "active",
+                "booking_project_statuses": {"platinum": "active", "centurion": "active"}}
+
+    assert scraper.booking_project_status_for_venue(venue, absent_once, previous, tier="centurion") == "active"
+    assert scraper.booking_project_status_for_venue(venue, absent_twice, previous, tier="centurion") == "not_listed"
+
+
+def test_centurion_status_reads_its_own_previous_status() -> None:
+    venue = platinum_venue("Shared", "1")
+    listed_once = {"observation_status": "success",
+                   "observed_venues": [{"id": "1", "name": "Shared", "status": "online"}],
+                   "membership_streaks": [{"id": "1", "state": "present", "consecutive_present": 1}]}
+    previous = {"booking_project_status": "active",
+                "booking_project_statuses": {"platinum": "active", "centurion": "not_listed"}}
+
+    assert scraper.booking_project_status_for_venue(venue, listed_once, previous, tier="centurion") == "not_listed"
+
+
+def test_centurion_only_venue_joining_platinum_is_not_duplicated() -> None:
+    jaan = centurion_jaan_record()
+    record = scraper._booking_project_record(dc_row("JAAN By Kirk Westaway", JAAN, "AMEXPlatSG"))
+    signature = scraper._membership_record_sha256(record)
+    platinum = {"observation_status": "success", "checked_at": CHECKED_AT,
+                "observed_venues": [record],
+                "membership_streaks": [{"id": JAAN, "state": "present", "consecutive_present": 2,
+                                        "record_sha256": signature}]}
+    centurion = {**platinum, "observed_venues": [{**record, "availability_project": "AMEXCentSG",
+                                                  "membership": "listed"}]}
+    existing = {"venues": [jaan]}
+
+    platinum_roster, _ = scraper.current_published_roster([], platinum, existing)
+    roster, _ = scraper.current_published_roster(platinum_roster, centurion, existing, tier="centurion")
+
+    jaans = [v for v in roster if v["dining_city_id"] == JAAN]
+    assert len(jaans) == 1
+    assert jaans[0]["id"] == "tft-jaan-by-kirk-westaway"
+    assert jaans[0]["roster_basis"] == "diningcity_booking_project_confirmed"
+
+
+def test_centurion_supplements_are_not_part_of_the_reviewed_amex_roster() -> None:
+    platinum_supplement = {**platinum_venue("Madame", "2055296"),
+                           "roster_basis": "diningcity_booking_project_confirmed"}
+    official = platinum_venue("Official", "9")
+
+    owned = tft_roster_reviews.manifest_owned_venues([official, platinum_supplement, centurion_jaan_record()])
+
+    assert [v["dining_city_id"] for v in owned] == ["9"]
