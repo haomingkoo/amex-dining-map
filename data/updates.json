@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-03T03:20:29Z",
+  "updated_at": "2026-11-03T15:47:16Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-11-03T15:47:16Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "31/31 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "30/31 (96.8%), 1 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "31/31 (100%), 0 unavailable",
+          "after": "30/31 (96.8%), 1 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "944865f8a636ba077a01",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "2a25b95b7627f81eae61"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -23213,46 +23246,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Gutshofrestaurant / Weißenkirchen in der Wachau",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Gutshofrestaurant",
-          "Country": "Austria",
-          "Region": "Weißenkirchen in der Wachau",
-          "City": "Weißenkirchen in der Wachau",
-          "Address": "Prandtauerplatz 36, Weißenkirchen in der Wachau, 3610, Austria",
-          "Cuisine": [
-            "Austrian"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "ee1474bc71cc0916ad81",
-      "stream_id": "b75f4538e5db930980d0",
-      "occurrence": 1,
-      "id": "4b52bcadbd5ab696ad81",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -25148,7 +25141,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "41dbef8fd2f8abb8925c",
+        "latest_transition_id": "944865f8a636ba077a01",
         "occurrences": {
           "04d5cfacf701422a287e": 10,
           "093e9a40b7d75a526207": 5,
@@ -25168,6 +25161,7 @@
           "7a0c2ed47a14576abcae": 13,
           "8e8e8636075131043839": 1,
           "90f667bd502eaa1ed26c": 2,
+          "944865f8a636ba077a01": 1,
           "957cb551d4d32c436358": 13,
           "98997d254b5dfdda4b93": 29,
           "9ca0c3a9819c6e281d37": 3,
