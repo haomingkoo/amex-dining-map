@@ -6202,7 +6202,15 @@ function clearTableForTwoMarkers() {
   clearMarkerLayerGroup(tableForTwoMap, tableForTwoMarkerClusterGroup, state.tableForTwoMarkers);
 }
 
-function createTableForTwoMarker(record) {
+// Venues in one hotel share coordinates; fan them out so no dot hides another.
+function tableForTwoMarkerOffset(index, count) {
+  if (count < 2) return [0, 0];
+  const radius = 11;
+  const angle = Math.PI + (2 * Math.PI * index) / count;
+  return [Math.round(radius * Math.cos(angle)), Math.round(radius * Math.sin(angle))];
+}
+
+function createTableForTwoMarker(record, offset = [0, 0]) {
   if (!hasLeaflet || !tableForTwoMap || !tableForTwoHasMapPin(record)) return null;
   const color = tableForTwoPinColor(record);
   const marker = L.marker(latLngForRecord(record), {
@@ -6210,6 +6218,7 @@ function createTableForTwoMarker(record) {
     icon: L.divIcon({
       html: `<div class="tft-marker-dot" style="width: 16px; height: 16px; border-radius: 50%; background: ${color}; border: 2px solid #091018; opacity: 0.92; cursor: pointer;"></div>`,
       iconSize: [16, 16],
+      iconAnchor: [8 - offset[0], 8 - offset[1]],
       className: "custom-marker-icon",
     }),
   });
@@ -6257,8 +6266,16 @@ function renderTableForTwoMarkers() {
   if (!hasLeaflet || !tableForTwoMap) return;
   tableForTwoMarkerClusterGroup = ensureMarkerClusterGroup(tableForTwoMap, tableForTwoMarkerClusterGroup, true);
   clearTableForTwoMarkers();
-  tableForTwoVenues().forEach((record) => {
-    const marker = createTableForTwoMarker(record);
+  const venues = tableForTwoVenues().filter((record) => tableForTwoHasMapPin(record));
+  const sameSpot = new Map();
+  venues.forEach((record) => {
+    const key = latLngForRecord(record).map((value) => value.toFixed(5)).join(",");
+    if (!sameSpot.has(key)) sameSpot.set(key, []);
+    sameSpot.get(key).push(record.id);
+  });
+  venues.forEach((record) => {
+    const group = sameSpot.get(latLngForRecord(record).map((value) => value.toFixed(5)).join(","));
+    const marker = createTableForTwoMarker(record, tableForTwoMarkerOffset(group.indexOf(record.id), group.length));
     if (!marker) return;
     addMarkerLayer(tableForTwoMap, tableForTwoMarkerClusterGroup, marker);
     state.tableForTwoMarkers.set(record.id, marker);
