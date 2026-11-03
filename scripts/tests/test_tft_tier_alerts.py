@@ -88,9 +88,13 @@ def test_platinum_parity_is_unchanged_by_default() -> None:
 
 def test_centurion_only_venues_stay_out_of_guide_catalog_and_slot_snapshot() -> None:
     payload = json.loads((ROOT / "data/table-for-two.json").read_text(encoding="utf-8"))
-    jaan = {**payload["venues"][0], "id": "tft-jaan-by-kirk-westaway", "name": "JAAN By Kirk Westaway",
-            "dining_city_id": JAAN, "booking_project_status": "not_listed", "tiers": ["centurion"]}
-    payload["venues"].append(jaan)
+    # The real JAAN record carries its own menu receipt, so a copy is built only when it is absent.
+    jaan = next((v for v in payload["venues"] if v["id"] == "tft-jaan-by-kirk-westaway"), None)
+    if jaan is None:
+        jaan = {**payload["venues"][0], "id": "tft-jaan-by-kirk-westaway", "name": "JAAN By Kirk Westaway",
+                "dining_city_id": JAAN, "booking_project_status": "not_listed", "tiers": ["centurion"]}
+        payload["venues"].append(jaan)
+    assert jaan["tiers"] == ["centurion"] and jaan["booking_project_status"] == "not_listed"
 
     from scripts import build_tft_guide_catalog, build_tft_slot_snapshot
 
