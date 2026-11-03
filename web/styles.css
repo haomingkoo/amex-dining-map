@@ -3562,6 +3562,85 @@ a.google-badge:hover {
   line-height: 1.45;
 }
 
+.tft-card-switch {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-overlay-stronger);
+}
+
+.tft-card-switch[hidden] {
+  display: none;
+}
+
+.tft-card-switch button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.tft-card-switch button:hover {
+  color: var(--text);
+}
+
+.tft-card-switch button[aria-pressed="true"] {
+  border-color: var(--gold-soft-border);
+  background: var(--gold-soft);
+  color: var(--text);
+}
+
+.tft-card-switch button:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
+.tft-tier-seats {
+  display: grid;
+  gap: 2px;
+  margin: 8px 0 0;
+  font-family: var(--sans);
+  font-size: 12px;
+}
+
+.tft-tier-seats > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.tft-tier-seats > div.is-selected {
+  border-color: var(--border);
+  background: var(--surface-overlay-stronger);
+}
+
+.tft-tier-seats dt {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.tft-tier-seats dd {
+  margin: 0;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.tft-tier-seats dd.is-open {
+  color: var(--green);
+}
+
 .card-region-dot {
   display: inline-block;
   width: 7px;
@@ -4591,6 +4670,26 @@ h1, h2, h3 {
     display: none !important;
   }
 
+  /* The Table for Two card switch stays above the map on phones. */
+  .tft-map-panel .panel-head:has(> .tft-card-switch:not([hidden])) {
+    display: block !important;
+    padding: 10px 12px;
+  }
+
+  .tft-map-panel .panel-head:has(> .tft-card-switch:not([hidden])) > div:first-child {
+    display: none;
+  }
+
+  .tft-card-switch {
+    display: flex;
+    width: 100%;
+  }
+
+  .tft-card-switch button {
+    flex: 1 1 0;
+    min-height: 40px;
+  }
+
   /* Hide refine count text (All filters off) */
   .toolbar-toggle-meta {
     display: none !important;
@@ -4696,6 +4795,11 @@ h1, h2, h3 {
     width: auto;
     padding: 0;
     pointer-events: none;
+  }
+
+  /* Refine floats over the map, below the card switch. */
+  body.route-table-for-two .tft-map-panel:has(.tft-card-switch:not([hidden])) #tft-map-filter-shell {
+    top: 81px;
   }
 
   body.route-table-for-two #tft-map-filter-shell .tft-toolbar-toggle {

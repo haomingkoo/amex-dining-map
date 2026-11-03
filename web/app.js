@@ -972,6 +972,8 @@ const tableForTwoToolbarToggleMeta = document.getElementById("tft-toolbar-toggle
 const tableForTwoSearchInput = document.getElementById("tft-search-input");
 const tableForTwoCategoryFilter = document.getElementById("tft-category-filter");
 const tableForTwoTierFilter = document.getElementById("tft-tier-filter");
+const tableForTwoCardSwitch = document.getElementById("tft-card-switch");
+const TABLE_FOR_TWO_CARD_STORAGE_KEY = "amex-explorer-tft-card";
 const tableForTwoAvailabilityFilter = document.getElementById("tft-availability-filter");
 const tableForTwoPartySizeFilter = document.getElementById("tft-party-size-filter");
 const tableForTwoSessionFilter = document.getElementById("tft-session-filter");
@@ -5431,11 +5433,73 @@ function tableForTwoTierBadgeHtml(record) {
   return `<span class="badge">${escapeHtml(text)}</span>`;
 }
 
+function storedTableForTwoCard() {
+  try {
+    return window.localStorage.getItem(TABLE_FOR_TWO_CARD_STORAGE_KEY) || "";
+  } catch (error) {
+    return "";
+  }
+}
+
+// The hidden Card select holds the choice; the switch above the map is its only control.
 function refreshTableForTwoTierFilter() {
-  const wrap = tableForTwoTierFilter?.closest(".filter-wrap");
-  if (!wrap) return;
-  wrap.hidden = !tableForTwoHasTierData();
-  if (wrap.hidden) tableForTwoTierFilter.value = "";
+  if (!tableForTwoTierFilter || !tableForTwoCardSwitch) return;
+  const hasTiers = tableForTwoHasTierData();
+  tableForTwoCardSwitch.hidden = !hasTiers;
+  if (!hasTiers) {
+    tableForTwoTierFilter.value = "";
+  } else if (!tableForTwoTierFilter.value) {
+    tableForTwoTierFilter.value = storedTableForTwoCard() === "centurion" ? "centurion" : "platinum";
+  }
+  tableForTwoCardSwitch.querySelectorAll("button[data-tier]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.tier === tableForTwoTierFilter.value));
+  });
+}
+
+function setTableForTwoCard(tier) {
+  if (!tableForTwoTierFilter || tableForTwoTierFilter.value === tier) return;
+  tableForTwoTierFilter.value = tier;
+  try {
+    window.localStorage.setItem(TABLE_FOR_TWO_CARD_STORAGE_KEY, tier);
+  } catch (error) {
+    console.warn("Could not remember the Table for Two card choice:", error);
+  }
+  refreshTableForTwoTierFilter();
+  refreshTableForTwoDateOptions();
+  filterTableForTwo();
+}
+
+function tableForTwoTierSeatText(record, availability, filters) {
+  if (!availability) return { text: "Not tracked yet", open: false };
+  const view = { ...record, availability };
+  const key = tableForTwoAvailabilityKey(view, filters);
+  if (key === "no_seats") return { text: "No seats", open: false };
+  if (key === "stale") return { text: "Not checked recently", open: false };
+  if (key !== "available") return { text: "Not checked yet", open: false };
+  const slots = tableForTwoMatchingSlots(view, filters);
+  const dates = new Set(slots.map((slot) => slot.date)).size;
+  const times = `${slots.length.toLocaleString("en-SG")} ${slots.length === 1 ? "time" : "times"}`;
+  return { text: dates === 1 ? `${times} on 1 date` : `${times} over ${dates.toLocaleString("en-SG")} dates`, open: true };
+}
+
+// Venues both cards can book show each card's seats, which are separate inventory.
+function tableForTwoTierSeatRows(record, filters = {}) {
+  const tiers = Array.isArray(record.tiers) ? record.tiers : [];
+  if (!tiers.includes("platinum") || !tiers.includes("centurion")) return [];
+  const live = state.tableForTwoCenturionById?.get(record.id);
+  const centurion = live ? tableForTwoAvailabilityFromSlotVenue(live, true, "centurion") : null;
+  const platinum = Object.prototype.hasOwnProperty.call(record, "availability_platinum") ? record.availability_platinum : record.availability;
+  return [
+    { tier: "platinum", label: "Platinum", ...tableForTwoTierSeatText(record, platinum, filters) },
+    { tier: "centurion", label: "Centurion", ...tableForTwoTierSeatText(record, centurion, filters) },
+  ];
+}
+
+function tableForTwoTierSeatsHtml(record, filters = {}, selectedTier = "") {
+  const rows = tableForTwoTierSeatRows(record, filters);
+  if (!rows.length) return "";
+  return `<dl class="tft-tier-seats">${rows.map((row) => `<div${row.tier === selectedTier ? ' class="is-selected"' : ""}>
+    <dt>${escapeHtml(row.label)}</dt><dd${row.open ? ' class="is-open"' : ""}>${escapeHtml(row.text)}</dd></div>`).join("")}</dl>`;
 }
 
 function tableForTwoSlotSnapshotIsValid(payload, live = false, project = "AMEXPlatSG") {
@@ -6172,7 +6236,6 @@ function tableForTwoHasVenueShortlistFilters() {
   return Boolean(
     tableForTwoResidualSearch(search)
     || tableForTwoCategoryFilter?.value
-    || tableForTwoTierFilter?.value
     || tableForTwoAvailabilityFilter?.value
   );
 }
@@ -6202,7 +6265,15 @@ function clearTableForTwoMarkers() {
   clearMarkerLayerGroup(tableForTwoMap, tableForTwoMarkerClusterGroup, state.tableForTwoMarkers);
 }
 
-function createTableForTwoMarker(record) {
+// Venues in one hotel share coordinates; fan them out so no dot hides another.
+function tableForTwoMarkerOffset(index, count) {
+  if (count < 2) return [0, 0];
+  const radius = 11;
+  const angle = Math.PI + (2 * Math.PI * index) / count;
+  return [Math.round(radius * Math.cos(angle)), Math.round(radius * Math.sin(angle))];
+}
+
+function createTableForTwoMarker(record, offset = [0, 0]) {
   if (!hasLeaflet || !tableForTwoMap || !tableForTwoHasMapPin(record)) return null;
   const color = tableForTwoPinColor(record);
   const marker = L.marker(latLngForRecord(record), {
@@ -6210,6 +6281,7 @@ function createTableForTwoMarker(record) {
     icon: L.divIcon({
       html: `<div class="tft-marker-dot" style="width: 16px; height: 16px; border-radius: 50%; background: ${color}; border: 2px solid #091018; opacity: 0.92; cursor: pointer;"></div>`,
       iconSize: [16, 16],
+      iconAnchor: [8 - offset[0], 8 - offset[1]],
       className: "custom-marker-icon",
     }),
   });
@@ -6257,8 +6329,16 @@ function renderTableForTwoMarkers() {
   if (!hasLeaflet || !tableForTwoMap) return;
   tableForTwoMarkerClusterGroup = ensureMarkerClusterGroup(tableForTwoMap, tableForTwoMarkerClusterGroup, true);
   clearTableForTwoMarkers();
-  tableForTwoVenues().forEach((record) => {
-    const marker = createTableForTwoMarker(record);
+  const venues = tableForTwoVenues().filter((record) => tableForTwoHasMapPin(record));
+  const sameSpot = new Map();
+  venues.forEach((record) => {
+    const key = latLngForRecord(record).map((value) => value.toFixed(5)).join(",");
+    if (!sameSpot.has(key)) sameSpot.set(key, []);
+    sameSpot.get(key).push(record.id);
+  });
+  venues.forEach((record) => {
+    const group = sameSpot.get(latLngForRecord(record).map((value) => value.toFixed(5)).join(","));
+    const marker = createTableForTwoMarker(record, tableForTwoMarkerOffset(group.indexOf(record.id), group.length));
     if (!marker) return;
     addMarkerLayer(tableForTwoMap, tableForTwoMarkerClusterGroup, marker);
     state.tableForTwoMarkers.set(record.id, marker);
@@ -6489,7 +6569,6 @@ function tableForTwoActiveFilterCount() {
   let count = 0;
   if ((tableForTwoSearchInput?.value || "").trim()) count += 1;
   if (tableForTwoCategoryFilter?.value) count += 1;
-  if (tableForTwoTierFilter?.value) count += 1;
   if (tableForTwoAvailabilityFilter?.value) count += 1;
   if (tableForTwoSelectedPartySize() !== TABLE_FOR_TWO_DEFAULT_PARTY_SIZE) count += 1;
   if (tableForTwoSessionFilter?.value) count += 1;
@@ -6899,10 +6978,23 @@ function tableForTwoPublishedMenus(record, tier = "") {
   return legacy.status === "published" && legacy.url ? [legacy] : [];
 }
 
+// The selected card has no published menu while another card's does.
+function tableForTwoMenuGap(record) {
+  const menuMap = record.menu_pdfs && typeof record.menu_pdfs === "object" ? record.menu_pdfs : {};
+  const tier = tableForTwoDisplayTier(record);
+  const published = (menu) => menu?.status === "published" && menu.url;
+  if (published(menuMap[tier])) return "";
+  return Object.values(menuMap).some(published) ? tier : "";
+}
+
 function tableForTwoMenuMetaLabel(record) {
   const menus = tableForTwoPublishedMenus(record);
+  const tier = tableForTwoDisplayTier(record);
   // A Centurion-only venue can be missing from the app while its booking page is open (JAAN, Nov 2026).
-  const where = tableForTwoDisplayTier(record) === "centurion" ? "Centurion booking page" : "Amex app";
+  const where = tier === "centurion" ? "Centurion booking page" : "Amex app";
+  const own = record.menu_pdfs?.[tier];
+  if (own?.status === "published" && own.url) return `${own.label || TABLE_FOR_TWO_TIER_LABELS[tier]} menu · ${where}`;
+  if (tableForTwoMenuGap(record)) return `No ${TABLE_FOR_TWO_TIER_LABELS[tier]} menu yet · ${where}`;
   if (menus.length > 1) return `${menus.length} menus · ${where}`;
   if (menus.length === 1) return `${menus[0].label || "Set"} menu · ${where}`;
   return where;
@@ -7460,6 +7552,7 @@ function renderTableForTwoList() {
         </div>
       </div>
       <p class="mobile-card-desc">${escapeHtml(availabilityLine)}</p>
+      ${tableForTwoTierSeatsHtml(record, filters, tableForTwoDisplayTier(record))}
       <div class="mobile-card-meta">
         ${listDateSummary ? `<span>${escapeHtml(listDateSummary)}</span>` : ""}
         <span>${escapeHtml(tableForTwoMenuMetaLabel(record))}</span>
@@ -7549,13 +7642,18 @@ function renderTableForTwoCard() {
   const gBadge = googleRatingBadge(record);
   const googleMapsUrl = bestGoogleMapsUrl(record) || googleMapsSearchUrl([displayName, "Singapore"]);
   const menuPdf = record.menu_pdf || {};
-  const publishedMenus = tableForTwoPublishedMenus(record, tableForTwoTierFilter?.value || "");
+  const publishedMenus = tableForTwoPublishedMenus(record, tableForTwoDisplayTier(record));
+  const menuGap = tableForTwoMenuGap(record);
+  const gapLabel = TABLE_FOR_TWO_TIER_LABELS[menuGap] || "";
+  // Another card's menu is never the primary action; it may not match this card's menu.
   const menuPdfLinks = publishedMenus
-    .map((menu, index) => `<a class="inline-link${index === 0 ? " primary-action" : ""}" href="${escapeHtml(menu.url)}" target="_blank" rel="noopener">${escapeHtml(`${menu.label || "Set"} menu (PDF)`)}</a>`)
+    .map((menu, index) => `<a class="inline-link${index === 0 && !menuGap ? " primary-action" : ""}" href="${escapeHtml(menu.url)}" target="_blank" rel="noopener">${escapeHtml(`${menu.label || "Set"} menu (PDF)`)}</a>`)
     .join("");
   const menuPdfNote = !menuPdfLinks && menuPdf.status === "buffet_no_menu_expected"
     ? `<div class="focus-note">Buffet venue, so there is no set menu PDF.</div>`
-    : "";
+    : menuGap
+      ? `<div class="focus-note">No ${escapeHtml(gapLabel)} menu found yet. The other card's menu is linked below and may not match what you get.</div>`
+      : "";
   const venueMenuReviewItems = tableForTwoVenueMenuReviewItems(payload, record);
   const venueMenuReviewWarning = tableForTwoVenueMenuReviewWarning(venueMenuReviewItems);
   const telegramAskUrl = tableForTwoTelegramDeepLink("venue", record);
@@ -7586,6 +7684,7 @@ function renderTableForTwoCard() {
     ${tableForTwoVerdictHtml(record)}
     ${sourceReviewWarning}
     ${tableForTwoLinkedOnlyNote(record) ? `<div class="focus-note">${escapeHtml(tableForTwoLinkedOnlyNote(record))}</div>` : ""}
+    ${tableForTwoTierSeatsHtml(record, filters, tableForTwoDisplayTier(record))}
     ${tableForTwoSlotMatchesHtml(record, filters)}
     ${centurionView ? "" : tableForTwoWhenToBookHtml(record)}
     ${menuPdfNote}
@@ -8643,9 +8742,9 @@ loveToolbarToggle.addEventListener("click", (event) => {
 // Table for Two events
 tableForTwoSearchInput.addEventListener("input", filterTableForTwo);
 tableForTwoCategoryFilter.addEventListener("change", filterTableForTwo);
-tableForTwoTierFilter?.addEventListener("change", () => {
-  refreshTableForTwoDateOptions();
-  filterTableForTwo();
+tableForTwoCardSwitch?.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-tier]");
+  if (button) setTableForTwoCard(button.dataset.tier);
 });
 tableForTwoAvailabilityFilter.addEventListener("change", filterTableForTwo);
 tableForTwoPartySizeFilter.addEventListener("change", () => {
@@ -8672,7 +8771,6 @@ tableForTwoToolbarToggle?.addEventListener("click", (event) => {
 tableForTwoResetFiltersBtn.addEventListener("click", () => {
   tableForTwoSearchInput.value = "";
   tableForTwoCategoryFilter.value = "";
-  if (tableForTwoTierFilter) tableForTwoTierFilter.value = "";
   tableForTwoAvailabilityFilter.value = "";
   tableForTwoPartySizeFilter.value = String(TABLE_FOR_TWO_DEFAULT_PARTY_SIZE);
   tableForTwoSessionFilter.value = "";

@@ -368,6 +368,15 @@ def test_name_stems_cover_amex_spellings():
     assert "MadameFan" in menus.venue_name_stems({"name": "Madame Fan"})
 
 
+def test_name_stems_drop_the_chef_byline():
+    # Amex filed JAAN By Kirk Westaway as JAAN-Menu_Centurion.pdf (Nov 2026).
+    stems = menus.venue_name_stems({"name": "JAAN By Kirk Westaway"})
+    assert "JAAN" in stems
+    assert stems.index("JAANByKirkWestaway") < stems.index("JAAN")
+    assert "Isabel" not in menus.venue_name_stems({"name": "Isabel"})[1:]
+    assert menus.venue_name_stems({"name": "Bay by the Sea"})[-1] != "Bay"
+
+
 def test_direct_probe_tries_name_stems_when_nothing_else_is_known(monkeypatch):
     tried = []
 
