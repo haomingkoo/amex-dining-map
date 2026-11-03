@@ -1,7 +1,215 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-02T17:14:14Z",
+  "updated_at": "2026-11-03T03:20:25Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-11-03T03:20:25Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 4,
+          "Coverage": "31/42 (73.8%), 11 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 5,
+          "Coverage": "34/42 (81%), 8 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Review items",
+          "before": 4,
+          "after": 5
+        },
+        {
+          "field": "Coverage",
+          "before": "31/42 (73.8%), 11 unavailable",
+          "after": "34/42 (81%), 8 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "c57eea90970d614af75f",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "41705f7a67d129bca687"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "menu_updated",
+      "subject": "Summer Pavilion",
+      "detected_at": "2026-11-03T03:20:24Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Summer Pavilion",
+          "Category": "restaurant",
+          "Address": "7 Raffles Ave., Level 3 The Ritz-Carlton, Millenia, Singapore 039799",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ],
+          "Centurion menu file": "Summer-Pavillion-Menu_Centurion.pdf",
+          "Centurion menu version": "45259198452b"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Summer Pavilion",
+          "Category": "restaurant",
+          "Address": "7 Raffles Ave., Level 3 The Ritz-Carlton, Millenia, Singapore 039799",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ],
+          "Menu file": "Summer-Pavillion-Menu_Centurion.pdf",
+          "Menu version": "45259198452b",
+          "Centurion menu file": "Summer-Pavillion-Menu_Centurion.pdf",
+          "Centurion menu version": "45259198452b"
+        }
+      },
+      "changes": [
+        {
+          "field": "Menu file",
+          "before": null,
+          "after": "Summer-Pavillion-Menu_Centurion.pdf"
+        },
+        {
+          "field": "Menu version",
+          "before": null,
+          "after": "45259198452b"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Summer-Pavillion-Menu_Centurion.pdf",
+      "transition_id": "9a1c7ad55cfc9cb5505b",
+      "stream_id": "0a94be72c5250fe3f4b7",
+      "occurrence": 1,
+      "id": "f2548ef967dac8d2926d"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "menu_updated",
+      "subject": "Ginger.Lily",
+      "detected_at": "2026-11-03T03:20:24Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Ginger.Lily",
+          "Category": "restaurant",
+          "Address": "333 Orchard Rd, Level 5, Singapore 238867",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ],
+          "Centurion menu file": "Gingerlily-Menu_Centurion.pdf",
+          "Centurion menu version": "9a2363bd1b19"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Ginger.Lily",
+          "Category": "restaurant",
+          "Address": "333 Orchard Rd, Level 5, Singapore 238867",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ],
+          "Menu file": "Gingerlily-Menu_Centurion.pdf",
+          "Menu version": "9a2363bd1b19",
+          "Centurion menu file": "Gingerlily-Menu_Centurion.pdf",
+          "Centurion menu version": "9a2363bd1b19"
+        }
+      },
+      "changes": [
+        {
+          "field": "Menu file",
+          "before": null,
+          "after": "Gingerlily-Menu_Centurion.pdf"
+        },
+        {
+          "field": "Menu version",
+          "before": null,
+          "after": "9a2363bd1b19"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Gingerlily-Menu_Centurion.pdf",
+      "transition_id": "5f8ef3e013908d04c19f",
+      "stream_id": "d8395d06893ee18378e6",
+      "occurrence": 1,
+      "id": "d516ce7b91d56fbe55f6"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "menu_updated",
+      "subject": "Restaurant JAG",
+      "detected_at": "2026-11-03T03:20:24Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Restaurant JAG",
+          "Category": "restaurant",
+          "Address": "41 Robertson Quay, #02-02 STPI Creative Workshop and Gallery, Singapore 238236",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ],
+          "Centurion menu file": "JAG-Sample-Menu_Centurion.pdf",
+          "Centurion menu version": "f410323236d2"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Restaurant JAG",
+          "Category": "restaurant",
+          "Address": "41 Robertson Quay, #02-02 STPI Creative Workshop and Gallery, Singapore 238236",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ],
+          "Menu file": "JAG-Sample-Menu_Centurion.pdf",
+          "Menu version": "f410323236d2",
+          "Centurion menu file": "JAG-Sample-Menu_Centurion.pdf",
+          "Centurion menu version": "f410323236d2"
+        }
+      },
+      "changes": [
+        {
+          "field": "Menu file",
+          "before": null,
+          "after": "JAG-Sample-Menu_Centurion.pdf"
+        },
+        {
+          "field": "Menu version",
+          "before": null,
+          "after": "f410323236d2"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/JAG-Sample-Menu_Centurion.pdf",
+      "transition_id": "8a37443f3ba9ae35ca96",
+      "stream_id": "1b11653ef8f8ecfd2952",
+      "occurrence": 1,
+      "id": "a33abc7836a4b85f6bdd"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -23037,166 +23245,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Alpha Dining / New South Wales",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Alpha Dining",
-          "Country": "Australia",
-          "Region": "New South Wales",
-          "City": "New South Wales",
-          "Address": "238 Castlereagh St, Sydney, New South Wales, 2000, Australia",
-          "Cuisine": [
-            "Greek"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "3758f4eb1a6ba8606a18",
-      "stream_id": "5bff13dcbd5e8cd9478d",
-      "occurrence": 1,
-      "id": "42a56cfc613de2a9f3b4",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Zushi / New South Wales",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Zushi",
-          "Country": "Australia",
-          "Region": "New South Wales",
-          "City": "New South Wales",
-          "Address": "Barangaroo Alexander, 10/33 Barangaroo Ave, New South Wales, 2000, Australia",
-          "Cuisine": [
-            "Japanese"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "a561bea6277ab281f528",
-      "stream_id": "3b00a3ef0760f219f68f",
-      "occurrence": 1,
-      "id": "3e9fa1994eb3a7a716e1",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Sixty One Madrid / Madrid",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Sixty One Madrid",
-          "Country": "Spain",
-          "Region": "Madrid",
-          "City": "Madrid",
-          "Address": "Jose Abascal 61, Madrid, 28003, Spain",
-          "Cuisine": [
-            "Art Dining Club"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "4a9f4df77653f847e7d3",
-      "stream_id": "b08cbc14db4fc318637e",
-      "occurrence": 1,
-      "id": "3872ad84fe243c667f80",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Tatel Madrid / Madrid",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Tatel Madrid",
-          "Country": "Spain",
-          "Region": "Madrid",
-          "City": "Madrid",
-          "Address": "Paseo Castellana 36, Madrid, 28046, Spain",
-          "Cuisine": [
-            "Haute"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "ef08978d4b5229149121",
-      "stream_id": "3363614ecee1a0bc5c19",
-      "occurrence": 1,
-      "id": "2c29312d7c463ca78519",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23419,9 +23467,10 @@
         }
       },
       "0a94be72c5250fe3f4b7": {
-        "latest_transition_id": "4439e0deee144ebcbddd",
+        "latest_transition_id": "9a1c7ad55cfc9cb5505b",
         "occurrences": {
-          "4439e0deee144ebcbddd": 1
+          "4439e0deee144ebcbddd": 1,
+          "9a1c7ad55cfc9cb5505b": 1
         }
       },
       "0b2ae6a7ec54cc25b829": {
@@ -23583,8 +23632,9 @@
         }
       },
       "1b11653ef8f8ecfd2952": {
-        "latest_transition_id": "9519ac9cf038551f82dc",
+        "latest_transition_id": "8a37443f3ba9ae35ca96",
         "occurrences": {
+          "8a37443f3ba9ae35ca96": 1,
           "9519ac9cf038551f82dc": 1
         }
       },
@@ -23619,7 +23669,7 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "ae928248067b17263773",
+        "latest_transition_id": "c57eea90970d614af75f",
         "occurrences": {
           "007e51f231870c7881c2": 1,
           "035b21790df21f0c0ba8": 1,
@@ -23634,6 +23684,7 @@
           "b225ffa1e05d695dc10a": 1,
           "b7194678b771b7d798a7": 4,
           "c33e28c5205017fb3dfa": 2,
+          "c57eea90970d614af75f": 1,
           "c5c7f91644c25ddef5b1": 4,
           "cd3443b63e258552d868": 3,
           "d5c3b8cada9661b4a12a": 1,
@@ -24877,8 +24928,9 @@
         }
       },
       "d8395d06893ee18378e6": {
-        "latest_transition_id": "5fa3acfcbfb1b42266fb",
+        "latest_transition_id": "5f8ef3e013908d04c19f",
         "occurrences": {
+          "5f8ef3e013908d04c19f": 1,
           "5fa3acfcbfb1b42266fb": 1
         }
       },
