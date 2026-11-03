@@ -919,6 +919,10 @@
                   <h2>Table for Two map</h2>
                   <p id="tft-map-summary">Restaurants on the official list. Pin colour shows whether a table is open.</p>
                 </div>
+                <div class="tft-card-switch" id="tft-card-switch" role="group" aria-label="Show seats for your card" hidden>
+                  <button type="button" data-tier="platinum" aria-pressed="true">Platinum</button>
+                  <button type="button" data-tier="centurion" aria-pressed="false">Centurion</button>
+                </div>
               </div>
               <section class="map-filter-shell" id="tft-map-filter-shell">
                 <button
@@ -1003,7 +1007,7 @@
                     </select>
                   </label>
 
-                  <label class="filter-wrap" hidden>
+                  <label class="filter-wrap" id="tft-tier-filter-wrap" hidden>
                     <span class="label">Card</span>
                     <select id="tft-tier-filter">
                       <option value="">All cards</option>

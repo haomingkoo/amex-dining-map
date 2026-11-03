@@ -202,14 +202,14 @@ console.log("TFT Centurion live slots verification passed");
 {
   const fns = [
     "tableForTwoPayload", "tableForTwoVenueTiers", "tableForTwoVenues", "tableForTwoBotServesVenue",
-    "tableForTwoDisplayTier", "tableForTwoPublishedMenus", "tableForTwoMenuMetaLabel",
+    "tableForTwoDisplayTier", "tableForTwoPublishedMenus", "tableForTwoMenuGap", "tableForTwoMenuMetaLabel",
     "tableForTwoTierCountsLabel", "tableForTwoLinkedOnlyNote",
   ];
   const venues = [
     ...tiered,
     { id: "zyx", name: "Zui Yu Xuan", booking_project_status: "active", tiers: ["platinum", "centurion"], tier_membership: { centurion: "linked_only" } },
   ];
-  const context = { state: { tableForTwo: { venues } }, tableForTwoTierFilter: { value: "" } };
+  const context = { state: { tableForTwo: { venues } }, tableForTwoTierFilter: { value: "" }, TABLE_FOR_TWO_TIER_LABELS: { platinum: "Platinum", centurion: "Centurion" } };
   vm.runInNewContext(
     `${fns.map((name) => extractFrom(source, name)).join("\n")}\nObject.assign(globalThis, { ${fns.join(", ")} });`,
     context,
