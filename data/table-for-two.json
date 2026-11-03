@@ -60170,25 +60170,6 @@
     "review_queue": [
       {
         "status": "review_required",
-        "kind": "changed_or_new_venue_menu",
-        "venue_id": "tft-ginger",
-        "venue_name": "Ginger",
-        "card": "centurion",
-        "filename": "Gingerlily-Menu_Centurion.pdf",
-        "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Gingerlily-Menu_Centurion.pdf",
-        "sha256": "9a2363bd1b193bb1c89af1074dee3ac428805cc056f1a2ae8629f0aff2261ed7",
-        "bytes": 22463641,
-        "aem_uuid": "fbb20089-f9cb-4a5f-9a5f-731072f93b02",
-        "previous_sha256": null,
-        "previous": null,
-        "roster_sha256": "fbb8279facf3c59a2c6db422c7ada6f2cd34a10fea713d1a46a512511514438e",
-        "listing_sha256": "2d1877f5576de1f88563fb40b1029e15785cd4bdaaa9c620fddf3d8b80d14db7",
-        "detected_at": "2026-11-03T03:18:00Z",
-        "first_detected_at": "2026-11-03T03:18:00Z",
-        "candidate_id": "f6a3ae1c3f4e7074981460e8339d53a9effc35d90933c5fbc600a8b43def06d3"
-      },
-      {
-        "status": "review_required",
         "kind": "missing_venue_menu",
         "venue_id": "tft-kuriya-dining",
         "venue_name": "Kuriya Dining",
@@ -60250,8 +60231,8 @@
         "candidate_id": "023a33a3022962ece7c4c84af6ef1189e0c0040fd5f6ce2f4b249ef582aa4029"
       }
     ],
-    "review_queue_count": 4,
-    "review_queue_sha256": "b6af1643d941cd043b15537c49b1807829843daa648e679c4f8d611960513913",
+    "review_queue_count": 3,
+    "review_queue_sha256": "9e265a3b8d8582ab6f53fa95ef4b8d1555a4417664a74c798642f99b7f813736",
     "review_required": true,
     "review_decisions": [
       {
@@ -64243,6 +64224,67 @@
           "review_note": "JAAN by Kirk Westaway Table for Two by Centurion 5-course set menu; Amex omits it from the listing and names it JAAN-Menu_Centurion.pdf.",
           "entity_key": "record:tft-jaan-by-kirk-westaway:menu:centurion"
         }
+      },
+      {
+        "candidate_id": "f6a3ae1c3f4e7074981460e8339d53a9effc35d90933c5fbc600a8b43def06d3",
+        "decision": "rejected",
+        "manifest_sha256": "7cf4ccf398ba96428158b17990c3f8ce01d4c5a1402940b139d8cc6b399a7f81",
+        "reviewed_at": "2026-11-03T17:34:09Z",
+        "reviewed_by": "Claude, owner-authorized",
+        "review_note": "Ginger is a buffet venue; Gingerlily-Menu_Centurion.pdf is Ginger.Lily's menu, already published on that venue.",
+        "candidate": {
+          "kind": "changed_or_new_venue_menu",
+          "venue_id": "tft-ginger",
+          "card": "centurion",
+          "filename": "Gingerlily-Menu_Centurion.pdf",
+          "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Gingerlily-Menu_Centurion.pdf",
+          "asset_sha256": "9a2363bd1b193bb1c89af1074dee3ac428805cc056f1a2ae8629f0aff2261ed7",
+          "bytes": 22463641,
+          "aem_uuid": "fbb20089-f9cb-4a5f-9a5f-731072f93b02",
+          "roster_sha256": "fbb8279facf3c59a2c6db422c7ada6f2cd34a10fea713d1a46a512511514438e",
+          "listing_sha256": "2d1877f5576de1f88563fb40b1029e15785cd4bdaaa9c620fddf3d8b80d14db7",
+          "previous": null
+        },
+        "candidate_item": {
+          "status": "review_required",
+          "kind": "changed_or_new_venue_menu",
+          "venue_id": "tft-ginger",
+          "venue_name": "Ginger",
+          "card": "centurion",
+          "filename": "Gingerlily-Menu_Centurion.pdf",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Gingerlily-Menu_Centurion.pdf",
+          "sha256": "9a2363bd1b193bb1c89af1074dee3ac428805cc056f1a2ae8629f0aff2261ed7",
+          "bytes": 22463641,
+          "aem_uuid": "fbb20089-f9cb-4a5f-9a5f-731072f93b02",
+          "previous_sha256": null,
+          "previous": null,
+          "roster_sha256": "fbb8279facf3c59a2c6db422c7ada6f2cd34a10fea713d1a46a512511514438e",
+          "listing_sha256": "2d1877f5576de1f88563fb40b1029e15785cd4bdaaa9c620fddf3d8b80d14db7",
+          "detected_at": "2026-11-03T03:18:00Z",
+          "first_detected_at": "2026-11-03T03:18:00Z",
+          "candidate_id": "f6a3ae1c3f4e7074981460e8339d53a9effc35d90933c5fbc600a8b43def06d3"
+        },
+        "manifest": {
+          "schema_version": 1,
+          "program_id": "table-for-two",
+          "review_queue_sha256": "b6af1643d941cd043b15537c49b1807829843daa648e679c4f8d611960513913",
+          "candidate_id": "f6a3ae1c3f4e7074981460e8339d53a9effc35d90933c5fbc600a8b43def06d3",
+          "decision": "rejected",
+          "kind": "changed_or_new_venue_menu",
+          "venue_id": "tft-ginger",
+          "card": "centurion",
+          "filename": "Gingerlily-Menu_Centurion.pdf",
+          "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/Gingerlily-Menu_Centurion.pdf",
+          "asset_sha256": "9a2363bd1b193bb1c89af1074dee3ac428805cc056f1a2ae8629f0aff2261ed7",
+          "bytes": 22463641,
+          "aem_uuid": "fbb20089-f9cb-4a5f-9a5f-731072f93b02",
+          "roster_sha256": "fbb8279facf3c59a2c6db422c7ada6f2cd34a10fea713d1a46a512511514438e",
+          "listing_sha256": "2d1877f5576de1f88563fb40b1029e15785cd4bdaaa9c620fddf3d8b80d14db7",
+          "reviewed_at": "2026-11-03T17:34:09Z",
+          "reviewed_by": "Claude, owner-authorized",
+          "review_note": "Ginger is a buffet venue; Gingerlily-Menu_Centurion.pdf is Ginger.Lily's menu, already published on that venue."
+        },
+        "owner_event": null
       }
     ]
   }
