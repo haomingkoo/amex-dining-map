@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import json
 import logging
+import re
 
 import pytest
 from fastapi.testclient import TestClient
@@ -26,6 +27,11 @@ from app.telegram_bot_routes import BOT_SCOPE, get_settings
 WEBHOOK_SECRET = "w" * 43
 SLOT_DATE = (datetime.now(tft_slots.SGT) + timedelta(days=7)).date()
 SLOT_DAY = f"{SLOT_DATE:%a} {SLOT_DATE.day} {SLOT_DATE:%b}"
+
+
+def _without_random_ids(log_text: str) -> str:
+    # Random hex ids can contain a short canary such as "4444" by chance.
+    return re.sub(r'"(request_id|run_id)":"[0-9a-f]+"', r'"\1":"<id>"', log_text)
 
 
 def _settings(path: Path) -> Settings:
@@ -202,7 +208,7 @@ def test_private_menu_query_sends_once_and_replay_is_deduplicated(
     )
     assert '"state":"done"' in log_text
     for secret in ("/menu VUE platinum", settings.telegram_guide_bot_token, WEBHOOK_SECRET, "4444", "1001"):
-        assert secret not in log_text
+        assert secret not in _without_random_ids(log_text)
 
 
 def test_terms_delivery_log_is_diagnostic_without_user_content(
@@ -233,7 +239,7 @@ def test_terms_delivery_log_is_diagnostic_without_user_content(
         "4444",
         "1201",
     ):
-        assert private_value not in log_text
+        assert private_value not in _without_random_ids(log_text)
 
 
 def test_private_slot_query_fetches_once_after_guards_and_replay_deduplicates(
@@ -516,7 +522,7 @@ def test_transport_unknown_is_not_blindly_retried(guide_client, monkeypatch, cap
         "4444",
         "1001",
     ):
-        assert secret not in log_text
+        assert secret not in _without_random_ids(log_text)
 
 
 def test_transport_dead_is_logged_without_identity_or_message(
@@ -553,7 +559,7 @@ def test_transport_dead_is_logged_without_identity_or_message(
         "4444",
         "7007",
     ):
-        assert secret not in log_text
+        assert secret not in _without_random_ids(log_text)
 
 
 def test_invalid_bundled_catalog_is_quarantined_without_500(
@@ -595,7 +601,7 @@ def test_invalid_bundled_catalog_is_quarantined_without_500(
         "4444",
         "8101",
     ):
-        assert secret not in log_text
+        assert secret not in _without_random_ids(log_text)
 
 
 def test_stale_processing_claim_becomes_unknown_without_resend(tmp_path: Path):
@@ -980,7 +986,7 @@ def test_receipt_conflict_after_send_logs_unknown_and_failed_run_without_pii(
         "d" * 43,
         sends[0][2],
     ):
-        assert forbidden not in log_text
+        assert forbidden not in _without_random_ids(log_text)
 
 
 def test_reminder_dispatch_sends_once_then_terminally_closes_destination(
