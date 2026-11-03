@@ -48,7 +48,7 @@ console.log("Table for Two Telegram link verification passed");
 
 // Phones hide `.inline-link.subtle` in the TFT panel, so the Telegram actions must not carry it.
 for (const label of ["Ask on Telegram", "Set Telegram reminder"]) {
-  const link = source.match(new RegExp(`<a class="([^"]*)"[^>]*>${label}</a>`));
+  const link = source.match(new RegExp(`<a (?:class="([^"]*)")?[^>]*>${label}</a>`));
   assert.ok(link, `${label} link not found`);
-  assert.doesNotMatch(link[1], /\bsubtle\b/, `${label} is hidden on phones`);
+  assert.doesNotMatch(link[1] || "", /\bsubtle\b/, `${label} is hidden on phones`);
 }

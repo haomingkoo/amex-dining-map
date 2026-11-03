@@ -7650,11 +7650,14 @@ function renderTableForTwoCard() {
   const googleMapsUrl = bestGoogleMapsUrl(record) || googleMapsSearchUrl([displayName, "Singapore"]);
   const menuPdf = record.menu_pdf || {};
   const publishedMenus = tableForTwoPublishedMenus(record, tableForTwoDisplayTier(record));
+  // Release patterns are Platinum observations, so the Centurion view leaves them out.
+  const centurionView = tableForTwoDisplayTier(record) === "centurion";
+  const centurionBookingUrl = centurionView ? tableForTwoCenturionBookingUrl(record) : "";
   const menuGap = tableForTwoMenuGap(record);
   const gapLabel = TABLE_FOR_TWO_TIER_LABELS[menuGap] || "";
-  // Another card's menu is never the primary action; it may not match this card's menu.
+  // One primary action: the booking page, else this card's menu. Another card's menu may not match.
   const menuPdfLinks = publishedMenus
-    .map((menu, index) => `<a class="inline-link${index === 0 && !menuGap ? " primary-action" : ""}" href="${escapeHtml(menu.url)}" target="_blank" rel="noopener">${escapeHtml(`${menu.label || "Set"} menu (PDF)`)}</a>`)
+    .map((menu, index) => `<a class="inline-link${index === 0 && !menuGap && !centurionBookingUrl ? " primary-action" : ""}" href="${escapeHtml(menu.url)}" target="_blank" rel="noopener">${escapeHtml(`${menu.label || "Set"} menu (PDF)`)}</a>`)
     .join("");
   const menuPdfNote = !menuPdfLinks && menuPdf.status === "buffet_no_menu_expected"
     ? `<div class="focus-note">Buffet venue, so there is no set menu PDF.</div>`
@@ -7671,9 +7674,7 @@ function renderTableForTwoCard() {
       ? `<div class="focus-note focus-note-warn">${escapeHtml(venueMenuReviewWarning)}</div>`
       : "";
 
-  // Release patterns are Platinum observations, so the Centurion view leaves them out.
-  const centurionView = tableForTwoDisplayTier(record) === "centurion";
-  const centurionBookingUrl = centurionView ? tableForTwoCenturionBookingUrl(record) : "";
+  const diningCityUrl = record.dining_city_public_url || record.venue_source_url || profileSourceUrl;
   tableForTwoFocusCard.innerHTML = `
     ${profileImageUrl ? `<img class="tft-venue-photo" src="${escapeHtml(profileImageUrl)}" alt="${escapeHtml(displayName)}" width="${TABLE_FOR_TWO_PHOTO_WIDTH_PX}" height="${TABLE_FOR_TWO_PHOTO_HEIGHT_PX}" loading="lazy" decoding="async">` : ""}
     <div class="focus-kicker">${escapeHtml(tableForTwoCategoryLabel(record.category))} / Singapore</div>
@@ -7701,15 +7702,17 @@ function renderTableForTwoCard() {
     <div class="focus-actions">
       ${centurionBookingUrl ? `<a class="inline-link primary-action" href="${escapeHtml(centurionBookingUrl)}" target="_blank" rel="noopener">Centurion booking page</a>` : ""}
       ${menuPdfLinks}
-      <a class="inline-link${menuPdfLinks ? "" : " primary-action"}" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Search Google Maps</a>
-      ${record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.dining_city_public_url)}" target="_blank" rel="noopener">Public DiningCity page</a>` : ""}
-      ${record.venue_source_url && !record.dining_city_public_url ? `<a class="inline-link" href="${escapeHtml(record.venue_source_url)}" target="_blank" rel="noopener">Venue source</a>` : ""}
-      ${profileSourceUrl ? `<a class="inline-link subtle" href="${escapeHtml(profileSourceUrl)}" target="_blank" rel="noopener">DiningCity profile</a>` : ""}
-      ${tableForTwoHasMapPin(record) ? `<button type="button" class="ghost-btn secondary" data-tft-focus-map="true">Center on map</button>` : ""}
-      <a class="inline-link subtle" href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Official list</a>
-      <a class="inline-link subtle" href="${escapeHtml(payload.terms_url || TABLE_FOR_TWO_TNC_URL)}" target="_blank" rel="noopener">T&Cs PDF</a>
-      ${telegramAskUrl ? `<a class="inline-link" href="${escapeHtml(telegramAskUrl)}" target="_blank" rel="noopener">Ask on Telegram</a>` : ""}
-      ${telegramReminderUrl ? `<a class="inline-link" href="${escapeHtml(telegramReminderUrl)}" target="_blank" rel="noopener">Set Telegram reminder</a>` : ""}
+      <a class="inline-link${menuPdfLinks || centurionBookingUrl ? "" : " primary-action"}" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Google Maps</a>
+    </div>
+    ${telegramAskUrl || telegramReminderUrl ? `<div class="tft-link-row">
+      ${telegramAskUrl ? `<a href="${escapeHtml(telegramAskUrl)}" target="_blank" rel="noopener">Ask on Telegram</a>` : ""}
+      ${telegramReminderUrl ? `<a href="${escapeHtml(telegramReminderUrl)}" target="_blank" rel="noopener">Set Telegram reminder</a>` : ""}
+    </div>` : ""}
+    <div class="tft-link-row is-quiet">
+      ${diningCityUrl ? `<a href="${escapeHtml(diningCityUrl)}" target="_blank" rel="noopener">DiningCity</a>` : ""}
+      <a href="${escapeHtml(payload.official_url || TABLE_FOR_TWO_OFFICIAL_URL)}" target="_blank" rel="noopener">Official list</a>
+      <a href="${escapeHtml(payload.terms_url || TABLE_FOR_TWO_TNC_URL)}" target="_blank" rel="noopener">T&Cs PDF</a>
+      ${tableForTwoHasMapPin(record) ? `<button type="button" data-tft-focus-map="true">Center on map</button>` : ""}
     </div>
   `;
 

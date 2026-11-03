@@ -3847,6 +3847,52 @@ a.google-badge:hover {
   border-top: 1px solid var(--border);
 }
 
+.tft-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 16px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.tft-link-row a,
+.tft-link-row button {
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--surface-border-strong);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.tft-link-row a:hover,
+.tft-link-row button:hover {
+  color: var(--text);
+  text-decoration-color: currentColor;
+}
+
+.tft-link-row a:focus-visible,
+.tft-link-row button:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.tft-link-row.is-quiet {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.tft-link-row.is-quiet a,
+.tft-link-row.is-quiet button {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
 .price-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -4916,7 +4962,7 @@ h1, h2, h3 {
   }
 
   body.route-table-for-two #table-for-two-explorer .focus-actions .inline-link.subtle,
-  body.route-table-for-two #table-for-two-explorer .focus-actions [data-tft-focus-map] {
+  body.route-table-for-two #table-for-two-explorer .tft-link-row [data-tft-focus-map] {
     display: none;
   }
 
