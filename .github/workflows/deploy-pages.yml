@@ -118,6 +118,7 @@ jobs:
             table-for-two.json \
             table-for-two-slots.json \
             table-for-two-release-history.json \
+            tft-menu-history.json \
             updates.json \
             source-health.json \
             google-maps-ratings.json \
@@ -138,6 +139,7 @@ jobs:
             --release-summary-output site/data/table-for-two-release-history-summary.json \
             --tft-guide-catalog reminders/app/tft_guide_catalog.json \
             --tft-insights-output site/data/table-for-two-insights.json
+          python3 scripts/build_tft_menu_history.py --stage-archive site/menu-archive
           cp .nojekyll site/
           cp CNAME site/
           app_version="$(sha256sum site/app.js | cut -c1-12)"

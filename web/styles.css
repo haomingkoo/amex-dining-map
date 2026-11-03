@@ -3847,6 +3847,109 @@ a.google-badge:hover {
   border-top: 1px solid var(--border);
 }
 
+.tft-menu-history {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-overlay);
+}
+
+.tft-menu-history > summary {
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tft-menu-history > summary:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+.tft-menu-history ol {
+  margin: 0;
+  padding: 0 14px 12px;
+  list-style: none;
+}
+
+.tft-menu-version {
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.tft-menu-version-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: 13px;
+}
+
+.tft-menu-version-head a {
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.tft-menu-version-head a:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
+.tft-menu-version-missing,
+.tft-menu-diff-note {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.tft-menu-diff-note {
+  margin: 6px 0 0;
+}
+
+.tft-menu-diff-label {
+  margin: 8px 0 2px;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tft-menu-history ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.tft-menu-history ul li {
+  position: relative;
+  padding: 2px 0 2px 16px;
+}
+
+.tft-menu-history ul li::before {
+  position: absolute;
+  left: 0;
+  font-weight: 700;
+}
+
+.tft-menu-history ul.is-added li::before {
+  content: "+";
+  color: var(--green);
+}
+
+.tft-menu-history ul.is-removed li {
+  color: var(--text-secondary);
+}
+
+.tft-menu-history ul.is-removed li::before {
+  content: "\2212";
+  color: var(--rose);
+}
+
 .tft-link-row {
   display: flex;
   flex-wrap: wrap;
