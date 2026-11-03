@@ -5382,6 +5382,12 @@ function tableForTwoHasTierData() {
   return Array.isArray(venues) && venues.some((record) => Array.isArray(record.tiers));
 }
 
+// Venues the selected card can book; the map and list never show another card's venues.
+function tableForTwoCardVenues() {
+  const tier = typeof tableForTwoTierFilter === "undefined" ? "" : tableForTwoTierFilter?.value || "";
+  return tableForTwoVenues().filter((record) => tableForTwoTierMatches(record, tier));
+}
+
 function tableForTwoTierMatches(record, tier) {
   return !tier || !Array.isArray(record.tiers) || record.tiers.includes(tier);
 }
@@ -5831,7 +5837,7 @@ function tableForTwoNormalizePreferredTime(timeValue) {
 
 function tableForTwoAllAvailableDates(filters = {}) {
   const dates = new Set();
-  tableForTwoVenues().forEach((record) => {
+  tableForTwoCardVenues().forEach((record) => {
     tableForTwoMatchingSlots(record, { ...filters, date: "", availability: "" }).forEach((slot) => {
       if (slot.date) dates.add(slot.date);
     });
@@ -6329,7 +6335,7 @@ function renderTableForTwoMarkers() {
   if (!hasLeaflet || !tableForTwoMap) return;
   tableForTwoMarkerClusterGroup = ensureMarkerClusterGroup(tableForTwoMap, tableForTwoMarkerClusterGroup, true);
   clearTableForTwoMarkers();
-  const venues = tableForTwoVenues().filter((record) => tableForTwoHasMapPin(record));
+  const venues = tableForTwoCardVenues().filter((record) => tableForTwoHasMapPin(record));
   const sameSpot = new Map();
   venues.forEach((record) => {
     const key = latLngForRecord(record).map((value) => value.toFixed(5)).join(",");
@@ -6348,7 +6354,7 @@ function renderTableForTwoMarkers() {
 
 function fitTableForTwoMap() {
   if (!hasLeaflet || !tableForTwoMap) return;
-  const latLngs = tableForTwoVenues()
+  const latLngs = tableForTwoCardVenues()
     .filter((record) => tableForTwoHasMapPin(record))
     .map((record) => latLngForRecord(record));
   if (!latLngs.length) {
@@ -6475,14 +6481,13 @@ function filterTableForTwo() {
   const date = tableForTwoDateFilter.value;
   const time = tableForTwoTimeFilter?.value || "";
   const day = tableForTwoDayFilter.value || inferredFilters.day;
-  const venues = tableForTwoVenues();
+  const venues = tableForTwoCardVenues();
   const filters = { availability, partySize, session, date, time, day };
   const autoAvailabilityOnly = !availability && tableForTwoHasSlotFilters(filters) && !residualSearch;
   state.tableForTwoCurrentFilters = filters;
   state.tableForTwoAutoAvailabilityOnly = autoAvailabilityOnly;
   state.tableForTwoFiltered = venues.filter((record) => {
     if (category && record.category !== category) return false;
-    if (!tableForTwoTierMatches(record, tier)) return false;
     if (autoAvailabilityOnly) {
       if (tableForTwoAvailabilityKey(record, filters) !== "available") return false;
     } else if (!tableForTwoRecordMatchesFilters(record, filters)) return false;
@@ -6504,7 +6509,9 @@ function filterTableForTwo() {
     return (a.app_name || a.name || "").localeCompare(b.app_name || b.name || "");
   });
 
-  if (state.tableForTwoActiveId && !(tableForTwoPayload().venues || []).some((record) => record.id === state.tableForTwoActiveId)) {
+  const activeRecord = (tableForTwoPayload().venues || []).find((record) => record.id === state.tableForTwoActiveId);
+  // Switching card drops a selection that card cannot book; earlier listings (no card) stay selectable.
+  if (state.tableForTwoActiveId && (!activeRecord || (tableForTwoVenueTiers(activeRecord).length && !tableForTwoTierMatches(activeRecord, tier)))) {
     state.tableForTwoActiveId = null;
   }
   syncTableForTwoSelectionState();

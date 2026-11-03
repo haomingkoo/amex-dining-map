@@ -100,3 +100,32 @@ Object.assign(globalThis, { tableForTwoMenuGap, tableForTwoMenuMetaLabel });`,
 // 14. The detail panel explains the gap next to the menu links.
 assert.match(source, /No \$\{escapeHtml\(gapLabel\)\} menu found yet/);
 console.log("TFT card menu verification passed");
+
+// The map only draws venues the selected card can book (Platinum once drew JAAN and Summer Pavilion).
+{
+  const venues = [
+    { id: "shared", tiers: ["platinum", "centurion"] },
+    { id: "plat", tiers: ["platinum"] },
+    { id: "jaan", tiers: ["centurion"] },
+  ];
+  const tier = { value: "platinum" };
+  const cardContext = { tableForTwoTierFilter: tier, tableForTwoVenues: () => venues };
+  vm.runInNewContext(
+    `${["tableForTwoTierMatches", "tableForTwoCardVenues"].map((name) => extractFunction(source, name)).join("\n")}
+globalThis.tableForTwoCardVenues = tableForTwoCardVenues;`,
+    cardContext,
+  );
+  const shownIds = () => Array.from(cardContext.tableForTwoCardVenues(), (record) => record.id);
+  // 15. Platinum hides Centurion-only venues; Centurion hides Platinum-only ones.
+  assert.deepEqual(shownIds(), ["shared", "plat"]);
+  tier.value = "centurion";
+  assert.deepEqual(shownIds(), ["shared", "jaan"]);
+  // 16. Markers, map count, map fit and the selected venue all use the card's venues.
+  for (const name of ["renderTableForTwoMarkers", "fitTableForTwoMap"]) {
+    assert.match(extractFunction(source, name), /tableForTwoCardVenues\(\)/, name);
+  }
+  const filter = extractFunction(source, "filterTableForTwo");
+  assert.match(filter, /const venues = tableForTwoCardVenues\(\);/);
+  assert.match(filter, /tableForTwoVenueTiers\(activeRecord\)\.length && !tableForTwoTierMatches\(activeRecord, tier\)/);
+}
+console.log("TFT card map pins verification passed");
