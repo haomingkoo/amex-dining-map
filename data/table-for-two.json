@@ -59508,7 +59508,25 @@
         "opening_hour": "Monday\tClosed\nTuesday\t6:30–10:45 pm\nWednesday\t11:45 am–2:30 pm, 6:30–10:45 pm\nThursday\t11:45 am–2:30 pm, 6:30–10:45 pm\nFriday\t11:45 am–2:30 pm, 6:30–10:45 pm\nSaturday\t11:45 am–2:30 pm, 6:30–10:45 pm\nSunday\tClosed",
         "website_detail_url": "https://www.diningcity.sg/singapore/JAAN"
       },
-      "menu_pdfs": {},
+      "menu_pdfs": {
+        "centurion": {
+          "status": "published",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/JAAN-Menu_Centurion.pdf",
+          "filename": "JAAN-Menu_Centurion.pdf",
+          "card": "centurion",
+          "label": "Centurion",
+          "checked_at": "2026-11-03T17:24:00Z",
+          "first_seen_at": "2026-11-03T17:24:00Z",
+          "last_seen_at": "2026-11-03T17:24:00Z",
+          "sha256": "34d3615ff4e00c6122291f12b1edf3b1eb5bb4bd87e71c0a41a99876e2fe8ec2",
+          "bytes": 70472,
+          "aem_created": null,
+          "aem_uuid": null,
+          "changed_at": null,
+          "review_manifest_sha256": "97fa3606a0a694a954732aa470d746f8d9838e57554171524e9c91b7a8e4d36b",
+          "reviewed_at": "2026-11-03T17:27:39Z"
+        }
+      },
       "menu_pdf": {
         "status": "no_pdf_found",
         "url": null,
@@ -60030,7 +60048,7 @@
     "menus_matched": 54,
     "venues_matched": 34,
     "venues_buffet": 5,
-    "venues_review": 3,
+    "venues_review": 2,
     "unmatched_pdfs": [
       "OSO-Menu_Platinum.pdf",
       "Osteria-Mozza-Menu-Centurion.pdf",
@@ -60182,25 +60200,6 @@
       },
       {
         "status": "review_required",
-        "kind": "changed_or_new_venue_menu",
-        "venue_id": "tft-jaan-by-kirk-westaway",
-        "venue_name": "JAAN By Kirk Westaway",
-        "card": "centurion",
-        "filename": "JAAN-Menu_Centurion.pdf",
-        "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/JAAN-Menu_Centurion.pdf",
-        "sha256": "34d3615ff4e00c6122291f12b1edf3b1eb5bb4bd87e71c0a41a99876e2fe8ec2",
-        "bytes": 70472,
-        "aem_uuid": null,
-        "previous_sha256": null,
-        "previous": null,
-        "roster_sha256": "fbb8279facf3c59a2c6db422c7ada6f2cd34a10fea713d1a46a512511514438e",
-        "listing_sha256": "2d1877f5576de1f88563fb40b1029e15785cd4bdaaa9c620fddf3d8b80d14db7",
-        "detected_at": "2026-11-03T17:24:00Z",
-        "first_detected_at": "2026-11-03T17:24:00Z",
-        "candidate_id": "c469a9f0ddd1fb1d5df03c64739b33446f63e55f14d73acdbbc8f7b7458366c4"
-      },
-      {
-        "status": "review_required",
         "kind": "missing_venue_menu",
         "venue_id": "tft-isabel",
         "venue_name": "Isabel",
@@ -60251,8 +60250,8 @@
         "candidate_id": "023a33a3022962ece7c4c84af6ef1189e0c0040fd5f6ce2f4b249ef582aa4029"
       }
     ],
-    "review_queue_count": 5,
-    "review_queue_sha256": "9acef4add16b0665cdf447c6c8f36826591b027b287d610fe0f4639e106f63d1",
+    "review_queue_count": 4,
+    "review_queue_sha256": "b6af1643d941cd043b15537c49b1807829843daa648e679c4f8d611960513913",
     "review_required": true,
     "review_decisions": [
       {
@@ -64144,6 +64143,105 @@
           "reviewed_at": "2026-11-02T17:08:06Z",
           "review_note": "Ginger.Lily Table for Two by Centurion festive afternoon tea set for two; extra diners $146++.",
           "entity_key": "record:tft-ginger-lily:menu:centurion"
+        }
+      },
+      {
+        "candidate_id": "c469a9f0ddd1fb1d5df03c64739b33446f63e55f14d73acdbbc8f7b7458366c4",
+        "decision": "approved",
+        "manifest_sha256": "97fa3606a0a694a954732aa470d746f8d9838e57554171524e9c91b7a8e4d36b",
+        "reviewed_at": "2026-11-03T17:27:39Z",
+        "reviewed_by": "Claude, owner-authorized",
+        "review_note": "JAAN by Kirk Westaway Table for Two by Centurion 5-course set menu; Amex omits it from the listing and names it JAAN-Menu_Centurion.pdf.",
+        "candidate": {
+          "kind": "changed_or_new_venue_menu",
+          "venue_id": "tft-jaan-by-kirk-westaway",
+          "card": "centurion",
+          "filename": "JAAN-Menu_Centurion.pdf",
+          "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/JAAN-Menu_Centurion.pdf",
+          "asset_sha256": "34d3615ff4e00c6122291f12b1edf3b1eb5bb4bd87e71c0a41a99876e2fe8ec2",
+          "bytes": 70472,
+          "aem_uuid": null,
+          "roster_sha256": "fbb8279facf3c59a2c6db422c7ada6f2cd34a10fea713d1a46a512511514438e",
+          "listing_sha256": "2d1877f5576de1f88563fb40b1029e15785cd4bdaaa9c620fddf3d8b80d14db7",
+          "previous": null
+        },
+        "candidate_item": {
+          "status": "review_required",
+          "kind": "changed_or_new_venue_menu",
+          "venue_id": "tft-jaan-by-kirk-westaway",
+          "venue_name": "JAAN By Kirk Westaway",
+          "card": "centurion",
+          "filename": "JAAN-Menu_Centurion.pdf",
+          "url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/JAAN-Menu_Centurion.pdf",
+          "sha256": "34d3615ff4e00c6122291f12b1edf3b1eb5bb4bd87e71c0a41a99876e2fe8ec2",
+          "bytes": 70472,
+          "aem_uuid": null,
+          "previous_sha256": null,
+          "previous": null,
+          "roster_sha256": "fbb8279facf3c59a2c6db422c7ada6f2cd34a10fea713d1a46a512511514438e",
+          "listing_sha256": "2d1877f5576de1f88563fb40b1029e15785cd4bdaaa9c620fddf3d8b80d14db7",
+          "detected_at": "2026-11-03T17:24:00Z",
+          "first_detected_at": "2026-11-03T17:24:00Z",
+          "candidate_id": "c469a9f0ddd1fb1d5df03c64739b33446f63e55f14d73acdbbc8f7b7458366c4"
+        },
+        "manifest": {
+          "schema_version": 1,
+          "program_id": "table-for-two",
+          "review_queue_sha256": "9acef4add16b0665cdf447c6c8f36826591b027b287d610fe0f4639e106f63d1",
+          "candidate_id": "c469a9f0ddd1fb1d5df03c64739b33446f63e55f14d73acdbbc8f7b7458366c4",
+          "decision": "approved",
+          "kind": "changed_or_new_venue_menu",
+          "venue_id": "tft-jaan-by-kirk-westaway",
+          "card": "centurion",
+          "filename": "JAAN-Menu_Centurion.pdf",
+          "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/JAAN-Menu_Centurion.pdf",
+          "asset_sha256": "34d3615ff4e00c6122291f12b1edf3b1eb5bb4bd87e71c0a41a99876e2fe8ec2",
+          "bytes": 70472,
+          "aem_uuid": null,
+          "roster_sha256": "fbb8279facf3c59a2c6db422c7ada6f2cd34a10fea713d1a46a512511514438e",
+          "listing_sha256": "2d1877f5576de1f88563fb40b1029e15785cd4bdaaa9c620fddf3d8b80d14db7",
+          "reviewed_at": "2026-11-03T17:27:39Z",
+          "reviewed_by": "Claude, owner-authorized",
+          "review_note": "JAAN by Kirk Westaway Table for Two by Centurion 5-course set menu; Amex omits it from the listing and names it JAAN-Menu_Centurion.pdf."
+        },
+        "owner_event": {
+          "program": "Table for Two",
+          "program_id": "table-for-two",
+          "route": "#/table-for-two?venue=tft-jaan-by-kirk-westaway",
+          "kind": "menu_added",
+          "subject": "JAAN By Kirk Westaway · Centurion menu",
+          "detected_at": "2026-11-03T17:24:00Z",
+          "status": "published",
+          "before": {
+            "state": "not_published",
+            "fields": {
+              "Menu file": "Not published",
+              "Menu version": "Not published"
+            }
+          },
+          "after": {
+            "state": "published",
+            "fields": {
+              "Menu file": "JAAN-Menu_Centurion.pdf",
+              "Menu version": "34d3615ff4e0"
+            }
+          },
+          "changes": [
+            {
+              "field": "Menu file",
+              "before": "Not published",
+              "after": "JAAN-Menu_Centurion.pdf"
+            },
+            {
+              "field": "Menu version",
+              "before": "Not published",
+              "after": "34d3615ff4e0"
+            }
+          ],
+          "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/JAAN-Menu_Centurion.pdf",
+          "reviewed_at": "2026-11-03T17:27:39Z",
+          "review_note": "JAAN by Kirk Westaway Table for Two by Centurion 5-course set menu; Amex omits it from the listing and names it JAAN-Menu_Centurion.pdf.",
+          "entity_key": "record:tft-jaan-by-kirk-westaway:menu:centurion"
         }
       }
     ]

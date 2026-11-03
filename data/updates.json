@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-03T17:26:44Z",
+  "updated_at": "2026-11-03T17:27:39Z",
   "updates": [
     {
       "program": "Table for Two",
@@ -76,6 +76,48 @@
       "stream_id": "5a285967ca2795c90124",
       "occurrence": 1,
       "id": "fb1084d9aaa8a2a61e3b"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two?venue=tft-jaan-by-kirk-westaway",
+      "kind": "menu_added",
+      "subject": "JAAN By Kirk Westaway · Centurion menu",
+      "detected_at": "2026-11-03T17:24:00Z",
+      "status": "published",
+      "before": {
+        "state": "not_published",
+        "fields": {
+          "Menu file": "Not published",
+          "Menu version": "Not published"
+        }
+      },
+      "after": {
+        "state": "published",
+        "fields": {
+          "Menu file": "JAAN-Menu_Centurion.pdf",
+          "Menu version": "34d3615ff4e0"
+        }
+      },
+      "changes": [
+        {
+          "field": "Menu file",
+          "before": "Not published",
+          "after": "JAAN-Menu_Centurion.pdf"
+        },
+        {
+          "field": "Menu version",
+          "before": "Not published",
+          "after": "34d3615ff4e0"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/JAAN-Menu_Centurion.pdf",
+      "reviewed_at": "2026-11-03T17:27:39Z",
+      "review_note": "JAAN by Kirk Westaway Table for Two by Centurion 5-course set menu; Amex omits it from the listing and names it JAAN-Menu_Centurion.pdf.",
+      "transition_id": "72b29b4857db1efdfc3b",
+      "stream_id": "a68d8e8d58936ea8907e",
+      "occurrence": 1,
+      "id": "885487ef2830d6cdffc1"
     },
     {
       "program": "Table for Two",
@@ -23243,48 +23285,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "source_updated",
-      "subject": "Global Dining source",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Record count": 1926,
-          "Mapped count": 1826
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Record count": 1982,
-          "Mapped count": 1871
-        }
-      },
-      "changes": [
-        {
-          "field": "Record count",
-          "before": 1926,
-          "after": 1982
-        },
-        {
-          "field": "Mapped count",
-          "before": 1826,
-          "after": 1871
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "7fdc71a5a4f3bb71f791",
-      "stream_id": "128d0d698ba4426680b0",
-      "occurrence": 1,
-      "id": "519f01154c9ea2f52535",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by e8e8e0e89f0837f3a6e4 before review."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23541,12 +23541,6 @@
         "latest_transition_id": "a03b934a4cdd3cfe32c5",
         "occurrences": {
           "a03b934a4cdd3cfe32c5": 1
-        }
-      },
-      "11418aeacbe8cfe013ba": {
-        "latest_transition_id": "ada19a1cfbcd4cb575f9",
-        "occurrences": {
-          "ada19a1cfbcd4cb575f9": 1
         }
       },
       "11c58ae15ff238ad9dbe": {
@@ -23899,12 +23893,6 @@
           "8f89d57217161da1ee19": 1
         }
       },
-      "3363614ecee1a0bc5c19": {
-        "latest_transition_id": "ef08978d4b5229149121",
-        "occurrences": {
-          "ef08978d4b5229149121": 1
-        }
-      },
       "37af8ed667906428c087": {
         "latest_transition_id": "ec91a42202db0e383dda",
         "occurrences": {
@@ -23945,12 +23933,6 @@
         "latest_transition_id": "aa4e1d5448d34ea269b0",
         "occurrences": {
           "aa4e1d5448d34ea269b0": 1
-        }
-      },
-      "3b00a3ef0760f219f68f": {
-        "latest_transition_id": "a561bea6277ab281f528",
-        "occurrences": {
-          "a561bea6277ab281f528": 1
         }
       },
       "3bdef019e316af648b10": {
@@ -24099,12 +24081,6 @@
         "occurrences": {
           "2d68f9667d6d4c1071bb": 1,
           "32fdd836b9067f4634d5": 1
-        }
-      },
-      "5bff13dcbd5e8cd9478d": {
-        "latest_transition_id": "3758f4eb1a6ba8606a18",
-        "occurrences": {
-          "3758f4eb1a6ba8606a18": 1
         }
       },
       "5c2308485f603bce0067": {
@@ -24368,12 +24344,6 @@
         "latest_transition_id": "47c8d0bc48db48aa7f8f",
         "occurrences": {
           "47c8d0bc48db48aa7f8f": 1
-        }
-      },
-      "81bec3657db531d5ce5a": {
-        "latest_transition_id": "5ae7436cd1502456dac6",
-        "occurrences": {
-          "5ae7436cd1502456dac6": 1
         }
       },
       "826b46095486d786d74c": {
@@ -24640,6 +24610,12 @@
           "5b741b3c6bf6f000f0fc": 1
         }
       },
+      "a68d8e8d58936ea8907e": {
+        "latest_transition_id": "72b29b4857db1efdfc3b",
+        "occurrences": {
+          "72b29b4857db1efdfc3b": 1
+        }
+      },
       "a828d997b60d381fcb04": {
         "latest_transition_id": "ed47d0939e450ee471ec",
         "occurrences": {
@@ -24706,12 +24682,6 @@
           "e7f40a804c49c52289c3": 1
         }
       },
-      "af5c7c41ccc25ca4f890": {
-        "latest_transition_id": "cbf91e7f8fe96d7ae031",
-        "occurrences": {
-          "cbf91e7f8fe96d7ae031": 1
-        }
-      },
       "af60706947de5b942ca7": {
         "latest_transition_id": "7b0a7c790e49cbfeb401",
         "occurrences": {
@@ -24728,12 +24698,6 @@
         "latest_transition_id": "5dfd9179fbc96d897b7f",
         "occurrences": {
           "5dfd9179fbc96d897b7f": 1
-        }
-      },
-      "b08cbc14db4fc318637e": {
-        "latest_transition_id": "4a9f4df77653f847e7d3",
-        "occurrences": {
-          "4a9f4df77653f847e7d3": 1
         }
       },
       "b0c2ce01c7c2ee807947": {
@@ -24794,12 +24758,6 @@
         "latest_transition_id": "45f052a10a6d60d2d86d",
         "occurrences": {
           "45f052a10a6d60d2d86d": 1
-        }
-      },
-      "b75f4538e5db930980d0": {
-        "latest_transition_id": "ee1474bc71cc0916ad81",
-        "occurrences": {
-          "ee1474bc71cc0916ad81": 1
         }
       },
       "b874624bb4a7381e5e5f": {
