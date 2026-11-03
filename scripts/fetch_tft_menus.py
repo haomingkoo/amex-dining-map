@@ -289,7 +289,12 @@ def venue_name_stems(venue: dict) -> list[str]:
     if not words:
         return []
     joined = "".join(word[:1].upper() + word[1:] for word in words)
-    return list(dict.fromkeys([joined, joined[:1] + joined[1:].lower(), "-".join(words)]))
+    stems = [joined, joined[:1] + joined[1:].lower(), "-".join(words)]
+    # A chef byline is left out of the file name: "JAAN By Kirk Westaway" is JAAN-Menu_Centurion.pdf.
+    byline = re.split(r"\s+[Bb]y\s+(?=[A-Z])", str(venue.get("name") or ""), maxsplit=1)
+    if len(byline) == 2:
+        stems.extend(venue_name_stems({"name": byline[0]}))
+    return list(dict.fromkeys(stems))
 
 
 def fetch_direct_menu_entry(
