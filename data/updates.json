@@ -1,7 +1,82 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-03T15:47:19Z",
+  "updated_at": "2026-11-03T17:26:44Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_updated",
+      "subject": "Table for Two source",
+      "detected_at": "2026-11-03T17:26:44Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Booking-project venue count": 31,
+          "Booking-project membership fingerprint": "1aed91eec05b",
+          "Reviewed venues missing from booking project": [
+            "Capitol Bistro. Bar. Patisserie",
+            "Kuriya Dining"
+          ],
+          "Centurion booking-project venue count": 40,
+          "Centurion booking-project membership fingerprint": "83694c00dc1a"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Booking-project venue count": 30,
+          "Booking-project membership fingerprint": "17951a2fadda",
+          "Reviewed venues missing from booking project": [
+            "Capitol Bistro. Bar. Patisserie",
+            "HighHouse",
+            "Kuriya Dining"
+          ],
+          "Centurion booking-project venue count": 39,
+          "Centurion booking-project membership fingerprint": "a9eac7359cbd"
+        }
+      },
+      "changes": [
+        {
+          "field": "Booking-project venue count",
+          "before": 31,
+          "after": 30
+        },
+        {
+          "field": "Booking-project membership fingerprint",
+          "before": "1aed91eec05b",
+          "after": "17951a2fadda"
+        },
+        {
+          "field": "Reviewed venues missing from booking project",
+          "before": [
+            "Capitol Bistro. Bar. Patisserie",
+            "Kuriya Dining"
+          ],
+          "after": [
+            "Capitol Bistro. Bar. Patisserie",
+            "HighHouse",
+            "Kuriya Dining"
+          ]
+        },
+        {
+          "field": "Centurion booking-project venue count",
+          "before": 40,
+          "after": 39
+        },
+        {
+          "field": "Centurion booking-project membership fingerprint",
+          "before": "83694c00dc1a",
+          "after": "a9eac7359cbd"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "2f8d30abd846b97eaa07",
+      "stream_id": "5a285967ca2795c90124",
+      "occurrence": 1,
+      "id": "fb1084d9aaa8a2a61e3b"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -1410,7 +1485,7 @@
       "kind": "source_updated",
       "subject": "Table for Two source",
       "detected_at": "2026-11-02T14:16:39Z",
-      "status": "review_required",
+      "status": "rejected",
       "before": {
         "state": "available",
         "fields": {
@@ -1455,7 +1530,9 @@
       "transition_id": "41ca6e1d50b46b15bb7b",
       "stream_id": "5a285967ca2795c90124",
       "occurrence": 1,
-      "id": "68ea4577c508aa607643"
+      "id": "68ea4577c508aa607643",
+      "reviewed_at": "2026-11-03T17:26:44Z",
+      "review_note": "Superseded by fb1084d9aaa8a2a61e3b before review."
     },
     {
       "program": "Table for Two",
@@ -23208,46 +23285,6 @@
       "review_note": "Superseded by e8e8e0e89f0837f3a6e4 before review."
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Zia at Odyssey / Monaco",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Zia at Odyssey",
-          "Country": "France",
-          "Region": "Monaco",
-          "City": "Monaco",
-          "Address": "Hotel Metropole Monte-Carlo, 4 avenue de la Madone, Monaco, 98000, France",
-          "Cuisine": [
-            "Mediterranean"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "cbf91e7f8fe96d7ae031",
-      "stream_id": "af5c7c41ccc25ca4f890",
-      "occurrence": 1,
-      "id": "4ba9cd303947d091b1fd",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -24026,8 +24063,9 @@
         }
       },
       "5a285967ca2795c90124": {
-        "latest_transition_id": "41ca6e1d50b46b15bb7b",
+        "latest_transition_id": "2f8d30abd846b97eaa07",
         "occurrences": {
+          "2f8d30abd846b97eaa07": 1,
           "3ff80c44f12b2c1a3d01": 1,
           "41ca6e1d50b46b15bb7b": 1,
           "725f4d41dd42c33eadb5": 1,
