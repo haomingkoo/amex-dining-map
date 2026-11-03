@@ -57,6 +57,12 @@ jobs:
         continue-on-error: true
         run: python3 scripts/fetch_tft_menus.py --cache-dir ""
 
+      - name: Record menu versions and dish changes
+        id: menu_history
+        if: always()
+        continue-on-error: true
+        run: python3 scripts/build_tft_menu_history.py
+
       - name: Build Telegram guide catalogue
         id: guide_catalogue
         if: always()
@@ -107,6 +113,7 @@ jobs:
           MUST_STAGE: |
             data/table-for-two.json
             data/table-for-two-slots.json
+            data/tft-menu-history.json
             data/updates.json
             data/changelog-table-for-two.md
             reminders/app/tft_guide_catalog.json
@@ -116,6 +123,7 @@ jobs:
           KEEP_LOCAL_ON_CONFLICT: |
             data/table-for-two.json
             data/table-for-two-slots.json
+            data/tft-menu-history.json
             data/changelog-table-for-two.md
             reminders/app/tft_guide_catalog.json
             data/reviews/official-document-pdfs

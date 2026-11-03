@@ -18,6 +18,7 @@ const DININGCITY_IMAGE_HOST = "static-assets.diningcity.asia";
 const TABLE_FOR_TWO_PHOTO_WIDTH_PX = 720;
 const TABLE_FOR_TWO_PHOTO_HEIGHT_PX = 405;
 const TELEGRAM_GUIDE_CONFIG_URL = "../data/telegram-guide.json";
+const TABLE_FOR_TWO_MENU_HISTORY_URL = "../data/tft-menu-history.json";
 const UPDATES_DATA_URL = "../data/updates.json";
 const SOURCE_HEALTH_DATA_URL = "../data/source-health.json";
 const GOOGLE_RATINGS_URL = "../data/google-maps-ratings.json";
@@ -2456,7 +2457,7 @@ async function ensureTableForTwoDataLoaded() {
   if (state.dataLoaded.tableForTwo) return;
   if (!dataLoadPromises.tableForTwo) {
     dataLoadPromises.tableForTwo = (async () => {
-      const [tableForTwo, staticSlots, releaseHistory, telegramGuideConfig, insights] = await Promise.all([
+      const [tableForTwo, staticSlots, releaseHistory, telegramGuideConfig, insights, menuHistory] = await Promise.all([
         fetchJson(TABLE_FOR_TWO_DATA_URL)
           .then((payload) => payload || fetchJson(TABLE_FOR_TWO_DATA_FALLBACK_URL)),
         fetchJson(TABLE_FOR_TWO_STATIC_SNAPSHOT_URL),
@@ -2468,6 +2469,7 @@ async function ensureTableForTwoDataLoaded() {
           bot_username: null,
         })),
         fetchJson(TABLE_FOR_TWO_INSIGHTS_URL),
+        fetchJson(TABLE_FOR_TWO_MENU_HISTORY_URL),
       ]);
       if (!tableForTwo) {
         dataLoadPromises.tableForTwo = null;
@@ -2478,6 +2480,7 @@ async function ensureTableForTwoDataLoaded() {
       state.tableForTwoReleaseHistory = releaseHistory;
       state.tableForTwoInsights = insights;
       state.telegramGuideConfig = telegramGuideConfig;
+      state.tableForTwoMenuHistory = menuHistory;
       refreshTableForTwoPatterns();
       tableForTwoVenues().forEach((record) => {
         record.search_text = tableForTwoSearchText(record);
@@ -6994,6 +6997,39 @@ function tableForTwoMenuGap(record) {
   return Object.values(menuMap).some(published) ? tier : "";
 }
 
+function tableForTwoMenuVersions(record, tier) {
+  const versions = state.tableForTwoMenuHistory?.venues?.[record?.id]?.[tier];
+  return Array.isArray(versions) ? [...versions].reverse() : [];
+}
+
+function tableForTwoMenuHistoryHtml(record, tier) {
+  const versions = tableForTwoMenuVersions(record, tier);
+  if (versions.length < 2) return "";
+  const list = (label, lines, className) => (lines.length
+    ? `<p class="tft-menu-diff-label">${label}</p><ul class="${className}">${lines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>`
+    : "");
+  const items = versions.map((version, index) => {
+    const from = tableForTwoLongDate(version.first_seen);
+    const until = tableForTwoLongDate(version.last_seen);
+    const when = index === 0 ? `Current, since ${from}` : from === until ? from : `${from} to ${until}`;
+    const pdf = version.archive_path
+      ? `<a href="../${escapeHtml(version.archive_path)}" target="_blank" rel="noopener">Saved PDF</a>`
+      : `<span class="tft-menu-version-missing">PDF not saved</span>`;
+    const changes = version.changes;
+    let body = "";
+    if (index < versions.length - 1) {
+      if (!changes) body = `<p class="tft-menu-diff-note">The earlier PDF was not saved, so the changes cannot be shown.</p>`;
+      else if (!changes.added.length && !changes.removed.length) body = `<p class="tft-menu-diff-note">Same dishes. Only the layout or wording changed.</p>`;
+      else body = list("Added", changes.added, "is-added") + list("Removed", changes.removed, "is-removed");
+    }
+    return `<li class="tft-menu-version"><div class="tft-menu-version-head"><strong>${escapeHtml(when)}</strong>${pdf}</div>${body}</li>`;
+  }).join("");
+  return `<details class="tft-menu-history">
+      <summary>Menu changed ${escapeHtml(tableForTwoLongDate(versions[0].first_seen))}</summary>
+      <ol>${items}</ol>
+    </details>`;
+}
+
 function tableForTwoMenuMetaLabel(record) {
   const menus = tableForTwoPublishedMenus(record);
   const tier = tableForTwoDisplayTier(record);
@@ -7704,6 +7740,7 @@ function renderTableForTwoCard() {
       ${menuPdfLinks}
       <a class="inline-link${menuPdfLinks || centurionBookingUrl ? "" : " primary-action"}" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener">Google Maps</a>
     </div>
+    ${tableForTwoMenuHistoryHtml(record, tableForTwoDisplayTier(record))}
     ${telegramAskUrl || telegramReminderUrl ? `<div class="tft-link-row">
       ${telegramAskUrl ? `<a href="${escapeHtml(telegramAskUrl)}" target="_blank" rel="noopener">Ask on Telegram</a>` : ""}
       ${telegramReminderUrl ? `<a href="${escapeHtml(telegramReminderUrl)}" target="_blank" rel="noopener">Set Telegram reminder</a>` : ""}
