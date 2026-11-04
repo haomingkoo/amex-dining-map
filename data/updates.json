@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-04T01:54:23Z",
+  "updated_at": "2026-11-04T02:25:29Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-11-04T02:25:29Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "30/31 (96.8%), 1 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "30/30 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "30/31 (96.8%), 1 unavailable",
+          "after": "30/30 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "9173e51d1ad2dfdcc8a8",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "c3c4ae9ff17c8f5a6dfd"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -23262,46 +23295,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "ALEX Augsburg / Augsburg",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "ALEX Augsburg",
-          "Country": "Germany",
-          "Region": "Augsburg",
-          "City": "Augsburg",
-          "Address": "ANNASTRASSE 3, Augsburg, 86150, Germany",
-          "Cuisine": [
-            "Modern"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "610d8b3b4efdc371513a",
-      "stream_id": "13f20ec0ad6e5a0dd612",
-      "occurrence": 1,
-      "id": "58c1a44c520862550e99",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by ec8c0f852dc0c9c707d8 before review."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -25165,7 +25158,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "944865f8a636ba077a01",
+        "latest_transition_id": "9173e51d1ad2dfdcc8a8",
         "occurrences": {
           "04d5cfacf701422a287e": 10,
           "093e9a40b7d75a526207": 5,
@@ -25185,6 +25178,7 @@
           "7a0c2ed47a14576abcae": 13,
           "8e8e8636075131043839": 1,
           "90f667bd502eaa1ed26c": 2,
+          "9173e51d1ad2dfdcc8a8": 1,
           "944865f8a636ba077a01": 1,
           "957cb551d4d32c436358": 13,
           "98997d254b5dfdda4b93": 29,
