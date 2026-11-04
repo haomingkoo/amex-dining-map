@@ -1,7 +1,141 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-03T17:55:45Z",
+  "updated_at": "2026-11-04T01:54:18Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-11-04T01:54:18Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "34/42 (81%), 8 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "35/42 (83.3%), 7 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "34/42 (81%), 8 unavailable",
+          "after": "35/42 (83.3%), 7 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "d0fa73978945f9e05fae",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "84259bdb588eb5384fcd"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "removed",
+      "subject": "HighHouse / Marina Bay/Boat Quay",
+      "detected_at": "2026-11-04T01:54:18Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "HighHouse",
+          "Category": "restaurant",
+          "Area": "Marina Bay/Boat Quay",
+          "Address": "1 Raffles Place, Level 61-62, Singapore 048616",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "platinum",
+            "centurion"
+          ],
+          "Menu file": "HighHouse-Menu_Platinum.pdf",
+          "Menu version": "e4b9865c94f3",
+          "Platinum menu file": "HighHouse-Menu_Platinum.pdf",
+          "Platinum menu version": "e4b9865c94f3",
+          "Centurion menu file": "HighHouse-Menu_Centurion.pdf",
+          "Centurion menu version": "988388d5cd4d"
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "AMEXPlatSG booking-project membership",
+          "before": "In project",
+          "after": "Not in project"
+        }
+      ],
+      "source_url": "https://api.diningcity.asia/public/projects/AMEXPlatSG/restaurants",
+      "transition_id": "38867f1b350c87777095",
+      "stream_id": "b3590ff2775fba760cd0",
+      "occurrence": 1,
+      "id": "0d576359f7a97823f7cb"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "menu_updated",
+      "subject": "JAAN By Kirk Westaway",
+      "detected_at": "2026-11-04T01:54:18Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "JAAN By Kirk Westaway",
+          "Category": "restaurant",
+          "Address": "2 Stamford Rd, Level 70, Singapore 178882",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ],
+          "Centurion menu file": "JAAN-Menu_Centurion.pdf",
+          "Centurion menu version": "34d3615ff4e0"
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "JAAN By Kirk Westaway",
+          "Category": "restaurant",
+          "Address": "2 Stamford Rd, Level 70, Singapore 178882",
+          "Booking channel": "Amex Experiences App",
+          "Cards": [
+            "centurion"
+          ],
+          "Menu file": "JAAN-Menu_Centurion.pdf",
+          "Menu version": "34d3615ff4e0",
+          "Centurion menu file": "JAAN-Menu_Centurion.pdf",
+          "Centurion menu version": "34d3615ff4e0"
+        }
+      },
+      "changes": [
+        {
+          "field": "Menu file",
+          "before": null,
+          "after": "JAAN-Menu_Centurion.pdf"
+        },
+        {
+          "field": "Menu version",
+          "before": null,
+          "after": "34d3615ff4e0"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/centurion/dining-and-lifestyle/JAAN-Menu_Centurion.pdf",
+      "transition_id": "15fd11c1c83fccd3bc0b",
+      "stream_id": "f54bfa8f75f9a74a670f",
+      "occurrence": 1,
+      "id": "0159060557792358e0dd"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -23162,126 +23296,6 @@
       "review_note": "Superseded by ec8c0f852dc0c9c707d8 before review."
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Lobito de Mar Ibiza / Ibiza",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Lobito de Mar Ibiza",
-          "Country": "Spain",
-          "Region": "Ibiza",
-          "City": "Ibiza",
-          "Address": "Platja d en Bossa 10, Ibiza, 7817, Spain",
-          "Cuisine": [
-            "Seafood"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "531759967a75a0f621f7",
-      "stream_id": "fc23a8be6946cb53c115",
-      "occurrence": 1,
-      "id": "56a132692e9d9ca27a4e",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Li Yueh / Hsinchu County",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Li Yueh",
-          "Country": "Taiwan",
-          "Region": "Hsinchu County",
-          "City": "Hsinchu County",
-          "Address": "No. 101, Xianzheng 13th Rd., Beilun Vil., Zhubei City, Hsinchu County, 302, Taiwan",
-          "Cuisine": [
-            "Japanese"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "4ee6131e7906b797db2c",
-      "stream_id": "d2aa08d7e6e8b4ea100c",
-      "occurrence": 1,
-      "id": "569a14474e38ed390da1",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Clubhaus Bachmair Weissach / Tegernsee",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Clubhaus Bachmair Weissach",
-          "Country": "Germany",
-          "Region": "Tegernsee",
-          "City": "Tegernsee",
-          "Address": "Hauptstraße 45, Tegernsee, 83684, Germany",
-          "Cuisine": [
-            "International"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "39f1e1f37ab670c0e6d8",
-      "stream_id": "6a40a3174291e2fcb454",
-      "occurrence": 1,
-      "id": "559f8b001bd337ccff13",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23700,7 +23714,7 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "f496a71c977c1701b42e",
+        "latest_transition_id": "d0fa73978945f9e05fae",
         "occurrences": {
           "007e51f231870c7881c2": 1,
           "035b21790df21f0c0ba8": 1,
@@ -23718,6 +23732,7 @@
           "c57eea90970d614af75f": 1,
           "c5c7f91644c25ddef5b1": 4,
           "cd3443b63e258552d868": 3,
+          "d0fa73978945f9e05fae": 1,
           "d5c3b8cada9661b4a12a": 1,
           "e5ce1a31e1fc2359eda7": 1,
           "f496a71c977c1701b42e": 1,
@@ -24722,6 +24737,12 @@
           "109a03c352e29644f3b8": 1
         }
       },
+      "b3590ff2775fba760cd0": {
+        "latest_transition_id": "38867f1b350c87777095",
+        "occurrences": {
+          "38867f1b350c87777095": 1
+        }
+      },
       "b4800e7590604f8b21cc": {
         "latest_transition_id": "33a7fcac0a1285666419",
         "occurrences": {
@@ -25077,8 +25098,9 @@
         }
       },
       "f54bfa8f75f9a74a670f": {
-        "latest_transition_id": "4acb2fd1823345924908",
+        "latest_transition_id": "15fd11c1c83fccd3bc0b",
         "occurrences": {
+          "15fd11c1c83fccd3bc0b": 1,
           "4acb2fd1823345924908": 1
         }
       },
