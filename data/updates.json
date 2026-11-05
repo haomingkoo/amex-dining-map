@@ -1,7 +1,185 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-04T02:25:32Z",
+  "updated_at": "2026-11-05T01:21:09Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-11-05T01:21:09Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "774/865 (89.5%), 91 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "774/866 (89.4%), 92 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "774/865 (89.5%), 91 unavailable",
+          "after": "774/866 (89.4%), 92 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "82ef1837347c3e285d2e",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "c5d3212858356d5ddecf"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-11-05T01:21:09Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "865/865 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "866/866 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "865/865 (100%), 0 unavailable",
+          "after": "866/866 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "8705794354278b532c42",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "ae5d327df23b26385660"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-05T01:21:09Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3009/3022 (99.6%), 13 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3009/3023 (99.5%), 14 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3009/3022 (99.6%), 13 unavailable",
+          "after": "3009/3023 (99.5%), 14 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "80187da5ae500853d341",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "718c5c6e482cc9ef1570"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Ichiu Nihonbashi / Tokyo",
+      "detected_at": "2026-11-05T01:21:07Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Ichiu Nihonbashi",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Nihombashihongokucho",
+          "Address": "1FB, 4-5-11, Nihombashihongokucho, Chuo-ku, Tokyo",
+          "Cuisine": [
+            "Japanese, Kaiseki, Washoku"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245723/",
+      "transition_id": "b87544ebf6c99d6d30ca",
+      "stream_id": "d4df4990464c73506a2b",
+      "occurrence": 1,
+      "id": "96a9cca9f0a7209a6906"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-11-05T01:21:07Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 865,
+          "Mapped count": 865
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 866,
+          "Mapped count": 866
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 865,
+          "after": 866
+        },
+        {
+          "field": "Mapped count",
+          "before": 865,
+          "after": 866
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "f1904f3c29ce3ed995ef",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "1f8bd233aae12a97bc3c"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -23097,206 +23275,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Beauvallon Sur Mer by Yannick Alléno / Grimaud",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Beauvallon Sur Mer by Yannick Alléno",
-          "Country": "France",
-          "Region": "Grimaud",
-          "City": "Grimaud",
-          "Address": "COMO Le Beauvallon, Boulevard des Collines, Grimaud, 83310, France",
-          "Cuisine": [
-            "Fusion"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "8ad91afa42c734873ac7",
-      "stream_id": "f4dd24e33b178bf8591e",
-      "occurrence": 1,
-      "id": "69fe740bfcca3288e9f9",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "SACHI Milano / Milano",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "SACHI Milano",
-          "Country": "Italy",
-          "Region": "Milano",
-          "City": "Milano",
-          "Address": "Via Orefici, 26, Milano, 20123, Italy",
-          "Cuisine": [
-            "Japanese"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "7dbd319df522d3f39075",
-      "stream_id": "a56a4ceca4fc97f6e975",
-      "occurrence": 1,
-      "id": "67f3f9ca925de63bac9e",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Good Luck Restaurant / New South Wales",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Good Luck Restaurant",
-          "Country": "Australia",
-          "Region": "New South Wales",
-          "City": "New South Wales",
-          "Address": "11 Bridge St, Sydney, New South Wales, 2000, Australia",
-          "Cuisine": [
-            "Chinese"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "f8a5a660da737a62d021",
-      "stream_id": "5a95036d8d93e72c5d54",
-      "occurrence": 1,
-      "id": "67c2ccf058b206e0b845",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Gran Torino / New South Wales",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Gran Torino",
-          "Country": "Australia",
-          "Region": "New South Wales",
-          "City": "New South Wales",
-          "Address": "24 Bay Street, Double Bay, New South Wales, 2028, Australia",
-          "Cuisine": [
-            "Italian"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "7f9932acf7324f60eab5",
-      "stream_id": "dbafaa7f6dc815449d44",
-      "occurrence": 1,
-      "id": "679c7dda957a05904135",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Meat & Wine Co / Western Australia",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Meat & Wine Co",
-          "Country": "Australia",
-          "Region": "Western Australia",
-          "City": "Western Australia",
-          "Address": "85 S Perth Espanalade, Western Australia, 6151, Australia",
-          "Cuisine": [
-            "Steakhouse"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "0a4a4aa540164506ebb4",
-      "stream_id": "90bc637f9775de626f91",
-      "occurrence": 1,
-      "id": "623018b2d7b1fc9833e6",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23576,13 +23554,14 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "18bdc569ef02dcd73162",
+        "latest_transition_id": "82ef1837347c3e285d2e",
         "occurrences": {
           "18bdc569ef02dcd73162": 1,
           "1f8ff4070cf35b4b4a5f": 2,
           "2988498f4c17e4f22ac3": 1,
           "60a7b0c988f7cd5a3e55": 1,
           "7b13a4aa17c3a8b51663": 1,
+          "82ef1837347c3e285d2e": 1,
           "95c6d44cb209c0ce8da2": 1,
           "bc58dd4059a032a58035": 1,
           "fb4e3e5726a57f8c4730": 1
@@ -23597,7 +23576,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "e02946773a917a16e3de",
+        "latest_transition_id": "f1904f3c29ce3ed995ef",
         "occurrences": {
           "16046de0225f04d3667c": 1,
           "2e38c0b153373c1aac9c": 1,
@@ -23625,6 +23604,7 @@
           "e02946773a917a16e3de": 1,
           "e167e694a8ff36cfcb74": 1,
           "ee100fea07f9efd3b9ae": 1,
+          "f1904f3c29ce3ed995ef": 1,
           "fb674d01e96905e90ffb": 1,
           "fd25b4504314f899459a": 1
         }
@@ -23831,13 +23811,14 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "83d8136fef23036d1795",
+        "latest_transition_id": "8705794354278b532c42",
         "occurrences": {
           "023dbb9237dd583b8431": 1,
           "2895413af2cfdf788408": 1,
           "2c631570ffcb1ddf6ff0": 1,
           "79aaada59d36dbc4e171": 1,
           "83d8136fef23036d1795": 1,
+          "8705794354278b532c42": 1,
           "951fc017d5e31f520818": 2,
           "da668e638e0d5b19646c": 1
         }
@@ -24242,7 +24223,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "e1dcf9fdd357385c42c3",
+        "latest_transition_id": "80187da5ae500853d341",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24257,6 +24238,7 @@
           "5ff54655f7197bc32812": 1,
           "6b634201cbf49e85cba5": 1,
           "6be63510fd7f5d617346": 1,
+          "80187da5ae500853d341": 1,
           "8b5fcc11fdbb842d2a18": 1,
           "956481a26f1aba906cb6": 1,
           "973b166da288b05c66af": 1,
@@ -24938,6 +24920,12 @@
         "latest_transition_id": "4c91d7e7b90682dcd406",
         "occurrences": {
           "4c91d7e7b90682dcd406": 1
+        }
+      },
+      "d4df4990464c73506a2b": {
+        "latest_transition_id": "b87544ebf6c99d6d30ca",
+        "occurrences": {
+          "b87544ebf6c99d6d30ca": 1
         }
       },
       "d704912bd1fe2b1fb672": {

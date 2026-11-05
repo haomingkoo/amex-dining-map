@@ -552,3 +552,11 @@ Source: `data/japan-restaurants.json`
 - **Added (2)**
   - Rikki Kako176 / Hagi
   - hugan / Tokyo
+
+<!-- source-change:18692f056b3b3d31950d5e50f858878b79f1665bf97ef057ffb8620ece8342e4 -->
+## 2026-11-05 01:21 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Ichiu Nihonbashi / Tokyo
