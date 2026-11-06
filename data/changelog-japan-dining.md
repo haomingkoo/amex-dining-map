@@ -560,3 +560,23 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - Ichiu Nihonbashi / Tokyo
+
+<!-- source-change:77f8a66429d8d5a88743472e12b11aea4ca192e7653388e7f266039d633fbe15 -->
+## 2026-11-06 01:25 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (13)**
+  - Azabu-Juban Komeru / Tokyo
+  - Ebisu Komeru / Tokyo
+  - GINZA ROLAN / Tokyo
+  - Kappou Matsumoto / Osaka
+  - Komeru GARDEN CITY / Fukuoka
+  - Nakameguro Iguchi Agaru Ebisu / Tokyo
+  - Nakameguro Iguchi Azabu-Juban  / Tokyo
+  - Nakameguro Iguchi Ebisu / Tokyo
+  - Nakameguro Iguchi Main Branch / Tokyo
+  - Nakameguro Komeru / Tokyo
+  - SALONG / Tokyo
+  - Sushi AKA Tokyo / Tokyo
+  - Tsumugisaku / Tokyo
