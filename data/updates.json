@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-06T02:01:44Z",
+  "updated_at": "2026-11-07T00:04:19Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-07T00:04:19Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 3
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 7
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 3,
+          "after": 7
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "100e3ae7acd0b039fde0",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "b1e507a4c686b213ebdd"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -23249,46 +23282,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "SABI / Hsinchu County",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "SABI",
-          "Country": "Taiwan",
-          "Region": "Hsinchu County",
-          "City": "Hsinchu County",
-          "Address": "1F, No. 92, Chenggong 10th St., Luchang Vil., Zhubei City, Hsinchu County, 302, Taiwan",
-          "Cuisine": [
-            "Fusion"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "00ddcc0c67cfaf7c3fdc",
-      "stream_id": "6984e03dd7bd4525020b",
-      "occurrence": 1,
-      "id": "b2628d9381b2aabf90a4",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -24255,10 +24248,11 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "8229b7465f6fdfb12628",
+        "latest_transition_id": "100e3ae7acd0b039fde0",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
+          "100e3ae7acd0b039fde0": 1,
           "28926c4025a7e045954e": 1,
           "2e0896223097482f8813": 1,
           "3031e98ad62e4c0de17e": 1,
