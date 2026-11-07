@@ -110,3 +110,61 @@ Source: `data/love-dining.json`
 
 - **Removed (1)**
   - Bacha Coffee / Singapore
+
+<!-- source-change:0712d37785815d594fe70e014c1c2db5479eb06d1178d5cbbb42108f6e80636c -->
+## 2026-11-07 01:21 UTC — Love Dining
+
+Source: `data/love-dining.json`
+
+- **Removed (68)**
+  - 15 Stamford Restaurant / Singapore
+  - 1864 / Singapore
+  - ANTI:DOTE / Singapore
+  - Akira Back / Singapore
+  - Asian Market Café / Singapore
+  - Bar Intermezzo / Singapore
+  - Barossa Steak & Grill / Singapore
+  - Beach Road Kitchen / Singapore
+  - Broth & Beyond / Singapore
+  - CLOVE / Singapore
+  - Cali / Singapore
+  - Connections Lounge / Singapore
+  - Crossroads Buffet / Singapore
+  - Crossroads Cafe / Singapore
+  - Cultivate Café / Singapore
+  - Food Capital / Singapore
+  - Gupshup / Singapore
+  - JING Hotpot & Grill Buffet / Singapore
+  - L'Angélus / Singapore
+  - LUCE / Singapore
+  - La Nonna / Singapore
+  - Lawry's The Prime Rib / Singapore
+  - Les Bouchons / Singapore
+  - Lobby Lounge / Singapore
+  - Lobby Lounge / Singapore
+  - MOGA / Singapore
+  - Madison's / Singapore
+  - Man Fu Yuan / Singapore
+  - Napoleon Food & Wine Bar / Singapore
+  - Oud Restaurant / Singapore
+  - Peach Garden / Singapore
+  - Prego / Singapore
+  - Princess Terrace Café / Singapore
+  - Racines / Singapore
+  - Riverside Terrace / Singapore
+  - SKAI Bar / Singapore
+  - SKAI Restaurant / Singapore
+  - SKIRT / Singapore
+  - SanSara / Singapore
+  - Sanctuary Tearoom / Singapore
+  - Santi’s Pizza & Produce / Singapore
+  - Sarai Fine Thai / Singapore
+  - Sen Of Japan / Singapore
+  - Si Chuan Dou Hua Restaurant / Singapore
+  - Sophia / Singapore
+  - Spizza / Singapore
+  - TANOKE / Singapore
+  - TWG Tea / Singapore
+  - Tablescape Restaurant & Bar / Singapore
+  - Tajimaya Yakiniku / Singapore
+  - ... and 18 more
