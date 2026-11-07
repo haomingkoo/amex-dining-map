@@ -1,7 +1,185 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-07T00:04:22Z",
+  "updated_at": "2026-11-07T00:37:56Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-07T00:37:56Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3009/3036 (99.1%), 27 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3009/3037 (99.1%), 28 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3009/3036 (99.1%), 27 unavailable",
+          "after": "3009/3037 (99.1%), 28 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "6c72c994b22a2fc7b3d2",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "36686de94ea79166dd54"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-11-07T00:37:56Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "774/879 (88.1%), 105 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "774/880 (88%), 106 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "774/879 (88.1%), 105 unavailable",
+          "after": "774/880 (88%), 106 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "e62dcfa500c6a55a6265",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "06a6e922dac809e57861"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-11-07T00:37:56Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "879/879 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "880/880 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "879/879 (100%), 0 unavailable",
+          "after": "880/880 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "77c84cfff3a88511a6cf",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "04bf84a306457809315f"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-11-07T00:37:55Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 879,
+          "Mapped count": 879
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 880,
+          "Mapped count": 880
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 879,
+          "after": 880
+        },
+        {
+          "field": "Mapped count",
+          "before": 879,
+          "after": 880
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "9af52faf5cb15470d505",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "e1b631d9c7566a0ec53c"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Kawamura Premium Kitashinchi / Osaka",
+      "detected_at": "2026-11-07T00:37:55Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Kawamura Premium Kitashinchi",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Osaka",
+          "District": "Sonezakishinchi",
+          "Address": "1F, 1-4-20, Sonezakishinchi, Kita-ku, Osaka-shi, Osaka",
+          "Cuisine": [
+            "Steak, Teppanyaki"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245698/",
+      "transition_id": "f5b21bfe07dd02114d32",
+      "stream_id": "f382ed27ad0c9970b99b",
+      "occurrence": 1,
+      "id": "1f2422037ac6581b1c2c"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -23083,207 +23261,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "FUKAI / Tainan City",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "FUKAI",
-          "Country": "Taiwan",
-          "Region": "Tainan City",
-          "City": "Tainan City",
-          "District": "East Dist.",
-          "Address": "No. 2, Ln. 512, Dongning Rd., East Dist., Tainan City, 701, Taiwan",
-          "Cuisine": [
-            "Modern"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "15f3e97853bf74c872d2",
-      "stream_id": "8011aa02a7adea500e92",
-      "occurrence": 1,
-      "id": "bac99a367d3e887ab02b",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Meat & Wine Co / Victoria",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Meat & Wine Co",
-          "Country": "Australia",
-          "Region": "Victoria",
-          "City": "Victoria",
-          "Address": "88 Collins St, Melbourne CBD, Victoria, 3000, Australia",
-          "Cuisine": [
-            "Steakhouse"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "259c77037bdbcc7b3bfc",
-      "stream_id": "15ac11fdc61d1f88f0f1",
-      "occurrence": 1,
-      "id": "b980087eba9300ce0a9f",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "WEB CHRISTEL / Westerland / Sylt",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "WEB CHRISTEL",
-          "Country": "Germany",
-          "Region": "Westerland / Sylt",
-          "City": "Westerland / Sylt",
-          "Address": "SÜDERSTR 11, Westerland / Sylt, 25980, Germany",
-          "Cuisine": [
-            "German"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "ff50046675e55faab723",
-      "stream_id": "77fb46d70893f1232efb",
-      "occurrence": 1,
-      "id": "b80ba289339a55549c2a",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Superseded by d97f78ecd65e032f84d6 before review."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Salt & Silver Restaurant / Hamburg",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Salt & Silver Restaurant",
-          "Country": "Germany",
-          "Region": "Hamburg",
-          "City": "Hamburg",
-          "Address": "Hafenstraße 136, Hamburg, 20359, Germany",
-          "Cuisine": [
-            "International"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "b416e885928958e63c71",
-      "stream_id": "b15d4b02b173382da117",
-      "occurrence": 1,
-      "id": "b58d6a6889145bc374f6",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "MUHIS / Recklinghausen",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "MUHIS",
-          "Country": "Germany",
-          "Region": "Recklinghausen",
-          "City": "Recklinghausen",
-          "Address": "Johannes-Janssen Straße 7, Recklinghausen, 45657, Germany",
-          "Cuisine": [
-            "European"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "0f7b8d0315da608599a7",
-      "stream_id": "f611aacd4187f6c4c51f",
-      "occurrence": 1,
-      "id": "b3160535396daac6d763",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23563,7 +23540,7 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "ca38613600565cd68c7d",
+        "latest_transition_id": "e62dcfa500c6a55a6265",
         "occurrences": {
           "18bdc569ef02dcd73162": 1,
           "1f8ff4070cf35b4b4a5f": 2,
@@ -23574,6 +23551,7 @@
           "95c6d44cb209c0ce8da2": 1,
           "bc58dd4059a032a58035": 1,
           "ca38613600565cd68c7d": 1,
+          "e62dcfa500c6a55a6265": 1,
           "fb4e3e5726a57f8c4730": 1
         }
       },
@@ -23586,7 +23564,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "600a0269ee89e137c1e9",
+        "latest_transition_id": "9af52faf5cb15470d505",
         "occurrences": {
           "16046de0225f04d3667c": 1,
           "2e38c0b153373c1aac9c": 1,
@@ -23603,6 +23581,7 @@
           "8ccb2ae7c2647d29744b": 1,
           "910626fba4e9c94678da": 1,
           "94b84e3c06290be15bb7": 1,
+          "9af52faf5cb15470d505": 1,
           "9bddd9c2df6c7705f33d": 1,
           "a2397da1bb4467625e7e": 1,
           "a69f057f2f92477028c8": 1,
@@ -23823,11 +23802,12 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "84b0fd693915e044da02",
+        "latest_transition_id": "77c84cfff3a88511a6cf",
         "occurrences": {
           "023dbb9237dd583b8431": 1,
           "2895413af2cfdf788408": 1,
           "2c631570ffcb1ddf6ff0": 1,
+          "77c84cfff3a88511a6cf": 1,
           "79aaada59d36dbc4e171": 1,
           "83d8136fef23036d1795": 1,
           "84b0fd693915e044da02": 1,
@@ -24250,7 +24230,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "100e3ae7acd0b039fde0",
+        "latest_transition_id": "6c72c994b22a2fc7b3d2",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24266,6 +24246,7 @@
           "5ff54655f7197bc32812": 1,
           "6b634201cbf49e85cba5": 1,
           "6be63510fd7f5d617346": 1,
+          "6c72c994b22a2fc7b3d2": 1,
           "80187da5ae500853d341": 1,
           "8229b7465f6fdfb12628": 1,
           "8b5fcc11fdbb842d2a18": 1,
@@ -25173,6 +25154,12 @@
         "latest_transition_id": "b53175c467f58ef4c9f7",
         "occurrences": {
           "b53175c467f58ef4c9f7": 1
+        }
+      },
+      "f382ed27ad0c9970b99b": {
+        "latest_transition_id": "f5b21bfe07dd02114d32",
+        "occurrences": {
+          "f5b21bfe07dd02114d32": 1
         }
       },
       "f4dd24e33b178bf8591e": {

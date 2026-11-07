@@ -580,3 +580,11 @@ Source: `data/japan-restaurants.json`
   - SALONG / Tokyo
   - Sushi AKA Tokyo / Tokyo
   - Tsumugisaku / Tokyo
+
+<!-- source-change:f7ce16f586d3a85b5fc68d9ca34a0fc57745d53153f1aed0fd8c0c5862044484 -->
+## 2026-11-07 00:37 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Kawamura Premium Kitashinchi / Osaka
