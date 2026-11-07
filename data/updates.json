@@ -1,7 +1,47 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-07T00:38:02Z",
+  "updated_at": "2026-11-07T01:02:18Z",
   "updates": [
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_updated",
+      "subject": "Global Dining source",
+      "detected_at": "2026-11-07T01:02:18Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Global Dining Credit T&C text hash": "59e7dfa0f07d",
+          "Global Dining Credit T&C PDF hash": "9bd1b64df072"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Global Dining Credit T&C text hash": "ba58326e3cf7",
+          "Global Dining Credit T&C PDF hash": "c6a07badd22b"
+        }
+      },
+      "changes": [
+        {
+          "field": "Global Dining Credit T&C text hash",
+          "before": "59e7dfa0f07d",
+          "after": "ba58326e3cf7"
+        },
+        {
+          "field": "Global Dining Credit T&C PDF hash",
+          "before": "9bd1b64df072",
+          "after": "c6a07badd22b"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "48bcef3cd18468ae27c1",
+      "stream_id": "128d0d698ba4426680b0",
+      "occurrence": 1,
+      "id": "80d3acca4e2b11d90f85"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -23230,47 +23270,6 @@
       "review_note": "Already live on the site since it was detected; too old to announce."
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Lin.nu / Kaohsiung City",
-      "detected_at": "2026-09-18T23:27:54Z",
-      "status": "rejected",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Lin.nu",
-          "Country": "Taiwan",
-          "Region": "Kaohsiung City",
-          "City": "Kaohsiung City",
-          "District": "Cianjhen Dist.",
-          "Address": "No. 802, Zhonghua 5th Rd., Jianlong Vil., Cianjhen Dist., Kaohsiung City, 806, Taiwan",
-          "Cuisine": [
-            "Modern"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "c8c6cb21fca7e24b9961",
-      "stream_id": "478a109a1f7c3b3f3106",
-      "occurrence": 1,
-      "id": "bb63b299f891228de328",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Already live on the site since it was detected; too old to announce."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23536,10 +23535,11 @@
         }
       },
       "128d0d698ba4426680b0": {
-        "latest_transition_id": "7af55ab2962523f455ba",
+        "latest_transition_id": "48bcef3cd18468ae27c1",
         "occurrences": {
           "169e0a4cd65f0463852d": 1,
           "44a7b1e2dc2c865eba80": 1,
+          "48bcef3cd18468ae27c1": 1,
           "4cadef5f63f5acf8dfcf": 1,
           "7af55ab2962523f455ba": 1,
           "7fdc71a5a4f3bb71f791": 1,
