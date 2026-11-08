@@ -1,7 +1,47 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-07T01:21:04Z",
+  "updated_at": "2026-11-08T08:49:20Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-08T08:49:20Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 7,
+          "Coverage": "2941/2969 (99.1%), 28 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 3,
+          "Coverage": "2966/2969 (99.9%), 3 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 7,
+          "after": 3
+        },
+        {
+          "field": "Coverage",
+          "before": "2941/2969 (99.1%), 28 unavailable",
+          "after": "2966/2969 (99.9%), 3 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "141fb2ff2e46935a0c7e",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "00e8f7a36f1473846c9e"
+    },
     {
       "program": "Love Dining",
       "program_id": "love-dining",
@@ -22895,41 +22935,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-11T00:40:16Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "27/29 (93.1%), 2 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "29/29 (100%), 0 unavailable",
-          "after": "27/29 (93.1%), 2 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "a3b730cd421c75db1b85",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 8,
-      "id": "fa9ed1dc3851a67612d9",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -24041,11 +24046,12 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "bbce1c70e57b7284b369",
+        "latest_transition_id": "141fb2ff2e46935a0c7e",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
           "100e3ae7acd0b039fde0": 1,
+          "141fb2ff2e46935a0c7e": 1,
           "28926c4025a7e045954e": 1,
           "2e0896223097482f8813": 1,
           "3031e98ad62e4c0de17e": 1,
