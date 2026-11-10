@@ -12,8 +12,8 @@
   "release_source": {
     "source": "data/table-for-two-release-history.json",
     "project": "AMEXPlatSG",
-    "updated_at": "2026-11-09T16:22:29+00:00",
-    "observation_count": 4412
+    "updated_at": "2026-11-10T16:13:35+00:00",
+    "observation_count": 4429
   },
   "eligibility_source": {
     "terms_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf",
@@ -1549,25 +1549,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 43,
-          "median_lead_days": 53.0,
+          "observation_count": 52,
+          "median_lead_days": 47.0,
           "lead_days_min": 3,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.23,
+          "typical_time_observation_share": 0.19,
           "confidence": "high",
-          "latest_observation_at": "2026-09-30T12:46:55Z"
+          "latest_observation_at": "2026-11-10T16:13:35Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 39,
-          "median_lead_days": 61.0,
+          "observation_count": 47,
+          "median_lead_days": 56.0,
           "lead_days_min": 7,
           "lead_days_max": 61,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.31,
+          "typical_time_observation_share": 0.26,
           "confidence": "high",
-          "latest_observation_at": "2026-09-30T08:40:16Z"
+          "latest_observation_at": "2026-11-10T16:13:35Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-colony",
@@ -1590,7 +1590,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 77,
+            "dates_seen": 85,
             "days": [
               "Mon",
               "Tue",
@@ -1607,7 +1607,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 65,
+            "dates_seen": 74,
             "days": [
               "Mon",
               "Tue",
@@ -1743,10 +1743,10 @@
         ]
       },
       "release": {
-        "new_dates": 82,
-        "precise_sightings": 30,
+        "new_dates": 99,
+        "precise_sightings": 47,
         "hour_counts": [
-          4,
+          21,
           1,
           0,
           0,
@@ -1782,7 +1782,7 @@
           0,
           0,
           1,
-          0,
+          17,
           0,
           0,
           0,
@@ -1807,39 +1807,38 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 39,
-            "rolling_lead_days": 61,
-            "lead_share": 0.54,
-            "precise_sightings": 11,
-            "time_of_day": {
-              "start_hour": 11,
-              "end_hour": 13,
-              "share": 0.73,
-              "label": "between 11 am and 1 pm"
-            },
-            "last_new_date_at": "2026-09-30T08:40:16Z",
-            "quiet_days": 41
+            "new_dates": 47,
+            "rolling_lead_days": null,
+            "lead_share": 0.45,
+            "precise_sightings": 19,
+            "time_of_day": null,
+            "last_new_date_at": "2026-11-10T16:13:35Z",
+            "quiet_days": -1
           },
           {
             "meal": "Dinner",
-            "new_dates": 43,
+            "new_dates": 52,
             "rolling_lead_days": null,
-            "lead_share": 0.4,
-            "precise_sightings": 19,
+            "lead_share": 0.33,
+            "precise_sightings": 28,
             "time_of_day": null,
-            "last_new_date_at": "2026-09-30T12:46:55Z",
-            "quiet_days": 41
+            "last_new_date_at": "2026-11-10T16:13:35Z",
+            "quiet_days": -1
           }
         ],
         "batches": [
           {
             "at": "2026-09-17T19:02:22Z",
             "dates": 22
+          },
+          {
+            "at": "2026-11-10T16:13:35Z",
+            "dates": 17
           }
         ],
         "lines": [
-          "Until 30 Sep, new lunch dates opened one day at a time, 61 days ahead, usually first seen between 11 am and 1 pm. None since.",
-          "22 new dates appeared at once on 18 Sep."
+          "22 new dates appeared at once on 18 Sep.",
+          "17 new dates appeared at once on 11 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {}
