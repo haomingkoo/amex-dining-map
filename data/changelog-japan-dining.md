@@ -588,3 +588,14 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - Kawamura Premium Kitashinchi / Osaka
+
+<!-- source-change:26fe6371a572f216e956a3fb6e860bfb32d6e0e27f951f8bdb64db87bfe3c25d -->
+## 2026-11-10 03:18 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (4)**
+  - Bifuteki Kawamura Ginza / Tokyo
+  - Estella / Karuizawa
+  - GAJO / Osaka
+  - Kogatei / Kamakura
