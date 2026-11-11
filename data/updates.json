@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-10T03:18:34Z",
+  "updated_at": "2026-11-11T01:43:06Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two menus",
+      "detected_at": "2026-11-11T01:43:06Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 4
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 5
+        }
+      },
+      "changes": [
+        {
+          "field": "Review items",
+          "before": 4,
+          "after": 5
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "5ec86c8757f3bddd9067",
+      "stream_id": "1d6c201fff0933553df2",
+      "occurrence": 1,
+      "id": "64a9f6d54851f25eadc2"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -22844,62 +22877,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_recovered",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-11T18:55:50Z",
-      "status": "published",
-      "before": {
-        "state": "stale",
-        "fields": {
-          "Source state": "stale",
-          "Freshness": "stale",
-          "Stale records": 29,
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Freshness": "current",
-          "Stale records": 0,
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Freshness",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Stale records",
-          "before": 29,
-          "after": 0
-        },
-        {
-          "field": "Coverage",
-          "before": "29/29 (100%), 0 unavailable",
-          "after": "28/29 (96.6%), 1 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "9ca0c3a9819c6e281d37",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 3,
-      "id": "138f631843f3b3ef27c5",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23376,7 +23353,7 @@
         }
       },
       "1d6c201fff0933553df2": {
-        "latest_transition_id": "1da1149e99865b4d78b6",
+        "latest_transition_id": "5ec86c8757f3bddd9067",
         "occurrences": {
           "007e51f231870c7881c2": 1,
           "035b21790df21f0c0ba8": 1,
@@ -23384,6 +23361,7 @@
           "1da1149e99865b4d78b6": 1,
           "3397f47e70e5f7c32cc8": 1,
           "3db82b65a82f9d1e9fde": 1,
+          "5ec86c8757f3bddd9067": 1,
           "6549f47be934c2a0f1a0": 1,
           "99d63357823949eacb8c": 1,
           "9b1f7da1123fbd777ee5": 2,
