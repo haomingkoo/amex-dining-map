@@ -1,7 +1,121 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-11T01:43:09Z",
+  "updated_at": "2026-11-12T02:21:47Z",
   "updates": [
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "details_updated",
+      "subject": "French Exit / Queensland",
+      "detected_at": "2026-11-12T02:21:47Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "French Exit",
+          "Country": "Australia",
+          "Region": "Brisbane",
+          "City": "Brisbane",
+          "Address": "170 Mary Street, Brisbane, 4000, Australia",
+          "Cuisine": [
+            "French"
+          ]
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "French Exit",
+          "Country": "Australia",
+          "Region": "Queensland",
+          "City": "Queensland",
+          "Address": "170 Mary Street, Queensland, 4000, Australia",
+          "Cuisine": [
+            "French"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Region",
+          "before": "Brisbane",
+          "after": "Queensland"
+        },
+        {
+          "field": "City",
+          "before": "Brisbane",
+          "after": "Queensland"
+        },
+        {
+          "field": "Address",
+          "before": "170 Mary Street, Brisbane, 4000, Australia",
+          "after": "170 Mary Street, Queensland, 4000, Australia"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "b41e7f2de34cf9c98a54",
+      "stream_id": "98460878717f6e2984e7",
+      "occurrence": 1,
+      "id": "a4c493aa94730e824c7d"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "details_updated",
+      "subject": "Golden Avenue / Queensland",
+      "detected_at": "2026-11-12T02:21:47Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Golden Avenue",
+          "Country": "Australia",
+          "Region": "Brisbane",
+          "City": "Brisbane",
+          "Address": "67 Edward Street, Brisbane, 4000, Australia",
+          "Cuisine": [
+            "Middle Eastern"
+          ]
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Golden Avenue",
+          "Country": "Australia",
+          "Region": "Queensland",
+          "City": "Queensland",
+          "Address": "67 Edward Street, Queensland, 4000, Australia",
+          "Cuisine": [
+            "Middle Eastern"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Region",
+          "before": "Brisbane",
+          "after": "Queensland"
+        },
+        {
+          "field": "City",
+          "before": "Brisbane",
+          "after": "Queensland"
+        },
+        {
+          "field": "Address",
+          "before": "67 Edward Street, Brisbane, 4000, Australia",
+          "after": "67 Edward Street, Queensland, 4000, Australia"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "9a958d16b4083102b144",
+      "stream_id": "d01182fb8e73242cfc72",
+      "occurrence": 1,
+      "id": "9b32dd6baa0aab308684"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -22788,97 +22902,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-12T00:57:57Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "28/29 (96.6%), 1 unavailable",
-          "after": "29/29 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "252e3c33201e3823a27b",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 23,
-      "id": "a05a6a4d1098b3bd36d0",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_review_cleared",
-      "subject": "Table for Two menus",
-      "detected_at": "2026-10-12T00:57:57Z",
-      "status": "published",
-      "before": {
-        "state": "review_required",
-        "fields": {
-          "Source state": "review_required",
-          "Review": "required",
-          "Review items": 9,
-          "Coverage": "18/32 (56.2%), 14 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Review": "clear",
-          "Review items": 8,
-          "Coverage": "19/32 (59.4%), 13 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "review_required",
-          "after": "current"
-        },
-        {
-          "field": "Review",
-          "before": "required",
-          "after": "clear"
-        },
-        {
-          "field": "Review items",
-          "before": 9,
-          "after": 8
-        },
-        {
-          "field": "Coverage",
-          "before": "18/32 (56.2%), 14 unavailable",
-          "after": "19/32 (59.4%), 13 unavailable"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
-      "transition_id": "cd3443b63e258552d868",
-      "stream_id": "1d6c201fff0933553df2",
-      "occurrence": 3,
-      "id": "539e71eb21756ca3b464",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -24361,6 +24384,12 @@
           "2ddc0eefebf346e74b74": 1
         }
       },
+      "98460878717f6e2984e7": {
+        "latest_transition_id": "b41e7f2de34cf9c98a54",
+        "occurrences": {
+          "b41e7f2de34cf9c98a54": 1
+        }
+      },
       "984c04c90a9b24f5ec2a": {
         "latest_transition_id": "acca85132ad1b23c068f",
         "occurrences": {
@@ -24899,6 +24928,12 @@
         "latest_transition_id": "c1da0329d7867a554fe3",
         "occurrences": {
           "c1da0329d7867a554fe3": 1
+        }
+      },
+      "d01182fb8e73242cfc72": {
+        "latest_transition_id": "9a958d16b4083102b144",
+        "occurrences": {
+          "9a958d16b4083102b144": 1
         }
       },
       "d03cc6f867310ca61cf7": {
