@@ -17,7 +17,7 @@ const pages = read(".github/workflows/deploy-pages.yml");
 const projectVerifier = read("scripts/verify-project.mjs");
 const documentRunbook = compact(read("docs/tft-document-review-runbook.md"));
 const menuRunbook = compact(read("docs/tft-menu-review-runbook.md"));
-const railway = read("reminders/railway.toml");
+const railway = read(".railway/railway.ts"); // reminders start command lives here since the IaC migration
 const uvicornLogs = JSON.parse(read("reminders/uvicorn-log-config.json"));
 
 for (const heading of [
