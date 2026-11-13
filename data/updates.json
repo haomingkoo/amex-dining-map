@@ -1,7 +1,106 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-13T17:54:11Z",
+  "updated_at": "2026-11-13T18:23:49Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-13T18:23:49Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "2966/2973 (99.8%), 7 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3034/3041 (99.8%), 7 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "2966/2973 (99.8%), 7 unavailable",
+          "after": "3034/3041 (99.8%), 7 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "7a339f20c5aef648dad7",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "9cc2230668e28549ab69"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_health_changed",
+      "subject": "Love Dining",
+      "detected_at": "2026-11-13T18:23:49Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "9/9 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Coverage": "77/77 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "9/9 (100%), 0 unavailable",
+          "after": "77/77 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "e83b0dddb28e9db81362",
+      "stream_id": "325506f85300a0ec65a3",
+      "occurrence": 1,
+      "id": "51f2761444b9597620ee"
+    },
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-11-13T18:23:49Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "29/30 (96.7%), 1 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "30/30 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "29/30 (96.7%), 1 unavailable",
+          "after": "30/30 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "b0c3ecbebd8a125011a0",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "452167c6b01959d63b86"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -22733,137 +22832,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "removed",
-      "subject": "ALEX Dortmund / Dortmund",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "ALEX Dortmund",
-          "Country": "Germany",
-          "Region": "Dortmund",
-          "City": "Dortmund",
-          "Address": "Ostenhellweg 18-21, Dortmund, 44135, Germany",
-          "Cuisine": [
-            "Modern"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "96db796a6ddf736c67e7",
-      "stream_id": "abea11794e2e959a6344",
-      "occurrence": 1,
-      "id": "0258fe4835fbcb9b9a7a",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-10-13T02:30:37Z",
-      "status": "published",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "33f7915876d8"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "c32464c01834"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "33f7915876d8",
-          "after": "c32464c01834"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "43aff7ccfa2d78995407",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "df9087c8eae1097c6903",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_recovered",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-12T18:03:34Z",
-      "status": "published",
-      "before": {
-        "state": "stale",
-        "fields": {
-          "Source state": "stale",
-          "Freshness": "stale",
-          "Stale records": 28,
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Freshness": "current",
-          "Stale records": 0,
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Freshness",
-          "before": "stale",
-          "after": "current"
-        },
-        {
-          "field": "Stale records",
-          "before": 28,
-          "after": 0
-        },
-        {
-          "field": "Coverage",
-          "before": "28/29 (96.6%), 1 unavailable",
-          "after": "29/29 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "093e9a40b7d75a526207",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 4,
-      "id": "14be75438590811303e6",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23542,14 +23510,15 @@
         }
       },
       "325506f85300a0ec65a3": {
-        "latest_transition_id": "ba499295bcfcc8416cad",
+        "latest_transition_id": "e83b0dddb28e9db81362",
         "occurrences": {
           "16c453cb7d699ae3f099": 1,
           "1c8df4fd52645201aa50": 1,
           "494c890d5cec9722be8e": 3,
           "88bbbac82ec0b9b3631c": 1,
           "8f89d57217161da1ee19": 1,
-          "ba499295bcfcc8416cad": 1
+          "ba499295bcfcc8416cad": 1,
+          "e83b0dddb28e9db81362": 1
         }
       },
       "37af8ed667906428c087": {
@@ -23992,7 +23961,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "5b971d419ee7bb62b9a0",
+        "latest_transition_id": "7a339f20c5aef648dad7",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24011,6 +23980,7 @@
           "6b634201cbf49e85cba5": 1,
           "6be63510fd7f5d617346": 1,
           "6c72c994b22a2fc7b3d2": 1,
+          "7a339f20c5aef648dad7": 1,
           "80187da5ae500853d341": 1,
           "8229b7465f6fdfb12628": 1,
           "8b5fcc11fdbb842d2a18": 1,
@@ -25265,7 +25235,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "abc5f68ce401cddb4414",
+        "latest_transition_id": "b0c3ecbebd8a125011a0",
         "occurrences": {
           "04d5cfacf701422a287e": 10,
           "093e9a40b7d75a526207": 5,
@@ -25296,6 +25266,7 @@
           "a19a3db50b25e66d03db": 2,
           "a3b730cd421c75db1b85": 12,
           "abc5f68ce401cddb4414": 1,
+          "b0c3ecbebd8a125011a0": 1,
           "bfe0fbb420460ca3178b": 9,
           "cf46f722226a6c11fef6": 2,
           "e80178cabd37915387ca": 10,
