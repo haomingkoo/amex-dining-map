@@ -12,8 +12,8 @@
   "release_source": {
     "source": "data/table-for-two-release-history.json",
     "project": "AMEXPlatSG",
-    "updated_at": "2026-11-13T04:05:24+00:00",
-    "observation_count": 4437
+    "updated_at": "2026-11-13T06:35:11+00:00",
+    "observation_count": 6050
   },
   "eligibility_source": {
     "terms_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf",
@@ -412,25 +412,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 20,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 41,
+          "median_lead_days": 47.0,
+          "lead_days_min": 25,
           "lead_days_max": 90,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.3,
+          "typical_time_observation_share": 0.51,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 17,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 35,
+          "median_lead_days": 47.0,
+          "lead_days_min": 25,
           "lead_days_max": 90,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.29,
+          "typical_time_observation_share": 0.51,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-15-stamford-restaurant",
@@ -454,7 +454,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 88,
+            "dates_seen": 106,
             "days": [
               "Mon",
               "Tue",
@@ -473,7 +473,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 100,
+            "dates_seen": 121,
             "days": [
               "Mon",
               "Tue",
@@ -613,8 +613,8 @@
         ]
       },
       "release": {
-        "new_dates": 37,
-        "precise_sightings": 19,
+        "new_dates": 76,
+        "precise_sightings": 58,
         "hour_counts": [
           13,
           4,
@@ -630,7 +630,7 @@
           0,
           0,
           0,
-          0,
+          39,
           0,
           0,
           0,
@@ -654,7 +654,7 @@
           0,
           0,
           0,
-          0,
+          39,
           0,
           0,
           0,
@@ -677,39 +677,43 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 17,
-            "rolling_lead_days": 90,
-            "lead_share": 1.0,
-            "precise_sightings": 9,
+            "new_dates": 35,
+            "rolling_lead_days": null,
+            "lead_share": 0.49,
+            "precise_sightings": 27,
             "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 0.89,
-              "label": "between midnight and 2 am"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.67,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 20,
-            "rolling_lead_days": 90,
-            "lead_share": 1.0,
-            "precise_sightings": 10,
+            "new_dates": 41,
+            "rolling_lead_days": null,
+            "lead_share": 0.49,
+            "precise_sightings": 31,
             "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 0.9,
-              "label": "between midnight and 2 am"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.68,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 39
+          }
+        ],
         "lines": [
-          "Until 8 Sep, new lunch dates opened one day at a time, 90 days ahead, usually first seen between midnight and 2 am. None since.",
-          "Until 8 Sep, new dinner dates opened one day at a time, 90 days ahead, usually first seen between midnight and 2 am. None since."
+          "39 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -1023,14 +1027,14 @@
       "release_patterns": [
         {
           "meal": "All-day Dining",
-          "observation_count": 74,
-          "median_lead_days": 49.5,
+          "observation_count": 127,
+          "median_lead_days": 55.0,
           "lead_days_min": 3,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": "06:30",
-          "typical_time_observation_share": 0.95,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.55,
           "confidence": "high",
-          "latest_observation_at": "2026-09-06T16:17:37Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-brewerkz-east-coast-park",
@@ -1054,7 +1058,7 @@
         "observed_meals": [
           {
             "meal": "All-day Dining",
-            "dates_seen": 74,
+            "dates_seen": 127,
             "days": [
               "Tue",
               "Wed",
@@ -1165,8 +1169,8 @@
         ]
       },
       "release": {
-        "new_dates": 74,
-        "precise_sightings": 70,
+        "new_dates": 127,
+        "precise_sightings": 123,
         "hour_counts": [
           0,
           0,
@@ -1182,7 +1186,7 @@
           0,
           0,
           0,
-          0,
+          53,
           0,
           0,
           0,
@@ -1206,7 +1210,7 @@
           0,
           0,
           0,
-          0,
+          53,
           0,
           0,
           0,
@@ -1229,28 +1233,28 @@
         "meals": [
           {
             "meal": "All-day Dining",
-            "new_dates": 74,
+            "new_dates": 127,
             "rolling_lead_days": null,
-            "lead_share": 0.07,
-            "precise_sightings": 70,
-            "time_of_day": {
-              "start_hour": 5,
-              "end_hour": 7,
-              "share": 1.0,
-              "label": "between 5 am and 7 am"
-            },
-            "last_new_date_at": "2026-09-06T16:17:37Z",
-            "quiet_days": 67
+            "lead_share": 0.05,
+            "precise_sightings": 123,
+            "time_of_day": null,
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
         "batches": [
           {
             "at": "2026-09-02T22:39:11Z",
             "dates": 70
+          },
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 53
           }
         ],
         "lines": [
-          "70 new dates appeared at once on 3 Sep."
+          "70 new dates appeared at once on 3 Sep.",
+          "53 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -1287,14 +1291,14 @@
       "release_patterns": [
         {
           "meal": "All-day Dining",
-          "observation_count": 87,
-          "median_lead_days": 49.0,
+          "observation_count": 148,
+          "median_lead_days": 54.5,
           "lead_days_min": 3,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": "06:30",
-          "typical_time_observation_share": 0.94,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.55,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-brewerkz-riverside-point",
@@ -1318,7 +1322,7 @@
         "observed_meals": [
           {
             "meal": "All-day Dining",
-            "dates_seen": 87,
+            "dates_seen": 148,
             "days": [
               "Mon",
               "Tue",
@@ -1428,8 +1432,8 @@
         ]
       },
       "release": {
-        "new_dates": 87,
-        "precise_sightings": 82,
+        "new_dates": 148,
+        "precise_sightings": 143,
         "hour_counts": [
           0,
           0,
@@ -1445,7 +1449,7 @@
           0,
           0,
           0,
-          0,
+          61,
           0,
           0,
           0,
@@ -1469,7 +1473,7 @@
           0,
           0,
           0,
-          0,
+          61,
           0,
           0,
           0,
@@ -1492,28 +1496,28 @@
         "meals": [
           {
             "meal": "All-day Dining",
-            "new_dates": 87,
+            "new_dates": 148,
             "rolling_lead_days": null,
-            "lead_share": 0.07,
-            "precise_sightings": 82,
-            "time_of_day": {
-              "start_hour": 5,
-              "end_hour": 7,
-              "share": 1.0,
-              "label": "between 5 am and 7 am"
-            },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "lead_share": 0.05,
+            "precise_sightings": 143,
+            "time_of_day": null,
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
         "batches": [
           {
             "at": "2026-09-02T22:39:11Z",
             "dates": 82
+          },
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 61
           }
         ],
         "lines": [
-          "82 new dates appeared at once on 3 Sep."
+          "82 new dates appeared at once on 3 Sep.",
+          "61 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -1892,25 +1896,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 21,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 83,
+          "median_lead_days": 70.0,
+          "lead_days_min": 25,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.33,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.75,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 21,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 83,
+          "median_lead_days": 70.0,
+          "lead_days_min": 25,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.33,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.75,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-cultivate",
@@ -1931,7 +1935,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 107,
+            "dates_seen": 169,
             "days": [
               "Mon",
               "Tue",
@@ -1949,7 +1953,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 107,
+            "dates_seen": 169,
             "days": [
               "Mon",
               "Tue",
@@ -2059,8 +2063,8 @@
         ]
       },
       "release": {
-        "new_dates": 42,
-        "precise_sightings": 20,
+        "new_dates": 166,
+        "precise_sightings": 144,
         "hour_counts": [
           16,
           2,
@@ -2076,7 +2080,7 @@
           0,
           0,
           0,
-          0,
+          124,
           0,
           0,
           0,
@@ -2100,7 +2104,7 @@
           0,
           0,
           0,
-          0,
+          124,
           0,
           0,
           0,
@@ -2123,39 +2127,43 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 21,
-            "rolling_lead_days": 90,
-            "lead_share": 1.0,
-            "precise_sightings": 10,
+            "new_dates": 83,
+            "rolling_lead_days": null,
+            "lead_share": 0.27,
+            "precise_sightings": 72,
             "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 0.9,
-              "label": "between midnight and 2 am"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.86,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 21,
-            "rolling_lead_days": 90,
-            "lead_share": 1.0,
-            "precise_sightings": 10,
+            "new_dates": 83,
+            "rolling_lead_days": null,
+            "lead_share": 0.27,
+            "precise_sightings": 72,
             "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 0.9,
-              "label": "between midnight and 2 am"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.86,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 124
+          }
+        ],
         "lines": [
-          "Until 8 Sep, new lunch dates opened one day at a time, 90 days ahead, usually first seen between midnight and 2 am. None since.",
-          "Until 8 Sep, new dinner dates opened one day at a time, 90 days ahead, usually first seen between midnight and 2 am. None since."
+          "124 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -2814,25 +2822,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 17,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 64,
+          "median_lead_days": 73.5,
+          "lead_days_min": 25,
           "lead_days_max": 91,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.24,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.73,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 17,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 64,
+          "median_lead_days": 73.5,
+          "lead_days_min": 25,
           "lead_days_max": 91,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.24,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.73,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-ginger",
@@ -2853,7 +2861,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 73,
+            "dates_seen": 120,
             "days": [
               "Mon",
               "Tue",
@@ -2872,7 +2880,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 75,
+            "dates_seen": 122,
             "days": [
               "Mon",
               "Tue",
@@ -2983,8 +2991,8 @@
         ]
       },
       "release": {
-        "new_dates": 34,
-        "precise_sightings": 18,
+        "new_dates": 128,
+        "precise_sightings": 112,
         "hour_counts": [
           10,
           2,
@@ -3000,7 +3008,7 @@
           0,
           0,
           0,
-          0,
+          94,
           0,
           0,
           0,
@@ -3024,7 +3032,7 @@
           0,
           0,
           0,
-          0,
+          94,
           0,
           0,
           0,
@@ -3047,39 +3055,43 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 17,
-            "rolling_lead_days": 90,
-            "lead_share": 0.94,
-            "precise_sightings": 9,
+            "new_dates": 64,
+            "rolling_lead_days": null,
+            "lead_share": 0.27,
+            "precise_sightings": 56,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 0.78,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.84,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 17,
-            "rolling_lead_days": 90,
-            "lead_share": 0.94,
-            "precise_sightings": 9,
+            "new_dates": 64,
+            "rolling_lead_days": null,
+            "lead_share": 0.27,
+            "precise_sightings": 56,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 0.78,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.84,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 94
+          }
+        ],
         "lines": [
-          "Until 8 Sep, new lunch dates opened one day at a time, 90 days ahead, usually first seen around midnight. None since.",
-          "Until 8 Sep, new dinner dates opened one day at a time, 90 days ahead, usually first seen around midnight. None since."
+          "94 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -3127,14 +3139,14 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 76,
-          "median_lead_days": 47.5,
+          "observation_count": 131,
+          "median_lead_days": 53.0,
           "lead_days_min": 3,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": "06:30",
-          "typical_time_observation_share": 0.92,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.53,
           "confidence": "high",
-          "latest_observation_at": "2026-10-14T14:27:43Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-grand-cru-wine-bar",
@@ -3158,7 +3170,7 @@
         "observed_meals": [
           {
             "meal": "Dinner",
-            "dates_seen": 76,
+            "dates_seen": 131,
             "days": [
               "Mon",
               "Tue",
@@ -3269,8 +3281,8 @@
         ]
       },
       "release": {
-        "new_dates": 76,
-        "precise_sightings": 70,
+        "new_dates": 131,
+        "precise_sightings": 125,
         "hour_counts": [
           0,
           0,
@@ -3286,7 +3298,7 @@
           0,
           0,
           0,
-          0,
+          55,
           0,
           0,
           0,
@@ -3310,7 +3322,7 @@
           0,
           0,
           0,
-          0,
+          55,
           2,
           0,
           0,
@@ -3333,28 +3345,28 @@
         "meals": [
           {
             "meal": "Dinner",
-            "new_dates": 76,
+            "new_dates": 131,
             "rolling_lead_days": null,
-            "lead_share": 0.07,
-            "precise_sightings": 70,
-            "time_of_day": {
-              "start_hour": 5,
-              "end_hour": 7,
-              "share": 1.0,
-              "label": "between 5 am and 7 am"
-            },
-            "last_new_date_at": "2026-10-14T14:27:43Z",
-            "quiet_days": 30
+            "lead_share": 0.05,
+            "precise_sightings": 125,
+            "time_of_day": null,
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
         "batches": [
           {
             "at": "2026-09-02T22:39:11Z",
             "dates": 70
+          },
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 55
           }
         ],
         "lines": [
-          "70 new dates appeared at once on 3 Sep."
+          "70 new dates appeared at once on 3 Sep.",
+          "55 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -3405,25 +3417,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 21,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 83,
+          "median_lead_days": 70.0,
+          "lead_days_min": 25,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.33,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.75,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 15,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 65,
+          "median_lead_days": 70.0,
+          "lead_days_min": 25,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.33,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.77,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-kaya-at-the-standard",
@@ -3447,26 +3459,26 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 76,
+            "dates_seen": 126,
             "days": [
               "Mon",
               "Tue",
               "Wed",
               "Thu",
-              "Fri"
+              "Fri",
+              "Sun"
             ],
-            "days_label": "Mon–Fri",
+            "days_label": "Sun–Fri",
             "rare_days": [],
             "never_days": [
-              "Sat",
-              "Sun"
+              "Sat"
             ],
             "first_time": "12:00",
             "last_time": "15:30"
           },
           {
             "meal": "Dinner",
-            "dates_seen": 104,
+            "dates_seen": 166,
             "days": [
               "Mon",
               "Tue",
@@ -3576,8 +3588,8 @@
         ]
       },
       "release": {
-        "new_dates": 36,
-        "precise_sightings": 18,
+        "new_dates": 148,
+        "precise_sightings": 130,
         "hour_counts": [
           14,
           2,
@@ -3593,7 +3605,7 @@
           0,
           0,
           0,
-          0,
+          112,
           0,
           0,
           0,
@@ -3617,7 +3629,7 @@
           0,
           0,
           0,
-          0,
+          112,
           0,
           0,
           0,
@@ -3640,39 +3652,43 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 15,
-            "rolling_lead_days": 90,
-            "lead_share": 1.0,
-            "precise_sightings": 8,
+            "new_dates": 65,
+            "rolling_lead_days": null,
+            "lead_share": 0.25,
+            "precise_sightings": 58,
             "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 0.88,
-              "label": "between midnight and 2 am"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.86,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 21,
-            "rolling_lead_days": 90,
-            "lead_share": 1.0,
-            "precise_sightings": 10,
+            "new_dates": 83,
+            "rolling_lead_days": null,
+            "lead_share": 0.27,
+            "precise_sightings": 72,
             "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 0.9,
-              "label": "between midnight and 2 am"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.86,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 112
+          }
+        ],
         "lines": [
-          "Until 8 Sep, new lunch dates opened one day at a time, 90 days ahead, usually first seen between midnight and 2 am. None since.",
-          "Until 8 Sep, new dinner dates opened one day at a time, 90 days ahead, usually first seen between midnight and 2 am. None since."
+          "112 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -4086,25 +4102,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 49,
+          "observation_count": 81,
           "median_lead_days": 60.0,
-          "lead_days_min": 60,
+          "lead_days_min": 25,
           "lead_days_max": 60,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.22,
+          "typical_time_observation_share": 0.4,
           "confidence": "high",
-          "latest_observation_at": "2026-10-07T16:28:23Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 36,
+          "observation_count": 58,
           "median_lead_days": 60.0,
-          "lead_days_min": 60,
+          "lead_days_min": 25,
           "lead_days_max": 60,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.22,
+          "typical_time_observation_share": 0.38,
           "confidence": "high",
-          "latest_observation_at": "2026-10-07T16:28:23Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-la-brasserie",
@@ -4127,7 +4143,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 71,
+            "dates_seen": 93,
             "days": [
               "Mon",
               "Tue",
@@ -4146,7 +4162,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 100,
+            "dates_seen": 132,
             "days": [
               "Mon",
               "Tue",
@@ -4282,8 +4298,8 @@
         ]
       },
       "release": {
-        "new_dates": 85,
-        "precise_sightings": 16,
+        "new_dates": 139,
+        "precise_sightings": 70,
         "hour_counts": [
           13,
           0,
@@ -4299,7 +4315,7 @@
           0,
           0,
           0,
-          0,
+          54,
           0,
           0,
           0,
@@ -4323,7 +4339,7 @@
           2,
           2,
           2,
-          2,
+          56,
           2,
           1,
           1,
@@ -4346,41 +4362,47 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 36,
+            "new_dates": 58,
             "rolling_lead_days": 60,
-            "lead_share": 1.0,
-            "precise_sightings": 6,
+            "lead_share": 0.64,
+            "precise_sightings": 28,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 1.0,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.79,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-10-07T16:28:23Z",
-            "quiet_days": 36
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 49,
+            "new_dates": 81,
             "rolling_lead_days": 60,
-            "lead_share": 1.0,
-            "precise_sightings": 10,
+            "lead_share": 0.62,
+            "precise_sightings": 42,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 1.0,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.76,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-10-07T16:28:23Z",
-            "quiet_days": 36
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
-        "lines": [
-          "Until 8 Oct, new lunch dates opened one day at a time, 60 days ahead, usually first seen around midnight. None since.",
-          "Until 8 Oct, new dinner dates opened one day at a time, 60 days ahead, usually first seen around midnight. None since."
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 54
+          }
         ],
-        "best_time": null,
+        "lines": [
+          "New lunch dates open one day at a time, 60 days ahead, usually first seen between 1 pm and 3 pm.",
+          "New dinner dates open one day at a time, 60 days ahead, usually first seen between 1 pm and 3 pm.",
+          "54 new dates appeared at once on 13 Nov."
+        ],
+        "best_time": "lunch between 1 pm and 3 pm, 60 days ahead; dinner between 1 pm and 3 pm, 60 days ahead",
         "furthest_open_dates": {
           "Lunch": "2026-12-07",
           "Dinner": "2026-12-07"
@@ -4789,25 +4811,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 29,
-          "median_lead_days": 20.0,
+          "observation_count": 39,
+          "median_lead_days": 26.0,
           "lead_days_min": 3,
-          "lead_days_max": 35,
+          "lead_days_max": 58,
           "typical_first_seen_sgt": "01:00",
-          "typical_time_observation_share": 1.0,
+          "typical_time_observation_share": 0.74,
           "confidence": "high",
-          "latest_observation_at": "2026-11-01T17:03:58Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 21,
-          "median_lead_days": 18.0,
+          "observation_count": 41,
+          "median_lead_days": 29.0,
           "lead_days_min": 3,
-          "lead_days_max": 35,
-          "typical_first_seen_sgt": "01:00",
-          "typical_time_observation_share": 1.0,
+          "lead_days_max": 56,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.51,
           "confidence": "high",
-          "latest_observation_at": "2026-11-01T17:03:58Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-madame-fan",
@@ -4830,7 +4852,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 21,
+            "dates_seen": 41,
             "days": [
               "Mon",
               "Tue",
@@ -4849,7 +4871,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 29,
+            "dates_seen": 39,
             "days": [
               "Mon",
               "Tue",
@@ -4957,8 +4979,8 @@
         ]
       },
       "release": {
-        "new_dates": 50,
-        "precise_sightings": 50,
+        "new_dates": 80,
+        "precise_sightings": 80,
         "hour_counts": [
           50,
           0,
@@ -4974,7 +4996,7 @@
           0,
           0,
           0,
-          0,
+          30,
           0,
           0,
           0,
@@ -4998,7 +5020,7 @@
           0,
           0,
           0,
-          0,
+          30,
           0,
           0,
           0,
@@ -5021,43 +5043,43 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 21,
+            "new_dates": 41,
             "rolling_lead_days": null,
             "lead_share": 0.05,
-            "precise_sightings": 21,
-            "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 1.0,
-              "label": "between midnight and 2 am"
-            },
-            "last_new_date_at": "2026-11-01T17:03:58Z",
-            "quiet_days": 11
+            "precise_sightings": 41,
+            "time_of_day": null,
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 29,
+            "new_dates": 39,
             "rolling_lead_days": null,
-            "lead_share": 0.03,
-            "precise_sightings": 29,
+            "lead_share": 0.05,
+            "precise_sightings": 39,
             "time_of_day": {
               "start_hour": 0,
               "end_hour": 2,
-              "share": 1.0,
+              "share": 0.74,
               "label": "between midnight and 2 am"
             },
-            "last_new_date_at": "2026-11-01T17:03:58Z",
-            "quiet_days": 11
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
         "batches": [
           {
             "at": "2026-11-01T17:03:58Z",
             "dates": 50
+          },
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 30
           }
         ],
         "lines": [
-          "50 new dates appeared at once on 2 Nov."
+          "50 new dates appeared at once on 2 Nov.",
+          "30 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -5093,14 +5115,14 @@
       "release_patterns": [
         {
           "meal": "Lunch",
-          "observation_count": 8,
-          "median_lead_days": 90.0,
+          "observation_count": 24,
+          "median_lead_days": 61.0,
           "lead_days_min": 10,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.25,
-          "confidence": "medium",
-          "latest_observation_at": "2026-10-28T03:27:12Z"
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.67,
+          "confidence": "high",
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-one-ninety",
@@ -5124,7 +5146,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 28,
+            "dates_seen": 44,
             "days": [
               "Sat",
               "Sun"
@@ -5233,8 +5255,8 @@
         ]
       },
       "release": {
-        "new_dates": 8,
-        "precise_sightings": 4,
+        "new_dates": 24,
+        "precise_sightings": 20,
         "hour_counts": [
           2,
           0,
@@ -5250,7 +5272,7 @@
           2,
           0,
           0,
-          0,
+          16,
           0,
           0,
           0,
@@ -5274,7 +5296,7 @@
           0,
           0,
           0,
-          0,
+          16,
           0,
           0,
           0,
@@ -5297,18 +5319,28 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 8,
-            "rolling_lead_days": 90,
-            "lead_share": 0.75,
-            "precise_sightings": 4,
-            "time_of_day": null,
-            "last_new_date_at": "2026-10-28T03:27:12Z",
-            "quiet_days": 16
+            "new_dates": 24,
+            "rolling_lead_days": null,
+            "lead_share": 0.25,
+            "precise_sightings": 20,
+            "time_of_day": {
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.8,
+              "label": "between 1 pm and 3 pm"
+            },
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 16
+          }
+        ],
         "lines": [
-          "Until 28 Oct, new lunch dates opened one day at a time, 90 days ahead. None since."
+          "16 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {}
@@ -5355,25 +5387,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 71,
-          "median_lead_days": 48.0,
+          "observation_count": 119,
+          "median_lead_days": 55.0,
           "lead_days_min": 3,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": "06:30",
-          "typical_time_observation_share": 0.89,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.53,
           "confidence": "high",
-          "latest_observation_at": "2026-10-20T13:00:32Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 64,
-          "median_lead_days": 48.5,
+          "observation_count": 106,
+          "median_lead_days": 55.0,
           "lead_days_min": 4,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": "06:30",
-          "typical_time_observation_share": 0.92,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.56,
           "confidence": "high",
-          "latest_observation_at": "2026-10-20T13:00:32Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-oso-ristorante",
@@ -5397,7 +5429,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 64,
+            "dates_seen": 106,
             "days": [
               "Mon",
               "Tue",
@@ -5416,7 +5448,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 71,
+            "dates_seen": 119,
             "days": [
               "Mon",
               "Tue",
@@ -5527,8 +5559,8 @@
         ]
       },
       "release": {
-        "new_dates": 135,
-        "precise_sightings": 122,
+        "new_dates": 225,
+        "precise_sightings": 212,
         "hour_counts": [
           0,
           0,
@@ -5544,7 +5576,7 @@
           0,
           0,
           0,
-          0,
+          90,
           0,
           0,
           0,
@@ -5568,7 +5600,7 @@
           0,
           0,
           0,
-          0,
+          90,
           0,
           0,
           0,
@@ -5591,43 +5623,38 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 64,
+            "new_dates": 106,
             "rolling_lead_days": null,
             "lead_share": 0.03,
-            "precise_sightings": 59,
-            "time_of_day": {
-              "start_hour": 5,
-              "end_hour": 7,
-              "share": 1.0,
-              "label": "between 5 am and 7 am"
-            },
-            "last_new_date_at": "2026-10-20T13:00:32Z",
-            "quiet_days": 24
+            "precise_sightings": 101,
+            "time_of_day": null,
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 71,
+            "new_dates": 119,
             "rolling_lead_days": null,
-            "lead_share": 0.04,
-            "precise_sightings": 63,
-            "time_of_day": {
-              "start_hour": 5,
-              "end_hour": 7,
-              "share": 1.0,
-              "label": "between 5 am and 7 am"
-            },
-            "last_new_date_at": "2026-10-20T13:00:32Z",
-            "quiet_days": 24
+            "lead_share": 0.03,
+            "precise_sightings": 111,
+            "time_of_day": null,
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
         "batches": [
           {
             "at": "2026-09-02T22:39:11Z",
             "dates": 122
+          },
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 90
           }
         ],
         "lines": [
-          "122 new dates appeared at once on 3 Sep."
+          "122 new dates appeared at once on 3 Sep.",
+          "90 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -5688,14 +5715,14 @@
         },
         {
           "meal": "Dinner",
-          "observation_count": 40,
-          "median_lead_days": 30.5,
+          "observation_count": 102,
+          "median_lead_days": 44.0,
           "lead_days_min": 3,
-          "lead_days_max": 50,
-          "typical_first_seen_sgt": "17:30",
-          "typical_time_observation_share": 1.0,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.61,
           "confidence": "high",
-          "latest_observation_at": "2026-10-18T09:38:00Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-park90",
@@ -5718,7 +5745,7 @@
         "observed_meals": [
           {
             "meal": "Dinner",
-            "dates_seen": 40,
+            "dates_seen": 102,
             "days": [
               "Mon",
               "Tue",
@@ -5844,8 +5871,8 @@
         ]
       },
       "release": {
-        "new_dates": 127,
-        "precise_sightings": 82,
+        "new_dates": 189,
+        "precise_sightings": 144,
         "hour_counts": [
           0,
           0,
@@ -5861,7 +5888,7 @@
           0,
           0,
           0,
-          0,
+          62,
           0,
           0,
           0,
@@ -5885,7 +5912,7 @@
           0,
           0,
           0,
-          0,
+          62,
           0,
           0,
           0,
@@ -5908,13 +5935,18 @@
         "meals": [
           {
             "meal": "Dinner",
-            "new_dates": 40,
+            "new_dates": 102,
             "rolling_lead_days": null,
-            "lead_share": 0.03,
-            "precise_sightings": 0,
-            "time_of_day": null,
-            "last_new_date_at": "2026-10-18T09:38:00Z",
-            "quiet_days": 26
+            "lead_share": 0.02,
+            "precise_sightings": 62,
+            "time_of_day": {
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 1.0,
+              "label": "between 1 pm and 3 pm"
+            },
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "All-day Dining",
@@ -5940,11 +5972,16 @@
           {
             "at": "2026-10-18T09:38:00Z",
             "dates": 40
+          },
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 62
           }
         ],
         "lines": [
           "82 new dates appeared at once on 3 Sep.",
-          "40 new dates appeared at once on 18 Oct."
+          "40 new dates appeared at once on 18 Oct.",
+          "62 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -5977,25 +6014,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 13,
-          "median_lead_days": 90.0,
-          "lead_days_min": 73,
+          "observation_count": 37,
+          "median_lead_days": 80.0,
+          "lead_days_min": 51,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.23,
-          "confidence": "medium",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.65,
+          "confidence": "high",
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 20,
-          "median_lead_days": 90.0,
+          "observation_count": 55,
+          "median_lead_days": 80.0,
           "lead_days_min": 50,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.3,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.64,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-peppermint",
@@ -6018,7 +6055,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 90,
+            "dates_seen": 125,
             "days": [
               "Mon",
               "Tue",
@@ -6035,7 +6072,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 61,
+            "dates_seen": 85,
             "days": [
               "Mon",
               "Tue",
@@ -6144,8 +6181,8 @@
         ]
       },
       "release": {
-        "new_dates": 33,
-        "precise_sightings": 10,
+        "new_dates": 92,
+        "precise_sightings": 69,
         "hour_counts": [
           6,
           2,
@@ -6161,7 +6198,7 @@
           0,
           0,
           0,
-          0,
+          59,
           0,
           0,
           0,
@@ -6185,7 +6222,7 @@
           0,
           0,
           0,
-          0,
+          59,
           0,
           0,
           0,
@@ -6208,45 +6245,48 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 20,
-            "rolling_lead_days": 90,
-            "lead_share": 0.75,
-            "precise_sightings": 5,
+            "new_dates": 55,
+            "rolling_lead_days": null,
+            "lead_share": 0.29,
+            "precise_sightings": 40,
             "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 0.8,
-              "label": "between midnight and 2 am"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.88,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 13,
-            "rolling_lead_days": 90,
-            "lead_share": 0.85,
-            "precise_sightings": 5,
+            "new_dates": 37,
+            "rolling_lead_days": null,
+            "lead_share": 0.3,
+            "precise_sightings": 29,
             "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 0.8,
-              "label": "between midnight and 2 am"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.83,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
         "batches": [
           {
             "at": "2026-08-27T14:46:30Z",
             "dates": 9
+          },
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 59
           }
         ],
         "lines": [
-          "Until 8 Sep, new lunch dates opened one day at a time, 90 days ahead, usually first seen between midnight and 2 am. None since.",
-          "Until 8 Sep, new dinner dates opened one day at a time, 90 days ahead, usually first seen between midnight and 2 am. None since.",
-          "9 new dates appeared at once on 27 Aug."
+          "9 new dates appeared at once on 27 Aug.",
+          "59 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {}
@@ -6293,14 +6333,14 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 16,
-          "median_lead_days": 90.0,
+          "observation_count": 31,
+          "median_lead_days": 47.0,
           "lead_days_min": 8,
           "lead_days_max": 90,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.31,
+          "typical_time_observation_share": 0.48,
           "confidence": "high",
-          "latest_observation_at": "2026-09-05T17:10:02Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-polo-bar-steakhouse",
@@ -6323,7 +6363,7 @@
         "observed_meals": [
           {
             "meal": "Dinner",
-            "dates_seen": 73,
+            "dates_seen": 88,
             "days": [
               "Tue",
               "Wed",
@@ -6432,8 +6472,8 @@
         ]
       },
       "release": {
-        "new_dates": 16,
-        "precise_sightings": 8,
+        "new_dates": 31,
+        "precise_sightings": 23,
         "hour_counts": [
           5,
           0,
@@ -6449,7 +6489,7 @@
           0,
           0,
           0,
-          0,
+          15,
           0,
           0,
           0,
@@ -6473,7 +6513,7 @@
           0,
           0,
           0,
-          0,
+          15,
           0,
           0,
           0,
@@ -6496,23 +6536,28 @@
         "meals": [
           {
             "meal": "Dinner",
-            "new_dates": 16,
-            "rolling_lead_days": 90,
-            "lead_share": 0.94,
-            "precise_sightings": 8,
+            "new_dates": 31,
+            "rolling_lead_days": null,
+            "lead_share": 0.48,
+            "precise_sightings": 23,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 1.0,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.65,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-05T17:10:02Z",
-            "quiet_days": 68
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 15
+          }
+        ],
         "lines": [
-          "Until 6 Sep, new dinner dates opened one day at a time, 90 days ahead, usually first seen around midnight. None since."
+          "15 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {}
@@ -6559,25 +6604,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 22,
-          "median_lead_days": 90.0,
+          "observation_count": 82,
+          "median_lead_days": 70.5,
           "lead_days_min": 3,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.36,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.73,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 18,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 69,
+          "median_lead_days": 71.0,
+          "lead_days_min": 25,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.39,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.74,
           "confidence": "high",
-          "latest_observation_at": "2026-09-06T16:17:37Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-rappu",
@@ -6600,7 +6645,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 87,
+            "dates_seen": 138,
             "days": [
               "Tue",
               "Wed",
@@ -6619,7 +6664,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 99,
+            "dates_seen": 159,
             "days": [
               "Mon",
               "Tue",
@@ -6729,8 +6774,8 @@
         ]
       },
       "release": {
-        "new_dates": 40,
-        "precise_sightings": 19,
+        "new_dates": 151,
+        "precise_sightings": 130,
         "hour_counts": [
           16,
           0,
@@ -6746,7 +6791,7 @@
           0,
           0,
           0,
-          0,
+          111,
           0,
           0,
           1,
@@ -6770,7 +6815,7 @@
           0,
           0,
           0,
-          0,
+          111,
           0,
           0,
           0,
@@ -6793,39 +6838,43 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 18,
-            "rolling_lead_days": 90,
-            "lead_share": 1.0,
-            "precise_sightings": 8,
+            "new_dates": 69,
+            "rolling_lead_days": null,
+            "lead_share": 0.28,
+            "precise_sightings": 59,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 1.0,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.86,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-06T16:17:37Z",
-            "quiet_days": 67
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 22,
-            "rolling_lead_days": 90,
-            "lead_share": 0.95,
-            "precise_sightings": 11,
+            "new_dates": 82,
+            "rolling_lead_days": null,
+            "lead_share": 0.27,
+            "precise_sightings": 71,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 0.91,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.85,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 111
+          }
+        ],
         "lines": [
-          "Until 7 Sep, new lunch dates opened one day at a time, 90 days ahead, usually first seen around midnight. None since.",
-          "Until 8 Sep, new dinner dates opened one day at a time, 90 days ahead, usually first seen around midnight. None since."
+          "111 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -6877,25 +6926,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 21,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 42,
+          "median_lead_days": 68.5,
+          "lead_days_min": 25,
           "lead_days_max": 91,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.29,
+          "typical_time_observation_share": 0.5,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 21,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 42,
+          "median_lead_days": 68.5,
+          "lead_days_min": 25,
           "lead_days_max": 91,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.29,
+          "typical_time_observation_share": 0.5,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-sarai",
@@ -6919,7 +6968,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 105,
+            "dates_seen": 126,
             "days": [
               "Mon",
               "Tue",
@@ -6937,7 +6986,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 106,
+            "dates_seen": 127,
             "days": [
               "Mon",
               "Tue",
@@ -7047,8 +7096,8 @@
         ]
       },
       "release": {
-        "new_dates": 42,
-        "precise_sightings": 20,
+        "new_dates": 84,
+        "precise_sightings": 62,
         "hour_counts": [
           14,
           2,
@@ -7064,7 +7113,7 @@
           0,
           0,
           0,
-          0,
+          42,
           0,
           0,
           0,
@@ -7088,7 +7137,7 @@
           0,
           0,
           0,
-          0,
+          42,
           0,
           0,
           0,
@@ -7111,39 +7160,43 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 21,
-            "rolling_lead_days": 90,
-            "lead_share": 0.95,
-            "precise_sightings": 10,
+            "new_dates": 42,
+            "rolling_lead_days": null,
+            "lead_share": 0.48,
+            "precise_sightings": 31,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 0.9,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.68,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 21,
-            "rolling_lead_days": 90,
-            "lead_share": 0.95,
-            "precise_sightings": 10,
+            "new_dates": 42,
+            "rolling_lead_days": null,
+            "lead_share": 0.48,
+            "precise_sightings": 31,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 0.9,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.68,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 42
+          }
+        ],
         "lines": [
-          "Until 8 Sep, new lunch dates opened one day at a time, 90 days ahead, usually first seen around midnight. None since.",
-          "Until 8 Sep, new dinner dates opened one day at a time, 90 days ahead, usually first seen around midnight. None since."
+          "42 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -7185,14 +7238,14 @@
       "release_patterns": [
         {
           "meal": "All-day Dining",
-          "observation_count": 90,
-          "median_lead_days": 47.5,
+          "observation_count": 122,
+          "median_lead_days": 45.0,
           "lead_days_min": 3,
           "lead_days_max": 60,
-          "typical_first_seen_sgt": "06:30",
-          "typical_time_observation_share": 0.64,
+          "typical_first_seen_sgt": null,
+          "typical_time_observation_share": 0.48,
           "confidence": "high",
-          "latest_observation_at": "2026-10-07T21:28:48Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-sarnies",
@@ -7216,7 +7269,7 @@
         "observed_meals": [
           {
             "meal": "All-day Dining",
-            "dates_seen": 90,
+            "dates_seen": 122,
             "days": [
               "Mon",
               "Tue",
@@ -7326,8 +7379,8 @@
         ]
       },
       "release": {
-        "new_dates": 90,
-        "precise_sightings": 59,
+        "new_dates": 122,
+        "precise_sightings": 91,
         "hour_counts": [
           0,
           0,
@@ -7343,7 +7396,7 @@
           0,
           0,
           0,
-          0,
+          32,
           0,
           0,
           0,
@@ -7367,7 +7420,7 @@
           0,
           1,
           1,
-          1,
+          33,
           1,
           1,
           1,
@@ -7390,28 +7443,33 @@
         "meals": [
           {
             "meal": "All-day Dining",
-            "new_dates": 90,
+            "new_dates": 122,
             "rolling_lead_days": null,
-            "lead_share": 0.37,
-            "precise_sightings": 59,
+            "lead_share": 0.28,
+            "precise_sightings": 91,
             "time_of_day": {
               "start_hour": 5,
               "end_hour": 7,
-              "share": 0.98,
+              "share": 0.64,
               "label": "between 5 am and 7 am"
             },
-            "last_new_date_at": "2026-10-07T21:28:48Z",
-            "quiet_days": 36
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
         "batches": [
           {
             "at": "2026-09-02T22:39:11Z",
             "dates": 58
+          },
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 32
           }
         ],
         "lines": [
-          "58 new dates appeared at once on 3 Sep."
+          "58 new dates appeared at once on 3 Sep.",
+          "32 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -7462,25 +7520,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 51,
+          "observation_count": 87,
           "median_lead_days": 60.0,
           "lead_days_min": 15,
           "lead_days_max": 60,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.22,
+          "typical_time_observation_share": 0.41,
           "confidence": "high",
-          "latest_observation_at": "2026-10-23T00:58:04Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 51,
+          "observation_count": 87,
           "median_lead_days": 60.0,
           "lead_days_min": 15,
           "lead_days_max": 60,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.22,
+          "typical_time_observation_share": 0.41,
           "confidence": "high",
-          "latest_observation_at": "2026-10-23T00:58:04Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-tanoke",
@@ -7504,7 +7562,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 107,
+            "dates_seen": 143,
             "days": [
               "Mon",
               "Tue",
@@ -7522,7 +7580,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 108,
+            "dates_seen": 144,
             "days": [
               "Mon",
               "Tue",
@@ -7638,8 +7696,8 @@
         ]
       },
       "release": {
-        "new_dates": 102,
-        "precise_sightings": 24,
+        "new_dates": 174,
+        "precise_sightings": 96,
         "hour_counts": [
           16,
           0,
@@ -7655,7 +7713,7 @@
           0,
           0,
           0,
-          0,
+          72,
           0,
           0,
           0,
@@ -7679,7 +7737,7 @@
           2,
           2,
           2,
-          2,
+          74,
           2,
           2,
           2,
@@ -7702,41 +7760,47 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 51,
+            "new_dates": 87,
             "rolling_lead_days": 60,
-            "lead_share": 0.96,
-            "precise_sightings": 12,
+            "lead_share": 0.57,
+            "precise_sightings": 48,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 0.83,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.75,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-10-23T00:58:04Z",
-            "quiet_days": 21
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 51,
+            "new_dates": 87,
             "rolling_lead_days": 60,
-            "lead_share": 0.96,
-            "precise_sightings": 12,
+            "lead_share": 0.57,
+            "precise_sightings": 48,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 0.83,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.75,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-10-23T00:58:04Z",
-            "quiet_days": 21
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
-        "lines": [
-          "Until 23 Oct, new lunch dates opened one day at a time, 60 days ahead, usually first seen around midnight. None since.",
-          "Until 23 Oct, new dinner dates opened one day at a time, 60 days ahead, usually first seen around midnight. None since."
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 72
+          }
         ],
-        "best_time": null,
+        "lines": [
+          "New lunch dates open one day at a time, 60 days ahead, usually first seen between 1 pm and 3 pm.",
+          "New dinner dates open one day at a time, 60 days ahead, usually first seen between 1 pm and 3 pm.",
+          "72 new dates appeared at once on 13 Nov."
+        ],
+        "best_time": "lunch between 1 pm and 3 pm, 60 days ahead; dinner between 1 pm and 3 pm, 60 days ahead",
         "furthest_open_dates": {
           "Lunch": "2026-12-07",
           "Dinner": "2026-12-07"
@@ -7776,25 +7840,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 21,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 77,
+          "median_lead_days": 73.0,
+          "lead_days_min": 25,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.33,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.73,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 15,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 53,
+          "median_lead_days": 75.0,
+          "lead_days_min": 26,
           "lead_days_max": 90,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.33,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.72,
           "confidence": "high",
-          "latest_observation_at": "2026-09-06T18:31:37Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-the-feather-blade",
@@ -7817,7 +7881,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 70,
+            "dates_seen": 108,
             "days": [
               "Wed",
               "Thu",
@@ -7836,7 +7900,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 101,
+            "dates_seen": 157,
             "days": [
               "Mon",
               "Tue",
@@ -7946,8 +8010,8 @@
         ]
       },
       "release": {
-        "new_dates": 36,
-        "precise_sightings": 16,
+        "new_dates": 130,
+        "precise_sightings": 110,
         "hour_counts": [
           13,
           1,
@@ -7963,7 +8027,7 @@
           0,
           0,
           0,
-          0,
+          94,
           0,
           0,
           0,
@@ -7987,7 +8051,7 @@
           0,
           0,
           0,
-          0,
+          94,
           0,
           0,
           0,
@@ -8010,39 +8074,43 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 15,
-            "rolling_lead_days": 90,
-            "lead_share": 1.0,
-            "precise_sightings": 6,
+            "new_dates": 53,
+            "rolling_lead_days": null,
+            "lead_share": 0.3,
+            "precise_sightings": 44,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 1.0,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.86,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-06T18:31:37Z",
-            "quiet_days": 67
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 21,
-            "rolling_lead_days": 90,
-            "lead_share": 1.0,
-            "precise_sightings": 10,
+            "new_dates": 77,
+            "rolling_lead_days": null,
+            "lead_share": 0.29,
+            "precise_sightings": 66,
             "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 0.9,
-              "label": "between midnight and 2 am"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.85,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 94
+          }
+        ],
         "lines": [
-          "Until 7 Sep, new lunch dates opened one day at a time, 90 days ahead, usually first seen around midnight. None since.",
-          "Until 8 Sep, new dinner dates opened one day at a time, 90 days ahead, usually first seen between midnight and 2 am. None since."
+          "94 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -8084,25 +8152,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 21,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 81,
+          "median_lead_days": 71.0,
+          "lead_days_min": 25,
           "lead_days_max": 91,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.29,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.74,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 21,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 83,
+          "median_lead_days": 70.0,
+          "lead_days_min": 25,
           "lead_days_max": 91,
-          "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.29,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.75,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-the-plump-frenchman",
@@ -8125,7 +8193,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 102,
+            "dates_seen": 164,
             "days": [
               "Mon",
               "Tue",
@@ -8143,7 +8211,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 102,
+            "dates_seen": 162,
             "days": [
               "Mon",
               "Tue",
@@ -8253,8 +8321,8 @@
         ]
       },
       "release": {
-        "new_dates": 42,
-        "precise_sightings": 20,
+        "new_dates": 164,
+        "precise_sightings": 142,
         "hour_counts": [
           14,
           2,
@@ -8270,7 +8338,7 @@
           0,
           0,
           0,
-          0,
+          122,
           0,
           0,
           0,
@@ -8294,7 +8362,7 @@
           0,
           0,
           0,
-          0,
+          122,
           0,
           0,
           0,
@@ -8317,39 +8385,43 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 21,
-            "rolling_lead_days": 90,
-            "lead_share": 0.95,
-            "precise_sightings": 10,
+            "new_dates": 83,
+            "rolling_lead_days": null,
+            "lead_share": 0.25,
+            "precise_sightings": 72,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 0.9,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.86,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 21,
-            "rolling_lead_days": 90,
-            "lead_share": 0.95,
-            "precise_sightings": 10,
+            "new_dates": 81,
+            "rolling_lead_days": null,
+            "lead_share": 0.26,
+            "precise_sightings": 70,
             "time_of_day": {
-              "start_hour": 23,
-              "end_hour": 1,
-              "share": 0.9,
-              "label": "around midnight"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.86,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 122
+          }
+        ],
         "lines": [
-          "Until 8 Sep, new lunch dates opened one day at a time, 90 days ahead, usually first seen around midnight. None since.",
-          "Until 8 Sep, new dinner dates opened one day at a time, 90 days ahead, usually first seen around midnight. None since."
+          "122 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
@@ -8403,25 +8475,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 21,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 42,
+          "median_lead_days": 68.5,
+          "lead_days_min": 25,
           "lead_days_max": 90,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.33,
+          "typical_time_observation_share": 0.5,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 21,
-          "median_lead_days": 90.0,
-          "lead_days_min": 90,
+          "observation_count": 42,
+          "median_lead_days": 68.5,
+          "lead_days_min": 25,
           "lead_days_max": 90,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.33,
+          "typical_time_observation_share": 0.5,
           "confidence": "high",
-          "latest_observation_at": "2026-09-07T19:20:05Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-vineyard",
@@ -8445,7 +8517,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 102,
+            "dates_seen": 123,
             "days": [
               "Mon",
               "Tue",
@@ -8463,7 +8535,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 100,
+            "dates_seen": 121,
             "days": [
               "Mon",
               "Tue",
@@ -8573,8 +8645,8 @@
         ]
       },
       "release": {
-        "new_dates": 42,
-        "precise_sightings": 20,
+        "new_dates": 84,
+        "precise_sightings": 62,
         "hour_counts": [
           16,
           2,
@@ -8590,7 +8662,7 @@
           0,
           0,
           0,
-          0,
+          42,
           0,
           0,
           0,
@@ -8614,7 +8686,7 @@
           0,
           0,
           0,
-          0,
+          42,
           0,
           0,
           0,
@@ -8637,41 +8709,47 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 21,
+            "new_dates": 42,
             "rolling_lead_days": 90,
-            "lead_share": 1.0,
-            "precise_sightings": 10,
+            "lead_share": 0.5,
+            "precise_sightings": 31,
             "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 0.9,
-              "label": "between midnight and 2 am"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.68,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 21,
+            "new_dates": 42,
             "rolling_lead_days": 90,
-            "lead_share": 1.0,
-            "precise_sightings": 10,
+            "lead_share": 0.5,
+            "precise_sightings": 31,
             "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 0.9,
-              "label": "between midnight and 2 am"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.68,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-09-07T19:20:05Z",
-            "quiet_days": 66
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
-        "lines": [
-          "Until 8 Sep, new lunch dates opened one day at a time, 90 days ahead, usually first seen between midnight and 2 am. None since.",
-          "Until 8 Sep, new dinner dates opened one day at a time, 90 days ahead, usually first seen between midnight and 2 am. None since."
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 42
+          }
         ],
-        "best_time": null,
+        "lines": [
+          "New lunch dates open one day at a time, 90 days ahead, usually first seen between 1 pm and 3 pm.",
+          "New dinner dates open one day at a time, 90 days ahead, usually first seen between 1 pm and 3 pm.",
+          "42 new dates appeared at once on 13 Nov."
+        ],
+        "best_time": "lunch between 1 pm and 3 pm, 90 days ahead; dinner between 1 pm and 3 pm, 90 days ahead",
         "furthest_open_dates": {
           "Lunch": "2026-12-07",
           "Dinner": "2026-12-07"
@@ -8717,25 +8795,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 30,
-          "median_lead_days": 60.0,
+          "observation_count": 52,
+          "median_lead_days": 57.0,
           "lead_days_min": 9,
           "lead_days_max": 60,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.2,
+          "typical_time_observation_share": 0.42,
           "confidence": "high",
-          "latest_observation_at": "2026-10-07T16:28:23Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 31,
-          "median_lead_days": 60.0,
+          "observation_count": 55,
+          "median_lead_days": 56.0,
           "lead_days_min": 8,
           "lead_days_max": 60,
           "typical_first_seen_sgt": null,
-          "typical_time_observation_share": 0.19,
+          "typical_time_observation_share": 0.44,
           "confidence": "high",
-          "latest_observation_at": "2026-10-09T13:38:30Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-vue",
@@ -8758,7 +8836,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 31,
+            "dates_seen": 55,
             "days": [
               "Mon",
               "Tue",
@@ -8775,7 +8853,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 30,
+            "dates_seen": 52,
             "days": [
               "Mon",
               "Tue",
@@ -8896,8 +8974,8 @@
         ]
       },
       "release": {
-        "new_dates": 61,
-        "precise_sightings": 15,
+        "new_dates": 107,
+        "precise_sightings": 61,
         "hour_counts": [
           13,
           0,
@@ -8913,7 +8991,7 @@
           1,
           0,
           0,
-          0,
+          46,
           0,
           0,
           0,
@@ -8937,7 +9015,7 @@
           3,
           2,
           1,
-          0,
+          46,
           2,
           3,
           0,
@@ -8960,39 +9038,43 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 31,
-            "rolling_lead_days": 60,
-            "lead_share": 0.81,
-            "precise_sightings": 8,
+            "new_dates": 55,
+            "rolling_lead_days": null,
+            "lead_share": 0.47,
+            "precise_sightings": 32,
             "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 0.88,
-              "label": "between midnight and 2 am"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.75,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-10-09T13:38:30Z",
-            "quiet_days": 35
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 30,
-            "rolling_lead_days": 60,
-            "lead_share": 0.8,
-            "precise_sightings": 7,
+            "new_dates": 52,
+            "rolling_lead_days": null,
+            "lead_share": 0.48,
+            "precise_sightings": 29,
             "time_of_day": {
-              "start_hour": 0,
-              "end_hour": 2,
-              "share": 0.86,
-              "label": "between midnight and 2 am"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.76,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-10-07T16:28:23Z",
-            "quiet_days": 36
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
-        "batches": [],
+        "batches": [
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 46
+          }
+        ],
         "lines": [
-          "Until 9 Oct, new lunch dates opened one day at a time, 60 days ahead, usually first seen between midnight and 2 am. None since.",
-          "Until 8 Oct, new dinner dates opened one day at a time, 60 days ahead, usually first seen between midnight and 2 am. None since."
+          "46 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {}
@@ -9041,25 +9123,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 83,
-          "median_lead_days": 43.0,
+          "observation_count": 123,
+          "median_lead_days": 57.0,
           "lead_days_min": 3,
-          "lead_days_max": 87,
+          "lead_days_max": 90,
           "typical_first_seen_sgt": "18:00",
-          "typical_time_observation_share": 0.99,
+          "typical_time_observation_share": 0.67,
           "confidence": "high",
-          "latest_observation_at": "2026-10-03T05:50:20Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 82,
-          "median_lead_days": 43.5,
+          "observation_count": 122,
+          "median_lead_days": 57.5,
           "lead_days_min": 4,
-          "lead_days_max": 87,
+          "lead_days_max": 90,
           "typical_first_seen_sgt": "18:00",
-          "typical_time_observation_share": 0.99,
+          "typical_time_observation_share": 0.66,
           "confidence": "high",
-          "latest_observation_at": "2026-10-03T05:50:20Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-xing-yue-xuan",
@@ -9082,7 +9164,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 82,
+            "dates_seen": 122,
             "days": [
               "Mon",
               "Tue",
@@ -9098,7 +9180,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 83,
+            "dates_seen": 123,
             "days": [
               "Mon",
               "Tue",
@@ -9206,8 +9288,8 @@
         ]
       },
       "release": {
-        "new_dates": 165,
-        "precise_sightings": 0,
+        "new_dates": 245,
+        "precise_sightings": 80,
         "hour_counts": [
           0,
           0,
@@ -9223,7 +9305,7 @@
           0,
           0,
           0,
-          0,
+          80,
           0,
           0,
           0,
@@ -9247,7 +9329,7 @@
           0,
           163,
           0,
-          0,
+          80,
           0,
           0,
           0,
@@ -9270,33 +9352,48 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 82,
+            "new_dates": 122,
             "rolling_lead_days": null,
             "lead_share": 0.02,
-            "precise_sightings": 0,
-            "time_of_day": null,
-            "last_new_date_at": "2026-10-03T05:50:20Z",
-            "quiet_days": 41
+            "precise_sightings": 40,
+            "time_of_day": {
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 1.0,
+              "label": "between 1 pm and 3 pm"
+            },
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 83,
+            "new_dates": 123,
             "rolling_lead_days": null,
             "lead_share": 0.02,
-            "precise_sightings": 0,
-            "time_of_day": null,
-            "last_new_date_at": "2026-10-03T05:50:20Z",
-            "quiet_days": 41
+            "precise_sightings": 40,
+            "time_of_day": {
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 1.0,
+              "label": "between 1 pm and 3 pm"
+            },
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
         "batches": [
           {
             "at": "2026-09-11T10:01:03Z",
             "dates": 163
+          },
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 80
           }
         ],
         "lines": [
-          "163 new dates appeared at once on 11 Sep."
+          "163 new dates appeared at once on 11 Sep.",
+          "80 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {}
@@ -9343,25 +9440,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 24,
-          "median_lead_days": 29.5,
+          "observation_count": 77,
+          "median_lead_days": 52.0,
           "lead_days_min": 4,
-          "lead_days_max": 50,
-          "typical_first_seen_sgt": "21:30",
-          "typical_time_observation_share": 1.0,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.69,
           "confidence": "high",
-          "latest_observation_at": "2026-10-18T13:34:53Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         },
         {
           "meal": "Lunch",
-          "observation_count": 32,
-          "median_lead_days": 27.5,
+          "observation_count": 87,
+          "median_lead_days": 46.0,
           "lead_days_min": 4,
-          "lead_days_max": 50,
-          "typical_first_seen_sgt": "21:30",
-          "typical_time_observation_share": 1.0,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.63,
           "confidence": "high",
-          "latest_observation_at": "2026-10-18T13:34:53Z"
+          "latest_observation_at": "2026-11-13T06:35:11Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-zui-yu-xuan",
@@ -9384,39 +9481,37 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 32,
+            "dates_seen": 87,
             "days": [
               "Mon",
               "Tue",
               "Wed",
               "Thu",
-              "Fri"
-            ],
-            "days_label": "Mon–Fri",
-            "rare_days": [],
-            "never_days": [
+              "Fri",
               "Sat",
               "Sun"
             ],
+            "days_label": "Every day",
+            "rare_days": [],
+            "never_days": [],
             "first_time": "12:00",
             "last_time": "13:00"
           },
           {
             "meal": "Dinner",
-            "dates_seen": 24,
+            "dates_seen": 77,
             "days": [
               "Mon",
               "Tue",
               "Wed",
-              "Thu"
-            ],
-            "days_label": "Mon–Thu",
-            "rare_days": [],
-            "never_days": [
+              "Thu",
               "Fri",
               "Sat",
               "Sun"
             ],
+            "days_label": "Every day",
+            "rare_days": [],
+            "never_days": [],
             "first_time": "17:30",
             "last_time": "20:30"
           }
@@ -9514,8 +9609,8 @@
         ]
       },
       "release": {
-        "new_dates": 56,
-        "precise_sightings": 56,
+        "new_dates": 164,
+        "precise_sightings": 164,
         "hour_counts": [
           0,
           0,
@@ -9531,7 +9626,7 @@
           0,
           0,
           0,
-          0,
+          108,
           0,
           0,
           0,
@@ -9555,7 +9650,7 @@
           0,
           0,
           0,
-          0,
+          108,
           0,
           0,
           0,
@@ -9578,43 +9673,48 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 32,
+            "new_dates": 87,
             "rolling_lead_days": null,
-            "lead_share": 0.03,
-            "precise_sightings": 32,
+            "lead_share": 0.02,
+            "precise_sightings": 87,
             "time_of_day": {
-              "start_hour": 20,
-              "end_hour": 22,
-              "share": 1.0,
-              "label": "between 8 pm and 10 pm"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.63,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-10-18T13:34:53Z",
-            "quiet_days": 26
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 24,
+            "new_dates": 77,
             "rolling_lead_days": null,
-            "lead_share": 0.04,
-            "precise_sightings": 24,
+            "lead_share": 0.03,
+            "precise_sightings": 77,
             "time_of_day": {
-              "start_hour": 20,
-              "end_hour": 22,
-              "share": 1.0,
-              "label": "between 8 pm and 10 pm"
+              "start_hour": 13,
+              "end_hour": 15,
+              "share": 0.69,
+              "label": "between 1 pm and 3 pm"
             },
-            "last_new_date_at": "2026-10-18T13:34:53Z",
-            "quiet_days": 26
+            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "quiet_days": 0
           }
         ],
         "batches": [
           {
             "at": "2026-10-18T13:34:53Z",
             "dates": 56
+          },
+          {
+            "at": "2026-11-13T06:35:11Z",
+            "dates": 108
           }
         ],
         "lines": [
-          "56 new dates appeared at once on 18 Oct."
+          "56 new dates appeared at once on 18 Oct.",
+          "108 new dates appeared at once on 13 Nov."
         ],
         "best_time": null,
         "furthest_open_dates": {
