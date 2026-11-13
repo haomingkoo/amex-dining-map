@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-13T19:54:15Z",
+  "updated_at": "2026-11-13T20:24:03Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-11-13T20:24:03Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "28/30 (93.3%), 2 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "30/30 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "28/30 (93.3%), 2 unavailable",
+          "after": "30/30 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "0b6df8958ccf7a11fd87",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 2,
+      "id": "8661c411fbae37b748b9"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -22791,46 +22824,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "removed",
-      "subject": "Saké Restaurant & Bar Double Bay / New South Wales",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Saké Restaurant & Bar Double Bay",
-          "Country": "Australia",
-          "Region": "New South Wales",
-          "City": "New South Wales",
-          "Address": "The Intercontinental Hotel, 33 Cross St, Double Bay, New South Wales, 2028, Australia",
-          "Cuisine": [
-            "Japanese"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "e775464414be7c80ceb2",
-      "stream_id": "47d4124071af218c1610",
-      "occurrence": 1,
-      "id": "33b47ff6a187482cb28f",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -25234,11 +25227,11 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "7955007d04085329c68d",
+        "latest_transition_id": "0b6df8958ccf7a11fd87",
         "occurrences": {
           "04d5cfacf701422a287e": 10,
           "093e9a40b7d75a526207": 5,
-          "0b6df8958ccf7a11fd87": 1,
+          "0b6df8958ccf7a11fd87": 2,
           "1c1fff4679ee3bdf92aa": 7,
           "1f3b2af7187c47ac7e7a": 1,
           "252e3c33201e3823a27b": 29,
