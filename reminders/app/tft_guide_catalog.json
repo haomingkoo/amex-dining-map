@@ -12,8 +12,8 @@
   "release_source": {
     "source": "data/table-for-two-release-history.json",
     "project": "AMEXPlatSG",
-    "updated_at": "2026-11-13T06:35:11+00:00",
-    "observation_count": 6050
+    "updated_at": "2026-11-13T07:35:42+00:00",
+    "observation_count": 6052
   },
   "eligibility_source": {
     "terms_url": "https://www.americanexpress.com/content/dam/amex/en-sg/benefits/the-platinum-card/TableforTwo-Plat-TnCs.pdf",
@@ -6604,25 +6604,25 @@
       "release_patterns": [
         {
           "meal": "Dinner",
-          "observation_count": 82,
-          "median_lead_days": 70.5,
+          "observation_count": 83,
+          "median_lead_days": 70.0,
           "lead_days_min": 3,
+          "lead_days_max": 90,
+          "typical_first_seen_sgt": "14:30",
+          "typical_time_observation_share": 0.72,
+          "confidence": "high",
+          "latest_observation_at": "2026-11-13T07:35:42Z"
+        },
+        {
+          "meal": "Lunch",
+          "observation_count": 70,
+          "median_lead_days": 70.5,
+          "lead_days_min": 25,
           "lead_days_max": 90,
           "typical_first_seen_sgt": "14:30",
           "typical_time_observation_share": 0.73,
           "confidence": "high",
-          "latest_observation_at": "2026-11-13T06:35:11Z"
-        },
-        {
-          "meal": "Lunch",
-          "observation_count": 69,
-          "median_lead_days": 71.0,
-          "lead_days_min": 25,
-          "lead_days_max": 90,
-          "typical_first_seen_sgt": "14:30",
-          "typical_time_observation_share": 0.74,
-          "confidence": "high",
-          "latest_observation_at": "2026-11-13T06:35:11Z"
+          "latest_observation_at": "2026-11-13T07:35:42Z"
         }
       ],
       "explorer_route": "#/table-for-two?venue=tft-rappu",
@@ -6645,7 +6645,7 @@
         "observed_meals": [
           {
             "meal": "Lunch",
-            "dates_seen": 138,
+            "dates_seen": 139,
             "days": [
               "Tue",
               "Wed",
@@ -6664,7 +6664,7 @@
           },
           {
             "meal": "Dinner",
-            "dates_seen": 159,
+            "dates_seen": 160,
             "days": [
               "Mon",
               "Tue",
@@ -6774,8 +6774,8 @@
         ]
       },
       "release": {
-        "new_dates": 151,
-        "precise_sightings": 130,
+        "new_dates": 153,
+        "precise_sightings": 132,
         "hour_counts": [
           16,
           0,
@@ -6792,7 +6792,7 @@
           0,
           0,
           111,
-          0,
+          2,
           0,
           1,
           0,
@@ -6815,7 +6815,7 @@
           0,
           0,
           0,
-          111,
+          113,
           0,
           0,
           0,
@@ -6838,32 +6838,32 @@
         "meals": [
           {
             "meal": "Lunch",
-            "new_dates": 69,
+            "new_dates": 70,
             "rolling_lead_days": null,
-            "lead_share": 0.28,
-            "precise_sightings": 59,
+            "lead_share": 0.27,
+            "precise_sightings": 60,
             "time_of_day": {
-              "start_hour": 13,
-              "end_hour": 15,
-              "share": 0.86,
-              "label": "between 1 pm and 3 pm"
+              "start_hour": 14,
+              "end_hour": 16,
+              "share": 0.87,
+              "label": "between 2 pm and 4 pm"
             },
-            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "last_new_date_at": "2026-11-13T07:35:42Z",
             "quiet_days": 0
           },
           {
             "meal": "Dinner",
-            "new_dates": 82,
+            "new_dates": 83,
             "rolling_lead_days": null,
             "lead_share": 0.27,
-            "precise_sightings": 71,
+            "precise_sightings": 72,
             "time_of_day": {
-              "start_hour": 13,
-              "end_hour": 15,
+              "start_hour": 14,
+              "end_hour": 16,
               "share": 0.85,
-              "label": "between 1 pm and 3 pm"
+              "label": "between 2 pm and 4 pm"
             },
-            "last_new_date_at": "2026-11-13T06:35:11Z",
+            "last_new_date_at": "2026-11-13T07:35:42Z",
             "quiet_days": 0
           }
         ],
