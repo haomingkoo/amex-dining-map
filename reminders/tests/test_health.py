@@ -140,7 +140,8 @@ def test_app_lifespan_keeps_the_baked_catalogue_outside_a_deployment(monkeypatch
 
 
 def test_production_server_disables_query_string_access_logs():
-    railway_config = (Path(__file__).parents[1] / "railway.toml").read_text()
+    # The start command moved from reminders/railway.toml to the repo's .railway/railway.ts.
+    railway_config = (Path(__file__).parents[2] / ".railway" / "railway.ts").read_text()
 
     assert "--no-access-log" in railway_config
 
