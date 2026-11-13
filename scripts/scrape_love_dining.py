@@ -66,8 +66,9 @@ GEOCODE_TIMEOUT_SECONDS = 10
 NOMINATIM_PAUSE_SECONDS = 1.1
 PAGE_LOAD_TIMEOUT_MS = 30_000
 PAGE_SETTLE_MS = 5_000
-DETAILS_CLICK_SETTLE_MS = 150
-DETAILS_EXPAND_SETTLE_MS = 2_000
+# A refresh that keeps fewer than this share of the previous records is treated
+# as a broken scrape (layout change, partial load), not as real delistings.
+MIN_RECORD_RETENTION = 0.7
 
 
 def normalize_inline_text(value: str | None) -> str:
@@ -309,31 +310,35 @@ def build_meta(
 
 # ─── Playwright helpers ────────────────────────────────────────────────────────
 
-def load_and_expand(page: Page, url: str) -> str:
-    """Load a listing page, click all Details buttons, return full page text."""
-    from playwright.sync_api import Error as PlaywrightError
+# textContent of the body without <svg> (icon <title> text such as
+# "opens in new window"), <script> and <style> text.
+DOM_TEXT_JS = """() => {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const parts = [];
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (!node.parentElement.closest("svg, script, style, noscript")) parts.push(node.nodeValue);
+    }
+    return parts.join("");
+}"""
 
+
+def page_text_from_dom(raw_text: str) -> str:
+    """Collapse the whitespace between DOM text nodes into one line per node."""
+    return re.sub(r"[ \t\xa0]*\n\s*", "\n", raw_text)
+
+
+def load_listing_text(page: Page, url: str) -> str:
+    """Load a listing page and return the text of its whole DOM.
+
+    Amex now renders outlet details inside collapsed accordions. `inner_text`
+    omits collapsed content, so clicking Details buttons yielded only the 5-6
+    outlets that happened to be open. `textContent` includes collapsed panels,
+    so no clicking is needed.
+    """
     print(f"  Loading {url}")
     page.goto(url, wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT_MS)
     page.wait_for_timeout(PAGE_SETTLE_MS)
-
-    # Each outlet has a collapsed Details panel and a collapsed Terms panel.
-    details_buttons = page.query_selector_all("text=Details") + page.query_selector_all(
-        "button[id^='collapsible_panel_']:has-text('Terms and Conditions')"
-    )
-    print(f"  Expanding {len(details_buttons)} sections...")
-    failed_clicks = 0
-    for btn in details_buttons:
-        try:
-            btn.click()
-            page.wait_for_timeout(DETAILS_CLICK_SETTLE_MS)
-        except PlaywrightError as exc:
-            failed_clicks += 1
-            print(f"  WARNING: could not expand a Details section: {exc}")
-    if failed_clicks:
-        print(f"  WARNING: {failed_clicks}/{len(details_buttons)} Details sections stayed collapsed")
-    page.wait_for_timeout(DETAILS_EXPAND_SETTLE_MS)
-    return page.inner_text("body")
+    return page_text_from_dom(page.evaluate(DOM_TEXT_JS))
 
 
 # ─── Parsing: Restaurants ──────────────────────────────────────────────────────
@@ -697,6 +702,19 @@ def geocode_all(records: list[dict], skip: bool = False) -> list[dict]:
     return records
 
 
+# ─── Shrink guard ─────────────────────────────────────────────────────────────
+
+def check_record_retention(new_count: int, previous_count: int) -> None:
+    """Fail loudly when a refresh drops most of the previously published records."""
+    minimum = int(previous_count * MIN_RECORD_RETENTION)
+    if new_count < minimum:
+        raise SystemExit(
+            f"Refusing to write: scrape found {new_count} records, previous file has "
+            f"{previous_count} (minimum {minimum}). Likely a page layout change or "
+            "partial load; inspect the source pages and the parser."
+        )
+
+
 # ─── Diff ─────────────────────────────────────────────────────────────────────
 
 def run_diff(new_records: list[dict]) -> None:
@@ -769,8 +787,8 @@ def main() -> None:
         ctx = browser.new_context(**CONTEXT_OPTS)
         page = ctx.new_page()
 
-        rest_text = load_and_expand(page, RESTAURANTS_URL)
-        hotel_text = load_and_expand(page, HOTELS_URL)
+        rest_text = load_listing_text(page, RESTAURANTS_URL)
+        hotel_text = load_listing_text(page, HOTELS_URL)
         browser.close()
 
     print("\nParsing restaurants...")
@@ -800,6 +818,11 @@ def main() -> None:
     if args.diff:
         run_diff(all_records)
         return
+
+    if OUTPUT_PATH.exists():
+        check_record_retention(
+            len(all_records), len(json.loads(OUTPUT_PATH.read_text(encoding="utf-8")))
+        )
 
     all_records = preserve_existing_enrichment(all_records)
 

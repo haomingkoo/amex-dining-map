@@ -173,3 +173,24 @@ GET AN AMERICAN EXPRESS CARD"""
 
     with pytest.raises(ValueError, match="terms text missing for Crossroads Bar"):
         MODULE.parse_hotels(page)
+
+
+def test_refresh_that_drops_most_records_is_refused():
+    with pytest.raises(SystemExit, match="Refusing to write: scrape found 9 records, previous file has 77"):
+        MODULE.check_record_retention(9, 77)
+
+
+def test_refresh_at_the_retention_floor_is_allowed():
+    previous = 77
+    floor = int(previous * MODULE.MIN_RECORD_RETENTION)
+
+    MODULE.check_record_retention(floor, previous)
+    MODULE.check_record_retention(previous + 5, previous)
+    with pytest.raises(SystemExit):
+        MODULE.check_record_retention(floor - 1, previous)
+
+
+def test_dom_text_collapses_blank_lines_between_nodes():
+    raw = "Gupshup\n      \n   Details\n\n\nAddress:\xa0\n  1 Road"
+
+    assert MODULE.page_text_from_dom(raw) == "Gupshup\nDetails\nAddress:\n1 Road"
