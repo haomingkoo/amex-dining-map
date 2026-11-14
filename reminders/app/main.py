@@ -373,4 +373,6 @@ def healthz() -> dict[str, Any]:
         response["ok"] = response["tft_live"]["status"] == "success"
     if loop_failures:
         response["ok"] = False
+    if response["tft_slot_history"].get("status") == "failing":
+        response["ok"] = False
     return response
