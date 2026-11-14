@@ -26,7 +26,7 @@ def test_email_lists_a_capped_number_of_dates_then_counts_the_rest():
     text = message.get_body(("plain",)).get_content()
 
     assert text.count("- VUE:") == alerts.EMAIL_DATES_SHOWN
-    assert f"and {len(days) - alerts.EMAIL_DATES_SHOWN} more" in text
+    assert f"+{len(days) - alerts.EMAIL_DATES_SHOWN} more: https://site/#/table-for-two" in text
     assert "Sun, 1 Nov" in text
 
 
@@ -65,3 +65,27 @@ def test_one_click_unsubscribe_header_is_on_by_default(monkeypatch):
     )
 
     assert message["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
+
+
+def test_email_headline_counts_dates_lists_five_and_links_the_rest():
+    days = [f"2026-11-{day:02d}" for day in range(1, 13)]
+    site = "https://amex-explorer.kooexperience.com/#/table-for-two"
+    message = alerts.build_email(subscription(), [slot("VUE", d, "19:00") for d in days], "s@example.com", site)
+    text = message.get_body(("plain",)).get_content()
+    html_body = message.get_body(("html",)).get_content()
+
+    assert "Tables for 2 just opened: 12 dates across 1 venue you asked about." in text
+    assert text.count("- VUE:") == alerts.EMAIL_DATES_SHOWN == 5
+    assert f"+7 more: {site}" in text
+    assert "+7 more" in html_body and f'href="{site}"' in html_body
+    assert "and 7 more" not in text
+
+
+def test_subject_stays_one_short_line_for_long_venue_names():
+    long_a, long_b = "A" * 40, "B" * 40
+    two = alerts.alert_subject([slot(long_a, "d", "t"), slot(long_b, "d", "t")])
+    one = alerts.alert_subject([slot("C" * 90, "d", "t")])
+
+    assert two == "Table for Two: 2 venues have tables open"
+    assert len(one) <= alerts.SUBJECT_MAX_LENGTH == 78
+    assert "\n" not in one and one.startswith("Table for Two: ")

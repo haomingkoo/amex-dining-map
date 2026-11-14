@@ -22,6 +22,8 @@ MAX_SPECIFIC_DATES = 10
 MAX_SCAN_BATCH = 1_000
 MAX_CLAIMS_PER_RUN = 2
 MAX_NOTIFICATION_SLOTS = 8
+# Dates listed in the alert before "+N more dates"; the link below lists them all.
+MAX_NOTIFICATION_DATES = 5
 REMINDER_ID_RE = re.compile(r"R[0-9A-F]{6}")
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
@@ -953,14 +955,14 @@ def claim_notifications(
         for item in matches:
             by_day.setdefault(item["date"], []).append(item["time"])
         lines = []
-        for slot_date, times in list(by_day.items())[:MAX_NOTIFICATION_SLOTS]:
+        for slot_date, times in list(by_day.items())[:MAX_NOTIFICATION_DATES]:
             span = tft_slots.clock(min(times))
             if len(times) > 1:
                 span += f"–{tft_slots.clock(max(times))}"
             day = tft_slots._day(date.fromisoformat(slot_date))
             lines.append(f"• {day}: {span} ({len(times)} time{'s' if len(times) > 1 else ''})")
-        if len(by_day) > MAX_NOTIFICATION_SLOTS:
-            lines.append(f"• {len(by_day) - MAX_NOTIFICATION_SLOTS} more dates")
+        if len(by_day) > MAX_NOTIFICATION_DATES:
+            lines.append(f"+{len(by_day) - MAX_NOTIFICATION_DATES} more dates")
         first = next(iter(by_day))
         label = row["venue_name"]
         booking = ""
@@ -977,7 +979,7 @@ def claim_notifications(
             url = tft_guide.centurion_booking_url(venue_record)
             booking = f"Centurion booking page: {url}\n" if url else ""
         text = (
-            f"🔔 {label} has {str(row['meal']).lower()} open\n"
+            f"🔔 {label} has {str(row['meal']).lower()} open on {len(by_day)} date{'s' if len(by_day) > 1 else ''}\n"
             + "\n".join(lines)
             + f"\n\nTables go fast. Last checked {checked}. {tft_slots.SOURCE_NOTE}\n"
             + booking

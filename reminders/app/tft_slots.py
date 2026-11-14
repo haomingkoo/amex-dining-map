@@ -15,7 +15,7 @@ STALE_AFTER = timedelta(minutes=30)
 # Releases land about 53-61 days ahead, so lookups must reach that far.
 MAX_RANGE_DAYS = 62
 WEEKEND_RANGE_DAYS = MAX_RANGE_DAYS
-MAX_RESULTS = 8
+MAX_RESULTS = 5
 PREFERRED_TIME_WINDOW_MINUTES = 60
 SGT = ZoneInfo("Asia/Singapore")
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
@@ -210,7 +210,7 @@ def _date_rows(
             items[0],
         ))
     if len(groups) > MAX_RESULTS:
-        rows.append(f"• {len(groups) - MAX_RESULTS} more dates")
+        rows.append(f"+{len(groups) - MAX_RESULTS} more dates")
     return rows
 
 
@@ -228,7 +228,7 @@ def _slot_rows(
             item,
         ))
     if len(matches) > MAX_RESULTS:
-        rows.append(f"• {len(matches) - MAX_RESULTS} more times")
+        rows.append(f"+{len(matches) - MAX_RESULTS} more times")
     return rows
 
 

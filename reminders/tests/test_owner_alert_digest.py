@@ -93,7 +93,7 @@ def test_published_batch_sends_exactly_one_message(owner_client, monkeypatch):
     assert {row["telegram_message_id"] for row in rows} == {501}
 
 
-def test_digest_groups_by_program_with_counts_and_shows_all_that_fit():
+def test_digest_groups_by_program_with_counts_and_caps_items():
     raw = [
         _program_event(i, PROGRAMS[0], "added", f"Sushi {i}") for i in range(4)
     ] + [
@@ -111,8 +111,9 @@ def test_digest_groups_by_program_with_counts_and_shows_all_that_fit():
     assert "Plat Stay · 1 added" in message
     japan = message.split("Japan Dining ·")[1].split("Plat Stay ·")[0]
     item_lines = [line for line in japan.splitlines() if line[:2] in {"+ ", "− ", "~ "}]
-    assert len(item_lines) == 9
-    assert "more" not in japan
+    assert len(item_lines) == 4
+    assert "+5 more" in japan
+    assert "+ Mandai" in message
     assert f"Explorer: {EXPLORER}/#/japan" in japan
     assert f"Explorer: {EXPLORER}/#/stays" in message
     assert "Before:" not in message
@@ -141,12 +142,11 @@ def test_digest_shares_budget_fairly_and_shows_every_kind():
     japan_items = [line for line in japan.splitlines() if line[:2] in {"+ ", "~ "}]
     global_items = [line for line in global_.splitlines() if line.startswith("− ")]
     assert abs(len(japan_items) - len(global_items)) <= 1
-    assert len(japan_items) >= 3
+    assert len(japan_items) + len(global_items) == 5
     assert japan_items[0].startswith("+ Japan venue 60")
     assert japan_items[1].startswith("~ Japan venue 0")
-    assert "~ Source: 863 → 865 records" in japan
-    assert f"…and {62 - len(japan_items)} more" in japan
-    assert f"…and {60 - len(global_items)} more" in global_
+    assert f"+{62 - len(japan_items)} more" in japan
+    assert f"+{60 - len(global_items)} more" in global_
 
 
 def test_digest_source_line_shows_numbers_and_hides_hashes():
@@ -198,7 +198,8 @@ def test_digest_collapses_bulk_identical_changes_into_one_warning():
     assert "more" not in japan
     global_ = message.split("Global Dining ·")[1].split("Japan Dining ·")[0]
     assert "⚠" not in global_
-    assert global_.count("~ Global") == 19
+    assert global_.count("~ Global") == 4
+    assert "+15 more" in global_
 
 
 def test_digest_keeps_venue_route_for_single_item_section():
@@ -526,15 +527,15 @@ def test_digest_golden_text_for_mixed_batch():
             "Amex Explorer · 25 updates",
             "",
             "Global Dining · 9 removed",
-            *(f"− Global venue {i}" for i in range(9)),
+            "− Global venue 0",
+            "− Global venue 1",
+            "+7 more",
             f"Explorer: {EXPLORER}/#/global",
             "",
             "Japan Dining · 2 added, 1 removed, 12 details updated",
             "+ Sushi Saito",
             "− Kanda",
-            "~ Japan venue 0: Address, Phone",
-            "+ Den",
-            *(f"~ Japan venue {i}: Listing" for i in range(1, 12)),
+            "+13 more",
             f"Explorer: {EXPLORER}/#/japan",
             "",
             "Love Dining · 1 source updated",
