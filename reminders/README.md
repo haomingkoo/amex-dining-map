@@ -90,8 +90,9 @@ event and sends one Telegram digest per batch: a total, then one section per
 program with per-kind counts, item lines and the program's Explorer link.
 Item lines are `+` added, `−` removed and `~` changed fields. Source lines show
 numeric before → after values and drop hash fields. Programs take turns adding
-items until the message reaches 3,900 characters. Each program shows one item of
-every kind first, and the rest become "…and N more". When 20 or more events in
+items until the digest shows 5 items (or reaches 3,900 characters). Each program
+shows one item of every kind first, and the rest become "+N more" above that
+program's Explorer link, which lists them all. When 20 or more events in
 one program change the same field set, they collapse into one warning line with
 two examples. A section holding a single venue keeps its `?venue=` link. Every
 claimed event shares the digest's outcome and Telegram message ID. Before this,

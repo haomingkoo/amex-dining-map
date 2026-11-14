@@ -23,7 +23,8 @@ SGT = ZoneInfo("Asia/Singapore")
 SEND_HOUR_SGT = 9
 DRAFT_TTL = timedelta(minutes=30)
 DISPATCH_INTERVAL_SECONDS = 600
-MAX_ROWS = 14
+# Dates listed before "+N more" and a link to the full list.
+MAX_ROWS = 5
 MAX_VENUES = 10
 logger = logging.getLogger("amex_reminders.delivery")
 last_dispatch: dict[str, Any] = {"at": None, "sent": 0, "dead": 0, "error": None}
@@ -197,7 +198,14 @@ def compose(
     if not grouped:
         return None
     local = now.astimezone(SGT)
-    lines = [f"Table for Two digest, {local:%a} {local.day} {local:%b}", "New since your last digest and still open now:", ""]
+    total = sum(len(dates) for dates in grouped.values())
+    lines = [
+        f"Table for Two digest, {local:%a} {local.day} {local:%b}: "
+        f"{total} new date{'' if total == 1 else 's'} open"
+        + (f" at {len(grouped)} venues" if len(grouped) > 1 else ""),
+        "New since your last digest and still open now:",
+        "",
+    ]
     shown = 0
     hidden = 0
     for venue_id in sorted(grouped, key=lambda key: str(names[key].get("name")).casefold()):
@@ -220,7 +228,8 @@ def compose(
             lines.extend(venue_lines)
             lines.append("")
     if hidden:
-        lines.append(f"And {hidden} more. /slots shows them all.")
+        only = next(iter(grouped)) if len(grouped) == 1 else None
+        lines.append(f"+{hidden} more: {tft_guide.explorer_url(venue_id=only)}")
         lines.append("")
     lines.append(f"Book in the Amex Experiences app. {STOP}")
     return "\n".join(lines)

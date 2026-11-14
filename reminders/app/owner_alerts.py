@@ -180,6 +180,8 @@ def _short(value: PublicValue, limit: int = 240) -> str:
 
 
 DIGEST_LIMIT = 3900
+# Items shown across the whole digest; every section still shows its counts and link.
+DIGEST_ITEMS = 5
 DIGEST_ITEM_WIDTH = 160
 BULK_THRESHOLD = 20
 KIND_ORDER = {"added": 0, "removed": 1}
@@ -333,17 +335,19 @@ def format_owner_digest(events: list[OwnerAlertEvent], explorer_base_url: str) -
                 lines.extend(unit_lines)
             hidden = count - sum(unit_count for _lines, unit_count in units[:visible])
             if hidden:
-                lines.append(f"…and {hidden} more")
+                lines.append(f"+{hidden} more")
             lines.append(link)
         return "\n".join(lines)
 
     message = render()
     if len(message) > DIGEST_LIMIT:
         return message[: DIGEST_LIMIT - 1].rstrip() + "…"
-    # Round-robin one unit per program until the budget is spent.
+    # Round-robin one unit per program until the item or length budget is spent.
     growing = [index for index, section in enumerate(sections) if section[1]]
-    while growing:
+    while growing and sum(shown) < DIGEST_ITEMS:
         for index in list(growing):
+            if sum(shown) >= DIGEST_ITEMS:
+                break
             shown[index] += 1
             candidate = render()
             if len(candidate) <= DIGEST_LIMIT:
