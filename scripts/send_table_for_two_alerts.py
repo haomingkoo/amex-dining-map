@@ -40,9 +40,11 @@ except ImportError:  # running as `python3 scripts/<file>.py`
 DEFAULT_DATA_PATH = "data/table-for-two.json"
 DEFAULT_SENT_LOG_PATH = "data/table-for-two-alert-sent.json"
 DEFAULT_SITE_URL = "https://amex-explorer.kooexperience.com/#/table-for-two"
-# Alert emails list this many dates, then "+N more"; each date row lists this many times.
-EMAIL_DATES_SHOWN = 8
+# Alert emails list this many dates, then "+N more" with the map link; each date row lists this many times.
+EMAIL_DATES_SHOWN = 5
 EMAIL_TIMES_SHOWN = 4
+# Longer subjects wrap or get cut in most inboxes.
+SUBJECT_MAX_LENGTH = 78
 ALERT_TIMEZONE = "Asia/Singapore"
 CSV_FETCH_TIMEOUT_SECONDS = 60
 UNSUBSCRIBE_COPY = "Stop Table for Two emails to this address:"
@@ -466,12 +468,19 @@ def times_text(times: list[str]) -> str:
 
 
 def alert_subject(slots: list[dict[str, Any]]) -> str:
-    venues = sorted({slot.get("venue_name") or "A venue" for slot in slots})
+    venues = sorted({" ".join(str(slot.get("venue_name") or "A venue").split()) for slot in slots})
+    counted = f"Table for Two: {len(venues)} venues have tables open"
     if len(venues) == 1:
-        return f"Table for Two: {venues[0]} has tables open"
+        subject = f"Table for Two: {venues[0]} has tables open"
+        if len(subject) <= SUBJECT_MAX_LENGTH:
+            return subject
+        room = SUBJECT_MAX_LENGTH - len("Table for Two: … has tables open")
+        return f"Table for Two: {venues[0][:room].rstrip()}… has tables open"
     if len(venues) == 2:
-        return f"Table for Two: {venues[0]} and {venues[1]} have tables open"
-    return f"Table for Two: {len(venues)} venues have tables open"
+        subject = f"Table for Two: {venues[0]} and {venues[1]} have tables open"
+        if len(subject) <= SUBJECT_MAX_LENGTH:
+            return subject
+    return counted
 
 
 def email_shell(title: str, body_html: str, unsubscribe_url: str = "") -> str:
@@ -526,7 +535,11 @@ def build_email(
     hidden = len(rows) - len(shown)
     centurion = subscription.tier == "centurion"
     card = " for Centurion card members" if centurion else ""
-    lead = f"Tables for {subscription.party_size}{card} just opened up at the venues you asked about."
+    dates, venues = len(rows), len({row[0] for row in rows})
+    lead = (
+        f"Tables for {subscription.party_size}{card} just opened: {dates} date{'' if dates == 1 else 's'} "
+        f"across {venues} venue{'' if venues == 1 else 's'} you asked about."
+    )
     note = (
         "Book on the Centurion booking page or in the Amex Experiences App. Tables go quickly, so check before you plan around it."
         if centurion
@@ -535,7 +548,7 @@ def build_email(
     text_rows = [f"- {venue}: {friendly_date(day)}, {meal}: {times_text(times)}" for venue, day, meal, times in shown]
     lines = [greeting, "", lead, "", *text_rows]
     if hidden:
-        lines.append(f"- and {hidden} more")
+        lines.append(f"+{hidden} more: {site_url}")
     lines.extend(["", note, "", f"See every time on the map: {site_url}"])
     if unsubscribe_url:
         lines.extend(["", UNSUBSCRIBE_COPY, unsubscribe_url])
@@ -547,7 +560,12 @@ def build_email(
         "</td></tr>"
         for venue, day, meal, times in shown
     )
-    more = f'<p style="margin:10px 0 0;font-size:14px;color:#5b6575">and {hidden} more</p>' if hidden else ""
+    more = (
+        f'<p style="margin:10px 0 0;font-size:14px;color:#5b6575">+{hidden} more. '
+        f'<a href="{html.escape(site_url)}" style="color:#0b1624">See them on the map</a></p>'
+        if hidden
+        else ""
+    )
     body = f"""<p style="margin:0 0 6px;font-size:15px">{html.escape(greeting)}</p>
 <p style="margin:0 0 14px;font-size:15px;line-height:1.5">{html.escape(lead)}</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">{html_rows}</table>{more}
