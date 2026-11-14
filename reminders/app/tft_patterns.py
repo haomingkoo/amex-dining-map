@@ -45,7 +45,7 @@ def record_snapshot(db_path: Path | str, snapshot: dict) -> None:
         at=datetime.now(timezone.utc).isoformat(),
         counts=counts,
         error=None,
-        status="degraded" if suspects else "ok",
+        status=tft_slot_history.hold_status(suspects, snapshot.get("generated_at")),
         suspect_venues=suspects,
     )
     with _cache_lock:

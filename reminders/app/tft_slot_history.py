@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS tft_slot_spans (
   opened_after TEXT,
   closed_at TEXT,
   closed_after TEXT,
-  close_reason TEXT CHECK(close_reason IN ('gone', 'expired'))
+  close_reason TEXT CHECK(close_reason IN ('gone', 'expired', 'removed'))
 );
 CREATE INDEX IF NOT EXISTS idx_tft_spans_open ON tft_slot_spans(venue_id, closed_at);
 CREATE INDEX IF NOT EXISTS idx_tft_spans_closed ON tft_slot_spans(closed_at);
@@ -67,6 +67,9 @@ SUSPECT_DROP_SHARE = 0.5
 # is applied. Until then the venue is skipped and named in /healthz.
 SUSPECT_CONFIRM_AFTER = timedelta(hours=6)
 SUSPECT_CONFIRM_CHECKS = 3
+# A hold still open past this could not confirm (the venue stopped reading fresh), so
+# /healthz fails instead of leaving the venue's history frozen.
+SUSPECT_ESCALATE_AFTER = 2 * SUSPECT_CONFIRM_AFTER
 MIN_LASTED_FOR_VERDICT = 5
 MIN_RETURNS_FOR_VERDICT = 10
 RETURN_BUCKET_SHARE = 0.35
@@ -74,6 +77,18 @@ DAYPARTS = (("night", 0, 6), ("morning", 6, 12), ("afternoon", 12, 18), ("evenin
 
 
 def init_db(conn: sqlite3.Connection) -> None:
+    row = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'tft_slot_spans'"
+    ).fetchone()
+    if row and "'removed'" not in row[0]:
+        # SQLite cannot alter a CHECK, so rebuild the table to allow the 'removed' reason.
+        conn.executescript(
+            "BEGIN; DROP INDEX IF EXISTS idx_tft_spans_open; DROP INDEX IF EXISTS idx_tft_spans_closed; "
+            "ALTER TABLE tft_slot_spans RENAME TO tft_slot_spans_old; "
+            + SCHEMA
+            + "INSERT INTO tft_slot_spans SELECT * FROM tft_slot_spans_old; "
+            "DROP TABLE tft_slot_spans_old; COMMIT;"
+        )
     conn.executescript(SCHEMA)
 
 
@@ -128,6 +143,9 @@ def record(conn: sqlite3.Connection, snapshot: dict) -> dict[str, int]:
             if not venue_id or _parse(venue.get("checked_at")) != checked:
                 continue
             _record_venue(conn, venue_id, _slot_keys(venue), checked, counts)
+        listed = {str(venue.get("id") or "") for venue in snapshot.get("venues") or []}
+        if listed:
+            _close_removed(conn, listed, stamp, counts)
         conn.execute(
             "DELETE FROM tft_slot_spans WHERE closed_at IS NOT NULL AND closed_at < ?",
             (_iso(checked - RETENTION),),
@@ -203,6 +221,29 @@ def _record_venue(
     )
 
 
+def _close_removed(conn: sqlite3.Connection, listed: set[str], stamp: str, counts: Counter) -> None:
+    """A venue missing from the snapshot is off the roster: close its spans and forget it."""
+    known = {
+        venue_id
+        for (venue_id,) in conn.execute(
+            "SELECT venue_id FROM tft_slot_checks UNION SELECT venue_id FROM tft_slot_suspects "
+            "UNION SELECT venue_id FROM tft_slot_spans WHERE closed_at IS NULL"
+        )
+    }
+    for venue_id in sorted(known - listed):
+        closed = conn.execute(
+            "UPDATE tft_slot_spans SET closed_at = ?, closed_after = "
+            "(SELECT last_checked_at FROM tft_slot_checks WHERE venue_id = ?), close_reason = 'removed' "
+            "WHERE venue_id = ? AND closed_at IS NULL",
+            (stamp, venue_id, venue_id),
+        ).rowcount
+        for table in ("tft_slot_checks", "tft_slot_cursor", "tft_slot_suspects"):
+            conn.execute(f"DELETE FROM {table} WHERE venue_id = ?", (venue_id,))
+        logger.warning("tft_slot_history removed venue=%s closed=%d", venue_id, closed)
+        if closed:
+            counts["removed"] += closed
+
+
 def _upcoming(keys: set[tuple[str, str, str]], checked: datetime) -> int:
     """Slots still ahead; ones whose time has passed vanish by expiry, not a bad read."""
     return sum(
@@ -258,6 +299,15 @@ def suspect_venues(conn: sqlite3.Connection) -> list[dict[str, Any]]:
             "SELECT venue_id, since, checks, vanished, open_count FROM tft_slot_suspects ORDER BY since, venue_id"
         )
     ]
+
+
+def hold_status(suspects: list[dict[str, Any]], generated_at: Any) -> str:
+    """ok, degraded while a venue is held, failing once a hold outlives confirmation."""
+    if not suspects:
+        return "ok"
+    now = _parse(generated_at) or datetime.now(timezone.utc)
+    oldest = min((_parse(item["since"]) or now) for item in suspects)
+    return "failing" if now - oldest >= SUSPECT_ESCALATE_AFTER else "degraded"
 
 
 def _daypart(moment: datetime) -> str:

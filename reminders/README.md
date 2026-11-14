@@ -222,6 +222,9 @@ committed first-seen history (`checked_after` bounds each sighting).
 most of its upcoming slots at once it is held back as a possible bad read: `status` turns
 `degraded` and `suspect_venues` names it with `since`. A drop still there after 6 hours and
 more than 3 checks is accepted as a sellout, and slots that opened meanwhile become baseline.
+A hold older than 12 hours (the venue stopped reading fresh, so it cannot confirm) sets `status`
+`failing` and top-level `ok` false. A venue that drops off the roster has its open spans closed
+as `removed` and restarts from a baseline if it returns.
 
 Public slot lookup reads one bounded Railway snapshot per card: `/api/tft/slots`
 for Platinum and `/api/tft/slots/centurion` for Centurion. The Centurion checker
