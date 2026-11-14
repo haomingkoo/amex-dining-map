@@ -915,6 +915,7 @@ const tableSummary = document.getElementById("table-summary");
 const mobileSummary = document.getElementById("mobile-summary");
 const resultsTableBody = document.getElementById("results-table-body");
 const mobileResultsList = document.getElementById("mobile-results-list");
+const mobileResultsMore = document.getElementById("mobile-results-more");
 
 const staysExplorer = document.getElementById("stays-explorer");
 const staysMapFilterShell = document.getElementById("stays-map-filter-shell");
@@ -961,6 +962,7 @@ const loveResultsText = document.getElementById("love-results-text");
 const loveFocusCard = document.getElementById("love-focus-card");
 const loveMobileSummary = document.getElementById("love-mobile-summary");
 const loveMobileResultsList = document.getElementById("love-mobile-results-list");
+const loveResultsMore = document.getElementById("love-results-more");
 const tableForTwoExplorer = document.getElementById("table-for-two-explorer");
 const tableForTwoSummaryStripText = document.getElementById("tft-summary-strip-text");
 const tableForTwoFreshnessContent = document.getElementById("tft-freshness-content");
@@ -983,6 +985,7 @@ const tableForTwoTimeFilter = document.getElementById("tft-time-filter");
 const tableForTwoDayFilter = document.getElementById("tft-day-filter");
 const tableForTwoResetFiltersBtn = document.getElementById("tft-reset-filters");
 const tableForTwoResultsList = document.getElementById("tft-results-list");
+const tableForTwoResultsMore = document.getElementById("tft-results-more");
 const tableForTwoResultsText = document.getElementById("tft-results-text");
 const tableForTwoFocusCard = document.getElementById("tft-focus-card");
 const tableForTwoAlertSignupPanel = document.getElementById("tft-alert-signup-panel");
@@ -3074,19 +3077,83 @@ function ensureMenuHistoryLoaded() {
   return menuHistoryRequest;
 }
 
-const UPDATES_PAGE_SIZE = 10;
-const updatesMoreButton = document.getElementById("updates-more");
-const updatesSecondaryMoreButton = document.getElementById("updates-secondary-more");
+// Long lists render in batches. Filters, search and the map always use the full set;
+// only the rendered list is capped, and the footer says how many exist.
+function listRangeLabel(shown, total, noun) {
+  const word = total === 1 ? noun[0] : noun[1];
+  const count = (value) => Number(value).toLocaleString("en-SG");
+  if (total === 1) return `Showing 1 ${word}`;
+  if (shown >= total) return `Showing all ${count(total)} ${word}`;
+  return `Showing 1–${count(shown)} of ${count(total)} ${word}`;
+}
+
+function listMoreLabel(remaining, pageSize) {
+  return `Show ${Math.min(pageSize, remaining).toLocaleString("en-SG")} more`;
+}
+
+// How many items to render: one batch after a filter change, the reader's place otherwise,
+// and always far enough to include the selected item.
+function listShownCount({ shown, pageSize, keyChanged, activeIndex }) {
+  const base = keyChanged || !shown ? pageSize : shown;
+  if (activeIndex < 0) return base;
+  return Math.max(base, Math.ceil((activeIndex + 1) / pageSize) * pageSize);
+}
+
+let listMoreId = 0;
+function renderListMore(footer, { shown, total, pageSize, noun, onMore }) {
+  if (!footer) return;
+  footer.hidden = total === 0;
+  footer.innerHTML = "";
+  if (total === 0) return;
+  listMoreId += 1;
+  const count = document.createElement("p");
+  count.className = "list-more-count";
+  count.id = `list-more-count-${listMoreId}`;
+  count.textContent = listRangeLabel(Math.min(shown, total), total, noun);
+  footer.appendChild(count);
+  const remaining = total - shown;
+  if (remaining <= 0) return;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "list-more-button";
+  button.textContent = listMoreLabel(remaining, pageSize);
+  button.setAttribute("aria-describedby", count.id);
+  button.addEventListener("click", onMore);
+  footer.appendChild(button);
+}
+
+// After "Show more", focus the first new item so keyboard and screen reader users continue from there.
+function focusRevealedItem(item) {
+  if (!item) return;
+  const target = item.matches("details") ? item.querySelector("summary") : item;
+  if (!target) return;
+  if (!target.hasAttribute("tabindex") && !target.matches("summary, a, button")) target.setAttribute("tabindex", "-1");
+  target.focus({ preventScroll: true });
+  const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  target.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
+}
+
+const UPDATES_PAGE_SIZE = 8;
+const updatesMoreFooter = document.getElementById("updates-more");
+const updatesSecondaryMoreFooter = document.getElementById("updates-secondary-more");
 const updatesCloseButton = document.getElementById("updates-close");
 
-// Render the first `shown` rows and say exactly how many older ones remain; nothing is cut silently.
-function renderUpdatePage(list, button, updates, shown) {
+// Render the first `shown` rows and say exactly how many exist; nothing is cut silently.
+function renderUpdatePage(list, footer, updates, shownKey, focusIndex = -1) {
+  const shown = Math.min(state[shownKey] || UPDATES_PAGE_SIZE, updates.length);
   list.innerHTML = "";
   updates.slice(0, shown).forEach((update) => list.appendChild(renderUpdateRow(update)));
-  if (!button) return;
-  const remaining = updates.length - shown;
-  button.hidden = remaining <= 0;
-  button.textContent = `Show ${Math.min(UPDATES_PAGE_SIZE, remaining)} more (${remaining} older)`;
+  renderListMore(footer, {
+    shown,
+    total: updates.length,
+    pageSize: UPDATES_PAGE_SIZE,
+    noun: ["change", "changes"],
+    onMore: () => {
+      state[shownKey] = shown + UPDATES_PAGE_SIZE;
+      renderUpdatePage(list, footer, updates, shownKey, shown);
+    },
+  });
+  if (focusIndex >= 0) focusRevealedItem(list.children[focusIndex]);
 }
 
 function renderUpdates() {
@@ -3096,16 +3163,12 @@ function renderUpdates() {
   state.updates = published;
   const primary = published.filter(isPrimaryPublicUpdate);
   const secondary = published.filter((update) => !isPrimaryPublicUpdate(update));
-  state.updatesPrimary = primary;
-  state.updatesPrimaryShown = Math.min(state.updatesPrimaryShown || UPDATES_PAGE_SIZE, Math.max(primary.length, UPDATES_PAGE_SIZE));
-  renderUpdatePage(updatesList, updatesMoreButton, primary, state.updatesPrimaryShown);
+  renderUpdatePage(updatesList, updatesMoreFooter, primary, "updatesPrimaryShown");
   if (updatesSecondary && updatesSecondaryList && updatesSecondaryCount) {
     updatesSecondary.hidden = secondary.length === 0;
     updatesSecondary.open = false;
     updatesSecondaryCount.textContent = String(secondary.length);
-    state.updatesSecondary = secondary;
-    state.updatesSecondaryShown = Math.min(state.updatesSecondaryShown || UPDATES_PAGE_SIZE, Math.max(secondary.length, UPDATES_PAGE_SIZE));
-    renderUpdatePage(updatesSecondaryList, updatesSecondaryMoreButton, secondary, state.updatesSecondaryShown);
+    renderUpdatePage(updatesSecondaryList, updatesSecondaryMoreFooter, secondary, "updatesSecondaryShown");
   }
   renderUpdatesShell();
 }
@@ -4485,17 +4548,17 @@ function renderTable() {
 const MOBILE_PAGE_SIZE = 50;
 let mobileCardPage = 1;
 
-function renderMobileCards(resetPage = true) {
+function renderMobileCards(resetPage = true, focusIndex = -1) {
   if (resetPage) mobileCardPage = 1;
   if (!state.filtered.length) {
     mobileResultsList.innerHTML =
       '<div class="empty-state"><p>No venues match these filters.</p><button type="button" class="ghost-btn" data-clear-filters="reset-filters">Clear filters</button></div>';
+    renderListMore(mobileResultsMore, { shown: 0, total: 0 });
     return;
   }
 
   const pageLimit = mobileCardPage * MOBILE_PAGE_SIZE;
   const visible = state.filtered.slice(0, pageLimit);
-  const remaining = state.filtered.length - visible.length;
 
   mobileResultsList.innerHTML = "";
   visible.forEach((record) => {
@@ -4603,15 +4666,19 @@ function renderMobileCards(resetPage = true) {
     mobileResultsList.appendChild(card);
   });
 
-  if (remaining > 0) {
-    const showMore = document.createElement("button");
-    showMore.className = "mobile-show-more";
-    showMore.textContent = `Show ${Math.min(MOBILE_PAGE_SIZE, remaining).toLocaleString()} more of ${remaining.toLocaleString()} remaining`;
-    showMore.addEventListener("click", () => {
+  renderListMore(mobileResultsMore, {
+    shown: visible.length,
+    total: state.filtered.length,
+    pageSize: MOBILE_PAGE_SIZE,
+    noun: ["venue", "venues"],
+    onMore: () => {
       mobileCardPage += 1;
-      renderMobileCards(false);
-    });
-    mobileResultsList.appendChild(showMore);
+      renderMobileCards(false, visible.length);
+    },
+  });
+  if (focusIndex >= 0) {
+    focusRevealedItem(mobileResultsList.children[focusIndex]);
+    return;
   }
 
   // Scroll active card into view after render
@@ -6595,6 +6662,15 @@ function filterTableForTwo() {
     if (residualSearch && !fuzzyMatchSearch(record.search_text || tableForTwoSearchText(record), residualSearch)) return false;
     return true;
   });
+  // A new search or filter starts the list again at one batch; a live refresh keeps the reader's place.
+  const listKey = JSON.stringify([search, category, tier, filters]);
+  state.tableForTwoShown = listShownCount({
+    shown: state.tableForTwoShown,
+    pageSize: TABLE_FOR_TWO_PAGE_SIZE,
+    keyChanged: listKey !== state.tableForTwoListKey,
+    activeIndex: -1,
+  });
+  state.tableForTwoListKey = listKey;
   const availabilityRank = { available: 0, no_seats: 1, stale: 2, unknown: 3 };
   state.tableForTwoFiltered.sort((a, b) => {
     const rankA = availabilityRank[tableForTwoAvailabilityKey(a, filters)] ?? 4;
@@ -7653,14 +7729,24 @@ function tableForTwoTelegramDeepLink(action, record, tier = "platinum") {
   return `https://t.me/${username}?start=${action}_${card}${record.id}`;
 }
 
-function renderTableForTwoList() {
+const TABLE_FOR_TWO_PAGE_SIZE = 10;
+
+function renderTableForTwoList(focusIndex = -1) {
   if (!state.tableForTwoFiltered.length) {
     tableForTwoResultsList.innerHTML = '<div class="empty-state"><p>No restaurants match these filters.</p><button type="button" class="ghost-btn" data-clear-filters="tft-reset-filters">Clear filters</button></div>';
+    renderListMore(tableForTwoResultsMore, { shown: 0, total: 0 });
     return;
   }
 
+  const shown = listShownCount({
+    shown: state.tableForTwoShown,
+    pageSize: TABLE_FOR_TWO_PAGE_SIZE,
+    keyChanged: false,
+    activeIndex: state.tableForTwoFiltered.findIndex((record) => record.id === state.tableForTwoActiveId),
+  });
+  state.tableForTwoShown = shown;
   tableForTwoResultsList.innerHTML = "";
-  state.tableForTwoFiltered.forEach((record) => {
+  state.tableForTwoFiltered.slice(0, shown).forEach((record) => {
     const card = document.createElement("article");
     card.className = `mobile-card tft-card${record.id === state.tableForTwoActiveId ? " active" : ""}`;
     const displayName = record.app_name || record.name;
@@ -7709,6 +7795,17 @@ function renderTableForTwoList() {
     });
     tableForTwoResultsList.appendChild(card);
   });
+  renderListMore(tableForTwoResultsMore, {
+    shown,
+    total: state.tableForTwoFiltered.length,
+    pageSize: TABLE_FOR_TWO_PAGE_SIZE,
+    noun: ["restaurant", "restaurants"],
+    onMore: () => {
+      state.tableForTwoShown = shown + TABLE_FOR_TWO_PAGE_SIZE;
+      renderTableForTwoList(shown);
+    },
+  });
+  if (focusIndex >= 0) focusRevealedItem(tableForTwoResultsList.children[focusIndex]);
 }
 
 function renderTableForTwoCard() {
@@ -8369,6 +8466,15 @@ function filterLoveDining() {
     return true;
   });
 
+  const listKey = JSON.stringify([search, type, cuisine, savings, order, applies, booking, location]);
+  state.loveDiningShown = listShownCount({
+    shown: state.loveDiningShown,
+    pageSize: LOVE_DINING_PAGE_SIZE,
+    keyChanged: listKey !== state.loveDiningListKey,
+    activeIndex: -1,
+  });
+  state.loveDiningListKey = listKey;
+
   const n = state.loveDiningFiltered.length;
   const total = state.loveDining.length;
   const cachedLabel = loveDiningCachedLabel();
@@ -8529,13 +8635,23 @@ function renderLoveDiningCard() {
   }
 }
 
-function renderLoveDiningMobileList() {
+const LOVE_DINING_PAGE_SIZE = 10;
+
+function renderLoveDiningMobileList(focusIndex = -1) {
   if (!state.loveDiningFiltered.length) {
     loveMobileResultsList.innerHTML = '<div class="empty-state"><p>No venues match these filters.</p><button type="button" class="ghost-btn" data-clear-filters="love-reset-filters">Clear filters</button></div>';
+    renderListMore(loveResultsMore, { shown: 0, total: 0 });
     return;
   }
+  const shown = listShownCount({
+    shown: state.loveDiningShown,
+    pageSize: LOVE_DINING_PAGE_SIZE,
+    keyChanged: false,
+    activeIndex: state.loveDiningFiltered.findIndex((record) => record.id === state.loveDiningActiveId),
+  });
+  state.loveDiningShown = shown;
   loveMobileResultsList.innerHTML = "";
-  state.loveDiningFiltered.forEach((record) => {
+  state.loveDiningFiltered.slice(0, shown).forEach((record) => {
     const card = document.createElement("article");
     card.className = `mobile-card${record.id === state.loveDiningActiveId ? " active" : ""}`;
     const benefit = loveDiningBenefitProfile(record);
@@ -8571,6 +8687,17 @@ function renderLoveDiningMobileList() {
     });
     loveMobileResultsList.appendChild(card);
   });
+  renderListMore(loveResultsMore, {
+    shown,
+    total: state.loveDiningFiltered.length,
+    pageSize: LOVE_DINING_PAGE_SIZE,
+    noun: ["venue", "venues"],
+    onMore: () => {
+      state.loveDiningShown = shown + LOVE_DINING_PAGE_SIZE;
+      renderLoveDiningMobileList(shown);
+    },
+  });
+  if (focusIndex >= 0) focusRevealedItem(loveMobileResultsList.children[focusIndex]);
 }
 
 function setLoveToolbarOpen(open) {
@@ -8964,16 +9091,6 @@ updatesMarkReadButton?.addEventListener("click", markUpdatesRead);
 updatesCloseButton?.addEventListener("click", () => {
   setUpdatesOpen(false);
   updatesTrigger?.focus();
-});
-
-updatesMoreButton?.addEventListener("click", () => {
-  state.updatesPrimaryShown += UPDATES_PAGE_SIZE;
-  renderUpdatePage(updatesList, updatesMoreButton, state.updatesPrimary || [], state.updatesPrimaryShown);
-});
-
-updatesSecondaryMoreButton?.addEventListener("click", () => {
-  state.updatesSecondaryShown += UPDATES_PAGE_SIZE;
-  renderUpdatePage(updatesSecondaryList, updatesSecondaryMoreButton, state.updatesSecondary || [], state.updatesSecondaryShown);
 });
 
 programLinks.forEach((link) => {

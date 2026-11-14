@@ -875,26 +875,61 @@ input,
   flex: 0 0 auto;
 }
 
-.updates-more {
-  display: block;
-  width: 100%;
-  min-height: 44px;
-  border: 0;
-  border-top: 1px solid var(--border);
-  background: transparent;
-  color: var(--gold);
-  font: inherit;
-  cursor: pointer;
-}
-
-.updates-more:hover {
-  background: var(--control-bg);
-}
-
-.updates-more:focus-visible,
 .updates-close:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: -2px;
+}
+
+/* Batched lists: a count line and one button for the next batch. Gold, since teal means bookable. */
+.list-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.list-more[hidden] {
+  display: none;
+}
+
+.list-more-count {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.list-more-button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--gold);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background-color 0.18s ease-out;
+}
+
+.list-more-button:hover {
+  background: var(--control-bg);
+}
+
+.list-more-button:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list-more-button {
+    transition: none;
+  }
 }
 
 .updates-mark-read {
@@ -5223,23 +5258,6 @@ h1, h2, h3 {
 }
 
 /* Mobile card list "show more" button */
-.mobile-show-more {
-  width: 100%;
-  padding: 13px;
-  background: transparent;
-  border: none;
-  border-top: 1px solid var(--border);
-  color: var(--teal);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.18s;
-}
-
-.mobile-show-more:hover {
-  background: var(--teal-surface-hover);
-}
-
 @media (max-width: 640px) {
   .intro-choices {
     grid-template-columns: 1fr;
