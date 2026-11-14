@@ -46,6 +46,13 @@ CREATE TABLE IF NOT EXISTS tft_slot_checks (
   venue_id TEXT PRIMARY KEY,
   last_checked_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS tft_slot_suspects (
+  venue_id TEXT PRIMARY KEY,
+  since TEXT NOT NULL,
+  checks INTEGER NOT NULL,
+  vanished INTEGER NOT NULL,
+  open_count INTEGER NOT NULL
+);
 CREATE TABLE IF NOT EXISTS tft_slot_history_meta (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
@@ -56,6 +63,10 @@ RETENTION = timedelta(days=180)
 # A venue losing this many open slots at once looks like a bad read, not bookings.
 SUSPECT_DROP_COUNT = 40
 SUSPECT_DROP_SHARE = 0.5
+# A bad read does not repeat for hours; a venue booking out does. Past this, the drop
+# is applied. Until then the venue is skipped and named in /healthz.
+SUSPECT_CONFIRM_AFTER = timedelta(hours=6)
+SUSPECT_CONFIRM_CHECKS = 3
 MIN_LASTED_FOR_VERDICT = 5
 MIN_RETURNS_FOR_VERDICT = 10
 RETURN_BUCKET_SHARE = 0.35
@@ -147,10 +158,11 @@ def _record_venue(
         )
     }
     vanished = set(open_rows) - current
-    if len(vanished) >= SUSPECT_DROP_COUNT and len(vanished) >= SUSPECT_DROP_SHARE * len(open_rows):
-        logger.warning("tft_slot_history skipped venue=%s reason=suspect_drop", venue_id)
-        counts["skipped"] += 1
+    rebaseline = counts["confirmed_drop"]
+    if not _drop_accepted(conn, venue_id, open_rows, vanished, checked, counts):
         return
+    # Slots that opened while the venue was held back cannot be timed; record them as baseline.
+    rebaseline = counts["confirmed_drop"] > rebaseline
     max_dates = dict(
         conn.execute("SELECT meal, max_date FROM tft_slot_cursor WHERE venue_id = ?", (venue_id,))
     )
@@ -163,7 +175,7 @@ def _record_venue(
         )
         counts[reason] += 1
     for meal, slot_date, slot_time in sorted(current - set(open_rows)):
-        if previous is None:
+        if previous is None or rebaseline:
             kind = "baseline"
         elif meal not in max_dates or slot_date > max_dates[meal]:
             kind = "new"
@@ -189,6 +201,63 @@ def _record_venue(
         "ON CONFLICT(venue_id) DO UPDATE SET last_checked_at = excluded.last_checked_at",
         (venue_id, stamp),
     )
+
+
+def _upcoming(keys: set[tuple[str, str, str]], checked: datetime) -> int:
+    """Slots still ahead; ones whose time has passed vanish by expiry, not a bad read."""
+    return sum(
+        1 for key in keys if (moment := _slot_moment(key[1], key[2])) is not None and moment > checked
+    )
+
+
+def _drop_accepted(
+    conn: sqlite3.Connection,
+    venue_id: str,
+    open_rows: dict[tuple[str, str, str], int],
+    vanished: set[tuple[str, str, str]],
+    checked: datetime,
+    counts: Counter,
+) -> bool:
+    """False while a mass drop is still unconfirmed; the venue is then recorded as suspect."""
+    stamp = _iso(checked)
+    gone, still_open = _upcoming(vanished, checked), _upcoming(set(open_rows), checked)
+    if gone < SUSPECT_DROP_COUNT or gone < SUSPECT_DROP_SHARE * still_open:
+        conn.execute("DELETE FROM tft_slot_suspects WHERE venue_id = ?", (venue_id,))
+        return True
+    conn.execute(
+        "INSERT INTO tft_slot_suspects(venue_id, since, checks, vanished, open_count) "
+        "VALUES (?, ?, 1, ?, ?) ON CONFLICT(venue_id) DO UPDATE SET "
+        "checks = checks + 1, vanished = excluded.vanished, open_count = excluded.open_count",
+        (venue_id, stamp, gone, still_open),
+    )
+    since, checks = conn.execute(
+        "SELECT since, checks FROM tft_slot_suspects WHERE venue_id = ?", (venue_id,)
+    ).fetchone()
+    started = _parse(since) or checked
+    if checks > SUSPECT_CONFIRM_CHECKS and checked - started >= SUSPECT_CONFIRM_AFTER:
+        logger.warning(
+            "tft_slot_history accepted venue=%s reason=suspect_drop_confirmed since=%s vanished=%d",
+            venue_id, since, gone,
+        )
+        conn.execute("DELETE FROM tft_slot_suspects WHERE venue_id = ?", (venue_id,))
+        counts["confirmed_drop"] += 1
+        return True
+    logger.warning(
+        "tft_slot_history skipped venue=%s reason=suspect_drop since=%s checks=%d vanished=%d open=%d",
+        venue_id, since, checks, gone, still_open,
+    )
+    counts["skipped"] += 1
+    return False
+
+
+def suspect_venues(conn: sqlite3.Connection) -> list[dict[str, Any]]:
+    """Venues whose history is held back by an unconfirmed mass drop."""
+    return [
+        {"venue_id": venue_id, "since": since, "checks": checks, "vanished": vanished, "open": open_count}
+        for venue_id, since, checks, vanished, open_count in conn.execute(
+            "SELECT venue_id, since, checks, vanished, open_count FROM tft_slot_suspects ORDER BY since, venue_id"
+        )
+    ]
 
 
 def _daypart(moment: datetime) -> str:

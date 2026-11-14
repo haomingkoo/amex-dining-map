@@ -20,7 +20,9 @@ SUMMARY_TTL_SECONDS = 60
 MAX_LINE = 200
 _cache_lock = threading.Lock()
 _cache: dict[str, Any] = {"at": 0.0, "path": None, "value": None}
-last_record: dict[str, Any] = {"at": None, "counts": None, "error": None}
+last_record: dict[str, Any] = {
+    "at": None, "counts": None, "error": None, "status": None, "suspect_venues": [],
+}
 
 
 def record_snapshot(db_path: Path | str, snapshot: dict) -> None:
@@ -30,13 +32,22 @@ def record_snapshot(db_path: Path | str, snapshot: dict) -> None:
         try:
             tft_slot_history.init_db(conn)
             counts = tft_slot_history.record(conn, snapshot)
+            suspects = tft_slot_history.suspect_venues(conn)
         finally:
             conn.close()
     except sqlite3.Error as exc:
         logger.error("tft_slot_history record failed error=%s", type(exc).__name__)
-        last_record.update(at=datetime.now(timezone.utc).isoformat(), error=type(exc).__name__)
+        last_record.update(
+            at=datetime.now(timezone.utc).isoformat(), error=type(exc).__name__, status="error"
+        )
         return
-    last_record.update(at=datetime.now(timezone.utc).isoformat(), counts=counts, error=None)
+    last_record.update(
+        at=datetime.now(timezone.utc).isoformat(),
+        counts=counts,
+        error=None,
+        status="degraded" if suspects else "ok",
+        suspect_venues=suspects,
+    )
     with _cache_lock:
         _cache["value"] = None
 
