@@ -875,26 +875,61 @@ input,
   flex: 0 0 auto;
 }
 
-.updates-more {
-  display: block;
-  width: 100%;
-  min-height: 44px;
-  border: 0;
-  border-top: 1px solid var(--border);
-  background: transparent;
-  color: var(--gold);
-  font: inherit;
-  cursor: pointer;
-}
-
-.updates-more:hover {
-  background: var(--control-bg);
-}
-
-.updates-more:focus-visible,
 .updates-close:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: -2px;
+}
+
+/* Batched lists: a count line and one button for the next batch. Gold, since teal means bookable. */
+.list-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.list-more[hidden] {
+  display: none;
+}
+
+.list-more-count {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.list-more-button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--gold);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background-color 0.18s ease-out;
+}
+
+.list-more-button:hover {
+  background: var(--control-bg);
+}
+
+.list-more-button:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list-more-button {
+    transition: none;
+  }
 }
 
 .updates-mark-read {
@@ -1082,6 +1117,31 @@ input,
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.update-menu-note {
+  margin: 0 0 6px;
+}
+
+.update-menu-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.update-menu-links a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--gold);
+  text-underline-offset: 3px;
+}
+
+.update-menu-links a:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
 }
 
 .update-links {
@@ -3899,7 +3959,8 @@ a.google-badge:hover {
 }
 
 .tft-menu-version-missing,
-.tft-menu-diff-note {
+.tft-menu-diff-note,
+.update-menu-note {
   color: var(--text-dim);
   font-size: 12px;
 }
@@ -3908,7 +3969,8 @@ a.google-badge:hover {
   margin: 6px 0 0;
 }
 
-.tft-menu-diff-label {
+.tft-menu-diff-label,
+.update-menu-label {
   margin: 8px 0 2px;
   color: var(--text-dim);
   font-size: 11px;
@@ -3917,7 +3979,8 @@ a.google-badge:hover {
   text-transform: uppercase;
 }
 
-.tft-menu-history ul {
+.tft-menu-history ul,
+.update-menu ul {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -3925,27 +3988,32 @@ a.google-badge:hover {
   line-height: 1.45;
 }
 
-.tft-menu-history ul li {
+.tft-menu-history ul li,
+.update-menu ul li {
   position: relative;
   padding: 2px 0 2px 16px;
 }
 
-.tft-menu-history ul li::before {
+.tft-menu-history ul li::before,
+.update-menu ul li::before {
   position: absolute;
   left: 0;
   font-weight: 700;
 }
 
-.tft-menu-history ul.is-added li::before {
+.tft-menu-history ul.is-added li::before,
+.update-menu ul.is-added li::before {
   content: "+";
   color: var(--green);
 }
 
-.tft-menu-history ul.is-removed li {
+.tft-menu-history ul.is-removed li,
+.update-menu ul.is-removed li {
   color: var(--text-secondary);
 }
 
-.tft-menu-history ul.is-removed li::before {
+.tft-menu-history ul.is-removed li::before,
+.update-menu ul.is-removed li::before {
   content: "\2212";
   color: var(--rose);
 }
@@ -5190,23 +5258,6 @@ h1, h2, h3 {
 }
 
 /* Mobile card list "show more" button */
-.mobile-show-more {
-  width: 100%;
-  padding: 13px;
-  background: transparent;
-  border: none;
-  border-top: 1px solid var(--border);
-  color: var(--teal);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.18s;
-}
-
-.mobile-show-more:hover {
-  background: var(--teal-surface-hover);
-}
-
 @media (max-width: 640px) {
   .intro-choices {
     grid-template-columns: 1fr;
