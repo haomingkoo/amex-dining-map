@@ -298,6 +298,14 @@ def public_record_fields(record: dict[str, Any]) -> dict[str, Any]:
     return fields
 
 
+MENU_FIELD_LABELS = {label for path, label in PUBLIC_RECORD_FIELDS.items() if path.startswith("menu_pdf")}
+
+
+def menu_versions(record: dict[str, Any]) -> set[str]:
+    menus = [record.get("menu_pdf"), *((record.get("menu_pdfs") or {}).values())]
+    return {menu["sha256"] for menu in menus if isinstance(menu, dict) and menu.get("sha256")}
+
+
 def public_field_changes(old_record: dict[str, Any], new_record: dict[str, Any]) -> list[dict[str, Any]]:
     changes: list[dict[str, Any]] = []
     seen_labels: set[str] = set()
@@ -503,6 +511,9 @@ def build_record_update_events(
         if stable_record_hash(old_record) == stable_record_hash(new_record):
             continue
         changes = public_field_changes(old_record, new_record)
+        if menu_versions(old_record) == menu_versions(new_record):
+            # Same menu bytes listed under another field is not a menu change.
+            changes = [change for change in changes if change["field"] not in MENU_FIELD_LABELS]
         if not changes:
             continue
         menu_change = any("menu" in change["field"].lower() for change in changes)

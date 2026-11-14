@@ -335,6 +335,32 @@ class SourceChangeUpdatesTest(unittest.TestCase):
         self.assertEqual(events[0]["changes"][0]["before"], "aaaaaaaaaaaa")
         self.assertEqual(events[0]["changes"][0]["after"], "bbbbbbbbbbbb")
 
+    def test_menu_alias_with_same_bytes_is_not_a_menu_update(self):
+        # Nov 2026: the Centurion menu also appeared under menu_pdf, same file and bytes.
+        # That published eight "Menu changed" entries for menus that had not changed.
+        centurion = {"status": "published", "filename": "Lerouy.pdf", "sha256": "a" * 64}
+        old = [{"id": "tft-lerouy", "name": "Lerouy", "menu_pdfs": {"centurion": dict(centurion)}}]
+        new = [{"id": "tft-lerouy", "name": "Lerouy", "menu_pdf": dict(centurion), "menu_pdfs": {"centurion": dict(centurion)}}]
+
+        events = MODULE.build_record_update_events(
+            "Table for Two", old, new, {"manual_review_required": False}, "2026-11-02T00:00:00Z"
+        )
+
+        self.assertEqual(events, [])
+
+    def test_menu_alias_change_keeps_other_field_changes(self):
+        centurion = {"status": "published", "filename": "Lerouy.pdf", "sha256": "a" * 64}
+        old = [{"id": "tft-lerouy", "name": "Lerouy", "address": "1 Old Rd", "menu_pdfs": {"centurion": dict(centurion)}}]
+        new = [{"id": "tft-lerouy", "name": "Lerouy", "address": "7 New Rd", "menu_pdf": dict(centurion), "menu_pdfs": {"centurion": dict(centurion)}}]
+
+        events = MODULE.build_record_update_events(
+            "Table for Two", old, new, {"manual_review_required": False}, "2026-11-02T00:00:00Z"
+        )
+
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["kind"], "details_updated")
+        self.assertEqual([change["field"] for change in events[0]["changes"]], ["Address"])
+
     def test_faq_review_does_not_withhold_simultaneous_venue_detail_update(self):
         old_meta = {
             "manual_review_required": False,
