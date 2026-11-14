@@ -11,7 +11,7 @@ const helpersStart = app.indexOf("const PUBLIC_UPDATE_KINDS");
 const helpersEnd = app.indexOf("\nfunction updateValueLabel", helpersStart);
 assert.ok(helpersStart >= 0 && helpersEnd > helpersStart, "public update helpers not found");
 
-const context = { Set, String, Boolean, Array };
+const context = { Set, String, Boolean, Array, Object };
 vm.runInNewContext(
   `${app.slice(helpersStart, helpersEnd)}
    this.isPublicDecisionUpdate = isPublicDecisionUpdate;
@@ -86,6 +86,7 @@ assert.deepEqual(JSON.parse(JSON.stringify(semanticMenuChanges)), [
   { field: "Main choices", before: "Cod", after: "Barramundi" },
 ]);
 
+// Menu entries with only file/version fields get no placeholder comparison; the row renders menu evidence instead.
 const fallbackMenuChanges = context.publicUpdateChanges({
   kind: "menu_updated",
   changes: [
@@ -93,11 +94,7 @@ const fallbackMenuChanges = context.publicUpdateChanges({
     { field: "Menu version", before: "abc123", after: "def456" },
   ],
 });
-assert.deepEqual(JSON.parse(JSON.stringify(fallbackMenuChanges)), [{
-  field: "Official menu",
-  before: "Previous reviewed menu",
-  after: "Updated reviewed menu",
-}]);
+assert.deepEqual(JSON.parse(JSON.stringify(fallbackMenuChanges)), []);
 
 assert.match(html, />What's new</);
 assert.match(html, /<h2 id="updates-history-title">Confirmed changes<\/h2>/);

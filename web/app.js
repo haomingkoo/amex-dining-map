@@ -2481,6 +2481,7 @@ async function ensureTableForTwoDataLoaded() {
       state.tableForTwoInsights = insights;
       state.telegramGuideConfig = telegramGuideConfig;
       state.tableForTwoMenuHistory = menuHistory;
+      state.menuHistoryLoaded = Boolean(menuHistory);
       refreshTableForTwoPatterns();
       tableForTwoVenues().forEach((record) => {
         record.search_text = tableForTwoSearchText(record);
@@ -2604,10 +2605,25 @@ const PUBLIC_UPDATE_KINDS = new Set([
   "faq_clause_modified",
 ]);
 
+// The same menu file newly listed under another field (Nov 2026) was published as "Menu changed".
+// Every "after" value was already there before, so nothing a reader can see changed.
+function isNoOpMenuUpdate(update) {
+  if (!String(update?.kind || "").startsWith("menu_")) return false;
+  const MENU_UPDATE_FIELD = /menu (file|version)$/i;
+  const changes = Array.isArray(update.changes) ? update.changes : [];
+  if (!changes.length || !changes.every((change) => MENU_UPDATE_FIELD.test(String(change?.field || "")))) return false;
+  const beforeFields = update.before?.fields || {};
+  const beforeValues = new Set(
+    Object.keys(beforeFields).filter((field) => MENU_UPDATE_FIELD.test(field)).map((field) => beforeFields[field]),
+  );
+  return changes.every((change) => !change.after || beforeValues.has(change.after));
+}
+
 function isPublicDecisionUpdate(update) {
   return Boolean(update)
     && update.status === "published"
-    && PUBLIC_UPDATE_KINDS.has(String(update.kind || ""));
+    && PUBLIC_UPDATE_KINDS.has(String(update.kind || ""))
+    && !isNoOpMenuUpdate(update);
 }
 
 // A published correction retracts the events it lists in `corrects`.
@@ -2663,15 +2679,67 @@ function isTechnicalUpdateField(field) {
 function publicUpdateChanges(update) {
   const changes = (Array.isArray(update?.changes) ? update.changes : [])
     .filter((change) => change && !isTechnicalUpdateField(change.field));
-  if (changes.length) return changes;
-  if (String(update?.kind || "").startsWith("menu_")) {
-    return [{
-      field: "Official menu",
-      before: "Previous reviewed menu",
-      after: "Updated reviewed menu",
-    }];
+  return changes;
+}
+
+// Menu entries carry only file names and short version hashes; the saved history holds the PDFs and dish lists.
+function menuUpdateVersions(update) {
+  const change = (Array.isArray(update?.changes) ? update.changes : [])
+    .find((entry) => /menu version$/i.test(String(entry?.field || "")));
+  const hash = (value) => (/^[0-9a-f]{12,64}$/i.test(String(value || "")) ? String(value).toLowerCase() : "");
+  return { before: hash(change?.before), after: hash(change?.after) };
+}
+
+function findMenuHistoryVersion(history, prefix) {
+  if (!prefix) return null;
+  for (const tiers of Object.values(history?.venues || {})) {
+    for (const versions of Object.values(tiers || {})) {
+      if (!Array.isArray(versions)) continue;
+      const index = versions.findIndex((version) => String(version?.sha256 || "").startsWith(prefix));
+      if (index >= 0) return { version: versions[index], previous: versions[index - 1] || null };
+    }
   }
-  return [];
+  return null;
+}
+
+function menuUpdateEvidenceHtml(update, history) {
+  const official = update?.source_url
+    ? `<a href="${escapeHtml(update.source_url)}" target="_blank" rel="noopener">Official menu ↗</a>`
+    : "";
+  const savedLink = (version, label) => (version?.archive_path
+    ? `<a href="../${escapeHtml(version.archive_path)}" target="_blank" rel="noopener">${label}</a>`
+    : "");
+  const note = (text) => `<p class="update-menu-note">${text}</p>`;
+  const links = (...items) => {
+    const present = items.filter(Boolean);
+    return present.length ? `<div class="update-menu-links">${present.join("")}</div>` : "";
+  };
+  if (!history) return note("Menu details could not be loaded.") + links(official);
+
+  const { before, after } = menuUpdateVersions(update);
+  const found = findMenuHistoryVersion(history, after);
+  if (!found) return note("This menu version was not saved, so its contents cannot be shown here.") + links(official);
+  const current = found.version;
+  const since = tableForTwoLongDate(current.first_seen);
+  const sinceText = since ? note(`In use since ${escapeHtml(since)}.`) : "";
+  if (!before) {
+    return note("First menu published for this card.") + sinceText + links(savedLink(current, "Menu PDF"), official);
+  }
+  const previous = findMenuHistoryVersion(history, before)?.version || null;
+  if (!previous) {
+    return note("The previous menu was not recorded, so the changes cannot be shown.") + sinceText
+      + links(savedLink(current, "New menu PDF"), official);
+  }
+  const pdfs = links(savedLink(previous, "Previous menu PDF"), savedLink(current, "New menu PDF"), official);
+  const diff = found.previous?.sha256 === previous.sha256 ? current.changes : null;
+  if (!diff) return note("The dish list could not be read from these PDFs. Compare the two saved menus.") + sinceText + pdfs;
+  if (!diff.added?.length && !diff.removed?.length) {
+    return note("Same dishes. Only the layout or wording changed.") + sinceText + pdfs;
+  }
+  const list = (label, lines, className) => (lines?.length
+    ? `<p class="update-menu-label">${label}</p><ul class="${className}">${lines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>`
+    : "");
+  return list("Added", diff.added, "is-added") + list("Removed", diff.removed, "is-removed") + sinceText + pdfs;
 }
 
 function publicUpdateSummary(updates) {
@@ -2953,7 +3021,8 @@ function renderUpdateRow(update) {
         </div>`
     )
     .join("");
-  const sourceLink = update.source_url
+  const isMenu = String(update.kind || "").startsWith("menu_");
+  const sourceLink = update.source_url && !isMenu
     ? `<a class="update-source-link" href="${escapeHtml(update.source_url)}" target="_blank" rel="noopener">Official source ↗</a>`
     : "";
   details.innerHTML = `
@@ -2966,14 +3035,43 @@ function renderUpdateRow(update) {
       <span class="update-expand" aria-hidden="true">+</span>
     </summary>
     <div class="update-detail">
-      <div class="update-comparison">${comparisons || '<div class="update-change"><span class="update-field">Change</span><div class="update-values"><span class="update-value">No public field comparison is available.</span></div></div>'}</div>
+      ${isMenu
+        ? `<div class="update-menu" data-menu-evidence>${state.menuHistoryLoaded ? menuUpdateEvidenceHtml(update, state.tableForTwoMenuHistory) : '<p class="update-menu-note">Loading menu details...</p>'}</div>`
+        : `<div class="update-comparison">${comparisons || '<div class="update-change"><span class="update-field">Change</span><div class="update-values"><span class="update-value">No public field comparison is available.</span></div></div>'}</div>`}
       <div class="update-links">
         <a class="update-route-link" href="${escapeHtml(update.route || "#/dining/world")}">View in explorer</a>
         ${sourceLink}
       </div>
     </div>`;
   details.querySelector(".update-route-link")?.addEventListener("click", () => setUpdatesOpen(false));
+  if (isMenu && !state.menuHistoryLoaded) {
+    details.addEventListener("toggle", () => {
+      if (!details.open) return;
+      void ensureMenuHistoryLoaded().then((history) => {
+        const slot = details.querySelector("[data-menu-evidence]");
+        if (slot) slot.innerHTML = menuUpdateEvidenceHtml(update, history);
+      });
+    });
+  }
   return details;
+}
+
+// What's new can open a menu entry from any page, before the Table for Two data has loaded.
+let menuHistoryRequest = null;
+function ensureMenuHistoryLoaded() {
+  if (state.menuHistoryLoaded) return Promise.resolve(state.tableForTwoMenuHistory);
+  if (!menuHistoryRequest) {
+    menuHistoryRequest = fetchJson(TABLE_FOR_TWO_MENU_HISTORY_URL).then((history) => {
+      if (!history) {
+        menuHistoryRequest = null;
+        return null;
+      }
+      state.tableForTwoMenuHistory = history;
+      state.menuHistoryLoaded = true;
+      return history;
+    });
+  }
+  return menuHistoryRequest;
 }
 
 const UPDATES_PAGE_SIZE = 10;
