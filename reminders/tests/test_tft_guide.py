@@ -9,9 +9,10 @@ from pathlib import Path
 import pytest
 
 from app import tft_guide
+from tests.paths import REPO_ROOT
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = REPO_ROOT
 # Pinned reviewed snapshot: a pending live source review must not fail these tests.
 _FIXTURE = Path(__file__).parent / "fixtures" / "tft_guide_catalog-2026-09-24.json"
 _CATALOG = json.loads(_FIXTURE.read_text(encoding="utf-8"))
@@ -42,7 +43,10 @@ def _buffet_venue(catalog: dict) -> dict:
     )
 
 
-def test_generated_catalog_matches_current_tft_source():
+def test_generated_catalog_matches_current_tft_source(monkeypatch):
+    # The catalogue builder reads data/ relative to the working directory and imports its sibling scripts.
+    monkeypatch.chdir(ROOT)
+    monkeypatch.syspath_prepend(str(ROOT))
     module_path = ROOT / "scripts" / "build_tft_guide_catalog.py"
     spec = importlib.util.spec_from_file_location("build_tft_guide_catalog", module_path)
     module = importlib.util.module_from_spec(spec)
@@ -344,7 +348,10 @@ def test_release_help_uses_current_reviewed_source_context():
     assert "awaiting manual review" not in answer
 
 
-def test_release_projection_joins_by_stable_venue_id_not_display_name():
+def test_release_projection_joins_by_stable_venue_id_not_display_name(monkeypatch):
+    # The catalogue builder reads data/ relative to the working directory and imports its sibling scripts.
+    monkeypatch.chdir(ROOT)
+    monkeypatch.syspath_prepend(str(ROOT))
     module_path = ROOT / "scripts" / "build_tft_guide_catalog.py"
     spec = importlib.util.spec_from_file_location("build_tft_guide_catalog_join", module_path)
     module = importlib.util.module_from_spec(spec)

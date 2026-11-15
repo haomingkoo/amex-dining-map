@@ -4,14 +4,14 @@ import copy
 import importlib.util
 import json
 from datetime import datetime, timedelta
-from pathlib import Path
 
 import pytest
 
 from app import tft_documents, tft_guide
+from tests.paths import REPO_ROOT
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = REPO_ROOT
 _CATALOG = tft_guide.load_catalog()
 NOW = max(
     datetime.fromisoformat(value.replace("Z", "+00:00"))
@@ -123,7 +123,10 @@ def test_empty_and_unknown_commands_return_bounded_source_handoff():
     assert "Official FAQ:" in unknown
 
 
-def test_changed_unreviewed_faq_retains_reviewed_answer_with_warning():
+def test_changed_unreviewed_faq_retains_reviewed_answer_with_warning(monkeypatch):
+    # The catalogue builder reads data/ relative to the working directory and imports its sibling scripts.
+    monkeypatch.chdir(ROOT)
+    monkeypatch.syspath_prepend(str(ROOT))
     module_path = ROOT / "scripts" / "build_tft_guide_catalog.py"
     spec = importlib.util.spec_from_file_location("build_tft_guide_catalog_docs", module_path)
     module = importlib.util.module_from_spec(spec)

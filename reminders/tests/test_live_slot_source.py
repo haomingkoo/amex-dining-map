@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 from types import SimpleNamespace
 import json
 import threading
@@ -14,6 +13,7 @@ from fastapi.testclient import TestClient
 from app import main, telegram_reminder_dispatch, tft_guide, tft_live_refresh, tft_slot_source
 from app.main import app
 from app.telegram_bot_routes import get_settings
+from tests.paths import REPO_ROOT
 from tests.test_telegram_bot import (  # noqa: F401
     _enabled_reminder_settings,
     _seed_active_reminder,
@@ -282,7 +282,7 @@ def test_snapshot_with_extra_diningcity_meal_types_is_still_valid() -> None:
 
     from app import tft_slot_source
 
-    payload = json.loads((Path(__file__).resolve().parents[2] / "data" / "table-for-two-slots.json").read_text())
+    payload = json.loads((REPO_ROOT / "data" / "table-for-two-slots.json").read_text())
     venue = payload["venues"][0]
     venue["meals"] = list(venue.get("meals") or [])[:2] + [
         {"meal": "Afternoon Tea", "status": "available", "slots": []},
@@ -299,7 +299,7 @@ def test_snapshot_with_a_malicious_meal_name_is_rejected() -> None:
 
     from app import tft_slot_source
 
-    payload = json.loads((Path(__file__).resolve().parents[2] / "data" / "table-for-two-slots.json").read_text())
+    payload = json.loads((REPO_ROOT / "data" / "table-for-two-slots.json").read_text())
     payload["venues"][0]["meals"] = [{"meal": "<script>", "status": "available", "slots": []}]
 
     with pytest.raises(ValueError):
