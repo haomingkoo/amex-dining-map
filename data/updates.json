@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-13T20:24:05Z",
+  "updated_at": "2026-11-15T09:00:49Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-15T09:00:49Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3034/3041 (99.8%), 7 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3039/3041 (99.9%), 2 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3034/3041 (99.8%), 7 unavailable",
+          "after": "3039/3041 (99.9%), 2 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "be5dcdd584a9e4484c8e",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "b183fec006c26c22da4b"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -22786,46 +22819,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "removed",
-      "subject": "Olbrick / Darmstadt",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Olbrick",
-          "Country": "Germany",
-          "Region": "Darmstadt",
-          "City": "Darmstadt",
-          "Address": "Frankfurter Str. 67, Darmstadt, 64293, Germany",
-          "Cuisine": [
-            "Asian"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "1d1ef17fb386c7273b0d",
-      "stream_id": "1c77bf3db4b27cf1a996",
-      "occurrence": 1,
-      "id": "347db6f058444cd5ad3d",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23955,7 +23948,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "7a339f20c5aef648dad7",
+        "latest_transition_id": "be5dcdd584a9e4484c8e",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -23983,6 +23976,7 @@
           "a599d30da04bf2ead671": 1,
           "b5dbad0d11172040bbc4": 1,
           "bbce1c70e57b7284b369": 1,
+          "be5dcdd584a9e4484c8e": 1,
           "c014707b0b686ef76154": 1,
           "c1b5149f1109a0125456": 1,
           "cf7528ce578d3065a967": 1,
