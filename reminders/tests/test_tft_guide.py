@@ -43,7 +43,10 @@ def _buffet_venue(catalog: dict) -> dict:
     )
 
 
-def test_generated_catalog_matches_current_tft_source():
+def test_generated_catalog_matches_current_tft_source(monkeypatch):
+    # The catalogue builder reads data/ relative to the working directory and imports its sibling scripts.
+    monkeypatch.chdir(ROOT)
+    monkeypatch.syspath_prepend(str(ROOT))
     module_path = ROOT / "scripts" / "build_tft_guide_catalog.py"
     spec = importlib.util.spec_from_file_location("build_tft_guide_catalog", module_path)
     module = importlib.util.module_from_spec(spec)
@@ -345,7 +348,10 @@ def test_release_help_uses_current_reviewed_source_context():
     assert "awaiting manual review" not in answer
 
 
-def test_release_projection_joins_by_stable_venue_id_not_display_name():
+def test_release_projection_joins_by_stable_venue_id_not_display_name(monkeypatch):
+    # The catalogue builder reads data/ relative to the working directory and imports its sibling scripts.
+    monkeypatch.chdir(ROOT)
+    monkeypatch.syspath_prepend(str(ROOT))
     module_path = ROOT / "scripts" / "build_tft_guide_catalog.py"
     spec = importlib.util.spec_from_file_location("build_tft_guide_catalog_join", module_path)
     module = importlib.util.module_from_spec(spec)
