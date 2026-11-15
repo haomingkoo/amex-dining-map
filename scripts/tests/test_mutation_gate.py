@@ -155,10 +155,10 @@ def test_a_deleted_test_file_is_listed_as_changed(repo):
     assert gate.changed_files("main") == ["scripts/tests/test_scrape.py"]
 
 
-def test_deleting_a_test_file_mutates_the_modules_it_imported(repo):
+def test_deleting_a_test_file_ratchets_the_modules_it_imported(repo):
     (repo / "scripts/tests/test_helper_and_scrape.py").unlink()
     _commit(repo, "drop a test")
-    assert gate.sources_by_root(gate.changed_files("main"), "main") == {repo: ["scripts/helper.py", "scripts/scrape.py"]}
+    assert gate.plan(gate.changed_files("main"), "main") == {"strict": [], "ratchet": ["scripts/helper.py", "scripts/scrape.py"]}
 
 
 def test_a_deleted_test_is_read_as_it_was_where_the_branch_left_main(repo):
@@ -169,69 +169,204 @@ def test_a_deleted_test_is_read_as_it_was_where_the_branch_left_main(repo):
     _write(repo, {"reminders/tests/test_history.py": "from app import main\n"})
     _commit(repo, "main narrows the test")
     _git(repo, "checkout", "-q", "feature")
-    found = gate.sources_by_root(gate.changed_files("main"), "main")
-    assert found == {repo / "reminders": ["app/history.py", "app/main.py"]}
+    assert gate.plan(gate.changed_files("main"), "main")["ratchet"] == ["reminders/app/history.py", "reminders/app/main.py"]
 
 
-def test_a_changed_test_mutates_every_package_module_it_imports(repo):
-    _write(repo, {"reminders/tests/test_history.py": "from app import main, history\n\ndef test_x():\n    pass\n"})
-    _commit(repo, "edit a test")
-    assert gate.sources_by_root(gate.changed_files("main"), "main") == {repo / "reminders": ["app/history.py", "app/main.py"]}
+def test_a_changed_test_ratchets_what_it_imports_now_and_what_it_imported_before(repo):
+    # Dropping the history import must not take history out of scope.
+    _write(repo, {"reminders/tests/test_history.py": "from app import main\n"})
+    _commit(repo, "narrow a test")
+    assert gate.plan(gate.changed_files("main"), "main")["ratchet"] == ["reminders/app/history.py", "reminders/app/main.py"]
 
 
-def test_a_changed_source_is_mutated_and_a_deleted_source_is_not(repo):
-    _write(repo, {"scripts/scrape.py": "X = 1\n"})
+def test_a_changed_source_is_strict_and_leaves_the_ratchet(repo):
+    _write(repo, {"scripts/scrape.py": "X = 1\n", "scripts/tests/test_scrape.py": "from scripts import scrape\n# edited\n"})
     (repo / "scripts/helper.py").unlink()
     _commit(repo, "edit and delete sources")
-    assert gate.changed_files("main") == ["scripts/helper.py", "scripts/scrape.py"]
-    assert gate.sources_by_root(gate.changed_files("main"), "main") == {repo: ["scripts/scrape.py"]}
+    assert gate.changed_files("main") == ["scripts/helper.py", "scripts/scrape.py", "scripts/tests/test_scrape.py"]
+    assert gate.plan(gate.changed_files("main"), "main") == {"strict": ["scripts/scrape.py"], "ratchet": []}
 
 
 def test_files_outside_the_mutated_packages_do_not_trigger_the_gate(repo):
     _write(repo, {"README.md": "changed\n", "scripts/notes.txt": "x\n", "tools/other.py": "\n"})
     _commit(repo, "unrelated")
-    assert gate.sources_by_root(gate.changed_files("main"), "main") == {}
+    assert gate.plan(gate.changed_files("main"), "main") == {"strict": [], "ratchet": []}
 
 
-# ─── Per-module scores and the verdict ──────────────────────────────────────
+# ─── Scores ──────────────────────────────────────────────────────────────────
 
 KILLED, SURVIVED, NO_TESTS, SKIPPED, TIMEOUT = 1, 0, 33, 34, 36
 
 
-def _meta(root: Path, module: str, codes: list[int | None]) -> None:
-    path = root / "mutants" / f"{module}.meta"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps({"exit_code_by_key": {f"m{n}": code for n, code in enumerate(codes)}}), encoding="utf-8")
-
-
-def test_module_counts_come_from_mutmuts_own_status_names(tmp_path):
-    _meta(tmp_path, "pkg/a.py", [KILLED] * 3 + [TIMEOUT] + [SURVIVED] * 2 + [NO_TESTS] + [SKIPPED] + [None])
-    counts = gate.module_counts(tmp_path, "pkg/a.py")
-    assert counts == {"total": 9, "killed": 3, "timeout": 1, "survived": 2, "no_tests": 1, "skipped": 1, "not_checked": 1}
+def test_statuses_come_from_mutmuts_results_file(tmp_path):
+    path = tmp_path / "mutants" / "pkg" / "a.py.meta"
+    path.parent.mkdir(parents=True)
+    codes = {"m1": KILLED, "m2": TIMEOUT, "m3": SURVIVED, "m4": NO_TESTS, "m5": SKIPPED, "m6": None}
+    path.write_text(json.dumps({"exit_code_by_key": codes}), encoding="utf-8")
+    assert gate.statuses(tmp_path, "pkg/a.py") == {
+        "m1": "killed", "m2": "timeout", "m3": "survived", "m4": "no tests", "m5": "skipped", "m6": "not checked",
+    }
+    assert gate.statuses(tmp_path, "pkg/absent.py") == {}
 
 
 def test_score_counts_timeouts_as_detected_and_leaves_skipped_mutants_out():
-    counts = {"total": 9, "killed": 3, "timeout": 1, "survived": 2, "no_tests": 1, "skipped": 1, "not_checked": 1}
-    assert gate.score(counts) == 50.0
+    found = {"a": "killed", "b": "timeout", "c": "survived", "d": "no tests", "e": "skipped"}
+    assert gate.score(found) == 50.0
 
 
-def test_a_module_without_mutants_has_no_score(tmp_path):
-    assert gate.module_counts(tmp_path, "pkg/constants_only.py") is None
+# ─── The verdict ─────────────────────────────────────────────────────────────
+
+def _side(side, strict=(), ratchet=(), **modules):
+    """Results for one side; each keyword is a module name (dots for slashes) mapped to statuses or a state."""
+    entries = {}
+    for name, value in modules.items():
+        module = name.replace("__", "/") + ".py"
+        entries[module] = {"state": value, "statuses": {}} if isinstance(value, str) else {"state": "scored", "statuses": value}
+    return {"side": side, "plan": {"strict": list(strict), "ratchet": list(ratchet)}, "modules": entries}
 
 
-def test_each_module_must_reach_the_threshold_on_its_own():
+def _mutants(detected: int, survived: int) -> dict[str, str]:
+    return {f"m{n}": "killed" if n < detected else "survived" for n in range(detected + survived)}
+
+
+def test_each_changed_source_must_reach_the_threshold_on_its_own():
     # 95 of 100 and 4 of 10 average to 90% combined; the weak module still fails.
-    strong = {"total": 100, "killed": 95, "timeout": 0, "survived": 5, "no_tests": 0, "skipped": 0, "not_checked": 0}
-    weak = {"total": 10, "killed": 4, "timeout": 0, "survived": 6, "no_tests": 0, "skipped": 0, "not_checked": 0}
-    assert gate.failing_modules({"pkg/strong.py": strong, "pkg/weak.py": weak}, 80) == ["pkg/weak.py"]
+    head = _side("head", strict=["pkg/strong.py", "pkg/weak.py"], pkg__strong=_mutants(95, 5), pkg__weak=_mutants(4, 6))
+    ok, lines = gate.compare(head, None, 80)
+    assert not ok
+    assert "::error::mutation-gate: pkg/weak.py scores 40.0%, below 80%" in lines
+    assert not any("pkg/strong.py scores" in line for line in lines)
 
 
-def test_a_module_exactly_at_the_threshold_passes_and_one_just_below_fails():
-    at = {"total": 5, "killed": 4, "timeout": 0, "survived": 1, "no_tests": 0, "skipped": 0, "not_checked": 0}
-    below = {"total": 1000, "killed": 799, "timeout": 0, "survived": 201, "no_tests": 0, "skipped": 0, "not_checked": 0}
-    assert gate.failing_modules({"pkg/at.py": at, "pkg/below.py": below}, 80) == ["pkg/below.py"]
+def test_a_source_exactly_at_the_threshold_passes_and_one_just_below_fails():
+    head = _side("head", strict=["pkg/at.py"], pkg__at=_mutants(4, 1))
+    assert gate.compare(head, None, 80)[0]
+    head = _side("head", strict=["pkg/below.py"], pkg__below=_mutants(799, 201))
+    assert not gate.compare(head, None, 80)[0]
 
 
-def test_modules_without_mutants_or_without_tests_are_reported_separately():
-    clean = {"total": 2, "killed": 2, "timeout": 0, "survived": 0, "no_tests": 0, "skipped": 0, "not_checked": 0}
-    assert gate.failing_modules({"pkg/clean.py": clean, "pkg/empty.py": None}, 80) == []
+def test_a_changed_source_no_test_imports_fails():
+    ok, lines = gate.compare(_side("head", strict=["pkg/a.py"], pkg__a="untested"), None, 80)
+    assert not ok and lines == ["::error::mutation-gate: pkg/a.py: no test imports it; add tests that import it as a package module"]
+
+
+def test_a_ratchet_module_passes_below_the_threshold_when_nothing_was_lost():
+    # An old gap is not this pull request's to fix.
+    head = _side("head", ratchet=["pkg/old.py"], pkg__old=_mutants(3, 7))
+    base = _side("base", ratchet=["pkg/old.py"], pkg__old=_mutants(3, 7))
+    ok, lines = gate.compare(head, base, 80)
+    assert ok
+    assert lines[0] == (
+        "mutation-gate: pkg/old.py (tests changed): head 30.0% (killed 3, survived 7; 10 mutants); "
+        "base 30.0% (killed 3, survived 7; 10 mutants)"
+    )
+
+
+def test_a_mutant_the_base_tests_killed_that_now_survives_fails_even_if_the_score_holds():
+    base = {"m0": "killed", "m1": "survived", "m2": "killed"}
+    head = {"m0": "survived", "m1": "killed", "m2": "timeout"}
+    ok, lines = gate.compare(_side("head", ratchet=["pkg/a.py"], pkg__a=head), _side("base", ratchet=["pkg/a.py"], pkg__a=base), 80)
+    assert not ok
+    assert "::error::mutation-gate: pkg/a.py: 1 mutants the base tests detected now survive: m0" in lines
+    assert not any("score fell" in line for line in lines)
+
+
+def test_a_lower_ratchet_score_fails():
+    base = {"m0": "killed", "m1": "killed", "m2": "survived"}
+    head = {"m0": "killed", "m1": "no tests", "m2": "survived"}
+    ok, lines = gate.compare(_side("head", ratchet=["pkg/a.py"], pkg__a=head), _side("base", ratchet=["pkg/a.py"], pkg__a=base), 80)
+    assert not ok
+    assert "::error::mutation-gate: pkg/a.py: score fell from 66.7% to 33.3%" in lines
+
+
+def test_deleting_the_only_test_of_a_module_fails_the_ratchet():
+    base = _side("base", ratchet=["pkg/a.py"], pkg__a=_mutants(2, 0))
+    ok, lines = gate.compare(_side("head", ratchet=["pkg/a.py"], pkg__a="untested"), base, 80)
+    assert not ok
+    assert "::error::mutation-gate: pkg/a.py: score fell from 100.0% to 0.0%" in lines
+
+
+def test_a_module_the_base_tests_never_imported_cannot_regress():
+    head = _side("head", ratchet=["pkg/new.py"], pkg__new=_mutants(1, 1))
+    assert gate.compare(head, _side("base", ratchet=["pkg/new.py"], pkg__new="untested"), 80)[0]
+
+
+@pytest.mark.parametrize(
+    ("head_state", "base_state", "message"),
+    [
+        ("skipped", None, "pkg/a.py: head run skipped, out of budget"),
+        (None, "skipped", "pkg/a.py: base run skipped, out of budget"),
+        (None, "failed", "pkg/a.py: base run failed (mutmut could not run the base tests); see that job's log"),
+    ],
+)
+def test_a_side_that_did_not_finish_fails_loudly(head_state, base_state, message):
+    head = _side("head", ratchet=["pkg/a.py"], pkg__a=head_state or _mutants(1, 0))
+    base = _side("base", ratchet=["pkg/a.py"], pkg__a=base_state or _mutants(1, 0))
+    ok, lines = gate.compare(head, base, 80)
+    assert not ok and f"::error::mutation-gate: {message}" in lines
+
+
+def test_missing_results_fail_rather_than_pass():
+    assert gate.compare(None, None, 80) == (False, ["::error::mutation-gate: head results are missing; the head job failed or timed out"])
+    ok, lines = gate.compare(_side("head", ratchet=["pkg/a.py"], pkg__a=_mutants(1, 0)), None, 80)
+    assert not ok and lines == ["::error::mutation-gate: base results are missing; the base job failed or timed out"]
+
+
+def test_nothing_in_scope_skips():
+    assert gate.compare(_side("head"), None, 80) == (
+        True, ["mutation-gate: skipped, no Python source or test under scripts/ or reminders/ changed"],
+    )
+
+
+def test_mutating_different_code_on_each_side_is_an_error():
+    head = _side("head", ratchet=["pkg/a.py"], pkg__a={"m0": "killed"})
+    base = _side("base", ratchet=["pkg/a.py"], pkg__a={"m1": "killed"})
+    ok, lines = gate.compare(head, base, 80)
+    assert not ok and any("mutated different code" in line for line in lines)
+
+
+# ─── End to end with real mutmut: a weakened test fails, its revert passes ──
+
+CALC = "def is_adult(age):\n    return age >= 18\n\n\ndef double(x):\n    return x * 2\n"
+STRONG = (
+    "from scripts import calc\n\n\n"
+    "def test_double():\n    assert calc.double(3) == 6\n\n\n"
+    "def test_adult_boundary():\n    assert calc.is_adult(18)\n    assert not calc.is_adult(17)\n"
+)
+WEAK = STRONG.replace("    assert calc.is_adult(18)\n", "")
+
+
+def _verdict(repo_path: Path) -> tuple[bool, list[str]]:
+    head = gate.score_side("head", "main", 300)
+    base = gate.score_side("base", "main", 300)
+    assert (repo_path / "setup.cfg").read_text() == "[committed]\n", "the gate must restore the committed setup.cfg"
+    return gate.compare(head, base, 80)
+
+
+def test_weakening_a_test_fails_the_gate_and_reverting_it_passes(tmp_path, monkeypatch):
+    _git(tmp_path, "init", "-q", "-b", "main")
+    _git(tmp_path, "config", "user.email", "gate@example.test")
+    _git(tmp_path, "config", "user.name", "gate")
+    _write(tmp_path, {"scripts/calc.py": CALC, "scripts/tests/test_calc.py": STRONG, "setup.cfg": "[committed]\n"})
+    _commit(tmp_path, "base")
+    _git(tmp_path, "checkout", "-q", "-b", "feature")
+    monkeypatch.setattr(gate, "REPO", tmp_path)
+    monkeypatch.setattr(gate, "ROOTS", ((tmp_path, "scripts", "scripts/tests"),))
+
+    _write(tmp_path, {"scripts/tests/test_calc.py": WEAK})
+    _commit(tmp_path, "weaken the boundary test")
+    ok, lines = _verdict(tmp_path)
+    assert not ok, lines
+    lost = [line for line in lines if "the base tests detected now survive" in line]
+    assert len(lost) == 1 and "x_is_adult__mutmut_" in lost[0]
+
+    _git(tmp_path, "revert", "--no-edit", "HEAD")
+    ok, lines = _verdict(tmp_path)
+    # The revert leaves no test change versus main, so nothing is in scope.
+    assert ok and lines == ["mutation-gate: skipped, no Python source or test under scripts/ or reminders/ changed"]
+
+    _write(tmp_path, {"scripts/tests/test_calc.py": STRONG + "\n\ndef test_double_zero():\n    assert calc.double(0) == 0\n"})
+    _commit(tmp_path, "add a test")
+    ok, lines = _verdict(tmp_path)
+    assert ok, lines
+    assert lines[0].startswith("mutation-gate: scripts/calc.py (tests changed): head ") and lines[-1] == "mutation-gate: passed"

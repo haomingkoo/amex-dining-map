@@ -1,6 +1,7 @@
 name: Mutation tests
 
-# Not a required check yet. Fails when the tests miss too many mutants of the Python files a PR changed.
+# Not a required check yet. Changed source modules must each reach 80%; modules in scope
+# only because their tests changed must not lose mutants the base-branch tests detected.
 on:
   pull_request:
 
@@ -12,9 +13,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  mutation:
+  score:
+    name: score (${{ matrix.side }})
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # The gate stops itself at 35 minutes and records what it skipped; this is the backstop.
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        side: [head, base]
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -30,5 +37,36 @@ jobs:
       - name: Install test dependencies
         run: python3 -m pip install --disable-pip-version-check -r reminders/requirements-dev.txt
 
-      - name: Mutation-test changed Python files
-        run: python3 .github/scripts/mutation_gate.py --base "origin/${{ github.base_ref }}" --threshold 80
+      - name: Score the ${{ matrix.side }} side
+        run: >
+          python3 .github/scripts/mutation_gate.py --side ${{ matrix.side }}
+          --base "origin/${{ github.base_ref }}" --budget-minutes 35 --out mutation-${{ matrix.side }}.json
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mutation-${{ matrix.side }}
+          path: mutation-${{ matrix.side }}.json
+          if-no-files-found: ignore
+
+  mutation:
+    needs: score
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      # A side that failed or timed out leaves no file; the comparison then fails and says which.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: mutation-*
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: Compare head and base
+        run: python3 .github/scripts/mutation_gate.py --compare mutation-head.json mutation-base.json --threshold 80
