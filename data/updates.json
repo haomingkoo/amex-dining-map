@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-15T09:00:52Z",
+  "updated_at": "2026-11-15T17:16:41Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-11-15T17:16:41Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "30/30 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "28/30 (93.3%), 2 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "30/30 (100%), 0 unavailable",
+          "after": "28/30 (93.3%), 2 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "7955007d04085329c68d",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 3,
+      "id": "0df7eba391ee48ef30e3"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -22781,46 +22814,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "removed",
-      "subject": "JIM BLOCK / Berlin",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "JIM BLOCK",
-          "Country": "Germany",
-          "Region": "Berlin",
-          "City": "Berlin",
-          "Address": "Budapester Str. 42-50, Berlin, 10787, Germany",
-          "Cuisine": [
-            "Steakhouse"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "b53175c467f58ef4c9f7",
-      "stream_id": "f3418d88422d8d418981",
-      "occurrence": 1,
-      "id": "374b9b3332b2f1694513",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -25225,7 +25218,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "0b6df8958ccf7a11fd87",
+        "latest_transition_id": "7955007d04085329c68d",
         "occurrences": {
           "04d5cfacf701422a287e": 10,
           "093e9a40b7d75a526207": 5,
@@ -25243,7 +25236,7 @@
           "71b133a447e4d841e9e7": 1,
           "7534d4dfbcb2bb5568de": 2,
           "76601cc403e616114c7f": 11,
-          "7955007d04085329c68d": 2,
+          "7955007d04085329c68d": 3,
           "7a0c2ed47a14576abcae": 13,
           "8e8e8636075131043839": 1,
           "90f667bd502eaa1ed26c": 2,
