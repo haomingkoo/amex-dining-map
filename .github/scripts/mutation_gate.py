@@ -325,21 +325,28 @@ def compare(head: dict | None, base: dict | None, threshold: float) -> tuple[boo
             fail(f"{module}: no {side} result")
         return state in {"scored", "no_mutants", "untested"}
 
-    for module in scope["strict"]:
-        entry = head["modules"].get(module)
+    def absolute(module: str, entry: dict | None, why: str) -> None:
         if not usable(module, entry, "head"):
-            continue
+            return
         if entry["state"] == "untested":
             fail(f"{module}: no test imports it; add tests that import it as a package module")
         elif entry["state"] == "no_mutants":
             lines.append(f"mutation-gate: {module}: no mutants, nothing to score")
         else:
-            lines.append(f"mutation-gate: {module} (changed source): {_summary(entry['statuses'])}; threshold {threshold:.0f}%")
+            lines.append(f"mutation-gate: {module} ({why}): head {_summary(entry['statuses'])}; threshold {threshold:.0f}%")
             if score(entry["statuses"]) < threshold:
                 fail(f"{module} scores {score(entry['statuses']):.1f}%, below {threshold:.0f}%")
 
+    for module in scope["strict"]:
+        absolute(module, head["modules"].get(module), "changed source")
+
     for module in scope["ratchet"]:
         now, before = head["modules"].get(module), base["modules"].get(module)
+        if (before or {}).get("state") == "failed":
+            # Nothing to compare against, so the module has to clear the bar on its own.
+            lines.append(f"::warning::base unmeasurable (mutmut could not run the base tests), requiring head >= {threshold:.0f}%")
+            absolute(module, now, "tests changed, no baseline")
+            continue
         if not (usable(module, now, "head") & usable(module, before, "base")):
             continue
         head_found, base_found = now["statuses"], before["statuses"]

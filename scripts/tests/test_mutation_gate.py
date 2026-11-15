@@ -296,7 +296,6 @@ def test_a_module_the_base_tests_never_imported_cannot_regress():
     [
         ("skipped", None, "pkg/a.py: head run skipped, out of budget"),
         (None, "skipped", "pkg/a.py: base run skipped, out of budget"),
-        (None, "failed", "pkg/a.py: base run failed (mutmut could not run the base tests); see that job's log"),
     ],
 )
 def test_a_side_that_did_not_finish_fails_loudly(head_state, base_state, message):
@@ -305,6 +304,26 @@ def test_a_side_that_did_not_finish_fails_loudly(head_state, base_state, message
     ok, lines = gate.compare(head, base, 80)
     assert not ok and f"::error::mutation-gate: {message}" in lines
 
+
+
+def test_an_unmeasurable_base_falls_back_to_the_absolute_bar():
+    # main's tests could not run under mutmut, so there is nothing to compare against.
+    base = _side("base", ratchet=["pkg/a.py", "pkg/b.py"], pkg__a="failed", pkg__b="failed")
+    head = _side("head", ratchet=["pkg/a.py", "pkg/b.py"], pkg__a=_mutants(8, 2), pkg__b=_mutants(7, 3))
+    ok, lines = gate.compare(head, base, 80)
+    assert not ok
+    assert "::warning::base unmeasurable (mutmut could not run the base tests), requiring head >= 80%" in lines
+    assert "mutation-gate: pkg/a.py (tests changed, no baseline): head 80.0% (killed 8, survived 2; 10 mutants); threshold 80%" in lines
+    assert "::error::mutation-gate: pkg/b.py scores 70.0%, below 80%" in lines
+    assert not any("pkg/a.py scores" in line for line in lines)
+
+
+def test_an_unmeasurable_base_still_fails_when_the_head_did_not_finish():
+    base = _side("base", ratchet=["pkg/a.py"], pkg__a="failed")
+    ok, lines = gate.compare(_side("head", ratchet=["pkg/a.py"], pkg__a="skipped"), base, 80)
+    assert not ok and "::error::mutation-gate: pkg/a.py: head run skipped, out of budget" in lines
+    ok, lines = gate.compare(_side("head", ratchet=["pkg/a.py"], pkg__a="untested"), base, 80)
+    assert not ok and "::error::mutation-gate: pkg/a.py: no test imports it; add tests that import it as a package module" in lines
 
 def test_missing_results_fail_rather_than_pass():
     assert gate.compare(None, None, 80) == (False, ["::error::mutation-gate: head results are missing; the head job failed or timed out"])
