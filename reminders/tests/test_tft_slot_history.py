@@ -150,7 +150,7 @@ def test_drop_that_persists_is_accepted_as_a_sellout():
     tft_slot_history.record(conn, _snap(START, {"v": _many("2026-12-01")}))
     first = START + timedelta(minutes=10)
     moment = first
-    while moment - first < tft_slot_history.SUSPECT_CONFIRM_AFTER:
+    while moment - first < timedelta(hours=6):
         assert tft_slot_history.record(conn, _snap(moment, {"v": _many("2026-12-20")})) == {"skipped": 1}
         moment += timedelta(minutes=10)
     counts = tft_slot_history.record(conn, _snap(moment, {"v": _many("2026-12-20")}))
@@ -201,7 +201,7 @@ def test_hold_that_cannot_confirm_turns_health_failing(tmp_path, monkeypatch):
     held = START + timedelta(minutes=10)
     tft_patterns.record_snapshot(path, _snap(held, {"v": _many("2026-12-20")}))
     assert tft_patterns.last_record["status"] == "degraded"
-    later = held + tft_slot_history.SUSPECT_ESCALATE_AFTER + timedelta(minutes=10)
+    later = held + timedelta(hours=12, minutes=10)
     tft_patterns.record_snapshot(path, _snap(later, {"v": _many("2026-12-20")}, result="retained"))
     assert tft_patterns.last_record["status"] == "failing"
     assert tft_patterns.last_record["suspect_venues"][0]["since"] == _iso(held)
@@ -243,6 +243,32 @@ def test_existing_span_table_is_migrated_to_accept_removed():
     conn.execute("UPDATE tft_slot_spans SET closed_at = 'x', close_reason = 'removed'")
     indexes = {row[1] for row in conn.execute("PRAGMA index_list('tft_slot_spans')")}
     assert {"idx_tft_spans_open", "idx_tft_spans_closed"} <= indexes
+
+
+def _rebuild_statements(conn) -> list[str]:
+    seen: list[str] = []
+    conn.set_trace_callback(seen.append)
+    tft_slot_history.init_db(conn)
+    conn.set_trace_callback(None)
+    return [sql for sql in seen if "tft_slot_spans_old" in sql]
+
+
+def test_startup_rebuilds_the_span_table_once_and_never_on_a_migrated_schema(tmp_path):
+    path = tmp_path / "r.db"
+    legacy = sqlite3.connect(path)
+    legacy.executescript(tft_slot_history.SCHEMA.replace("'gone', 'expired', 'removed'", "'gone', 'expired'"))
+    legacy.close()
+
+    first = sqlite3.connect(path)
+    assert len(_rebuild_statements(first)) == 3  # rename, copy, drop
+    first.close()
+    for _ in range(2):  # each later startup opens the migrated file and must leave the table alone
+        conn = sqlite3.connect(path)
+        assert _rebuild_statements(conn) == []
+        conn.close()
+
+    fresh = sqlite3.connect(":memory:")
+    assert _rebuild_statements(fresh) == []
 
 
 def _span_rows(conn):
@@ -485,7 +511,7 @@ def test_two_venues_confirming_together_are_both_counted_and_a_third_still_sees_
     _hold(conn, {"a": _many("2026-12-01"), "c": _many("2026-12-02"), "b": kept}, START)
     first = START + timedelta(minutes=10)
     moment = first
-    while moment - first < tft_slot_history.SUSPECT_CONFIRM_AFTER:
+    while moment - first < timedelta(hours=6):
         _hold(conn, {"a": _many("2026-12-20"), "c": _many("2026-12-21"), "b": kept}, moment)
         moment += timedelta(minutes=10)
     with caplog.at_level("WARNING", logger="app.tft_slot_history"):
@@ -524,11 +550,11 @@ def test_venues_removed_together_add_up_and_are_logged(caplog):
 
 
 def test_hold_status_is_ok_without_holds_and_fails_once_a_hold_reaches_the_escalation_age():
-    since = [{"since": _iso(START)}]
-    limit = START + tft_slot_history.SUSPECT_ESCALATE_AFTER
-    assert tft_slot_history.hold_status([], _iso(START)) == "ok"
-    assert tft_slot_history.hold_status(since, _iso(limit - timedelta(seconds=1))) == "degraded"
-    assert tft_slot_history.hold_status(since, _iso(limit)) == "failing"
+    # A hold escalates 12 hours after it started: twice the 6-hour confirmation window.
+    since = [{"since": "2026-11-02T01:00:00Z"}]
+    assert tft_slot_history.hold_status([], "2026-11-02T01:00:00Z") == "ok"
+    assert tft_slot_history.hold_status(since, "2026-11-02T12:59:59Z") == "degraded"
+    assert tft_slot_history.hold_status(since, "2026-11-02T13:00:00Z") == "failing"
 
 
 def test_hold_status_without_a_snapshot_time_uses_the_clock():
