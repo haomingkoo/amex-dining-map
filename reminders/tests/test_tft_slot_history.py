@@ -487,6 +487,23 @@ def utc_host(monkeypatch):
     time.tzset()
 
 
+
+@pytest.fixture
+def singapore_host(monkeypatch):
+    monkeypatch.setenv("TZ", "Asia/Singapore")
+    time.tzset()
+    yield
+    monkeypatch.undo()
+    time.tzset()
+
+
+def test_stored_times_are_utc_on_a_singapore_host(singapore_host):
+    # CI runs on UTC, where converting to the host zone and to UTC look the same.
+    conn = _conn()
+    tft_slot_history.record(conn, _snap(START, {"v": [("2026-12-01", "12:00")]}))
+    assert conn.execute("SELECT opened_at FROM tft_slot_spans").fetchone() == ("2026-11-02T01:00:00Z",)
+    assert tft_slot_history.summary(conn, START)["started_at"] == "2026-11-02T01:00:00Z"
+
 def test_slot_times_are_singapore_time_on_a_utc_host(utc_host):
     conn = _conn()
     # 08:30 SGT is 00:30 UTC, before this 01:00 UTC check, so the slot expired.
