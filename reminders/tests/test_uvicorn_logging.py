@@ -3,10 +3,10 @@ from __future__ import annotations
 import json
 import logging
 import logging.config
-from pathlib import Path
+from tests.paths import REMINDERS
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = REMINDERS
 
 
 def test_uvicorn_info_uses_stdout_not_error_stream(capsys):

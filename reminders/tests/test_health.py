@@ -4,7 +4,6 @@ import asyncio
 from dataclasses import replace
 import hashlib
 import json
-from pathlib import Path
 import re
 import threading
 
@@ -14,6 +13,7 @@ import pytest
 from app.config import load_settings
 from app import main, tft_guide
 from app.main import app, bundle_revision
+from tests.paths import REPO_ROOT
 
 
 @pytest.fixture()
@@ -141,7 +141,7 @@ def test_app_lifespan_keeps_the_baked_catalogue_outside_a_deployment(monkeypatch
 
 def test_production_server_disables_query_string_access_logs():
     # The start command moved from reminders/railway.toml to the repo's .railway/railway.ts.
-    railway_config = (Path(__file__).parents[2] / ".railway" / "railway.ts").read_text()
+    railway_config = (REPO_ROOT / ".railway" / "railway.ts").read_text()
 
     assert "--no-access-log" in railway_config
 

@@ -4,14 +4,14 @@ import copy
 import importlib.util
 import json
 from datetime import datetime, timedelta
-from pathlib import Path
 
 import pytest
 
 from app import tft_documents, tft_guide
+from tests.paths import REPO_ROOT
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = REPO_ROOT
 _CATALOG = tft_guide.load_catalog()
 NOW = max(
     datetime.fromisoformat(value.replace("Z", "+00:00"))

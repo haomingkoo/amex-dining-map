@@ -9,9 +9,10 @@ from pathlib import Path
 import pytest
 
 from app import tft_guide
+from tests.paths import REPO_ROOT
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = REPO_ROOT
 # Pinned reviewed snapshot: a pending live source review must not fail these tests.
 _FIXTURE = Path(__file__).parent / "fixtures" / "tft_guide_catalog-2026-09-24.json"
 _CATALOG = json.loads(_FIXTURE.read_text(encoding="utf-8"))

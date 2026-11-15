@@ -3,14 +3,14 @@ from __future__ import annotations
 import copy
 import json
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
 import pytest
 
 from app import tft_guide, tft_slot_source, tft_slots
+from tests.paths import REPO_ROOT
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = REPO_ROOT
 NOW = datetime(2026, 8, 30, 3, 0, tzinfo=timezone.utc)
 
 
