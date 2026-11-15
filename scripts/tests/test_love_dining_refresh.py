@@ -454,6 +454,25 @@ def test_cli_flags(monkeypatch):
     assert all(vars(MODULE.parse_args()).values())
 
 
+
+def test_help_explains_the_public_flags_and_hides_the_refused_review_flags(monkeypatch, capsys):
+    monkeypatch.setenv("COLUMNS", "200")
+    monkeypatch.setattr(sys, "argv", ["scrape_love_dining.py", "--help"])
+    with pytest.raises(SystemExit):
+        MODULE.parse_args()
+    out = capsys.readouterr().out
+    assert "\n\nScrape Amex Love Dining Singapore\n" in out
+    words = " ".join(out.split())
+    for line in (
+        "--dry-run Scrape, print summary, don't write",
+        "--diff Show additions/removals vs existing file",
+        "--no-geocode Skip geocoding pass",
+        "--mark-records-reviewed Mark only the current official listing records as reviewed",
+    ):
+        assert line in words
+    # main() refuses these two, so --help must not offer them.
+    assert "--mark-reviewed" not in out and "--mark-terms-reviewed" not in out
+
 class _FakePage:
     def __init__(self, texts: dict[str, str], calls: list):
         self.texts, self.calls, self.url = texts, calls, ""
@@ -562,6 +581,9 @@ def test_refresh_writes_annotated_geocoded_records_and_meta(paths, monkeypatch, 
         ("close",),
     ]
     out = capsys.readouterr().out
+    assert out.startswith("Launching browser...\n")
+    assert "\nParsing restaurants...\n  → 2 restaurants\nParsing hotel outlets...\n  → 1 hotel outlets\n" in out
+    assert "\nGeocoding...\n" in out
     assert "Total: 3 venues" in out and "Geocoded: 1/3" in out
     assert f"  Loading {MODULE.RESTAURANTS_URL}\n  Loading {MODULE.HOTELS_URL}\n" in out
     assert f"Written → {paths.output}" in out and f"Written → {paths.meta}" in out
