@@ -93,6 +93,31 @@ def tests_for(root: Path, package: str, tests: str, module: str) -> list[str]:
     return selected
 
 
+def local_imports(root: Path, package: str, tests: str, selection: list[str]) -> list[str]:
+    """Top-level files and directories under root, besides the package and tests, that the tests import.
+
+    mutmut copies only the package and the tests into mutants/, so these are passed as also_copy.
+    """
+    skip = {package, tests.split("/")[0]}
+    found: set[str] = set()
+    for test in selection:
+        for node in ast.walk(ast.parse((root / test).read_text(encoding="utf-8"))):
+            if isinstance(node, ast.Import):
+                heads = [alias.name.split(".")[0] for alias in node.names]
+            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+                heads = [node.module.split(".")[0]]
+            else:
+                continue
+            for head in heads:
+                if head in skip:
+                    continue
+                if (root / head).is_dir():
+                    found.add(head)
+                elif (root / f"{head}.py").is_file():
+                    found.add(f"{head}.py")
+    return sorted(found)
+
+
 def sources_by_root(paths: list[str], base: str) -> dict[Path, list[str]]:
     """Modules to mutate: changed sources that still exist, and every module a changed or deleted test imports."""
     found: dict[Path, list[str]] = {}
@@ -156,6 +181,8 @@ def run_root(root: Path, package: str, tests: str, modules: list[str]) -> tuple[
     config = ["[mutmut]", f"source_paths={package}", "only_mutate="]
     config += [f"    {module}" for module in mutated]
     config += ["pytest_add_cli_args_test_selection="] + [f"    {test}" for test in selection]
+    if extra := local_imports(root, package, tests, selection):
+        config += ["also_copy="] + [f"    {path}" for path in extra]
     (root / "setup.cfg").write_text("\n".join(config) + "\n", encoding="utf-8")
     run = subprocess.run([sys.executable, "-m", "mutmut", "run"], cwd=root)
     subprocess.run([sys.executable, "-m", "mutmut", "results"], cwd=root, check=False)

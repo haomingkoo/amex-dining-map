@@ -97,6 +97,19 @@ def test_import_cycles_inside_the_package_terminate(tmp_path):
     assert gate.tests_for(tmp_path, "pkg", "pkg/tests", "pkg/beta.py") == ["pkg/tests/test_cycle.py"]
 
 
+
+def test_local_helpers_the_selected_tests_import_are_copied_for_mutmut(tmp_path):
+    # mutmut copies only the package and the tests; reminders tests also import evals/.
+    _write(tmp_path, {
+        **PACKAGE,
+        "evals/__init__.py": "",
+        "evals/harness.py": "",
+        "fixtures.py": "",
+        "pkg/tests/test_a.py": "from evals import harness\nimport fixtures\nfrom pkg import alpha\nfrom pkg.tests import helper\n",
+        "pkg/tests/test_b.py": "import json\nfrom evals.harness import run\n",
+    })
+    assert gate.local_imports(tmp_path, "pkg", "pkg/tests", ["pkg/tests/test_a.py", "pkg/tests/test_b.py"]) == ["evals", "fixtures.py"]
+
 # ─── Which modules a diff makes the gate mutate ─────────────────────────────
 
 def _git(repo: Path, *args: str) -> str:
