@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-15T17:46:53Z",
+  "updated_at": "2026-11-17T04:12:18Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_updated",
+      "subject": "Love Dining source",
+      "detected_at": "2026-11-17T04:12:18Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Restaurant T&C PDF hash": "3aa6aa3d06d8"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Restaurant T&C PDF hash": "f98af87da15f"
+        }
+      },
+      "changes": [
+        {
+          "field": "Restaurant T&C PDF hash",
+          "before": "3aa6aa3d06d8",
+          "after": "f98af87da15f"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "ecb94023ad6b612748ab",
+      "stream_id": "915d672147e8dd8f713f",
+      "occurrence": 1,
+      "id": "df11b50d04bb65a9ce02"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -2557,7 +2590,7 @@
       "kind": "source_updated",
       "subject": "Love Dining source",
       "detected_at": "2026-11-07T01:21:02Z",
-      "status": "review_required",
+      "status": "rejected",
       "before": {
         "state": "available",
         "fields": {
@@ -2595,7 +2628,9 @@
       "transition_id": "f0876657a6b857e5c6d9",
       "stream_id": "915d672147e8dd8f713f",
       "occurrence": 1,
-      "id": "718035ed468d37439aa1"
+      "id": "718035ed468d37439aa1",
+      "reviewed_at": "2026-11-17T04:12:18Z",
+      "review_note": "Superseded by df11b50d04bb65a9ce02 before review."
     },
     {
       "program": "Love Dining",
@@ -22776,46 +22811,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "removed",
-      "subject": "Roots Pizza - South Loop / Chicago",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Roots Pizza - South Loop",
-          "Country": "United States",
-          "Region": "Chicago",
-          "City": "Chicago",
-          "Address": "744 South Dearborn Street, Chicago, 60605, United States",
-          "Cuisine": [
-            "American"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "6eddfacc772b60371f30",
-      "stream_id": "667bab5873c286713778",
-      "occurrence": 1,
-      "id": "4cf82869ff6c1bc31c66",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -24218,12 +24213,13 @@
         }
       },
       "915d672147e8dd8f713f": {
-        "latest_transition_id": "f0876657a6b857e5c6d9",
+        "latest_transition_id": "ecb94023ad6b612748ab",
         "occurrences": {
           "3ff929d2fb97e0ab544e": 1,
           "529bca112c6849717caa": 1,
           "9f7b98008859486cd882": 1,
           "a6174dfe21f75adf647b": 1,
+          "ecb94023ad6b612748ab": 1,
           "f0876657a6b857e5c6d9": 1,
           "fb3ff7e67d787864ffe9": 1
         }
