@@ -599,3 +599,11 @@ Source: `data/japan-restaurants.json`
   - Estella / Karuizawa
   - GAJO / Osaka
   - Kogatei / Kamakura
+
+<!-- source-change:fbdedd67e090442d2bf47df1add6fc7f4a4d0d683fa0d7dc1651e34619410ae3 -->
+## 2026-11-18 02:48 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Sushi Yamamoto / Tokyo

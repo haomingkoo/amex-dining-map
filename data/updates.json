@@ -1,7 +1,213 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-17T04:12:18Z",
+  "updated_at": "2026-11-18T02:48:47Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-11-18T02:48:47Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "884/884 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "885/885 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "884/884 (100%), 0 unavailable",
+          "after": "885/885 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "292cf440ffcd6068a4bb",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "cf93e82af66ccc3af6ea"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-18T02:48:47Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 3,
+          "Coverage": "3039/3041 (99.9%), 2 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 4,
+          "Coverage": "3040/3042 (99.9%), 2 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 3,
+          "after": 4
+        },
+        {
+          "field": "Coverage",
+          "before": "3039/3041 (99.9%), 2 unavailable",
+          "after": "3040/3042 (99.9%), 2 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "c50d4e21c673f0eda07e",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "b21b5e4e02af70a6a501"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_stale",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-11-18T02:48:47Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Stale records": 0,
+          "Coverage": "774/884 (87.6%), 110 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Source state": "mixed_age",
+          "Freshness": "mixed_age",
+          "Stale records": 1,
+          "Coverage": "775/885 (87.6%), 110 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "current",
+          "after": "mixed_age"
+        },
+        {
+          "field": "Freshness",
+          "before": "current",
+          "after": "mixed_age"
+        },
+        {
+          "field": "Stale records",
+          "before": 0,
+          "after": 1
+        },
+        {
+          "field": "Coverage",
+          "before": "774/884 (87.6%), 110 unavailable",
+          "after": "775/885 (87.6%), 110 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "43641cc07fbb3ceb4846",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "4b412c4433f72f9d4a55"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-11-18T02:48:45Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 884,
+          "Mapped count": 884
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 885,
+          "Mapped count": 885
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 884,
+          "after": 885
+        },
+        {
+          "field": "Mapped count",
+          "before": 884,
+          "after": 885
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "1427ce486e6c391887fb",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "1ea1eaee6134549fe1bd"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Sushi Yamamoto / Tokyo",
+      "detected_at": "2026-11-18T02:48:45Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sushi Yamamoto",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Uehara",
+          "Address": "1F, 1-17-14, Uehara, Shibuya-ku, Tokyo",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/244904/",
+      "transition_id": "8952c264a230020c6675",
+      "stream_id": "71e74d5f7ca50c593e40",
+      "occurrence": 1,
+      "id": "060d6e91fb5dd1ce4370"
+    },
     {
       "program": "Love Dining",
       "program_id": "love-dining",
@@ -22602,215 +22808,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "removed",
-      "subject": "Tribeca Grill / New York",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Tribeca Grill",
-          "Country": "United States",
-          "Region": "New York",
-          "City": "New York",
-          "Address": "375 Greenwich Street, New York, 10013, United States",
-          "Cuisine": [
-            "New American"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "17a205ece5267fe41079",
-      "stream_id": "24d8dd9e97a131c5041b",
-      "occurrence": 1,
-      "id": "72bbe92e302558da52c6",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "removed",
-      "subject": "Loring Place / New York",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Loring Place",
-          "Country": "United States",
-          "Region": "New York",
-          "City": "New York",
-          "Address": "21 West 8th Street, New York, 10011, United States",
-          "Cuisine": [
-            "American"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "c1da0329d7867a554fe3",
-      "stream_id": "cebb4d8cb802a08e66d8",
-      "occurrence": 1,
-      "id": "6813a24987458322bebb",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "removed",
-      "subject": "Bentley Restaurant & Bar / New South Wales",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Bentley Restaurant & Bar",
-          "Country": "Australia",
-          "Region": "New South Wales",
-          "City": "New South Wales",
-          "Address": "27 O'Connell St, Sydney, New South Wales, 2000, Australia",
-          "Cuisine": [
-            "Australian"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "33c0ca8e5da72e57ab74",
-      "stream_id": "ce2891f29e1ac97e27ce",
-      "occurrence": 1,
-      "id": "6669707c5290ea24e525",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "removed",
-      "subject": "Mido / Paris",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Mido",
-          "Country": "France",
-          "Region": "Paris",
-          "City": "Paris",
-          "Address": "64 Avenue Marceau, Paris, 75008, France",
-          "Cuisine": [
-            "Fusion"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "c649251f3b61e9177829",
-      "stream_id": "2ad6e9da53a81d346c5e",
-      "occurrence": 1,
-      "id": "5d2c596a9027050d2c61",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "details_updated",
-      "subject": "JIM BLOCK / Berlin",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "JIM BLOCK",
-          "Country": "Germany",
-          "Region": "Berlin",
-          "City": "Berlin",
-          "Address": "Wilmersdorfer Str. 115 - 118, Berlin, 10627, Germany",
-          "Cuisine": [
-            "Steakhouse"
-          ]
-        }
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "JIM BLOCK",
-          "Country": "Germany",
-          "Region": "Berlin",
-          "City": "Berlin",
-          "Address": "Budapester Str. 42-50, Berlin, 10787, Germany",
-          "Cuisine": [
-            "Steakhouse"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Address",
-          "before": "Wilmersdorfer Str. 115 - 118, Berlin, 10627, Germany",
-          "after": "Budapester Str. 42-50, Berlin, 10787, Germany"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "a642c2c6acab760554b7",
-      "stream_id": "9448af30155f6c64355a",
-      "occurrence": 1,
-      "id": "534abe30773d78c73956",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23128,11 +23125,12 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "5563722b1a3f79feba9b",
+        "latest_transition_id": "43641cc07fbb3ceb4846",
         "occurrences": {
           "18bdc569ef02dcd73162": 1,
           "1f8ff4070cf35b4b4a5f": 2,
           "2988498f4c17e4f22ac3": 1,
+          "43641cc07fbb3ceb4846": 1,
           "5563722b1a3f79feba9b": 1,
           "60a7b0c988f7cd5a3e55": 1,
           "7b13a4aa17c3a8b51663": 1,
@@ -23153,9 +23151,10 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "0d2c70320c797e6dcd2f",
+        "latest_transition_id": "1427ce486e6c391887fb",
         "occurrences": {
           "0d2c70320c797e6dcd2f": 1,
+          "1427ce486e6c391887fb": 1,
           "16046de0225f04d3667c": 1,
           "2e38c0b153373c1aac9c": 1,
           "36c0c3c0c034ae3cd067": 1,
@@ -23412,10 +23411,11 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "5cf95be028ceef089944",
+        "latest_transition_id": "292cf440ffcd6068a4bb",
         "occurrences": {
           "023dbb9237dd583b8431": 1,
           "2895413af2cfdf788408": 1,
+          "292cf440ffcd6068a4bb": 1,
           "2c631570ffcb1ddf6ff0": 1,
           "5cf95be028ceef089944": 1,
           "77c84cfff3a88511a6cf": 1,
@@ -23921,6 +23921,12 @@
           "a9118101ccd9c8ee97ad": 1
         }
       },
+      "71e74d5f7ca50c593e40": {
+        "latest_transition_id": "8952c264a230020c6675",
+        "occurrences": {
+          "8952c264a230020c6675": 1
+        }
+      },
       "72c8eea4df6c82ceae58": {
         "latest_transition_id": "d30432941c15f16ac2ad",
         "occurrences": {
@@ -23940,7 +23946,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "be5dcdd584a9e4484c8e",
+        "latest_transition_id": "c50d4e21c673f0eda07e",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -23971,6 +23977,7 @@
           "be5dcdd584a9e4484c8e": 1,
           "c014707b0b686ef76154": 1,
           "c1b5149f1109a0125456": 1,
+          "c50d4e21c673f0eda07e": 1,
           "cf7528ce578d3065a967": 1,
           "d9636d4adea01248432e": 1,
           "e1dcf9fdd357385c42c3": 1
