@@ -168,3 +168,11 @@ Source: `data/love-dining.json`
   - Tablescape Restaurant & Bar / Singapore
   - Tajimaya Yakiniku / Singapore
   - ... and 18 more
+
+<!-- source-change:260410a7bbd83dffacce09baf6789ffb6a783cbdae3e44d3628f214fb3f6d6cb -->
+## 2026-11-18 03:11 UTC — Love Dining
+
+Source: `data/love-dining.json`
+
+- **Added (1)**
+  - Bacha Coffee / Singapore

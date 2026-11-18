@@ -1,7 +1,157 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-18T03:00:31Z",
+  "updated_at": "2026-11-18T03:11:00Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-18T03:11:00Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3039/3042 (99.9%), 3 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3040/3043 (99.9%), 3 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3039/3042 (99.9%), 3 unavailable",
+          "after": "3040/3043 (99.9%), 3 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "4c887f899d62011487aa",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "dc46daa3dd1ac3733726"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_health_changed",
+      "subject": "Love Dining",
+      "detected_at": "2026-11-18T03:11:00Z",
+      "status": "published",
+      "before": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 2,
+          "Coverage": "77/77 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "review_required",
+        "fields": {
+          "Review items": 1,
+          "Coverage": "78/78 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Review items",
+          "before": 2,
+          "after": 1
+        },
+        {
+          "field": "Coverage",
+          "before": "77/77 (100%), 0 unavailable",
+          "after": "78/78 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "940ba3137596e5f93416",
+      "stream_id": "325506f85300a0ec65a3",
+      "occurrence": 1,
+      "id": "a9158bb0d065cb9f250d"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_updated",
+      "subject": "Love Dining source",
+      "detected_at": "2026-11-18T03:11:00Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 77,
+          "Restaurant count": 29
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 78,
+          "Restaurant count": 30
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 77,
+          "after": 78
+        },
+        {
+          "field": "Restaurant count",
+          "before": 29,
+          "after": 30
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "74362917c57b669949a9",
+      "stream_id": "915d672147e8dd8f713f",
+      "occurrence": 1,
+      "id": "89047c0450ac169ba2a8"
+    },
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "added",
+      "subject": "Bacha Coffee / Singapore",
+      "detected_at": "2026-11-18T03:11:00Z",
+      "status": "review_required",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Bacha Coffee",
+          "Type": "restaurant",
+          "Country": "Singapore",
+          "City": "Singapore",
+          "Address": "2 Bayfront Ave, #B2-13/14, Singapore 018972 2 Orchard Turn #01-15/16 ION Orchard Mall, 238801",
+          "Cuisine category": "Western",
+          "Notes": "Bacha Coffee at Marina Bay Sands Bacha Coffee at ION Orchard Please note that advanced reservations are accepted on weekdays only from 9.30am to 12pm, 6pm to 9pm for ION Orchard and on weekdays only from 10am to 12pm, 6pm to 10pm for Marina Bay Sands and can be made up to 48 hours in advance. Contact 6954 1910 for Bacha Coffee at Marina Bay Sands or 6363 1910 for Bacha Coffee at ION Orchard and quote “AMEX LD” to make your reservation. Alternatively, walk-ins for both weekdays and weekends will be accepted on a first-come, first-served basis, subject to table availability."
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "eda83e5ecb22a8a40cde",
+      "stream_id": "b4800e7590604f8b21cc",
+      "occurrence": 1,
+      "id": "5c8a1bf93b60b982a98f"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -358,7 +508,7 @@
       "kind": "source_updated",
       "subject": "Love Dining source",
       "detected_at": "2026-11-17T04:12:18Z",
-      "status": "review_required",
+      "status": "rejected",
       "before": {
         "state": "available",
         "fields": {
@@ -382,7 +532,9 @@
       "transition_id": "ecb94023ad6b612748ab",
       "stream_id": "915d672147e8dd8f713f",
       "occurrence": 1,
-      "id": "df11b50d04bb65a9ce02"
+      "id": "df11b50d04bb65a9ce02",
+      "reviewed_at": "2026-11-18T03:11:00Z",
+      "review_note": "Superseded by 89047c0450ac169ba2a8 before review."
     },
     {
       "program": "Table for Two",
@@ -8273,7 +8425,7 @@
       "kind": "removed",
       "subject": "Bacha Coffee / Singapore",
       "detected_at": "2026-11-01T00:28:28Z",
-      "status": "review_required",
+      "status": "rejected",
       "before": {
         "state": "listed",
         "fields": {
@@ -8301,7 +8453,9 @@
       "transition_id": "33a7fcac0a1285666419",
       "stream_id": "b4800e7590604f8b21cc",
       "occurrence": 1,
-      "id": "e0a050f416d25b07bfe0"
+      "id": "e0a050f416d25b07bfe0",
+      "reviewed_at": "2026-11-18T03:11:00Z",
+      "review_note": "Superseded by 5c8a1bf93b60b982a98f before review."
     },
     {
       "program": "Love Dining",
@@ -22654,175 +22808,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-13T02:51:00Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "27/29 (93.1%), 2 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "29/29 (100%), 0 unavailable",
-          "after": "27/29 (93.1%), 2 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "a3b730cd421c75db1b85",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 9,
-      "id": "0861c26daa9972143a7a",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "removed",
-      "subject": "ALEX Augsburg / Augsburg",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "ALEX Augsburg",
-          "Country": "Germany",
-          "Region": "Augsburg",
-          "City": "Augsburg",
-          "Address": "ANNASTRASSE 3, Augsburg, 86150, Germany",
-          "Cuisine": [
-            "Modern"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "3ff2678d77eacba678af",
-      "stream_id": "13f20ec0ad6e5a0dd612",
-      "occurrence": 1,
-      "id": "fb4e425b99a8f7ad2311",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "details_updated",
-      "subject": "Web Christel / Westerland / Sylt",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "WEB CHRISTEL",
-          "Country": "Germany",
-          "Region": "Westerland / Sylt",
-          "City": "Westerland / Sylt",
-          "Address": "SÜDERSTR 11, Westerland / Sylt, 25980, Germany",
-          "Cuisine": [
-            "German"
-          ]
-        }
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Web Christel",
-          "Country": "Germany",
-          "Region": "Westerland / Sylt",
-          "City": "Westerland / Sylt",
-          "Address": "Süderstr 11, Westerland / Sylt, 25980, Germany",
-          "Cuisine": [
-            "German"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Name",
-          "before": "WEB CHRISTEL",
-          "after": "Web Christel"
-        },
-        {
-          "field": "Address",
-          "before": "SÜDERSTR 11, Westerland / Sylt, 25980, Germany",
-          "after": "Süderstr 11, Westerland / Sylt, 25980, Germany"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "a19fd93695bd1785693b",
-      "stream_id": "77fb46d70893f1232efb",
-      "occurrence": 1,
-      "id": "d97f78ecd65e032f84d6",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "removed",
-      "subject": "Vinothek by Geisel / München",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Vinothek by Geisel",
-          "Country": "Germany",
-          "Region": "München",
-          "City": "München",
-          "Address": "Schützenstr 11, München, 80335, Germany",
-          "Cuisine": [
-            "Wine Bar"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "708514c6fa66e3bafa4c",
-      "stream_id": "a11fee71bbb695865cf5",
-      "occurrence": 1,
-      "id": "ca835e710f62de1f5975",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23504,13 +23489,14 @@
         }
       },
       "325506f85300a0ec65a3": {
-        "latest_transition_id": "e83b0dddb28e9db81362",
+        "latest_transition_id": "940ba3137596e5f93416",
         "occurrences": {
           "16c453cb7d699ae3f099": 1,
           "1c8df4fd52645201aa50": 1,
           "494c890d5cec9722be8e": 3,
           "88bbbac82ec0b9b3631c": 1,
           "8f89d57217161da1ee19": 1,
+          "940ba3137596e5f93416": 1,
           "ba499295bcfcc8416cad": 1,
           "e83b0dddb28e9db81362": 1
         }
@@ -23961,7 +23947,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "178d9adfea61af742442",
+        "latest_transition_id": "4c887f899d62011487aa",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -23973,6 +23959,7 @@
           "3031e98ad62e4c0de17e": 1,
           "37ba731247907465333f": 1,
           "45fbeae50e4fbb48dc4e": 1,
+          "4c887f899d62011487aa": 1,
           "5852ab5ce4e4d11561b4": 1,
           "5b1256866a47d8460340": 1,
           "5b971d419ee7bb62b9a0": 1,
@@ -24236,10 +24223,11 @@
         }
       },
       "915d672147e8dd8f713f": {
-        "latest_transition_id": "ecb94023ad6b612748ab",
+        "latest_transition_id": "74362917c57b669949a9",
         "occurrences": {
           "3ff929d2fb97e0ab544e": 1,
           "529bca112c6849717caa": 1,
+          "74362917c57b669949a9": 1,
           "9f7b98008859486cd882": 1,
           "a6174dfe21f75adf647b": 1,
           "ecb94023ad6b612748ab": 1,
@@ -24651,9 +24639,10 @@
         }
       },
       "b4800e7590604f8b21cc": {
-        "latest_transition_id": "33a7fcac0a1285666419",
+        "latest_transition_id": "eda83e5ecb22a8a40cde",
         "occurrences": {
-          "33a7fcac0a1285666419": 1
+          "33a7fcac0a1285666419": 1,
+          "eda83e5ecb22a8a40cde": 1
         }
       },
       "b5534be6e103750dcfb6": {
