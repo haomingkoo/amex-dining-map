@@ -1,7 +1,134 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-18T02:48:52Z",
+  "updated_at": "2026-11-18T03:00:27Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-18T03:00:27Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3040/3042 (99.9%), 2 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3039/3042 (99.9%), 3 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3040/3042 (99.9%), 2 unavailable",
+          "after": "3039/3042 (99.9%), 3 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "178d9adfea61af742442",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "90e43bea2aa1c1508645"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "renamed",
+      "subject": "FRANK's / Düsseldorf",
+      "detected_at": "2026-11-18T03:00:26Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Mbassy",
+          "Country": "Germany",
+          "Region": "Düsseldorf",
+          "City": "Düsseldorf",
+          "Address": "Ratinger Straße 9, Düsseldorf, 40213, Germany",
+          "Cuisine": [
+            "International"
+          ]
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "FRANK's",
+          "Country": "Germany",
+          "Region": "Düsseldorf",
+          "City": "Düsseldorf",
+          "Address": "Ratinger Straße 9, Düsseldorf, 40213, Germany",
+          "Cuisine": [
+            "International"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Name",
+          "before": "Mbassy",
+          "after": "FRANK's"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "80d67ce45de79cc7466e",
+      "stream_id": "cc9bc61aee18460f92a2",
+      "occurrence": 1,
+      "id": "b32cc415abf9203c5740"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "details_updated",
+      "subject": "Cassia / Auckland",
+      "detected_at": "2026-11-18T03:00:26Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Cassia",
+          "Country": "New Zealand",
+          "Region": "Auckland",
+          "City": "Auckland",
+          "Address": "90 Federal Street, Auckland CBD, Auckland, 1010, New Zealand",
+          "Cuisine": [
+            "Indian"
+          ]
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Cassia",
+          "Country": "New Zealand",
+          "Region": "Auckland",
+          "City": "Auckland",
+          "Address": "58 Albert Street, Auckland CBD, Auckland, 1010, New Zealand",
+          "Cuisine": [
+            "Indian"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Address",
+          "before": "90 Federal Street, Auckland CBD, Auckland, 1010, New Zealand",
+          "after": "58 Albert Street, Auckland CBD, Auckland, 1010, New Zealand"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "5504ec6bd0bdc5f6ce14",
+      "stream_id": "9f3d86ec13d8b4235103",
+      "occurrence": 1,
+      "id": "8c3cede9ddcddfd9e673"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -22690,134 +22817,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "details_updated",
-      "subject": "Restaurante Martin Berasategui / Lasarte Oria (Guipuzcoa)",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Restaurante Martin Berasategui",
-          "Country": "Spain",
-          "Region": "Lasarte Oria (Guipuzcoa)",
-          "City": "Lasarte Oria (Guipuzcoa)",
-          "Address": "Loidi Kalea 4, Lasarte Oria (Guipuzcoa), 20160, Spain",
-          "Cuisine": [
-            "Rest Basque/Navarra"
-          ]
-        }
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Restaurante Martin Berasategui",
-          "Country": "Spain",
-          "Region": "Lasarte Oria (Guipuzcoa)",
-          "City": "Lasarte Oria (Guipuzcoa)",
-          "Address": "Loidi Kalea 4, Lasarte Oria (Guipuzcoa), 20160, Spain",
-          "Cuisine": [
-            "Rest Basque"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Cuisine",
-          "before": [
-            "Rest Basque/Navarra"
-          ],
-          "after": [
-            "Rest Basque"
-          ]
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "47ded738478fdecea6c4",
-      "stream_id": "3bdef019e316af648b10",
-      "occurrence": 1,
-      "id": "c70365a1befd89219fdf",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "source_health_changed",
-      "subject": "Global Dining",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "1982/1982 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "1970/1970 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "1982/1982 (100%), 0 unavailable",
-          "after": "1970/1970 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "a20ff02a298973b75640",
-      "stream_id": "d03cc6f867310ca61cf7",
-      "occurrence": 1,
-      "id": "bce6a8454d65c9656e46",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "removed",
-      "subject": "Park Cafe München / München",
-      "detected_at": "2026-10-13T02:40:28Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "Park Cafe München",
-          "Country": "Germany",
-          "Region": "München",
-          "City": "München",
-          "Address": "Sophienstraße 7, München, 80333, Germany",
-          "Cuisine": [
-            "German"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "e0129f31263a84ee0c93",
-      "stream_id": "204479ee2c7dbe83d5bf",
-      "occurrence": 1,
-      "id": "981f6714028feb29df25",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23956,12 +23955,13 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "c50d4e21c673f0eda07e",
+        "latest_transition_id": "178d9adfea61af742442",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
           "100e3ae7acd0b039fde0": 1,
           "141fb2ff2e46935a0c7e": 1,
+          "178d9adfea61af742442": 1,
           "28926c4025a7e045954e": 1,
           "2e0896223097482f8813": 1,
           "3031e98ad62e4c0de17e": 1,
@@ -24402,6 +24402,12 @@
           "e88376de1da7eda2368b": 1
         }
       },
+      "9f3d86ec13d8b4235103": {
+        "latest_transition_id": "5504ec6bd0bdc5f6ce14",
+        "occurrences": {
+          "5504ec6bd0bdc5f6ce14": 1
+        }
+      },
       "a06cd0ff8518dfef9962": {
         "latest_transition_id": "f51614a60213a630c248",
         "occurrences": {
@@ -24822,6 +24828,12 @@
         "latest_transition_id": "e43e4944264f66813321",
         "occurrences": {
           "e43e4944264f66813321": 1
+        }
+      },
+      "cc9bc61aee18460f92a2": {
+        "latest_transition_id": "80d67ce45de79cc7466e",
+        "occurrences": {
+          "80d67ce45de79cc7466e": 1
         }
       },
       "cd364413c88580c22854": {
