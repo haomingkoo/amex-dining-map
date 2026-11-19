@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-19T20:58:48Z",
+  "updated_at": "2026-11-19T21:28:55Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-11-19T21:28:55Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "29/30 (96.7%), 1 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "30/30 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "29/30 (96.7%), 1 unavailable",
+          "after": "30/30 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "b0c3ecbebd8a125011a0",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 2,
+      "id": "6f00d3e64c579bfcab6e"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -22735,76 +22768,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_updated",
-      "subject": "Table for Two source",
-      "detected_at": "2026-10-13T02:51:00Z",
-      "status": "rejected",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Participating merchants image hash": "b70fbc97e9f8",
-          "Cafe and buffet image hash": "e44d7e4e85cd",
-          "Roster review status": "approved",
-          "Observed roster image hash": "5d274b0c3d5e",
-          "Roster review item": null,
-          "Voucher cycles image hash": "327019c90169"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Participating merchants image hash": "fbb8279facf3",
-          "Cafe and buffet image hash": "649714fc8797",
-          "Roster review status": "review_required",
-          "Observed roster image hash": "5bf02b3ff3f5",
-          "Roster review item": "unknown_participating_image",
-          "Voucher cycles image hash": "12d930ae819e"
-        }
-      },
-      "changes": [
-        {
-          "field": "Participating merchants image hash",
-          "before": "b70fbc97e9f8",
-          "after": "fbb8279facf3"
-        },
-        {
-          "field": "Cafe and buffet image hash",
-          "before": "e44d7e4e85cd",
-          "after": "649714fc8797"
-        },
-        {
-          "field": "Roster review status",
-          "before": "approved",
-          "after": "review_required"
-        },
-        {
-          "field": "Observed roster image hash",
-          "before": "5d274b0c3d5e",
-          "after": "5bf02b3ff3f5"
-        },
-        {
-          "field": "Roster review item",
-          "before": null,
-          "after": "unknown_participating_image"
-        },
-        {
-          "field": "Voucher cycles image hash",
-          "before": "327019c90169",
-          "after": "12d930ae819e"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
-      "transition_id": "3ff80c44f12b2c1a3d01",
-      "stream_id": "5a285967ca2795c90124",
-      "occurrence": 1,
-      "id": "e856ec9af531a7adee5e",
-      "reviewed_at": "2026-10-30T09:00:00Z",
-      "review_note": "Source metadata change; later checks replaced it. Current state is in source health."
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -25237,7 +25200,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "abc5f68ce401cddb4414",
+        "latest_transition_id": "b0c3ecbebd8a125011a0",
         "occurrences": {
           "04d5cfacf701422a287e": 10,
           "093e9a40b7d75a526207": 5,
@@ -25268,7 +25231,7 @@
           "a19a3db50b25e66d03db": 2,
           "a3b730cd421c75db1b85": 12,
           "abc5f68ce401cddb4414": 2,
-          "b0c3ecbebd8a125011a0": 1,
+          "b0c3ecbebd8a125011a0": 2,
           "bfe0fbb420460ca3178b": 9,
           "cf46f722226a6c11fef6": 2,
           "e80178cabd37915387ca": 10,
