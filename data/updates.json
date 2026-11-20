@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-20T19:46:28Z",
+  "updated_at": "2026-11-20T20:16:32Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_health_changed",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-11-20T20:16:32Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "27/30 (90%), 3 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "30/30 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "27/30 (90%), 3 unavailable",
+          "after": "30/30 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "eae8da581c4bb3e673e9",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "b0483d0f06b510c5be51"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -22713,41 +22746,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-14T14:29:26Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "27/29 (93.1%), 2 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "29/29 (100%), 0 unavailable",
-          "after": "27/29 (93.1%), 2 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "a3b730cd421c75db1b85",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 10,
-      "id": "b219d15a1673c3a469cf",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -25190,7 +25188,7 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "82b2e7b7246bf6ce7003",
+        "latest_transition_id": "eae8da581c4bb3e673e9",
         "occurrences": {
           "04d5cfacf701422a287e": 10,
           "093e9a40b7d75a526207": 5,
@@ -25227,6 +25225,7 @@
           "cf46f722226a6c11fef6": 2,
           "e80178cabd37915387ca": 10,
           "e827298af39c1f34d848": 2,
+          "eae8da581c4bb3e673e9": 1,
           "f3245b0c7c420f0c4a72": 1
         }
       },
