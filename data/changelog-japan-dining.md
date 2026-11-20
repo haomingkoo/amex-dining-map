@@ -607,3 +607,11 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - Sushi Yamamoto / Tokyo
+
+<!-- source-change:ba2c7b8a238e90e2d17257448a6a568c0dc5c1e903aeffd0bf549dca5ac776e4 -->
+## 2026-11-20 02:06 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - RODEO & Cafe SHIBUYA / Tokyo
