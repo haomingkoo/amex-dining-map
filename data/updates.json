@@ -1,7 +1,82 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-21T12:18:08Z",
+  "updated_at": "2026-11-21T15:09:33Z",
   "updates": [
+    {
+      "program": "Table for Two",
+      "program_id": "table-for-two",
+      "route": "#/table-for-two",
+      "kind": "source_recovered",
+      "subject": "Table for Two availability",
+      "detected_at": "2026-11-21T15:09:33Z",
+      "status": "published",
+      "before": {
+        "state": "failed",
+        "fields": {
+          "Source state": "failed",
+          "Freshness": "unavailable",
+          "Failures": "failed",
+          "Coverage": "0/0 (0%), 0 unavailable",
+          "Snapshot": "unavailable",
+          "Refresh attempt": "failure",
+          "Consecutive failures": 1
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Source state": "current",
+          "Freshness": "current",
+          "Failures": "clear",
+          "Coverage": "30/30 (100%), 0 unavailable",
+          "Snapshot": "current",
+          "Refresh attempt": "success",
+          "Consecutive failures": 0
+        }
+      },
+      "changes": [
+        {
+          "field": "Source state",
+          "before": "failed",
+          "after": "current"
+        },
+        {
+          "field": "Freshness",
+          "before": "unavailable",
+          "after": "current"
+        },
+        {
+          "field": "Failures",
+          "before": "failed",
+          "after": "clear"
+        },
+        {
+          "field": "Coverage",
+          "before": "0/0 (0%), 0 unavailable",
+          "after": "30/30 (100%), 0 unavailable"
+        },
+        {
+          "field": "Snapshot",
+          "before": "unavailable",
+          "after": "current"
+        },
+        {
+          "field": "Refresh attempt",
+          "before": "failure",
+          "after": "success"
+        },
+        {
+          "field": "Consecutive failures",
+          "before": 1,
+          "after": 0
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
+      "transition_id": "0d6284efb01d04cd73cb",
+      "stream_id": "fc99e227ed6c0a00a6cd",
+      "occurrence": 1,
+      "id": "fed7b580f59858ae46c4"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -22755,41 +22830,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-15T00:32:41Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "28/29 (96.6%), 1 unavailable",
-          "after": "29/29 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "252e3c33201e3823a27b",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 25,
-      "id": "3fb5ebc4f7b3908f81bf",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -25232,11 +25272,12 @@
         }
       },
       "fc99e227ed6c0a00a6cd": {
-        "latest_transition_id": "ca0fc3203aa0f55deed0",
+        "latest_transition_id": "0d6284efb01d04cd73cb",
         "occurrences": {
           "04d5cfacf701422a287e": 10,
           "093e9a40b7d75a526207": 5,
           "0b6df8958ccf7a11fd87": 3,
+          "0d6284efb01d04cd73cb": 1,
           "1c1fff4679ee3bdf92aa": 7,
           "1f3b2af7187c47ac7e7a": 1,
           "252e3c33201e3823a27b": 29,
