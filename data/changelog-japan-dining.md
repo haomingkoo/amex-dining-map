@@ -615,3 +615,14 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - RODEO & Cafe SHIBUYA / Tokyo
+
+<!-- source-change:39d4fb8773d037fbb3cc311868f285feb63294888d2ddf7c1592a987ff4a24c9 -->
+## 2026-11-24 05:09 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (4)**
+  - Sushi no Izumi / Fujisawa
+  - Teppanyaki Tamayura / Tokyo
+  - Wagyu Matsushita Ginshotei / Osaka
+  - Wagyu Matsushita Kamidori / Osaka

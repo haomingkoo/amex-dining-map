@@ -1,7 +1,309 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-22T09:32:53Z",
+  "updated_at": "2026-11-24T05:09:24Z",
   "updates": [
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-11-24T05:09:24Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "886/886 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "890/890 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "886/886 (100%), 0 unavailable",
+          "after": "890/890 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "d313fd2974456f7523f0",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "547ed74eacc37b0c4e94"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-11-24T05:09:24Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "775/886 (87.5%), 111 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "775/890 (87.1%), 115 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "775/886 (87.5%), 111 unavailable",
+          "after": "775/890 (87.1%), 115 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "d8664b297ba0bb565385",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "2a9c4abd90135f827226"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-24T05:09:24Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3042/3044 (99.9%), 2 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3042/3048 (99.8%), 6 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3042/3044 (99.9%), 2 unavailable",
+          "after": "3042/3048 (99.8%), 6 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "e4b6b11bbf7217472288",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "1c4d23dfb412d2bdbf42"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-11-24T05:09:23Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 886,
+          "Mapped count": 886,
+          "City count": 95
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 890,
+          "Mapped count": 890,
+          "City count": 96
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 886,
+          "after": 890
+        },
+        {
+          "field": "Mapped count",
+          "before": 886,
+          "after": 890
+        },
+        {
+          "field": "City count",
+          "before": 95,
+          "after": 96
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "e9e703418da009712a55",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "eb95ddf9df1cc3e43982"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Wagyu Matsushita Kamidori / Osaka",
+      "detected_at": "2026-11-24T05:09:23Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Wagyu Matsushita Kamidori",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Osaka",
+          "District": "Sonezakishinchi",
+          "Address": "2F, 1-3-30, Sonezakishinchi, Kita-ku, Osaka-shi, Osaka",
+          "Cuisine": [
+            "Yakiniku"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245691/",
+      "transition_id": "00322e35fb82b38ae919",
+      "stream_id": "a31bc13295e45d38eefe",
+      "occurrence": 1,
+      "id": "dfd2f81fa8951e36dc83"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Sushi no Izumi / Fujisawa",
+      "detected_at": "2026-11-24T05:09:23Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Sushi no Izumi",
+          "Country": "Japan",
+          "Region": "Yokohama/Kawasaki",
+          "City": "Fujisawa",
+          "District": "Kugenumaishigami",
+          "Address": "102, 1-2-18, Kugenumaishigami, Fujisawa-shi, Kanagawa",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245727/",
+      "transition_id": "b36360d7f96f7c2d22a2",
+      "stream_id": "d0ccae9a13b621a46d21",
+      "occurrence": 1,
+      "id": "c59cd9f79357bb4ceb91"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Wagyu Matsushita Ginshotei / Osaka",
+      "detected_at": "2026-11-24T05:09:23Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Wagyu Matsushita Ginshotei",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Osaka",
+          "District": "Sonezakishinchi",
+          "Address": "8F, 1-10-2, Sonezakishinchi, Kita-ku, Osaka-shi, Osaka",
+          "Cuisine": [
+            "Yakiniku"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245692/",
+      "transition_id": "07e1778f3bc6b4ab9c43",
+      "stream_id": "77d3baee40c0094a3cdf",
+      "occurrence": 1,
+      "id": "3bfb55fd6dca7f12c546"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Teppanyaki Tamayura / Tokyo",
+      "detected_at": "2026-11-24T05:09:23Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Teppanyaki Tamayura",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Kamimeguro",
+          "Address": "3F, 1-26-1-317, Kamimeguro, Meguro-ku, Tokyo",
+          "Cuisine": [
+            "Steak, Teppanyaki"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245694/",
+      "transition_id": "4998223ef15b78d19030",
+      "stream_id": "3d5f46259ff38bfcd607",
+      "occurrence": 1,
+      "id": "098bcb1aa247957a5afc"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -22539,306 +22841,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Explorer ratings",
-      "program_id": "explorer-ratings",
-      "route": "#/dining/world",
-      "kind": "source_health_changed",
-      "subject": "Google Maps ratings",
-      "detected_at": "2026-10-15T23:34:42Z",
-      "status": "published",
-      "before": {
-        "state": "mixed_age",
-        "fields": {
-          "Coverage": "3009/3016 (99.8%), 7 unavailable"
-        }
-      },
-      "after": {
-        "state": "mixed_age",
-        "fields": {
-          "Coverage": "3009/3017 (99.7%), 8 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "3009/3016 (99.8%), 7 unavailable",
-          "after": "3009/3017 (99.7%), 8 unavailable"
-        }
-      ],
-      "source_url": "https://www.google.com/maps",
-      "transition_id": "5f2bd18453dc87008d58",
-      "stream_id": "75dc7ff790819667042f",
-      "occurrence": 1,
-      "id": "e6301d586de284c643ef",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Explorer ratings",
-      "program_id": "explorer-ratings",
-      "route": "#/dining/japan/top",
-      "kind": "source_health_changed",
-      "subject": "Tabelog ratings",
-      "detected_at": "2026-10-15T23:34:42Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "774/860 (90%), 86 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "774/861 (89.9%), 87 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "774/860 (90%), 86 unavailable",
-          "after": "774/861 (89.9%), 87 unavailable"
-        }
-      ],
-      "source_url": "https://tabelog.com/en/",
-      "transition_id": "95c6d44cb209c0ce8da2",
-      "stream_id": "1343644c36ca05961a55",
-      "occurrence": 1,
-      "id": "6dd2c98a057cbadefac8",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_health_changed",
-      "subject": "Japan Dining",
-      "detected_at": "2026-10-15T23:34:42Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "860/860 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "861/861 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "860/860 (100%), 0 unavailable",
-          "after": "861/861 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "2895413af2cfdf788408",
-      "stream_id": "2815ef390a27dbc3e9e6",
-      "occurrence": 1,
-      "id": "13dad8ce008a258746e4",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-10-15T23:34:41Z",
-      "status": "published",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Record count": 860,
-          "Mapped count": 860,
-          "Official records SHA-256": "ede36d647852"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Record count": 861,
-          "Mapped count": 861,
-          "Official records SHA-256": "b83a665d4307"
-        }
-      },
-      "changes": [
-        {
-          "field": "Record count",
-          "before": 860,
-          "after": 861
-        },
-        {
-          "field": "Mapped count",
-          "before": 860,
-          "after": 861
-        },
-        {
-          "field": "Official records SHA-256",
-          "before": "ede36d647852",
-          "after": "b83a665d4307"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "6500d9e05dfffc127905",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "c0fc993408a48d0d4b36",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "added",
-      "subject": "IL LUPINO PRIME / Tokyo",
-      "detected_at": "2026-10-15T23:34:41Z",
-      "status": "published",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "IL LUPINO PRIME",
-          "Country": "Japan",
-          "Region": "Tokyo",
-          "City": "Tokyo",
-          "District": "Kitaaoyama",
-          "Address": "2F, 3-4-3, Kitaaoyama, Minato-ku, Tokyo",
-          "Cuisine": [
-            "Italian"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/restaurants/245639/",
-      "transition_id": "2ddc0eefebf346e74b74",
-      "stream_id": "9826cad0ac5289aa3479",
-      "occurrence": 1,
-      "id": "2b3e5884390984c1a68a",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-15T21:49:21Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "27/29 (93.1%), 2 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "28/29 (96.6%), 1 unavailable",
-          "after": "27/29 (93.1%), 2 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "76601cc403e616114c7f",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 10,
-      "id": "36811d91f48e0d365d4b",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-15T18:42:08Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "29/29 (100%), 0 unavailable",
-          "after": "28/29 (96.6%), 1 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "98997d254b5dfdda4b93",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 25,
-      "id": "1c21bd18e758755aeae8",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-15T14:42:32Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "27/29 (93.1%), 2 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "27/29 (93.1%), 2 unavailable",
-          "after": "29/29 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "957cb551d4d32c436358",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 12,
-      "id": "ff37d40a4debfb40efc1",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23156,7 +23158,7 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "4a5039dd594e91ff2d6c",
+        "latest_transition_id": "d8664b297ba0bb565385",
         "occurrences": {
           "18bdc569ef02dcd73162": 1,
           "1f8ff4070cf35b4b4a5f": 3,
@@ -23170,6 +23172,7 @@
           "95c6d44cb209c0ce8da2": 1,
           "bc58dd4059a032a58035": 1,
           "ca38613600565cd68c7d": 1,
+          "d8664b297ba0bb565385": 1,
           "e62dcfa500c6a55a6265": 1,
           "fb4e3e5726a57f8c4730": 1
         }
@@ -23183,7 +23186,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "7675a411661b7d30f2bc",
+        "latest_transition_id": "e9e703418da009712a55",
         "occurrences": {
           "0d2c70320c797e6dcd2f": 1,
           "1427ce486e6c391887fb": 1,
@@ -23215,6 +23218,7 @@
           "d52044651992113ac576": 1,
           "e02946773a917a16e3de": 1,
           "e167e694a8ff36cfcb74": 1,
+          "e9e703418da009712a55": 1,
           "ee100fea07f9efd3b9ae": 1,
           "f1904f3c29ce3ed995ef": 1,
           "fb674d01e96905e90ffb": 1,
@@ -23444,7 +23448,7 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "ccaf4e04fbe0ef6574f5",
+        "latest_transition_id": "d313fd2974456f7523f0",
         "occurrences": {
           "023dbb9237dd583b8431": 1,
           "2895413af2cfdf788408": 1,
@@ -23458,6 +23462,7 @@
           "8705794354278b532c42": 1,
           "951fc017d5e31f520818": 2,
           "ccaf4e04fbe0ef6574f5": 1,
+          "d313fd2974456f7523f0": 1,
           "da668e638e0d5b19646c": 1
         }
       },
@@ -23606,6 +23611,12 @@
         "latest_transition_id": "4887ee0f4195152b437b",
         "occurrences": {
           "4887ee0f4195152b437b": 1
+        }
+      },
+      "3d5f46259ff38bfcd607": {
+        "latest_transition_id": "4998223ef15b78d19030",
+        "occurrences": {
+          "4998223ef15b78d19030": 1
         }
       },
       "3dc878c945520ec4e5e9": {
@@ -23981,7 +23992,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "99a1e373ede7189a821f",
+        "latest_transition_id": "e4b6b11bbf7217472288",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24019,13 +24030,20 @@
           "c50d4e21c673f0eda07e": 1,
           "cf7528ce578d3065a967": 1,
           "d9636d4adea01248432e": 1,
-          "e1dcf9fdd357385c42c3": 1
+          "e1dcf9fdd357385c42c3": 1,
+          "e4b6b11bbf7217472288": 1
         }
       },
       "773c5ce1c33409b7956e": {
         "latest_transition_id": "823415cfa614021b07e2",
         "occurrences": {
           "823415cfa614021b07e2": 1
+        }
+      },
+      "77d3baee40c0094a3cdf": {
+        "latest_transition_id": "07e1778f3bc6b4ab9c43",
+        "occurrences": {
+          "07e1778f3bc6b4ab9c43": 1
         }
       },
       "77fb46d70893f1232efb": {
@@ -24460,6 +24478,12 @@
         "latest_transition_id": "a9ea17e283212571aa89",
         "occurrences": {
           "a9ea17e283212571aa89": 1
+        }
+      },
+      "a31bc13295e45d38eefe": {
+        "latest_transition_id": "00322e35fb82b38ae919",
+        "occurrences": {
+          "00322e35fb82b38ae919": 1
         }
       },
       "a31ea44b1ae008a3a283": {
@@ -24923,6 +24947,12 @@
           "a20ff02a298973b75640": 1,
           "c81c7287d14a3f1082ae": 1,
           "faa16f7c83a868d1e87f": 1
+        }
+      },
+      "d0ccae9a13b621a46d21": {
+        "latest_transition_id": "b36360d7f96f7c2d22a2",
+        "occurrences": {
+          "b36360d7f96f7c2d22a2": 1
         }
       },
       "d1886f12fa7935f699bd": {
