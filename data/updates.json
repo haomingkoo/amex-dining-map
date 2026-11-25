@@ -1,7 +1,192 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-24T05:09:32Z",
+  "updated_at": "2026-11-25T04:01:12Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-11-25T04:01:12Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "775/890 (87.1%), 115 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "775/891 (87%), 116 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "775/890 (87.1%), 115 unavailable",
+          "after": "775/891 (87%), 116 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "aef9417bcc61c6ce947a",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "ee0a32a1a8e8ababf446"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-25T04:01:12Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3042/3048 (99.8%), 6 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3042/3049 (99.8%), 7 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3042/3048 (99.8%), 6 unavailable",
+          "after": "3042/3049 (99.8%), 7 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "4f89a6331d6e048e3c49",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "cdcbf7d0bef1f6067875"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-11-25T04:01:12Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "890/890 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "891/891 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "890/890 (100%), 0 unavailable",
+          "after": "891/891 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "2dec8dfceea0f3dd8f7c",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "81cc4a2db4f1d3b1f7b3"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Bifuteki Kawamura Nishinomiya / Nishinomiya",
+      "detected_at": "2026-11-25T04:01:10Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Bifuteki Kawamura Nishinomiya",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Nishinomiya",
+          "District": "Kamioichi",
+          "Address": "4-15-5, Kamioichi, Nishinomiya-shi, Hyogo",
+          "Cuisine": [
+            "Steak, Teppanyaki"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245701/",
+      "transition_id": "5015bba41f92f30a75ed",
+      "stream_id": "29d1e8092b3a2e8c9b5d",
+      "occurrence": 1,
+      "id": "f0099efff7a3ff9c98e1"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-11-25T04:01:10Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 890,
+          "Mapped count": 890,
+          "City count": 96
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 891,
+          "Mapped count": 891,
+          "City count": 97
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 890,
+          "after": 891
+        },
+        {
+          "field": "Mapped count",
+          "before": 890,
+          "after": 891
+        },
+        {
+          "field": "City count",
+          "before": 96,
+          "after": 97
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "2f17a6637a71196d5f76",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "70b244ae47c07514008d"
+    },
     {
       "program": "Japan Dining",
       "program_id": "japan-dining",
@@ -22665,198 +22850,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "ALEX Augsburg / Augsburg",
-      "detected_at": "2026-10-15T23:45:26Z",
-      "status": "published",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "ALEX Augsburg",
-          "Country": "Germany",
-          "Region": "Augsburg",
-          "City": "Augsburg",
-          "Address": "Annastraße 3, Augsburg, 86150, Germany",
-          "Cuisine": [
-            "Modern"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "620efbde593953eddd11",
-      "stream_id": "13f20ec0ad6e5a0dd612",
-      "occurrence": 1,
-      "id": "ec8c0f852dc0c9c707d8",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "source_updated",
-      "subject": "Global Dining source",
-      "detected_at": "2026-10-15T23:45:26Z",
-      "status": "published",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Record count": 1970,
-          "Mapped count": 1912
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Record count": 1973,
-          "Mapped count": 1915
-        }
-      },
-      "changes": [
-        {
-          "field": "Record count",
-          "before": 1970,
-          "after": 1973
-        },
-        {
-          "field": "Mapped count",
-          "before": 1912,
-          "after": 1915
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "169e0a4cd65f0463852d",
-      "stream_id": "128d0d698ba4426680b0",
-      "occurrence": 1,
-      "id": "c9c600a23180a41fc1af",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "Armenio's Modern Grandma / Bangkok",
-      "detected_at": "2026-10-15T23:45:26Z",
-      "status": "published",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Armenio's Modern Grandma",
-          "Country": "Thailand",
-          "Region": "Bangkok",
-          "City": "Bangkok",
-          "Address": "48 Saphan Khu Alley, Thung Maha Mek, Sathon, Bangkok, 10120, Thailand",
-          "Cuisine": [
-            "Italian"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "caa8ed1cfd0d5ab2927d",
-      "stream_id": "ee1b6af54648e8478d93",
-      "occurrence": 1,
-      "id": "b1fa432f1f6e48b58ab4",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Explorer ratings",
-      "program_id": "explorer-ratings",
-      "route": "#/dining/world",
-      "kind": "source_health_changed",
-      "subject": "Google Maps ratings",
-      "detected_at": "2026-10-15T23:45:26Z",
-      "status": "published",
-      "before": {
-        "state": "mixed_age",
-        "fields": {
-          "Coverage": "3009/3017 (99.7%), 8 unavailable"
-        }
-      },
-      "after": {
-        "state": "mixed_age",
-        "fields": {
-          "Coverage": "3010/3020 (99.7%), 10 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "3009/3017 (99.7%), 8 unavailable",
-          "after": "3010/3020 (99.7%), 10 unavailable"
-        }
-      ],
-      "source_url": "https://www.google.com/maps",
-      "transition_id": "d9636d4adea01248432e",
-      "stream_id": "75dc7ff790819667042f",
-      "occurrence": 1,
-      "id": "9b2cc876ab607ed6422e",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "source_health_changed",
-      "subject": "Global Dining",
-      "detected_at": "2026-10-15T23:45:26Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "1970/1970 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "1973/1973 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "1970/1970 (100%), 0 unavailable",
-          "after": "1973/1973 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "faa16f7c83a868d1e87f",
-      "stream_id": "d03cc6f867310ca61cf7",
-      "occurrence": 1,
-      "id": "20517e26b34891c2e51c",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23174,7 +23167,7 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "d8664b297ba0bb565385",
+        "latest_transition_id": "aef9417bcc61c6ce947a",
         "occurrences": {
           "18bdc569ef02dcd73162": 1,
           "1f8ff4070cf35b4b4a5f": 3,
@@ -23186,6 +23179,7 @@
           "7b13a4aa17c3a8b51663": 1,
           "82ef1837347c3e285d2e": 1,
           "95c6d44cb209c0ce8da2": 1,
+          "aef9417bcc61c6ce947a": 1,
           "bc58dd4059a032a58035": 1,
           "ca38613600565cd68c7d": 1,
           "d8664b297ba0bb565385": 1,
@@ -23202,12 +23196,13 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "e9e703418da009712a55",
+        "latest_transition_id": "2f17a6637a71196d5f76",
         "occurrences": {
           "0d2c70320c797e6dcd2f": 1,
           "1427ce486e6c391887fb": 1,
           "16046de0225f04d3667c": 1,
           "2e38c0b153373c1aac9c": 1,
+          "2f17a6637a71196d5f76": 1,
           "36c0c3c0c034ae3cd067": 1,
           "43aff7ccfa2d78995407": 1,
           "4720e933f17e0285f607": 1,
@@ -23464,12 +23459,13 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "d313fd2974456f7523f0",
+        "latest_transition_id": "2dec8dfceea0f3dd8f7c",
         "occurrences": {
           "023dbb9237dd583b8431": 1,
           "2895413af2cfdf788408": 1,
           "292cf440ffcd6068a4bb": 1,
           "2c631570ffcb1ddf6ff0": 1,
+          "2dec8dfceea0f3dd8f7c": 1,
           "5cf95be028ceef089944": 1,
           "77c84cfff3a88511a6cf": 1,
           "79aaada59d36dbc4e171": 1,
@@ -23492,6 +23488,12 @@
         "latest_transition_id": "c65c96b11d0de35b1732",
         "occurrences": {
           "c65c96b11d0de35b1732": 1
+        }
+      },
+      "29d1e8092b3a2e8c9b5d": {
+        "latest_transition_id": "5015bba41f92f30a75ed",
+        "occurrences": {
+          "5015bba41f92f30a75ed": 1
         }
       },
       "2ad6e9da53a81d346c5e": {
@@ -24008,7 +24010,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "e4b6b11bbf7217472288",
+        "latest_transition_id": "4f89a6331d6e048e3c49",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24021,6 +24023,7 @@
           "37ba731247907465333f": 1,
           "45fbeae50e4fbb48dc4e": 1,
           "4c887f899d62011487aa": 1,
+          "4f89a6331d6e048e3c49": 1,
           "5852ab5ce4e4d11561b4": 1,
           "5b1256866a47d8460340": 1,
           "5b971d419ee7bb62b9a0": 1,

@@ -626,3 +626,11 @@ Source: `data/japan-restaurants.json`
   - Teppanyaki Tamayura / Tokyo
   - Wagyu Matsushita Ginshotei / Osaka
   - Wagyu Matsushita Kamidori / Osaka
+
+<!-- source-change:0cb8a8e44d81e1daaef0f7683aae0b1c2aad3d4a79a75849bdbb55e97d51ad99 -->
+## 2026-11-25 04:01 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (1)**
+  - Bifuteki Kawamura Nishinomiya / Nishinomiya
