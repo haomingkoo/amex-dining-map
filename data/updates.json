@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-25T04:01:18Z",
+  "updated_at": "2026-11-25T04:36:29Z",
   "updates": [
+    {
+      "program": "Love Dining",
+      "program_id": "love-dining",
+      "route": "#/love-dining",
+      "kind": "source_updated",
+      "subject": "Love Dining source",
+      "detected_at": "2026-11-25T04:36:29Z",
+      "status": "review_required",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Restaurant T&C PDF hash": "f98af87da15f"
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Restaurant T&C PDF hash": "b88212b1397a"
+        }
+      },
+      "changes": [
+        {
+          "field": "Restaurant T&C PDF hash",
+          "before": "f98af87da15f",
+          "after": "b88212b1397a"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
+      "transition_id": "0a807dcdbcd85134cd5f",
+      "stream_id": "915d672147e8dd8f713f",
+      "occurrence": 1,
+      "id": "515c9f04bc62d683b8f1"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -1277,7 +1310,7 @@
       "kind": "source_updated",
       "subject": "Love Dining source",
       "detected_at": "2026-11-18T03:11:00Z",
-      "status": "review_required",
+      "status": "rejected",
       "before": {
         "state": "available",
         "fields": {
@@ -1308,7 +1341,9 @@
       "transition_id": "74362917c57b669949a9",
       "stream_id": "915d672147e8dd8f713f",
       "occurrence": 1,
-      "id": "89047c0450ac169ba2a8"
+      "id": "89047c0450ac169ba2a8",
+      "reviewed_at": "2026-11-25T04:36:29Z",
+      "review_note": "Superseded by 515c9f04bc62d683b8f1 before review."
     },
     {
       "program": "Love Dining",
@@ -22820,46 +22855,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "added",
-      "subject": "ALEX Hamburg am Rothenbaum / Hamburg",
-      "detected_at": "2026-10-15T23:45:26Z",
-      "status": "published",
-      "before": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "ALEX Hamburg am Rothenbaum",
-          "Country": "Germany",
-          "Region": "Hamburg",
-          "City": "Hamburg",
-          "Address": "Rothenbaumchaussee 78-80, Hamburg, 20148, Germany",
-          "Cuisine": [
-            "Modern"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Not listed",
-          "after": "Listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "d157dc8d6ce258f245f3",
-      "stream_id": "a4d8ab8019c64c3fee66",
-      "occurrence": 1,
-      "id": "facdb660e879c3e0bdf6",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -24306,8 +24301,9 @@
         }
       },
       "915d672147e8dd8f713f": {
-        "latest_transition_id": "74362917c57b669949a9",
+        "latest_transition_id": "0a807dcdbcd85134cd5f",
         "occurrences": {
+          "0a807dcdbcd85134cd5f": 1,
           "3ff929d2fb97e0ab544e": 1,
           "529bca112c6849717caa": 1,
           "74362917c57b669949a9": 1,
