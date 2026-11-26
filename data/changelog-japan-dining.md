@@ -634,3 +634,11 @@ Source: `data/japan-restaurants.json`
 
 - **Added (1)**
   - Bifuteki Kawamura Nishinomiya / Nishinomiya
+
+<!-- source-change:8e5763900df5ef0524c53611c5a1f722d1d8adf4144f1d88e8d5cf8a683023f9 -->
+## 2026-11-26 03:26 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (1)**
+  - Mori / Tokyo
