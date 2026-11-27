@@ -642,3 +642,12 @@ Source: `data/japan-restaurants.json`
 
 - **Removed (1)**
   - Mori / Tokyo
+
+<!-- source-change:6191d37ab06bd5598517eb8106c69b500e4adfdb4e34346c5286242bba8fe2f6 -->
+## 2026-11-27 03:31 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Removed (2)**
+  - Nishiazabu shanguu / Tokyo
+  - merachi / Tokyo

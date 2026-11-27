@@ -1,7 +1,224 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-26T03:57:55Z",
+  "updated_at": "2026-11-27T03:31:04Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-27T03:31:04Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3041/3048 (99.8%), 7 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3039/3046 (99.8%), 7 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3041/3048 (99.8%), 7 unavailable",
+          "after": "3039/3046 (99.8%), 7 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "a7bf359693c9e37306d3",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "d4faa7e27834068a9a2c"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-11-27T03:31:04Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "774/890 (87%), 116 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "772/888 (86.9%), 116 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "774/890 (87%), 116 unavailable",
+          "after": "772/888 (86.9%), 116 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "c71221b60e79d8211596",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "bab2519c3821de85a25b"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-11-27T03:31:04Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "890/890 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "888/888 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "890/890 (100%), 0 unavailable",
+          "after": "888/888 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "cdfbe28dacbf07f6a9fe",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "61670e147cb87c6ea027"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-11-27T03:31:03Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 890,
+          "Mapped count": 890
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 888,
+          "Mapped count": 888
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 890,
+          "after": 888
+        },
+        {
+          "field": "Mapped count",
+          "before": 890,
+          "after": 888
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "f156e4241a8109de45e9",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "d4fa2d512e0c92bf62db"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": "Nishiazabu shanguu / Tokyo",
+      "detected_at": "2026-11-27T03:31:03Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "Nishiazabu shanguu",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Nishiazabu",
+          "Address": "2F, Park Side Sepia, 3-13-10, Nishiazabu, Minato-ku, Tokyo",
+          "Cuisine": [
+            "Chinese"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/244346/",
+      "transition_id": "0df644e673e78875bd1e",
+      "stream_id": "780578d1de8aa3ea58ca",
+      "occurrence": 1,
+      "id": "b20bad8d1a9604f28ee1"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": "merachi / Tokyo",
+      "detected_at": "2026-11-27T03:31:03Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "merachi",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Nishiazabu",
+          "Address": "1F, 1-4-23, Nishiazabu, Minato-ku, Tokyo",
+          "Cuisine": [
+            "Italian"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245333/",
+      "transition_id": "cbb6295c67a055abf5ef",
+      "stream_id": "c759dfa593b3a0d6d6a6",
+      "occurrence": 1,
+      "id": "0ad1299785591300f18f"
+    },
     {
       "program": "Table for Two",
       "program_id": "table-for-two",
@@ -22632,242 +22849,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "removed",
-      "subject": "La Bauhinia / Paris",
-      "detected_at": "2026-10-16T23:45:23Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "La Bauhinia",
-          "Country": "France",
-          "Region": "Paris",
-          "City": "Paris",
-          "Address": "10 avenue d'Iéna, Paris, 75116, France",
-          "Cuisine": [
-            "Asian"
-          ]
-        }
-      },
-      "after": {
-        "state": "not_listed",
-        "fields": {}
-      },
-      "changes": [
-        {
-          "field": "Listing",
-          "before": "Listed",
-          "after": "Not listed"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "7e9b872575136d8c6d8d",
-      "stream_id": "658e3e009b4b1b077dec",
-      "occurrence": 1,
-      "id": "cab57a610f69f06af797",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Explorer ratings",
-      "program_id": "explorer-ratings",
-      "route": "#/dining/world",
-      "kind": "source_health_changed",
-      "subject": "Google Maps ratings",
-      "detected_at": "2026-10-16T23:45:23Z",
-      "status": "published",
-      "before": {
-        "state": "mixed_age",
-        "fields": {
-          "Coverage": "3010/3020 (99.7%), 10 unavailable"
-        }
-      },
-      "after": {
-        "state": "mixed_age",
-        "fields": {
-          "Coverage": "3008/3019 (99.6%), 11 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "3010/3020 (99.7%), 10 unavailable",
-          "after": "3008/3019 (99.6%), 11 unavailable"
-        }
-      ],
-      "source_url": "https://www.google.com/maps",
-      "transition_id": "cf7528ce578d3065a967",
-      "stream_id": "75dc7ff790819667042f",
-      "occurrence": 1,
-      "id": "c21d21e2e2e637b35069",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "source_health_changed",
-      "subject": "Global Dining",
-      "detected_at": "2026-10-16T23:45:23Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "1973/1973 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "1972/1972 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "1973/1973 (100%), 0 unavailable",
-          "after": "1972/1972 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "45857e201fb52728e322",
-      "stream_id": "d03cc6f867310ca61cf7",
-      "occurrence": 1,
-      "id": "9c667bfce32ae5c78a09",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "renamed",
-      "subject": "Maison Roland / Paris",
-      "detected_at": "2026-10-16T23:45:23Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "La Bauhinia",
-          "Country": "France",
-          "Region": "Paris",
-          "City": "Paris",
-          "Address": "Hotel Shangri La, 10 avenue d'Iena, Paris, 75116, France",
-          "Cuisine": [
-            "French"
-          ]
-        }
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "Maison Roland",
-          "Country": "France",
-          "Region": "Paris",
-          "City": "Paris",
-          "Address": "Hotel Shangri La, 10 avenue d'Iena, Paris, 75116, France",
-          "Cuisine": [
-            "French"
-          ]
-        }
-      },
-      "changes": [
-        {
-          "field": "Name",
-          "before": "La Bauhinia",
-          "after": "Maison Roland"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "82f6a29ef980c4ab90b0",
-      "stream_id": "24ea04d58bcae8d3b91e",
-      "occurrence": 1,
-      "id": "4b327be2ae4494fa72f7",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Global Dining",
-      "program_id": "global-dining",
-      "route": "#/dining/world",
-      "kind": "source_updated",
-      "subject": "Global Dining source",
-      "detected_at": "2026-10-16T23:45:23Z",
-      "status": "published",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Record count": 1973,
-          "Mapped count": 1915
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Record count": 1972,
-          "Mapped count": 1914
-        }
-      },
-      "changes": [
-        {
-          "field": "Record count",
-          "before": 1973,
-          "after": 1972
-        },
-        {
-          "field": "Mapped count",
-          "before": 1915,
-          "after": 1914
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
-      "transition_id": "bd27f3f0c5b774d75975",
-      "stream_id": "128d0d698ba4426680b0",
-      "occurrence": 1,
-      "id": "3bb1102eb4605722d413",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Japan Dining",
-      "program_id": "japan-dining",
-      "route": "#/dining/japan/top",
-      "kind": "source_updated",
-      "subject": "Japan Dining source",
-      "detected_at": "2026-10-16T23:16:47Z",
-      "status": "published",
-      "before": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "b83a665d4307"
-        }
-      },
-      "after": {
-        "state": "available",
-        "fields": {
-          "Official records SHA-256": "3633febb608b"
-        }
-      },
-      "changes": [
-        {
-          "field": "Official records SHA-256",
-          "before": "b83a665d4307",
-          "after": "3633febb608b"
-        }
-      ],
-      "source_url": "https://pocket-concierge.jp/en/",
-      "transition_id": "4b16a84d84aaa9a04d5e",
-      "stream_id": "144a07273fbc23853124",
-      "occurrence": 1,
-      "id": "7ccada490a638f2caffd",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23185,7 +23166,7 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "cd0f40b7f8bde7820974",
+        "latest_transition_id": "c71221b60e79d8211596",
         "occurrences": {
           "18bdc569ef02dcd73162": 1,
           "1f8ff4070cf35b4b4a5f": 3,
@@ -23199,6 +23180,7 @@
           "95c6d44cb209c0ce8da2": 1,
           "aef9417bcc61c6ce947a": 1,
           "bc58dd4059a032a58035": 1,
+          "c71221b60e79d8211596": 1,
           "ca38613600565cd68c7d": 1,
           "cd0f40b7f8bde7820974": 1,
           "d8664b297ba0bb565385": 1,
@@ -23215,7 +23197,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "ecfcad099687ccb6b871",
+        "latest_transition_id": "f156e4241a8109de45e9",
         "occurrences": {
           "0d2c70320c797e6dcd2f": 1,
           "1427ce486e6c391887fb": 1,
@@ -23251,6 +23233,7 @@
           "e9e703418da009712a55": 1,
           "ecfcad099687ccb6b871": 1,
           "ee100fea07f9efd3b9ae": 1,
+          "f156e4241a8109de45e9": 1,
           "f1904f3c29ce3ed995ef": 1,
           "fb674d01e96905e90ffb": 1,
           "fd25b4504314f899459a": 1
@@ -23480,7 +23463,7 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "6db88325a094505c473c",
+        "latest_transition_id": "cdfbe28dacbf07f6a9fe",
         "occurrences": {
           "023dbb9237dd583b8431": 1,
           "2895413af2cfdf788408": 1,
@@ -23496,6 +23479,7 @@
           "8705794354278b532c42": 1,
           "951fc017d5e31f520818": 2,
           "ccaf4e04fbe0ef6574f5": 1,
+          "cdfbe28dacbf07f6a9fe": 1,
           "d313fd2974456f7523f0": 1,
           "da668e638e0d5b19646c": 1
         }
@@ -24032,7 +24016,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "6d7d42e7e1222be2fddf",
+        "latest_transition_id": "a7bf359693c9e37306d3",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24064,6 +24048,7 @@
           "99a1e373ede7189a821f": 1,
           "a574da6037c9a17bef1e": 1,
           "a599d30da04bf2ead671": 1,
+          "a7bf359693c9e37306d3": 1,
           "b5dbad0d11172040bbc4": 1,
           "bbce1c70e57b7284b369": 1,
           "be5dcdd584a9e4484c8e": 1,
@@ -24096,8 +24081,9 @@
         }
       },
       "780578d1de8aa3ea58ca": {
-        "latest_transition_id": "8138b26a511a6a689128",
+        "latest_transition_id": "0df644e673e78875bd1e",
         "occurrences": {
+          "0df644e673e78875bd1e": 1,
           "8138b26a511a6a689128": 1
         }
       },
@@ -24900,9 +24886,10 @@
         }
       },
       "c759dfa593b3a0d6d6a6": {
-        "latest_transition_id": "6f6915509eda0667997c",
+        "latest_transition_id": "cbb6295c67a055abf5ef",
         "occurrences": {
-          "6f6915509eda0667997c": 1
+          "6f6915509eda0667997c": 1,
+          "cbb6295c67a055abf5ef": 1
         }
       },
       "c78f8369c7d81f1ced54": {
