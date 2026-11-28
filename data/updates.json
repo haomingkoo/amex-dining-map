@@ -1,7 +1,255 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-28T03:10:59Z",
+  "updated_at": "2026-11-28T03:25:28Z",
   "updates": [
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "details_updated",
+      "subject": "La Torre Del Saracino / Sorrento (NA)",
+      "detected_at": "2026-11-28T03:25:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "La Torre Del Saracino",
+          "Country": "Italy",
+          "Region": "Vico Equense (NA)",
+          "City": "Vico Equense (NA)",
+          "Address": "Via Torretta 9, Vico Equense (NA), 80069, Italy",
+          "Cuisine": [
+            "Italian"
+          ]
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "La Torre Del Saracino",
+          "Country": "Italy",
+          "Region": "Sorrento (NA)",
+          "City": "Sorrento (NA)",
+          "Address": "Piazza della Vittoria 5, Sorrento (NA), 80067, Italy",
+          "Cuisine": [
+            "Italian"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Region",
+          "before": "Vico Equense (NA)",
+          "after": "Sorrento (NA)"
+        },
+        {
+          "field": "City",
+          "before": "Vico Equense (NA)",
+          "after": "Sorrento (NA)"
+        },
+        {
+          "field": "Address",
+          "before": "Via Torretta 9, Vico Equense (NA), 80069, Italy",
+          "after": "Piazza della Vittoria 5, Sorrento (NA), 80067, Italy"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "2455e6dd3acc9acd19bc",
+      "stream_id": "7e7b58f3997b96ceffc3",
+      "occurrence": 1,
+      "id": "f48d4707991f0a0154e6"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_updated",
+      "subject": "Global Dining source",
+      "detected_at": "2026-11-28T03:25:28Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 1964,
+          "Mapped count": 1935
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 1965,
+          "Mapped count": 1936
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 1964,
+          "after": 1965
+        },
+        {
+          "field": "Mapped count",
+          "before": 1935,
+          "after": 1936
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "2c530516e501263f7cdd",
+      "stream_id": "128d0d698ba4426680b0",
+      "occurrence": 1,
+      "id": "f1d6528faa1b14222923"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "added",
+      "subject": "Zouzou Rivieira / Nice",
+      "detected_at": "2026-11-28T03:25:28Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Zouzou Rivieira",
+          "Country": "France",
+          "Region": "Nice",
+          "City": "Nice",
+          "Address": "Hôtel Palais de la Méditerranée, 13 Promenade des Anglais, Nice, 00600, France",
+          "Cuisine": [
+            "Mediterranean"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "7206dbe85da5926a2e2f",
+      "stream_id": "d586c46e0cd430331b44",
+      "occurrence": 1,
+      "id": "abfb718efc8aadd25b08"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-28T03:25:28Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3038/3049 (99.6%), 11 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3038/3050 (99.6%), 12 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3038/3049 (99.6%), 11 unavailable",
+          "after": "3038/3050 (99.6%), 12 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "b2749eb91b5924bd6997",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "9dcd4636fb7e5eb3fdf4"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "details_updated",
+      "subject": "JIM BLOCK / Hamburg",
+      "detected_at": "2026-11-28T03:25:28Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": "JIM BLOCK",
+          "Country": "Germany",
+          "Region": "Hamburg",
+          "City": "Hamburg",
+          "Address": "Metropolis Haus, Hamburg, 22354, Germany",
+          "Cuisine": [
+            "Steakhouse"
+          ]
+        }
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "JIM BLOCK",
+          "Country": "Germany",
+          "Region": "Hamburg",
+          "City": "Hamburg",
+          "Address": "Dammtorstraße 29-32, Hamburg, 20354, Germany",
+          "Cuisine": [
+            "Steakhouse"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Address",
+          "before": "Metropolis Haus, Hamburg, 22354, Germany",
+          "after": "Dammtorstraße 29-32, Hamburg, 20354, Germany"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "33ec6dc40274312d21bd",
+      "stream_id": "ddf2b73e60c1fd7a6357",
+      "occurrence": 1,
+      "id": "86de9c4a1aa4c801f8da"
+    },
+    {
+      "program": "Global Dining",
+      "program_id": "global-dining",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Global Dining",
+      "detected_at": "2026-11-28T03:25:28Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "1964/1964 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "1965/1965 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "1964/1964 (100%), 0 unavailable",
+          "after": "1965/1965 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://www.americanexpress.com/en-sg/benefits/diningbenefit/",
+      "transition_id": "ce56851cf9646f5c6d61",
+      "stream_id": "d03cc6f867310ca61cf7",
+      "occurrence": 1,
+      "id": "3b77886c6b1ebc846a48"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -22654,244 +22902,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-18T13:36:17Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/30 (93.3%), 2 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "28/29 (96.6%), 1 unavailable",
-          "after": "28/30 (93.3%), 2 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "71b133a447e4d841e9e7",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 1,
-      "id": "dbc73b9f8941af96e9ff",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Love Dining",
-      "program_id": "love-dining",
-      "route": "#/love-dining",
-      "kind": "source_review_cleared",
-      "subject": "Love Dining",
-      "detected_at": "2026-10-18T13:36:17Z",
-      "status": "published",
-      "before": {
-        "state": "review_required",
-        "fields": {
-          "Source state": "review_required",
-          "Review": "required",
-          "Review items": 2
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Review": "clear",
-          "Review items": 0
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "review_required",
-          "after": "current"
-        },
-        {
-          "field": "Review",
-          "before": "required",
-          "after": "clear"
-        },
-        {
-          "field": "Review items",
-          "before": 2,
-          "after": 0
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
-      "transition_id": "494c890d5cec9722be8e",
-      "stream_id": "325506f85300a0ec65a3",
-      "occurrence": 2,
-      "id": "cde4e0dae1e845e11a97",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_review_cleared",
-      "subject": "Table for Two roster",
-      "detected_at": "2026-10-18T13:36:17Z",
-      "status": "published",
-      "before": {
-        "state": "review_required",
-        "fields": {
-          "Source state": "review_required",
-          "Review": "required",
-          "Review items": 2
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Source state": "current",
-          "Review": "clear",
-          "Review items": 0
-        }
-      },
-      "changes": [
-        {
-          "field": "Source state",
-          "before": "review_required",
-          "after": "current"
-        },
-        {
-          "field": "Review",
-          "before": "required",
-          "after": "clear"
-        },
-        {
-          "field": "Review items",
-          "before": 2,
-          "after": 0
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
-      "transition_id": "93012796121a4e0d9419",
-      "stream_id": "66129efc1226a46f5069",
-      "occurrence": 1,
-      "id": "39d71358c5880f2ecc16",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Explorer ratings",
-      "program_id": "explorer-ratings",
-      "route": "#/dining/world",
-      "kind": "source_health_changed",
-      "subject": "Google Maps ratings",
-      "detected_at": "2026-10-18T07:08:07Z",
-      "status": "published",
-      "before": {
-        "state": "mixed_age",
-        "fields": {
-          "Coverage": "3008/3019 (99.6%), 11 unavailable"
-        }
-      },
-      "after": {
-        "state": "mixed_age",
-        "fields": {
-          "Coverage": "3012/3019 (99.8%), 7 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "3008/3019 (99.6%), 11 unavailable",
-          "after": "3012/3019 (99.8%), 7 unavailable"
-        }
-      ],
-      "source_url": "https://www.google.com/maps",
-      "transition_id": "c1b5149f1109a0125456",
-      "stream_id": "75dc7ff790819667042f",
-      "occurrence": 1,
-      "id": "c19db5a96c35e5b1af18",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-18T05:11:55Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "29/29 (100%), 0 unavailable",
-          "after": "28/29 (96.6%), 1 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "98997d254b5dfdda4b93",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 29,
-      "id": "fe3e5833082bf065c857",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-18T00:44:11Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "28/29 (96.6%), 1 unavailable",
-          "after": "29/29 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "252e3c33201e3823a27b",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 29,
-      "id": "4b644d18960fa5d027c8",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23194,9 +23204,10 @@
         }
       },
       "128d0d698ba4426680b0": {
-        "latest_transition_id": "48bcef3cd18468ae27c1",
+        "latest_transition_id": "2c530516e501263f7cdd",
         "occurrences": {
           "169e0a4cd65f0463852d": 1,
+          "2c530516e501263f7cdd": 1,
           "44a7b1e2dc2c865eba80": 1,
           "48bcef3cd18468ae27c1": 1,
           "4cadef5f63f5acf8dfcf": 1,
@@ -24080,7 +24091,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "67e70b99d6be1aaa05bf",
+        "latest_transition_id": "b2749eb91b5924bd6997",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24114,6 +24125,7 @@
           "a574da6037c9a17bef1e": 1,
           "a599d30da04bf2ead671": 1,
           "a7bf359693c9e37306d3": 1,
+          "b2749eb91b5924bd6997": 1,
           "b5dbad0d11172040bbc4": 1,
           "bbce1c70e57b7284b369": 1,
           "be5dcdd584a9e4484c8e": 1,
@@ -24211,6 +24223,12 @@
         "latest_transition_id": "c9fd1a9f6edf850c72fa",
         "occurrences": {
           "c9fd1a9f6edf850c72fa": 1
+        }
+      },
+      "7e7b58f3997b96ceffc3": {
+        "latest_transition_id": "2455e6dd3acc9acd19bc",
+        "occurrences": {
+          "2455e6dd3acc9acd19bc": 1
         }
       },
       "7eb5ce1c77ede76674e8": {
@@ -25045,11 +25063,12 @@
         }
       },
       "d03cc6f867310ca61cf7": {
-        "latest_transition_id": "c81c7287d14a3f1082ae",
+        "latest_transition_id": "ce56851cf9646f5c6d61",
         "occurrences": {
           "45857e201fb52728e322": 1,
           "a20ff02a298973b75640": 1,
           "c81c7287d14a3f1082ae": 1,
+          "ce56851cf9646f5c6d61": 1,
           "faa16f7c83a868d1e87f": 1
         }
       },
@@ -25081,6 +25100,12 @@
         "latest_transition_id": "b87544ebf6c99d6d30ca",
         "occurrences": {
           "b87544ebf6c99d6d30ca": 1
+        }
+      },
+      "d586c46e0cd430331b44": {
+        "latest_transition_id": "7206dbe85da5926a2e2f",
+        "occurrences": {
+          "7206dbe85da5926a2e2f": 1
         }
       },
       "d623ecf6e982cac994a8": {
@@ -25173,6 +25198,12 @@
         "latest_transition_id": "3b2e49cf6530221ddd27",
         "occurrences": {
           "3b2e49cf6530221ddd27": 1
+        }
+      },
+      "ddf2b73e60c1fd7a6357": {
+        "latest_transition_id": "33ec6dc40274312d21bd",
+        "occurrences": {
+          "33ec6dc40274312d21bd": 1
         }
       },
       "df881b55123477db852e": {

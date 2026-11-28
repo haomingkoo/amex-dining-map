@@ -267,3 +267,11 @@ Source: `data/global-restaurants.json`
   - The Sky Boss / Tsim Sha Tsui
   - Via Monte Napoleone / Frankfurt am Main
   - Yauatcha Soho / London
+
+<!-- source-change:e04467a1234f864da8563bf0c5722001522f6b8837a456f84ffd744240ea9261 -->
+## 2026-11-28 03:25 UTC — Global Dining
+
+Source: `data/global-restaurants.json`
+
+- **Added (1)**
+  - Zouzou Rivieira / Nice
