@@ -1,7 +1,40 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-27T03:31:09Z",
+  "updated_at": "2026-11-28T00:26:42Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-28T00:26:42Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 3
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Stale records": 414
+        }
+      },
+      "changes": [
+        {
+          "field": "Stale records",
+          "before": 3,
+          "after": 414
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "ef810d84b04b3f19668c",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "0403b2b4a6afbc2f72d4"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -22816,54 +22849,6 @@
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
-      "kind": "details_updated",
-      "subject": "L'Angélus / Singapore",
-      "detected_at": "2026-10-16T23:55:47Z",
-      "status": "published",
-      "before": {
-        "state": "listed",
-        "fields": {
-          "Name": "L'Angélus",
-          "Type": "restaurant",
-          "Country": "Singapore",
-          "City": "Singapore",
-          "Address": "85 Club Street, Singapore 069453",
-          "Cuisine category": "Western"
-        }
-      },
-      "after": {
-        "state": "listed",
-        "fields": {
-          "Name": "L'Angélus",
-          "Type": "restaurant",
-          "Country": "Singapore",
-          "City": "Singapore",
-          "Address": "85 Club Street, Singapore 069453",
-          "Cuisine category": "Western",
-          "Notes": "Please note that L'Angélus will be closed for a private event on 24 October 2026. Love Dining privileges will not be available on this day."
-        }
-      },
-      "changes": [
-        {
-          "field": "Notes",
-          "before": null,
-          "after": "Please note that L'Angélus will be closed for a private event on 24 October 2026. Love Dining privileges will not be available on this day."
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/sg/benefits/love-dining/love-restaurants.html",
-      "transition_id": "23c18b5cc2d02e775d05",
-      "stream_id": "ea9a9f09e91183be3749",
-      "occurrence": 1,
-      "id": "9cfbfe5db96114211e80",
-      "reviewed_at": "2026-10-18T14:10:00Z",
-      "review_note": "Checked against the official pages on 2026-10-18. The hotels page says Mosella is not eligible from 1 Oct 2026 and the October hotel T&C drops Pan Pacific Orchard. L'Angélus shows its 24 Oct 2026 private-event closure on the page and in the T&C, and Sen of Japan no longer carries its July reopening note.",
-      "owner_delivery_state": "before_activation",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Love Dining",
-      "program_id": "love-dining",
-      "route": "#/love-dining",
       "kind": "added",
       "subject": "LUCE / Singapore",
       "detected_at": "2026-08-29T23:16:00Z",
@@ -24028,7 +24013,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "a7bf359693c9e37306d3",
+        "latest_transition_id": "ef810d84b04b3f19668c",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24070,7 +24055,8 @@
           "cf7528ce578d3065a967": 1,
           "d9636d4adea01248432e": 1,
           "e1dcf9fdd357385c42c3": 1,
-          "e4b6b11bbf7217472288": 1
+          "e4b6b11bbf7217472288": 1,
+          "ef810d84b04b3f19668c": 1
         }
       },
       "773c5ce1c33409b7956e": {
