@@ -1,7 +1,348 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-28T00:26:44Z",
+  "updated_at": "2026-11-28T03:10:53Z",
   "updates": [
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Tabelog ratings",
+      "detected_at": "2026-11-28T03:10:53Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "772/888 (86.9%), 116 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "771/891 (86.5%), 120 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "772/888 (86.9%), 116 unavailable",
+          "after": "771/891 (86.5%), 120 unavailable"
+        }
+      ],
+      "source_url": "https://tabelog.com/en/",
+      "transition_id": "ef6a1e17c736bd2b314f",
+      "stream_id": "1343644c36ca05961a55",
+      "occurrence": 1,
+      "id": "dfd19187781bb5de5c7e"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_health_changed",
+      "subject": "Japan Dining",
+      "detected_at": "2026-11-28T03:10:53Z",
+      "status": "published",
+      "before": {
+        "state": "current",
+        "fields": {
+          "Coverage": "888/888 (100%), 0 unavailable"
+        }
+      },
+      "after": {
+        "state": "current",
+        "fields": {
+          "Coverage": "891/891 (100%), 0 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "888/888 (100%), 0 unavailable",
+          "after": "891/891 (100%), 0 unavailable"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "ddbfe5f24e0ab00155ba",
+      "stream_id": "2815ef390a27dbc3e9e6",
+      "occurrence": 1,
+      "id": "7e2ee2cd584367226101"
+    },
+    {
+      "program": "Explorer ratings",
+      "program_id": "explorer-ratings",
+      "route": "#/dining/world",
+      "kind": "source_health_changed",
+      "subject": "Google Maps ratings",
+      "detected_at": "2026-11-28T03:10:53Z",
+      "status": "published",
+      "before": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3039/3046 (99.8%), 7 unavailable"
+        }
+      },
+      "after": {
+        "state": "mixed_age",
+        "fields": {
+          "Coverage": "3038/3049 (99.6%), 11 unavailable"
+        }
+      },
+      "changes": [
+        {
+          "field": "Coverage",
+          "before": "3039/3046 (99.8%), 7 unavailable",
+          "after": "3038/3049 (99.6%), 11 unavailable"
+        }
+      ],
+      "source_url": "https://www.google.com/maps",
+      "transition_id": "67e70b99d6be1aaa05bf",
+      "stream_id": "75dc7ff790819667042f",
+      "occurrence": 1,
+      "id": "0662fbae72ad38ebfc57"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Bifuteki Kawamura Sannomiya flagship  / Kobe",
+      "detected_at": "2026-11-28T03:10:51Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Bifuteki Kawamura Sannomiya flagship ",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Kobe",
+          "District": "Kano-cho",
+          "Address": "1F, 4-5-13, Kano-cho, Chuo-ku, Kobe-shi, Hyogo",
+          "Cuisine": [
+            "Steak, Teppanyaki"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245705/",
+      "transition_id": "5ed5501c381f1d9d6430",
+      "stream_id": "21cc061c084b1f798013",
+      "occurrence": 1,
+      "id": "fa7a5361f8d7b6cebb75"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Fukazawa / Tokyo",
+      "detected_at": "2026-11-28T03:10:51Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Fukazawa",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Tsukiji",
+          "Address": "1F, 2-8-2, Tsukiji, Chuo-ku, Tokyo",
+          "Cuisine": [
+            "Sushi"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245724/",
+      "transition_id": "a6b5a946a9f1b1113683",
+      "stream_id": "a7366e87035bb0875045",
+      "occurrence": 1,
+      "id": "83cc126fd827d78bacbe"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "source_updated",
+      "subject": "Japan Dining source",
+      "detected_at": "2026-11-28T03:10:51Z",
+      "status": "published",
+      "before": {
+        "state": "available",
+        "fields": {
+          "Record count": 888,
+          "Mapped count": 888,
+          "City count": 97
+        }
+      },
+      "after": {
+        "state": "available",
+        "fields": {
+          "Record count": 891,
+          "Mapped count": 891,
+          "City count": 98
+        }
+      },
+      "changes": [
+        {
+          "field": "Record count",
+          "before": 888,
+          "after": 891
+        },
+        {
+          "field": "Mapped count",
+          "before": 888,
+          "after": 891
+        },
+        {
+          "field": "City count",
+          "before": 97,
+          "after": 98
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/",
+      "transition_id": "c4c393198d45989a97ea",
+      "stream_id": "144a07273fbc23853124",
+      "occurrence": 1,
+      "id": "56064e9909d595c86d10"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Bifuteki Kawamura Kakogawa / Kakogawa",
+      "detected_at": "2026-11-28T03:10:51Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Bifuteki Kawamura Kakogawa",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Kakogawa",
+          "District": "Noguchichonoguchi",
+          "Address": "175-1, Noguchichonoguchi, Kakogawa-shi, Hyogo",
+          "Cuisine": [
+            "Steak, Teppanyaki"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245703/",
+      "transition_id": "87f4f660604225139d31",
+      "stream_id": "1b6c99fbd946bc609d36",
+      "occurrence": 1,
+      "id": "4e7e4fd2e91989756f82"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "added",
+      "subject": "Bifuteki Kawamura Koube honten  （Shinmei restaurant） / Kobe",
+      "detected_at": "2026-11-28T03:10:51Z",
+      "status": "published",
+      "before": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "after": {
+        "state": "listed",
+        "fields": {
+          "Name": "Bifuteki Kawamura Koube honten  （Shinmei restaurant）",
+          "Country": "Japan",
+          "Region": "Kyoto/Osaka/Nara",
+          "City": "Kobe",
+          "District": "Ikawadani MachiArase",
+          "Address": "1524, Ikawadani MachiArase, Nishi-ku, Kobe-shi, Hyogo",
+          "Cuisine": [
+            "Steak, Teppanyaki"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Not listed",
+          "after": "Listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/245702/",
+      "transition_id": "68734c303fd735159523",
+      "stream_id": "16299f4b1a04c2a76c7f",
+      "occurrence": 1,
+      "id": "1749a9c74c7c8f1c7e48"
+    },
+    {
+      "program": "Japan Dining",
+      "program_id": "japan-dining",
+      "route": "#/dining/japan/top",
+      "kind": "removed",
+      "subject": " Ristorante Osawa / Tokyo",
+      "detected_at": "2026-11-28T03:10:51Z",
+      "status": "published",
+      "before": {
+        "state": "listed",
+        "fields": {
+          "Name": " Ristorante Osawa",
+          "Country": "Japan",
+          "Region": "Tokyo",
+          "City": "Tokyo",
+          "District": "Nukuiminamicho",
+          "Address": "1-25-4, Nukuiminamicho, Koganei-shi, Tokyo",
+          "Cuisine": [
+            "Italian"
+          ]
+        }
+      },
+      "after": {
+        "state": "not_listed",
+        "fields": {}
+      },
+      "changes": [
+        {
+          "field": "Listing",
+          "before": "Listed",
+          "after": "Not listed"
+        }
+      ],
+      "source_url": "https://pocket-concierge.jp/en/restaurants/243979/",
+      "transition_id": "bdc7425afea4e3640c75",
+      "stream_id": "c0c4bff05ddf28cfeaef",
+      "occurrence": 1,
+      "id": "04640e44c2f61b34556c"
+    },
     {
       "program": "Explorer ratings",
       "program_id": "explorer-ratings",
@@ -22533,321 +22874,6 @@
       "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
     },
     {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two menus",
-      "detected_at": "2026-10-17T23:44:26Z",
-      "status": "published",
-      "before": {
-        "state": "review_required",
-        "fields": {
-          "Coverage": "18/32 (56.2%), 14 unavailable"
-        }
-      },
-      "after": {
-        "state": "review_required",
-        "fields": {
-          "Coverage": "19/32 (59.4%), 13 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "18/32 (56.2%), 14 unavailable",
-          "after": "19/32 (59.4%), 13 unavailable"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
-      "transition_id": "c33e28c5205017fb3dfa",
-      "stream_id": "1d6c201fff0933553df2",
-      "occurrence": 2,
-      "id": "bb6b9f06dbaef38a57db",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-17T23:44:26Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "29/29 (100%), 0 unavailable",
-          "after": "28/29 (96.6%), 1 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "98997d254b5dfdda4b93",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 28,
-      "id": "83d0bc09f153dbb65d8b",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-17T21:00:41Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "28/29 (96.6%), 1 unavailable",
-          "after": "29/29 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "252e3c33201e3823a27b",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 28,
-      "id": "663b37702def56a0dbe3",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-17T18:44:32Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "29/29 (100%), 0 unavailable",
-          "after": "28/29 (96.6%), 1 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "98997d254b5dfdda4b93",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 27,
-      "id": "8af4e85be164a8b3a740",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-17T13:14:59Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "28/29 (96.6%), 1 unavailable",
-          "after": "29/29 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "252e3c33201e3823a27b",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 27,
-      "id": "7c76d744d4cf4a6f55fd",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-17T09:42:45Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "29/29 (100%), 0 unavailable",
-          "after": "28/29 (96.6%), 1 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "98997d254b5dfdda4b93",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 26,
-      "id": "b412b183fd0e1569bc7e",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-17T01:16:07Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "29/29 (100%), 0 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "28/29 (96.6%), 1 unavailable",
-          "after": "29/29 (100%), 0 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "252e3c33201e3823a27b",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 26,
-      "id": "e0333dacb793ac71f2b0",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two menus",
-      "detected_at": "2026-10-17T00:09:05Z",
-      "status": "published",
-      "before": {
-        "state": "review_required",
-        "fields": {
-          "Coverage": "19/32 (59.4%), 13 unavailable"
-        }
-      },
-      "after": {
-        "state": "review_required",
-        "fields": {
-          "Coverage": "18/32 (56.2%), 14 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "19/32 (59.4%), 13 unavailable",
-          "after": "18/32 (56.2%), 14 unavailable"
-        }
-      ],
-      "source_url": "https://www.americanexpress.com/en-sg/benefits/the-platinum-card/dining/table-for-two/",
-      "transition_id": "9b1f7da1123fbd777ee5",
-      "stream_id": "1d6c201fff0933553df2",
-      "occurrence": 1,
-      "id": "4c339f227e7d89d96285",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
-      "program": "Table for Two",
-      "program_id": "table-for-two",
-      "route": "#/table-for-two",
-      "kind": "source_health_changed",
-      "subject": "Table for Two availability",
-      "detected_at": "2026-10-17T00:09:05Z",
-      "status": "published",
-      "before": {
-        "state": "current",
-        "fields": {
-          "Coverage": "27/29 (93.1%), 2 unavailable"
-        }
-      },
-      "after": {
-        "state": "current",
-        "fields": {
-          "Coverage": "28/29 (96.6%), 1 unavailable"
-        }
-      },
-      "changes": [
-        {
-          "field": "Coverage",
-          "before": "27/29 (93.1%), 2 unavailable",
-          "after": "28/29 (96.6%), 1 unavailable"
-        }
-      ],
-      "source_url": "https://api.diningcity.asia/public",
-      "transition_id": "6ba961eb0afc692e2138",
-      "stream_id": "fc99e227ed6c0a00a6cd",
-      "occurrence": 12,
-      "id": "4770bfe5f46c5c7eaa2e",
-      "owner_delivery_state": "withheld",
-      "owner_delivery_recorded_at": "2026-10-24T23:30:59Z"
-    },
-    {
       "program": "Love Dining",
       "program_id": "love-dining",
       "route": "#/love-dining",
@@ -23165,7 +23191,7 @@
         }
       },
       "1343644c36ca05961a55": {
-        "latest_transition_id": "c71221b60e79d8211596",
+        "latest_transition_id": "ef6a1e17c736bd2b314f",
         "occurrences": {
           "18bdc569ef02dcd73162": 1,
           "1f8ff4070cf35b4b4a5f": 3,
@@ -23184,6 +23210,7 @@
           "cd0f40b7f8bde7820974": 1,
           "d8664b297ba0bb565385": 1,
           "e62dcfa500c6a55a6265": 1,
+          "ef6a1e17c736bd2b314f": 1,
           "fb4e3e5726a57f8c4730": 1
         }
       },
@@ -23196,7 +23223,7 @@
         }
       },
       "144a07273fbc23853124": {
-        "latest_transition_id": "f156e4241a8109de45e9",
+        "latest_transition_id": "c4c393198d45989a97ea",
         "occurrences": {
           "0d2c70320c797e6dcd2f": 1,
           "1427ce486e6c391887fb": 1,
@@ -23225,6 +23252,7 @@
           "a8f7a2ed48f9d90d9e51": 1,
           "af1745554b2845798fab": 1,
           "bd4f80b3983c999c7a1d": 1,
+          "c4c393198d45989a97ea": 1,
           "cad2db3c1df050a555fb": 1,
           "d52044651992113ac576": 1,
           "e02946773a917a16e3de": 1,
@@ -23254,6 +23282,12 @@
         "latest_transition_id": "bcce1b2a68264092fd50",
         "occurrences": {
           "bcce1b2a68264092fd50": 1
+        }
+      },
+      "16299f4b1a04c2a76c7f": {
+        "latest_transition_id": "68734c303fd735159523",
+        "occurrences": {
+          "68734c303fd735159523": 1
         }
       },
       "16db3db0734d0eb6a1b9": {
@@ -23297,6 +23331,12 @@
         "occurrences": {
           "8a37443f3ba9ae35ca96": 1,
           "9519ac9cf038551f82dc": 1
+        }
+      },
+      "1b6c99fbd946bc609d36": {
+        "latest_transition_id": "87f4f660604225139d31",
+        "occurrences": {
+          "87f4f660604225139d31": 1
         }
       },
       "1b6f82b0667b699bf47c": {
@@ -23413,6 +23453,12 @@
           "e0129f31263a84ee0c93": 1
         }
       },
+      "21cc061c084b1f798013": {
+        "latest_transition_id": "5ed5501c381f1d9d6430",
+        "occurrences": {
+          "5ed5501c381f1d9d6430": 1
+        }
+      },
       "22a055f12877c8b33048": {
         "latest_transition_id": "e736427a122cd811b9f4",
         "occurrences": {
@@ -23462,7 +23508,7 @@
         }
       },
       "2815ef390a27dbc3e9e6": {
-        "latest_transition_id": "cdfbe28dacbf07f6a9fe",
+        "latest_transition_id": "ddbfe5f24e0ab00155ba",
         "occurrences": {
           "023dbb9237dd583b8431": 1,
           "2895413af2cfdf788408": 1,
@@ -23480,7 +23526,8 @@
           "ccaf4e04fbe0ef6574f5": 1,
           "cdfbe28dacbf07f6a9fe": 1,
           "d313fd2974456f7523f0": 1,
-          "da668e638e0d5b19646c": 1
+          "da668e638e0d5b19646c": 1,
+          "ddbfe5f24e0ab00155ba": 1
         }
       },
       "293491338327370df4ab": {
@@ -24015,7 +24062,7 @@
         }
       },
       "75dc7ff790819667042f": {
-        "latest_transition_id": "ef810d84b04b3f19668c",
+        "latest_transition_id": "67e70b99d6be1aaa05bf",
         "occurrences": {
           "07f988256e94c4968634": 1,
           "0bd25ff4da05675b0406": 1,
@@ -24034,6 +24081,7 @@
           "5b971d419ee7bb62b9a0": 1,
           "5f2bd18453dc87008d58": 1,
           "5ff54655f7197bc32812": 1,
+          "67e70b99d6be1aaa05bf": 1,
           "6b634201cbf49e85cba5": 1,
           "6be63510fd7f5d617346": 1,
           "6c72c994b22a2fc7b3d2": 1,
@@ -24589,6 +24637,12 @@
           "cf63053c6bb36e712cdf": 1
         }
       },
+      "a7366e87035bb0875045": {
+        "latest_transition_id": "a6b5a946a9f1b1113683",
+        "occurrences": {
+          "a6b5a946a9f1b1113683": 1
+        }
+      },
       "a828d997b60d381fcb04": {
         "latest_transition_id": "ed47d0939e450ee471ec",
         "occurrences": {
@@ -24820,9 +24874,10 @@
         }
       },
       "c0c4bff05ddf28cfeaef": {
-        "latest_transition_id": "b34122e5eb89269f44b5",
+        "latest_transition_id": "bdc7425afea4e3640c75",
         "occurrences": {
-          "b34122e5eb89269f44b5": 1
+          "b34122e5eb89269f44b5": 1,
+          "bdc7425afea4e3640c75": 1
         }
       },
       "c139031fa89984148cb3": {

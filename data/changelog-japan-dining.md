@@ -651,3 +651,16 @@ Source: `data/japan-restaurants.json`
 - **Removed (2)**
   - Nishiazabu shanguu / Tokyo
   - merachi / Tokyo
+
+<!-- source-change:0db2bef062afd24431afb993f361b43bf2fc6a92bd1021c8ef936c7ceb1cb3fa -->
+## 2026-11-28 03:10 UTC — Japan Dining
+
+Source: `data/japan-restaurants.json`
+
+- **Added (4)**
+  - Bifuteki Kawamura Kakogawa / Kakogawa
+  - Bifuteki Kawamura Koube honten  （Shinmei restaurant） / Kobe
+  - Bifuteki Kawamura Sannomiya flagship  / Kobe
+  - Fukazawa / Tokyo
+- **Removed (1)**
+  -  Ristorante Osawa / Tokyo
